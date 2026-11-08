@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""dt-lockcheck — find gui_data fields that darktable IOP modules share between
+"""dt-lockcheck finds gui_data fields that darktable IOP modules share between
 the pixelpipe and the GTK main thread without consistent locking.
 
 WHAT IT LOOKS FOR
   Every IOP module keeps per-instance GUI state in a `dt_iop_<module>_gui_data_t`
-  struct reached as `g->field`.  Fields that both the pipe side and the GTK main
-  thread touch must be accessed inside
-  `dt_iop_gui_enter/leave_critical_section()` (the module's `gui_lock`), or a
-  private mutex.  This script finds the fields where that is not done, or not
-  done everywhere.
+  struct, reached as `g->field`.  Code must access a field that both the pipe
+  side and the GTK main thread touch inside
+  `dt_iop_gui_enter/leave_critical_section()` (the module's `gui_lock`), or under
+  a private mutex.  This script finds the fields where that does not happen, or
+  does not happen everywhere.
 
 WHICH THREAD
-  Every function is labelled `gtk`, `pipe` or `either`, and so is every site in
-  the report.
+  The script labels every function `gtk`, `pipe` or `either`, and the report
+  labels every site the same way.
 
     gtk     the GTK main thread: gui_init, gui_update, gui_changed, widget and
             draw callbacks, mouse and scroll handlers.
@@ -22,91 +22,94 @@ WHICH THREAD
     either  driven by the pipe, but GTK-thread code reaches it too, so it has no
             thread you can rely on: commit_params, init_pipe, cleanup_pipe,
             distort_transform, distort_backtransform, blend_colorspace,
-            default_colorspace.  See the EITHER set below for why each is there.
+            default_colorspace.  The EITHER set below says why each is there.
 
-  An `either` site counts on both sides of the cross-thread test, since two
-  invocations can land on different threads.  A finding that rests only on such
-  a site deserves a second look: on the path that matters it may in practice
-  always run on one thread.
+  An `either` site counts on both sides of the cross-thread test, because two
+  calls can run on different threads.  Check a finding that rests only on such
+  a site.  On the path that matters, it may always run on one thread.
 
-  Each label covers the static helpers reached from it, propagated along the
-  call graph within one file -- which is where the mistakes hide, two or three
-  frames below a callback whose name says nothing about its thread.
+  Each label also covers the static helpers reached from the labelled function,
+  propagated along the call graph within one file.  This matters because the
+  offending line is often two or three calls below a callback whose name says
+  nothing about its thread.
 
-  A function is also labelled from how its address is taken, which is what
-  reaches the handlers no naming convention describes:
-    * handed to a callee as an argument -- it runs on the registrar's thread,
-      because the callee calls it synchronously;
-    * handed to g_idle_add/g_signal_connect and friends -- always `gtk`,
-      whatever thread registered it;
-    * stored into a struct member or a file-scope table -- it escapes this
-      file, so it gets `either`: the call site is somewhere unknown.
-  Labels that come from the PIPE/EITHER/GTK sets are ground truth from the
-  module API and propagation never overwrites them.
+  The script also labels a function by how its address is taken.  That covers
+  handlers that no naming convention describes:
+    * a function passed to a callee as an argument runs on the registrar's
+      thread, because the callee calls it synchronously;
+    * a function passed to g_idle_add, g_signal_connect or similar is always
+      `gtk`, whatever thread registered it;
+    * a function stored in a struct member or a file-scope table is `either`,
+      because it escapes this file and the call site is unknown.
+  Labels from the PIPE, EITHER and GTK sets come from the module API, so
+  propagation never overwrites them.
 
-  Five rules, in descending order of how much they are worth reading:
+  The five rules, in the order of how much they are worth reading:
 
-    widget_from_pipe  a Gtk*-typed field touched from a `pipe` or `either`
-                      function.  GTK must only be called from the main thread.
+    widget_from_pipe  a Gtk*- or Dtgtk*-typed field touched from a `pipe` or
+                      `either` function.  Only the main thread may call GTK.
     violation         the module locks the field somewhere, and also accesses it
                       unlocked from the other side.  The module's own code is
                       the evidence that the field needs the lock.
-    no_lock_share     the field is written and shared across the two threads and
-                      the module never locks it at all.
+    no_lock_share     the field is written and shared across the two threads,
+                      and the module never locks it.
     discipline_gap    the module locks the field somewhere and accesses it
-                      unlocked, without a proven cross-thread share.  Noisiest;
-                      read it last.
+                      unlocked, but no cross-thread sharing was proven.  The
+                      noisiest rule, so read it last.
     pointer_share     a pointer-typed field shared across the two threads, with
                       no unlocked access anywhere.  The lock protects the
-                      pointer load, not the object the other thread may free
-                      under the reader.  It fires on the shape, not on a proven
-                      escape, so read the hit before believing it -- but the
-                      shape is rare and the rule is bounded by it.
+                      pointer load, not the object, which the other thread may
+                      free while the reader uses it.  The rule fires on the
+                      pattern, not on a proven escape, so read each hit before
+                      you believe it.  The pattern is rare, and the number of
+                      such fields limits the rule's output.
 
-  --rules picks the set, by name or as the upper-case ALL for every rule there
-  is.  All but discipline_gap are on by default; that one has to be asked for,
-  because on a whole tree most of what it returns is a field locked for one
-  reason and read unlocked for another.  A field is reported under at most one
-  rule, the first in the order above that it matches.
+  --rules picks the set, by name, or as the upper-case ALL for every rule.  All
+  but discipline_gap are on by default.  discipline_gap has to be asked for,
+  because on a whole tree most of its findings are fields locked for one reason
+  and read unlocked for another.  The report lists a field under at most one
+  rule, the first in the order above that matches.
 
 PROOF TREES (--why, off by default)
-  The rules are also written as Datalog in rules.lemma, next to this script.
-  With --why, each finding in the report is followed by the proof tree behind it:
-  the locked site that established the discipline, the thread facts, and the
-  unlocked site that broke it.  This needs the lemmalog engine
+  rules.lemma, next to this script, contains the same rules written as Datalog.
+  With --why, the report follows each finding with the proof tree behind it.
+  The tree shows the locked site that established the convention, the thread
+  facts, and the unlocked site that broke it.  --why needs the lemmalog engine
   (github.com/JordyZomer/lemmalog) on $PATH, in $DT_LOCKCHECK_LEMMALOG, or named
-  by --lemmalog PATH; asking for --why without one is an error rather than a
-  silent plain report.  The trees are additive: which findings are reported does
-  not depend on them, and they roughly sextuple the length of a full report,
-  which is why they are opt-in.
+  by --lemmalog PATH.  Asking for --why without one is an error, not a silent
+  plain report.  The trees do not change which findings are reported.  They make
+  a full report about six times longer, which is why they are opt-in.
 
-  The trees go into the report only.  --format csv/json/lemmalog never runs the
-  engine and never carries a tree, so --why with one of those is an error too.
-  The engine's output is captured rather than inherited, so it cannot leak into
-  stdout; the line naming the binary goes to stderr.
+  Only the report carries the trees.  --format csv, json and lemmalog never run
+  the engine and never carry a tree, so --why with one of those is an error too.
+  The script captures the engine's output instead of passing it through, so it
+  cannot reach stdout.  The line that names the binary goes to stderr.
 
 HOW TO READ THE OUTPUT
-  Each finding names the locked sites (the evidence a discipline exists) and the
-  unlocked sites (the suspected defect), with file line numbers and the thread
-  each function was inferred to run on.  Open both and decide.  This is a lexical
-  analysis, not a verified race detector: every finding needs a human to confirm
-  that the two sites can really run concurrently.
+  Each finding names the locked sites, which are the evidence that a convention
+  exists, and the unlocked sites, which are the suspected defect.  It gives the
+  line numbers and the thread inferred for each function.  Open both and decide.
+  This is a lexical analysis, not a verified race detector.  A person has to
+  confirm, for every finding, that the two sites can really run at the same
+  time.
 
-  pointer_share is the exception and prints no unlocked line, because it has
-  none to print: its claim is that every access being locked is still not
-  enough.  Read its locked sites for the load and the free, and decide whether
-  the object can be freed while the reader is still using it.
+  pointer_share is the exception.  It prints no unlocked line, because it has no
+  unlocked site.  Its claim is that locking every access is still not enough.
+  Read its locked sites for the load and the free, and decide whether the object
+  can be freed while the reader still uses it.
 
 THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
-  The findings somebody has read and judged not to be defects, so a later round
-  does not read them again.  Suppression is on by default and the stderr banner
-  always says how many entries were applied, `-q` or not.
+  The list records the findings that somebody has read and judged not to be
+  defects, so that a later review does not read them again.  Suppression is on
+  by default, and the stderr banner always says how many entries were applied,
+  with or without -q.
 
-  Every entry carries a key over the finding's facts *and* over the source text
-  of its access lines.  An edit that could change the judgement rewrites the
-  key: the entry goes stale, the finding comes back, and the recorded reason is
-  printed with it.  An entry that matches no finding at all is an orphan and is
-  named in the banner, so the list gets garbage-collected rather than growing.
+  Every entry carries a key over the finding's facts and over the source text of
+  its access lines.  An edit that could change the judgement changes the key.
+  The entry then goes stale, the finding comes back, and the report prints the
+  recorded reason with it.  An entry that matches no finding at all is an
+  orphan.  The banner names orphans, so that they can be deleted and the list
+  does not grow.
 
     --include-false-positives  report the suppressed findings too
     --confirm-false-positive MODULE:FIELD --false-positive-reason TEXT
@@ -115,83 +118,88 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
                                re-key every stale entry in that module
     --fail-on-findings         exit 1 if anything is reported (off by default)
     --fail-on-stale-false-positives-only   exit 1 only on a stale entry,
-                               and report the stale entries alone
+                               and report only the stale entries
 
-  A new entry needs --false-positive-reason: that sentence is what is printed
-  back when it goes stale.  A bare module re-confirms but never adds: silencing a
-  whole module has to be spelled out field by field.  See THE FALSE-POSITIVE
-  LIST in README.md for what the key covers and what was measured.
+  A new entry needs --false-positive-reason, because the tool prints that
+  sentence back when the entry goes stale.  A bare module re-confirms entries
+  but never adds them, so silencing a whole module has to name each field.
+  "The false-positive list" in README.md explains what the key covers and what
+  was measured.
 
-KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
-  * Mutual exclusion by protocol rather than by lock.  `rgblevels` hands work to
-    the pipe through a state machine (0 idle / 1 requested / -1 running /
-    2 ready), whose transitions are taken under gui_lock even where the accesses
-    they guard are not.  g->params is genuinely protected that way: only the
-    thread that took the state to -1 touches it.  The script cannot see this.
-    It does not cover the whole module, though: box_cood, channel and
-    call_auto_levels are written from the GTK side without checking the state,
-    so those findings are not excluded by the protocol.
-  * A lock passed into a callee.  Handled for the common
-    `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` shape, not in
-    general.
-  * A field that merely sits inside a critical section taken for a different
-    field.  Partly handled: a function that writes >= 8 distinct fields under the
-    lock and never reads them back is treated as bulk initialisation and
-    establishes no per-field discipline.
+KNOWN FALSE-POSITIVE CAUSES (check these before you report a finding upstream)
+  * Mutual exclusion by protocol instead of by lock.  `rgblevels` hands work to
+    the pipe through a state machine (0 idle, 1 requested, -1 running, 2 ready).
+    It changes state under gui_lock, even where the accesses that the states
+    guard are not locked.  That protects g->params, because only the thread that
+    set the state to -1 touches it.  The script cannot see this.  The protocol
+    does not cover the whole module, though.  The GTK side writes box_cood,
+    channel and call_auto_levels without checking the state, so the protocol
+    does not exclude those findings.
+  * A lock passed into a callee.  The script handles the common
+    `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` pattern, but not
+    the general case.
+  * A field that only sits inside a critical section taken for a different
+    field.  The script handles part of this.  A function that writes 8 or more
+    distinct fields under the lock and never reads them back counts as bulk
+    initialisation and establishes no per-field convention.
   * A pointer_share hit on a field that is already handled correctly.  The rule
-    sees a shared pointer, not an escape past the lock, and all three correct
-    idioms -- holding the lock through the last use, copying the data instead of
-    the pointer, transferring ownership so the publisher cannot free it -- leave
-    the field a shared pointer.  None is distinguishable here, so a module that
-    has done one of them still gets flagged.  How many hits are real depends on
-    how many modules use one of these idioms, not on the rule.
+    sees a shared pointer, not an escape past the lock.  The three correct
+    patterns all leave the field a shared pointer: holding the lock through the
+    last use, copying the data instead of the pointer, and transferring
+    ownership so that the publisher cannot free it.  The script cannot tell them
+    apart, so a module that uses one of them still gets reported.  How many hits
+    are real depends on how many modules use one of these patterns, not on the
+    rule.
   * A widget touched from the pipe only to hand it to the main loop.  Taking
     `g_object_ref()` on the widget and passing it to `g_idle_add()` or
-    `gdk_threads_add_idle()` is the correct idiom: the ref is atomic and the GTK
+    `gdk_threads_add_idle()` is correct, because the ref is atomic and the GTK
     calls happen on the main thread.
-  * A finding resting only on an `either` site -- see WHICH THREAD above.
+  * A finding that rests only on an `either` site.  See WHICH THREAD above.
 
 KNOWN LIMITS
-  * Lock depth is tracked lexically, so an early `leave_critical_section()` on one
-    branch makes later code in other branches look unlocked.
-  * Bug shapes needing dataflow inside a function are out of reach -- notably
-    "pointer copied under the lock, dereferenced after releasing it".
-    pointer_share reaches the shape that permits that, by asking whether the
-    field is a pointer both threads share, but never the escape itself; it
-    cannot see where the value is used relative to the critical section.
-  * Thread inference is name-based, plus intra-file call-graph propagation and
-    the address-taken rules above.  A function it still cannot label comes out
-    as thread `None`, counts on neither side of the cross-thread test, and so
-    can never be what makes a field shared.
-  * Sharing means pipe-vs-GTK only.  gui_data is also the channel one pipe uses
-    to hand a value to another -- the preview pipe computes a whole-image
-    property, the full pipe reads it (dev-doc/GUI_Threading.md, "Passing Values
-    Between Pipes Through gui_data").  That needs the same lock, and no rule
-    here looks for it: a field both pipes touch and GTK never does is invisible.
-    Not worth a rule: the population is the modules that call
-    dt_dev_sync_pixelpipe_hash(), which `grep -l` enumerates faster than any
-    rule.  Their payload and hash fields are also touched on the GTK side, so
-    the existing rules already treat them as shared and judge their locking,
-    and a rule for fields touched on `pipe` and never on `gtk` would find none
-    of them.  What a correctly locked payload can still get wrong is a pointer
-    escaping the lock, which is what pointer_share is for.
-  * `g` is matched by convention, not by type.  A function that binds `g` to
-    something other than the module's GUI data is skipped whole, so a real
-    gui_data access in it is missed too.
-  * A nested anonymous struct in the gui_data is one field, not several:
+  * The script tracks lock depth lexically, so an early
+    `leave_critical_section()` on one branch makes later code in other branches
+    look unlocked.
+  * Defects that need dataflow inside a function are out of reach.  One example
+    is a pointer copied under the lock and dereferenced after the lock is
+    released.  pointer_share finds the pattern that allows that, by asking
+    whether the field is a pointer that both threads share, but never the escape
+    itself, because it cannot see where the value is used relative to the
+    critical section.
+  * Thread inference uses function names, call-graph propagation within one
+    file, and the address-taken rules above.  A function it still cannot label
+    gets thread `None`.  Such a function counts on neither side of the
+    cross-thread test, so it can never be what makes a field shared.
+  * Sharing means pipe versus GTK only.  One pipe also uses gui_data to hand a
+    value to another.  For example, the preview pipe computes a whole-image
+    property and the full pipe reads it (dev-doc/GUI_Threading.md, "Passing
+    Values Between Pipes Through gui_data").  That needs the same lock, and no
+    rule here looks for it.  The script cannot see a field that both pipes touch
+    and GTK never does.  A rule for it is not worth having.  The modules that do
+    this are the ones that call dt_dev_sync_pixelpipe_hash(), and `grep -l`
+    lists them faster than any rule.  Their payload and hash fields are also
+    touched on the GTK side, so the existing rules already treat them as shared
+    and judge their locking, and a rule for fields touched on `pipe` and never
+    on `gtk` would find none of them.  What a correctly locked payload can still
+    get wrong is a pointer escaping the lock, and pointer_share covers that.
+  * The script matches `g` by name, not by type.  It skips a whole function that
+    binds `g` to something other than the module's GUI data, so it also misses
+    any real gui_data access in that function.
+  * A nested anonymous struct in the gui_data is one field, not several.
     globaltonemap's `struct { GtkWidget *bias; ... } drago;` is the field
     `drago` of type "struct", so `g->drago.bias` does not reach
     widget_from_pipe.
-  * Function boundaries are found by brace counting from an opening `{` in
-    column zero, which is darktable's style throughout but not C in general.
-  * Only `src/iop/*.c` and `*.cc`.  Shared code under `src/develop/` is not
-    covered, and neither is `src/libs/`.  A source with no
-    `dt_iop_<module>_gui_data_t` has nothing to share and is skipped; the
-    stderr banner says how many that was.
+  * The script finds function boundaries by counting braces from an opening `{`
+    in column zero.  darktable uses that style throughout, but C in general
+    does not.
+  * Only `src/iop/*.c` and `*.cc` are covered, not shared code under
+    `src/develop/` or `src/libs/`.  The script skips a source with no
+    `dt_iop_<module>_gui_data_t`, because it has nothing to share, and the
+    stderr banner says how many it skipped.
 
 USAGE
-  Run it from anywhere inside a darktable checkout, or with the script on $PATH:
-  it locates src/iop by itself and reports the tree it picked on stderr.
+  Run it from anywhere inside a darktable checkout, or with the script on $PATH.
+  It finds src/iop by itself and prints the tree it picked on stderr.
 
   ./dt-lockcheck.py
   ./dt-lockcheck.py --module toneequal
@@ -200,7 +208,7 @@ USAGE
   ./dt-lockcheck.py --format csv > findings.csv
   ./dt-lockcheck.py --format json > facts.json
 
-  To analyse a tree other than the one you are standing in:
+  To analyse a tree other than the one you are in:
 
   ./dt-lockcheck.py --src /path/to/darktable/src/iop
   ./dt-lockcheck.py --src /path/to/darktable        # a checkout root works too
@@ -210,19 +218,19 @@ USAGE
   ./dt-lockcheck.py --module toneequal --why        # with the proof trees
   ./dt-lockcheck.py --why --lemmalog ~/lemmalog/target/release/lemmalog
 
-  README.md, next to this script, has the long form: what each --format
-  contains field by field, what each rule checks, and the false positives to
-  expect.
+  README.md, next to this script, has the long form.  It describes what each
+  --format contains field by field, what each rule checks, and which false
+  positives to expect.
 
-  Python 3.8+, standard library only.  Exit status is 0 for a completed run
+  Python 3.8+, standard library only.  The exit status is 0 for a completed run,
   whatever it found, 1 when a --fail-on-* gate was given and fired, and 2 for a
-  wrong invocation -- which includes either --fail-on-* gate with --format json
-  or lemmalog, since those carry the facts the rules run on and leave a gate
-  nothing to fire on.  Both gates are off by default.  --fail-on-findings passes
-  only once every finding is either fixed or recorded in false-positives.json;
-  --fail-on-stale-false-positives-only fails only when a recorded entry has gone
-  stale, so it can pass while findings are still unreviewed.
-  See BEFORE YOU FILE ANYTHING.
+  wrong invocation.  A wrong invocation includes either --fail-on-* gate with
+  --format json or lemmalog, because those carry the facts the rules run on and
+  leave a gate nothing to fire on.  Both gates are off by default.
+  --fail-on-findings passes only once every finding is either fixed or recorded
+  in false-positives.json.  --fail-on-stale-false-positives-only fails only when
+  a recorded entry has gone stale, so it can pass while findings are still
+  unreviewed.  See "Before you file anything" in README.md.
 """
 import argparse
 import csv
@@ -232,32 +240,33 @@ from collections import defaultdict
 
 # --- thread classification of the IOP entry points -------------------------
 # Pipe-side: called by the pixelpipe on a worker thread.
-# Pipeline callbacks that never reach the GTK main thread *for the instance that
-# owns gui_data*: the three screen pipes each run on their own worker thread.
-# (Instances in other develop contexts -- export, thumbnails, snapshots -- have
-# gui_data == NULL, so they cannot touch the fields this tool looks at.)
+# These pipeline callbacks never reach the GTK main thread for the instance that
+# owns gui_data, because each of the three screen pipes runs on its own worker
+# thread.  Instances in other develop contexts, such as export, thumbnails and
+# snapshots, have gui_data == NULL, so they cannot touch the fields this tool
+# looks at.
 PIPE = {
     "process", "process_cl", "process_tiling", "process_tiling_cl",
     "modify_roi_in", "modify_roi_out", "tiling_callback", "distort_mask",
     "output_format",
 }
-# Callbacks with no reliable thread affinity: the pipe drives them, but GTK-thread
-# code reaches them too, so an access here may be on either thread.
-#   commit_params      -- basecurve's init_pipe() calls it back, and the image
-#                         switch rebuilds the screen pipes from an idle callback
-#   init/cleanup_pipe  -- same node rebuild, same idle callback
-#   distort_*transform -- mask handling and darkroom zoom call them directly
-#   *_colorspace       -- the blend GUI and the colour picker call them directly
+# Callbacks with no reliable thread affinity.  The pipe drives them, but
+# GTK-thread code reaches them too, so an access here may be on either thread.
+#   commit_params       basecurve's init_pipe() calls it directly, and the image
+#                       switch rebuilds the screen pipes from an idle callback
+#   init/cleanup_pipe   the same node rebuild, from the same idle callback
+#   distort_*transform  mask handling and darkroom zoom call them directly
+#   *_colorspace        the blend GUI and the colour picker call them directly
 EITHER = {
     "commit_params", "init_pipe", "cleanup_pipe",
     "distort_transform", "distort_backtransform",
     "blend_colorspace", "default_colorspace",
 }
 # GTK-side: called from the main loop.
-#   change_image -- the darkroom's image switch calls it from the idle callback
-#                   _dev_load_requested_image(); its name matches no GTK_RE
-#                   pattern, so a module that does not also call it from
-#                   gui_init() would otherwise leave it unlabelled
+#   change_image  the darkroom's image switch calls it from the idle callback
+#                 _dev_load_requested_image().  Its name matches no GTK_RE
+#                 pattern, so without this entry it stays unlabelled in a
+#                 module that does not also call it from gui_init()
 GTK = {
     "gui_init", "gui_update", "gui_cleanup", "gui_changed", "gui_focus",
     "gui_reset", "gui_post_expose", "gui_moved", "gui_button_pressed",
@@ -266,8 +275,8 @@ GTK = {
     "reload_defaults", "color_picker_apply", "init_presets", "change_image",
 }
 # Name-based labelling, applied before any propagation.  (^|_)action_process is
-# darktable's shortcut dispatch (dt_action_def_t.process): those handlers are
-# registered in a file-scope table and run from the GTK main loop.
+# darktable's shortcut dispatch (dt_action_def_t.process).  darktable registers
+# those handlers in a file-scope table and runs them from the GTK main loop.
 GTK_RE = re.compile(r"(_callback$|_clicked$|(^|_)draw$|(^|_)expose$|^_?gui_|_changed$|_toggled$|"
                     r"_press(ed)?$|_release(d)?$|_motion|_leave$|_enter$|_scroll|_activate$|draw|"
                     r"(^|_)action_process)")
@@ -281,30 +290,31 @@ DEFER_RE = re.compile(r"g_idle_add|gdk_threads_add_idle|g_timeout_add|"
 # `instance->get_effective_exposure = _exposure_proxy_get_effective_exposure;`
 # is called from somewhere this analysis cannot see.
 ESCAPE_RE = re.compile(r"(?:->|\.)\s*[A-Za-z_]\w*\s*=\s*([A-Za-z_]\w*)\s*[;,]")
-# A name in a positional initialiser -- `{ "x", _handler, ... }` -- which is how
-# the dt_action_def_t tables register their shortcut handlers.
+# A name in a positional initialiser, such as `{ "x", _handler, ... }`.  That is
+# how the dt_action_def_t tables register their shortcut handlers.
 STATIC_REF_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,}])")
 
 FIELD_RE  = re.compile(r"\bg\s*->\s*([A-Za-z_][A-Za-z0-9_]*)")
 CALL_RE   = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
-# `g` is only the module's GUI data by convention.  A handful of functions bind
-# it to something else (a gain map, a gaussian handle); their `g->x` accesses
-# are not gui_data accesses and must not be recorded.
+# `g` is only the module's GUI data by convention.  A few functions bind it to
+# something else, such as a gain map or a gaussian handle.  Their `g->x`
+# accesses are not gui_data accesses, and the script must not record them.
 OTHER_G   = re.compile(r"\b(\w+_t)\s*\*\s*(?:const\s+)?g\b")
 
-# What may follow `g->field` and still be the same object being written: array
-# subscripts and member selections.  `g->box.x = 1` and `g->lines[l].p1[0] = v`
-# are writes to `box` and to `lines`, and used to be recorded as reads because
-# the operator had to sit immediately after the field name.
+# What may follow `g->field` while the write still goes to the same object,
+# namely array subscripts and member selections.  `g->box.x = 1` and
+# `g->lines[l].p1[0] = v` are writes to `box` and to `lines`.  Without this
+# pattern they would count as reads, because the assignment operator would have
+# to follow the field name directly.
 PATH = r"(?:\s*(?:\[[^\]]*\]|\.\s*[A-Za-z_]\w*|->\s*[A-Za-z_]\w*))*"
 # an explicit cast in front of an argument does not make it any less likely
 # that the callee writes through the pointer: gtk_x((GtkTreeView *)g->w)
 CAST = r"(?:\(\s*[A-Za-z_][A-Za-z0-9_\s*]*\)\s*)?"
-# A bare identifier sitting in an argument list, past any cast.  The separator
-# after the name is matched by lookahead, not consumed: re.findall does not
-# overlap, so consuming it made a bare identifier that directly follows another
-# one unmatchable -- which is exactly the shape of
-# DT_CONTROL_SIGNAL_HANDLE(SIGNAL, handler).
+# A bare identifier in an argument list, past any cast.  The pattern matches the
+# separator after the name by lookahead and does not consume it.  re.findall
+# does not return overlapping matches, so consuming the separator would make a
+# bare identifier that directly follows another one unmatchable, and
+# DT_CONTROL_SIGNAL_HANDLE(SIGNAL, handler) has exactly that form.
 CALLBACK_ARG_RE = re.compile(r"[(,]\s*" + CAST + r"([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,)])")
 
 ENTER = "dt_iop_gui_enter_critical_section"
@@ -312,10 +322,10 @@ LEAVE = "dt_iop_gui_leave_critical_section"
 MUTEX_LOCK   = re.compile(r"\b(?:g_mutex_lock|pthread_mutex_lock|dt_pthread_mutex_lock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
 MUTEX_UNLOCK = re.compile(r"\b(?:g_mutex_unlock|pthread_mutex_unlock|dt_pthread_mutex_unlock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
 # The lock handed to a callee that takes it around the access, as in
-# `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)`: the call site
-# reads as unlocked and is not.  Two scans ask about it -- is_write(), which
-# must not count such a call as an unsynchronised write, and analyse(), which
-# records the access under `callee_lock`.
+# `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)`.  The call site
+# looks unlocked, but it is not.  Two scans use this.  is_write() must not count
+# such a call as an unsynchronised write, and analyse() records the access under
+# `callee_lock`.
 LOCK_ARG = re.compile(r"&\s*\w+\s*->\s*gui_lock")
 
 
@@ -331,9 +341,9 @@ def _write_res(f):
         re.compile(r"&\s*" + g[2:] + r"\b"),
         # assignment and every compound assignment, including <<= >>= %=
         re.compile(g + r"\s*(?:[-+*/|&^%]|<<|>>)?=(?!=)"),
-        # passed as an argument, with or without a cast: the callee may write
-        # through the pointer or array.  The trailing separator is matched by
-        # lookahead so two such arguments in a row both match.
+        # passed as an argument, with or without a cast, because the callee may
+        # write through the pointer or array.  The pattern matches the trailing
+        # separator by lookahead, so two such arguments in a row both match.
         re.compile(r"[(,]\s*" + CAST + g[2:] + r"\s*(?=[,)])"),
     )
 
@@ -341,10 +351,11 @@ def _write_res(f):
 def is_write(src, f):
     """A write to g->f: assignment, compound assignment, ++/--, or address-taken.
 
-    Deliberately over-inclusive on the last two shapes -- an address or a bare
-    pointer handed to a callee is only a *possible* write -- because the mode
-    only ever gates no_lock_share, where a missed write is a missed finding and
-    a spurious one is a candidate a human then rejects.
+    The address-taken and passed-to-a-callee forms are deliberately
+    over-inclusive, because an address or a bare pointer handed to a callee is
+    only a possible write.  The mode only affects no_lock_share, where a missed
+    write is a missed finding and a spurious one is a candidate that a person
+    then rejects.
     """
     post, pre, addr, assign, arg = _write_res(f)
     if post.search(src) or pre.search(src): return True
@@ -370,8 +381,8 @@ def _blank(m):
     t = m.group(0)
     q = t[0] if t[0] in "\"'" else ""
     if q and len(t) > 1 and t[-1] == q:
-        # keep the quotes: they are what makes the next scan see an empty
-        # literal rather than two unrelated tokens run together
+        # keep the quotes, so that the next scan sees an empty literal and not
+        # two unrelated tokens run together
         return q + re.sub(r"[^\n]", " ", t[1:-1]) + q
     return re.sub(r"[^\n]", " ", t)
 
@@ -380,21 +391,21 @@ def mask_text(text):
     """Blank out comments and the bodies of string/char literals, in place.
 
     Every scan below works on lines and reports 1-based line numbers, so the
-    mask has to preserve both the line count and the column of every surviving
-    character: `/* ... */` becomes spaces, not nothing.  Stripping only `//`
-    used to let disabled code enter the fact base as real accesses, and a
-    commented-out enter/leave_critical_section() would silently shift the lock
-    depth of a whole function.  Literal bodies go too, so a brace or a `g->x`
-    inside a message cannot be read as code.
+    mask has to keep both the line count and the column of every remaining
+    character.  `/* ... */` becomes spaces, not nothing.  Stripping only `//`
+    would let disabled code enter the fact base as real accesses, and a
+    commented-out enter/leave_critical_section() would shift the lock depth of
+    a whole function.  Literal bodies are blanked too, so that a brace or a
+    `g->x` inside a message is not read as code.
     """
     return MASK_RE.sub(_blank, text)
 
 
-# A macro invocation ahead of the declarator -- DT_OMP_DECLARE_SIMD(...),
-# __attribute__((...)) -- would otherwise be taken for the function name, since
+# A macro invocation before the declarator, such as DT_OMP_DECLARE_SIMD(...) or
+# __attribute__((...)), would otherwise be taken for the function name, because
 # the name scan keeps the first identifier followed by '('.  Only all-caps
-# macros and __attribute__ are dropped: a lower-case name before '(' is the
-# declarator itself.
+# macros and __attribute__ are dropped, because a lower-case name before '(' is
+# the declarator itself.
 MACRO_HEAD = re.compile(r"\s*(?:__attribute__|[A-Z_][A-Z0-9_]*)\s*\(")
 
 
@@ -413,10 +424,11 @@ def strip_leading_macros(head):
                 if depth == 0: break
             j += 1
         if j >= len(head):
-            return head                       # unbalanced: leave it alone
+            return head                       # unbalanced, so leave it alone
         rest = head[j + 1:]
-        # keep what we had if nothing declarator-shaped follows: the "macro" was
-        # the definition itself (a function generated by e.g. HSL_CALLBACK(gain))
+        # keep what we had if nothing that looks like a declarator follows,
+        # because then the "macro" was the definition itself, e.g. a function
+        # generated by HSL_CALLBACK(gain)
         if not CALL_RE.search(rest):
             return head
         head = rest
@@ -438,10 +450,11 @@ def split_functions(lines):
             head = strip_leading_macros(" ".join(s.strip() for s in sig))
             m = CALL_RE.search(head)
             name = m.group(1) if m else None
-            # brace-match to the end of the body.  Counting braces rather than
-            # looking for a '}' in column zero: a closing brace indented by one
-            # space (splittoning, vibrance) used to swallow the next function
-            # whole, merging two bodies under the first one's name.
+            # brace-match to the end of the body.  Counting braces is more
+            # reliable than looking for a '}' in column zero.  A closing brace
+            # indented by one space, as in splittoning and vibrance, would make
+            # the next function part of this one, merging two bodies under the
+            # first one's name.
             k, depth = i, 0
             while k < n:
                 depth += lines[k].count("{") - lines[k].count("}")
@@ -458,10 +471,10 @@ def split_functions(lines):
 def struct_body(text, name_re):
     """The body of a `typedef struct [tag] { ... } NAME;` whose NAME matches.
 
-    Found from the closing `} NAME;` backwards by brace matching, rather than
-    forwards from `typedef struct {`: the struct tag is optional (liquify has
-    none) and a forward non-greedy match without a tag to anchor on would
-    latch onto whatever earlier anonymous typedef the file happens to contain.
+    The search starts at the closing `} NAME;` and goes backwards by brace
+    matching, not forwards from `typedef struct {`.  The struct tag is optional
+    (liquify has none), and a forward non-greedy match without a tag to anchor
+    it would match whatever earlier anonymous typedef the file contains.
     """
     for m in re.finditer(r"\}\s*(%s)\s*;" % name_re, text):
         depth, j = 0, m.start()
@@ -485,25 +498,26 @@ def gui_fields(text, module):
         body = struct_body(text, r"dt_iop_\w+_gui_data_t")
     if body is None:
         return {}
-    # a nested anonymous struct/union keeps only its own member name: the type
-    # of `struct { ... } drago;` is recorded as "struct" and g->drago.bias is
-    # an access to `drago`, not to `bias` (see KNOWN LIMITS)
+    # a nested anonymous struct or union keeps only its own member name.  The
+    # type of `struct { ... } drago;` is recorded as "struct", and g->drago.bias
+    # is an access to `drago`, not to `bias` (see KNOWN LIMITS)
     while True:
         stripped = re.sub(r"\{[^{}]*\}", " ", body)
         if stripped == body: break
         body = stripped
     fields = {}
-    # split on ';', not on newlines: a declarator list may continue on the next
-    # line (clipping's `float a, b,\n c;`), and only the first line carries the type
+    # split on ';', not on newlines, because a declarator list may continue on
+    # the next line (clipping's `float a, b,\n c;`), and only the first line
+    # carries the type
     for stmt in body.split(";"):
         stmt = " ".join(l for l in stmt.splitlines() if not l.lstrip().startswith("#"))
         stmt = stmt.strip()
         if not stmt:
             continue
-        # one type, then a declarator list: the type is written once and the
+        # one type, then a declarator list.  The type is written once, and the
         # comma-separated declarators after it share it.  Parsing each
-        # declarator on its own lost the type for every field but the first,
-        # which put most Gtk widget fields out of reach of widget_from_pipe.
+        # declarator on its own would lose the type for every field but the
+        # first, and widget_from_pipe would miss most Gtk widget fields.
         ty = None
         for decl in stmt.split(","):
             d = decl.strip().rstrip(";")
@@ -514,19 +528,20 @@ def gui_fields(text, module):
                 continue
             if ty is None:
                 ty = " ".join(names[:-1]) if len(names) > 1 else "unknown"
-            # `*` binds to the declarator, not to the type the list shares: in
-            # `float *buf, count;` only `buf` is a pointer.  Recorded because a
-            # pointer is the field a correctly held lock still fails to protect
-            # -- see pointer_share.  Nothing else in `d` can carry a `*` by now:
-            # mask_text() blanked the comments, and the substitutions above took
-            # out array bounds (`[CHANNELS * PIXEL_CHAN]`) and function
+            # `*` binds to the declarator, not to the type the list shares.  In
+            # `float *buf, count;` only `buf` is a pointer.  The pointer flag is
+            # recorded because a pointer is the kind of field that a correctly
+            # held lock can still fail to protect, as pointer_share explains.
+            # Nothing else in `d` can contain a `*` at this point, because
+            # mask_text() blanked the comments, and the substitutions above
+            # removed array bounds (`[CHANNELS * PIXEL_CHAN]`) and function
             # pointers.
             stars = "*" * d.count("*")
             fields[names[-1]] = (ty + " " + stars) if stars else ty
     return fields
 
 def _module_of(path):
-    """The module name behind a source path.  Three IOPs are .cc, not .c."""
+    """The module name behind a source path.  Some IOPs are .cc, not .c."""
     return re.sub(r"\.cc?$", "", os.path.basename(path))
 
 def classify(fnname):
@@ -537,8 +552,8 @@ def classify(fnname):
 
 def analyse(path):
     module = _module_of(path)
-    # every scan below runs on the masked text: comments and literal bodies are
-    # blanked out, so disabled code cannot enter the fact base
+    # every scan below runs on the masked text, in which comments and literal
+    # bodies are blanked out, so disabled code cannot enter the fact base
     text = mask_text(open(path, encoding="utf-8", errors="replace").read())
     lines = text.splitlines()
     fields = gui_fields(text, module)
@@ -561,12 +576,12 @@ def analyse(path):
             for c in CALL_RE.findall(src):
                 if c in fnames and c != fn:
                     callgraph[fn].add(c)
-            # A bare identifier that names a file-local function and sits in
-            # an argument list is a callback: C decays a function designator to
-            # a pointer, so there is nothing else it can be.  This used to be
-            # gated on a list of registration spellings, which missed
-            # darktable's own helpers -- dt_gui_connect_motion(), the bauhaus
-            # quad setters -- and with them every handler they register.
+            # A bare identifier that names a file-local function and appears in
+            # an argument list is a callback.  C converts a function designator
+            # to a pointer, so it cannot be anything else.  A list of
+            # registration spellings would miss darktable's own helpers, such as
+            # dt_gui_connect_motion() and the bauhaus quad setters, and every
+            # handler they register.
             for ref in CALLBACK_ARG_RE.findall(src):
                 if ref in fnames and ref != fn:
                     callback_refs[ref].add(("defer" if DEFER_RE.search(src) else "direct", fn))
@@ -577,9 +592,10 @@ def analyse(path):
                 held.append("gui_lock")
             for mm in MUTEX_LOCK.finditer(src):
                 held.append(mm.group(1))
-            # sorted, not bare set order: CPython randomises string hashing per
-            # process, so an unsorted set here makes --format json/lemmalog come
-            # out in a different order on every run and defeats diffing two runs
+            # sorted, not in set order, because CPython randomises string
+            # hashing per process.  An unsorted set here would put --format json
+            # and lemmalog output in a different order on every run, and two
+            # runs could not be diffed.
             for f in sorted(set(FIELD_RE.findall(src))):
                 if f in fields:
                     lock = held[-1] if held else "none"
@@ -592,25 +608,25 @@ def analyse(path):
             for mm in MUTEX_UNLOCK.finditer(src):
                 if mm.group(1) in held: held.remove(mm.group(1))
     # A function that initialises many fields inside one critical section
-    # establishes no per-field discipline: the lock is there for the batch,
-    # not because any one of these fields needs it.  Mark those sites so the
-    # rules do not read them as evidence of a convention.
+    # establishes no per-field convention.  The lock is there for the batch,
+    # not because any one of these fields needs it.  Mark those sites so that
+    # the rules do not count them as evidence of a convention.
     bulk = defaultdict(set)
     reads = defaultdict(set)
     for (fn, f, lock, ln, mode) in accesses:
         if lock == "gui_lock":
             (bulk if mode == "w" else reads)[fn].add(f)
-    # A function that also *reads* the fields it sets is updating state, not
-    # initialising it, and its lock does count as evidence (toneequal's
-    # update_curve_lut is the case this rules out).
+    # A function that also reads the fields it sets is updating state, not
+    # initialising it, and its lock does count as evidence.  toneequal's
+    # update_curve_lut() is an example.
     bulk_fns = {fn for fn, fields in bulk.items()
                 if len(fields) >= 8 and not (fields & reads[fn])}
     accesses = [(fn, f, ("bulk_init" if fn in bulk_fns and lk == "gui_lock" else lk), ln, md)
                 for (fn, f, lk, ln, md) in accesses]
 
     # A name mentioned outside every function body, and not called there, has
-    # had its address taken in a static initialiser -- the dt_action_def_t
-    # tables register their shortcut handlers positionally, which no
+    # had its address taken in a static initialiser.  The dt_action_def_t
+    # tables register their shortcut handlers by position, which no
     # argument-list or assignment pattern above can see.
     covered = set()
     for (_fn, _s, _e) in funcs:
@@ -624,34 +640,34 @@ def analyse(path):
 
     # propagate thread labels along the intra-file call graph
     thread = {fn: classify(fn) for (fn, _, _) in funcs}
-    # Labels taken from the PIPE/EITHER/GTK sets come from the module API
-    # itself (dev-doc/GUI_Threading.md tabulates which callback runs where), so
-    # they are ground truth and propagation must not overwrite them.  Without
-    # this an imprecise call-graph edge into process() -- a token that merely
-    # looks like a call -- silently demoted a pipe root to "either", which
-    # counts on both sides and manufactures sharing.
+    # Labels from the PIPE, EITHER and GTK sets come from the module API itself
+    # (dev-doc/GUI_Threading.md lists which callback runs where), so they are
+    # ground truth and propagation must not overwrite them.  Without this, an
+    # imprecise call-graph edge into process(), from a token that only looks
+    # like a call, would turn a pipe root into "either", which counts on both
+    # sides and creates false sharing.
     pinned = {fn for fn in thread if thread[fn] is not None}
     for fn in list(thread):
         if thread[fn] is None and GTK_RE.search(fn):
             thread[fn] = "gtk"
-    # a deferred handover lands on the main loop whoever registered it
+    # a deferred handover runs on the main loop, whatever thread registered it
     for fn, refs in sorted(callback_refs.items()):
         if thread.get(fn) is None and any(k == "defer" for k, _ in refs):
             thread[fn] = "gtk"
     # an escaped function pointer is called from outside this file, so neither
-    # thread can be ruled out.  This is the honest label and not a free one:
-    # "either" counts on both sides of the cross-thread test, so it can make a
-    # field look shared on its own -- see BEFORE YOU FILE ANYTHING in README.md
+    # thread can be ruled out.  The label is correct but has a cost.  "either"
+    # counts on both sides of the cross-thread test, so it can make a field look
+    # shared on its own.  See "Before you file anything" in README.md
     for fn in sorted(escaped):
         if thread.get(fn) is None:
             thread[fn] = "either"
     def join(fn, t):
         """Widen fn's thread label to admit a call from thread `t`.
 
-        The lattice, in one place rather than at each of the two call sites
-        below: unlabelled takes `t`, a second and different label raises pipe
-        or gtk to "either", and "either" is already the top.  Returns whether
-        the label moved, which is what ends the fixpoint loop.
+        The lattice lives here instead of at each of the two call sites below.
+        An unlabelled function takes `t`, a second and different label raises
+        pipe or gtk to "either", and "either" is already the top.  Returns
+        whether the label changed, which is what ends the fixpoint loop.
         """
         cur = thread.get(fn)
         if cur is None:
@@ -682,28 +698,28 @@ def analyse(path):
                     continue
                 if join(callee, t):
                     changed = True
-    # the basename, not just the module: three IOPs are .cc, and the report
-    # used to name them <module>.c, a path that does not exist
+    # the basename, not just the module, because some IOPs are .cc, and
+    # <module>.c would name a path that does not exist
     return dict(module=module, src=os.path.basename(path), fields=fields,
                 accesses=accesses, thread=thread)
 
 
 
-# Set-once functions: writes here are initialisation, not a shared-state update.
-# init_pipe/cleanup_pipe are deliberately *not* in this set -- they run per pipe,
-# and on either thread.
+# Set-once functions, whose writes are initialisation and not a shared-state
+# update.  init_pipe and cleanup_pipe are deliberately not in this set, because
+# they run per pipe, and on either thread.
 SETUP_FNS = {"gui_init", "gui_cleanup", "gui_reset"}
 
-# In report order, most worth reading first.  discipline_gap is the one out of
-# the default set: it proves no cross-thread share and is mostly noise.  See THE
-# RULES in README.md.
+# In report order, most worth reading first.  discipline_gap is the one rule
+# outside the default set, because it proves no cross-thread sharing and is
+# mostly noise.  See "The rules" in README.md.
 ALL_RULES = ("widget_from_pipe", "violation", "no_lock_share", "discipline_gap",
              "pointer_share")
 DEFAULT_RULES = ("widget_from_pipe", "violation", "no_lock_share",
                  "pointer_share")
-# --rules ALL means every rule, so a caller that wants the lot does not have to
-# be updated when one is added.  Upper-case to keep it apart from the rule
-# names, which are lower-case throughout, including in the Datalog.
+# --rules ALL means every rule, so a caller that wants all of them does not need
+# an update when a rule is added.  It is upper-case to keep it apart from the
+# rule names, which are lower-case throughout, including in the Datalog.
 ALL_RULES_TOKEN = "ALL"
 
 
@@ -726,8 +742,8 @@ def findings(res, wanted):
         for field, sites in sorted(by_field.items()):
             live = [a for a in sites if a[0] not in SETUP_FNS]
             threads = {th.get(a[0]) for a in live}
-            # "either" counts on both sides: two invocations of one such callback
-            # can land on different threads.
+            # "either" counts on both sides, because two calls of the same
+            # callback can run on different threads.
             shared = (any(t in MAY_PIPE for t in threads)
                       and any(t in MAY_GTK for t in threads))
             written = any(a[4] == "w" for a in live)
@@ -747,16 +763,16 @@ def findings(res, wanted):
                 rule = "no_lock_share"
             elif locked and unlocked:
                 rule = "discipline_gap"
-            # Last, so it claims only fields no other rule did.  Every access
-            # can be under the lock and the field still be unsafe: the lock
-            # protects the pointer load, not the object, which the other thread
-            # may free before the reader is done with it (dev-doc/
+            # Last, so that it claims only fields no other rule did.  The field
+            # can be unsafe even when every access is under the lock, because
+            # the lock protects the pointer load, not the object, which the
+            # other thread may free before the reader is done with it (dev-doc/
             # GUI_Threading.md, "A scalar hands over cleanly; an allocation does
             # not").  Proving the escape needs dataflow inside a function, which
-            # is out of reach, so this fires on the shape alone -- hence not a
-            # default rule.  No widget can reach here: a shared widget is by
-            # definition touched from pipe or either, so widget_from_pipe took
-            # it above.
+            # this tool cannot do, so the rule fires on the pattern alone and
+            # every hit needs reading.  No widget can reach here, because a
+            # shared widget is touched from pipe or either by definition, so
+            # widget_from_pipe already took it.
             elif pointer and shared:
                 rule = "pointer_share"
             if rule and rule in wanted:
@@ -770,7 +786,7 @@ def findings(res, wanted):
 
 
 def _pipe_first(sites, th):
-    """Show pipe-thread sites first: the cross-thread half is the interesting one."""
+    """Show pipe-thread sites first, because the cross-thread half is the interesting one."""
     return sorted(sites, key=lambda a: (th.get(a[0]) not in MAY_PIPE, a[3]))
 
 
@@ -802,12 +818,12 @@ def lemmalog_facts(res):
         for fn, t in sorted(r["thread"].items()):
             if t:
                 out.append(f'+ runs_on("{m}", "{fn}", "{t}")')
-        # Dedupe over what is emitted, not over the accesses: the fact carries
-        # no line number, so two accesses that differ only by their line are
-        # the same assertion, and asserting it twice tells the engine nothing.
-        # Deduping over the access tuple instead left about half the access
-        # facts duplicated.  Sorted for the same reason the field scan
-        # above is: a fixed order is what makes two runs diffable.
+        # Deduplicate what is emitted, not the accesses.  The fact carries no
+        # line number, so two accesses that differ only by their line are the
+        # same assertion, and asserting it twice tells the engine nothing.
+        # Deduplicating the access tuples instead would leave about half the
+        # access facts duplicated.  The output is sorted for the same reason as
+        # the field scan above, so that two runs can be diffed.
         for (fn, f, lock, mode) in sorted({(a[0], a[1], a[2], a[4])
                                            for a in r["accesses"]}):
             out.append(f'+ access("{m}", "{f}", "{fn}", "{lock}", "{mode}")')
@@ -821,9 +837,9 @@ def site_str(a, th):
 def _sites(sites, th, cap, extra=None):
     """A capped, pipe-first site list, with the number of sites it left out.
 
-    The cut is named rather than silent: a finding can carry forty sites, and a
-    report that printed eight of them without saying so understated its own
-    evidence against --format csv, which emits every one.
+    The report says how many sites it left out.  A finding can carry forty
+    sites, and a report that printed eight of them without saying so would
+    understate its evidence compared with --format csv, which writes every one.
     """
     shown = _pipe_first(sites, th)[:cap]
     line = ", ".join(site_str(a, th) + (extra(a) if extra else "") for a in shown)
@@ -849,15 +865,15 @@ def print_report(fs, trees=None, suppressed=0, total=None):
                                                lambda a: f"({a[2]})"))
             # pointer_share rests on the field's type and its threads, not on
             # a missing lock, so it is the one rule that reaches here with no
-            # unlocked site to name.  Its evidence is the locked list above:
-            # every access is under the lock and the field is unsafe anyway.
+            # unlocked site to name.  Its evidence is the locked list above.
+            # Every access is under the lock, and the field is unsafe anyway.
             if f["unlocked"]:
                 print("   unlocked: " + _sites(f["unlocked"], th, 8))
-            # A stale entry means somebody judged this exact finding harmless
-            # and the code has changed since.  The judgement is printed with it
-            # -- re-reading it is most of the work of re-deciding -- and so is
-            # the command that acts on the decision, because the alternative is
-            # hand-editing the list.
+            # A stale entry means that somebody judged this exact finding
+            # harmless and the code has changed since.  Print the judgement with
+            # it, because re-reading it is most of the work of deciding again.
+            # Print the command that acts on the decision too, because the
+            # alternative is editing the list by hand.
             if f.get("fp"):
                 e = f["fp"]
                 print("   was a known false positive, confirmed %s:" % e["confirmed"])
@@ -869,8 +885,8 @@ def print_report(fs, trees=None, suppressed=0, total=None):
                 key = why_goal(f)[1]
                 tree = trees.get(key)
                 if tree:
-                    # name the goal: the unlocked line above lists several sites
-                    # and the tree only explains this one
+                    # name the goal, because the unlocked line above lists
+                    # several sites and the tree only explains this one
                     print("   why     : " + key)
                     for line in tree:
                         print(ascii_safe("   " + line.rstrip()))
@@ -884,13 +900,14 @@ def print_report(fs, trees=None, suppressed=0, total=None):
 
 
 # --- the checked-in false-positive list -------------------------------------
-# Findings a human has read and judged not to be defects, so the next round does
-# not have to read them again.  The risk is the obvious one: a suppression that
-# outlives the code it was true about hides a real defect.  So every entry
-# carries a key over the finding's own facts *and* over the source text of its
-# access lines -- an edit that could change the judgement rewrites the key, the
-# entry goes stale, and the finding comes back with the recorded reason attached.
-# THE FALSE-POSITIVE LIST in README.md has the measurements behind that choice.
+# Findings that a person has read and judged not to be defects, so that the next
+# review does not have to read them again.  The risk is that a suppression
+# outlives the code it was true about and hides a real defect.  So every entry
+# carries a key over the finding's own facts and over the source text of its
+# access lines.  An edit that could change the judgement changes the key, the
+# entry goes stale, and the finding comes back with the recorded reason
+# attached.  "The false-positive list" in README.md has the measurements behind
+# that choice.
 FP_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                        "false-positives.json")
 FP_VERSION = 1
@@ -915,21 +932,21 @@ def _module_lines(srcdir, res, module, cache):
 def finding_key(f, res, srcdir, cache):
     """What a source change has to alter for a suppression to expire.
 
-    Two halves, because neither is safe alone.
+    The key has two parts, because neither is safe alone.
 
-    The facts half is exactly the lemmalog view of the field: its type, the
-    thread of every function that touches it, and the (function, lock, mode) of
-    every access -- no line numbers, so moving code around or renaming a local
-    does not fire it.
+    The facts part is the lemmalog view of the field: its type, the thread of
+    every function that touches it, and the (function, lock, mode) of every
+    access.  It has no line numbers, so moving code around or renaming a local
+    does not change it.
 
-    The text half is the source line behind every access.  It is what catches
-    the edits that turn a false positive into a defect while leaving the facts
-    identical.  The example the key was designed on is colorharmonizer's former
-    widget hand-off (dropped in 7b8a19f0f5): its `gdk_threads_add_idle(...)`
-    replaced by a direct GTK call, or its `g_object_ref` dropped, would both
-    have kept the same function, lock and mode.  The facts half catches the
-    converse -- a critical section removed around an access, which the text of
-    the access line itself does not show.
+    The text part is the source line behind every access.  It catches the
+    edits that turn a false positive into a defect while leaving the facts
+    identical.  The key was designed on colorharmonizer's former widget
+    hand-off, which 7b8a19f0f5 removed.  Replacing its
+    `gdk_threads_add_idle(...)` with a direct GTK call, or dropping its
+    `g_object_ref`, would have kept the same function, lock and mode.  The
+    facts part catches the opposite case, a critical section removed around an
+    access, which the text of the access line does not show.
     """
     r = res[f["module"]]
     th = r["thread"]
@@ -937,8 +954,8 @@ def finding_key(f, res, srcdir, cache):
     lines = _module_lines(srcdir, res, f["module"], cache)
 
     def text(a):
-        # the raw source, not the masked text the rules run on: a comment
-        # appended to an access line is a judgement-relevant edit often enough
+        # the raw source, not the masked text the rules run on, because a
+        # comment added to an access line often matters to the judgement
         return lines[a[3] - 1].strip() if 0 < a[3] <= len(lines) else ""
 
     facts = ["ftype=" + r["fields"].get(f["field"], "?")]
@@ -954,9 +971,9 @@ def finding_key(f, res, srcdir, cache):
 def finding_sites(f, res):
     """Every site of the field, as `fn:line[thread](lock)`.
 
-    Redundant with the key and deliberately so: the key is twelve hex digits,
-    and this is what makes a diff of the list readable.  The line numbers here
-    are informational and are not part of the key.
+    This duplicates the key on purpose.  The key is twelve hex digits, and the
+    site list is what makes a diff of the list readable.  The line numbers here
+    are for information and are not part of the key.
     """
     r = res[f["module"]]
     th = r["thread"]
@@ -968,9 +985,9 @@ def finding_sites(f, res):
 def load_fp_list(path):
     """The checked-in entries, or [] when there is no list yet.
 
-    Every malformed shape is fatal rather than skipped: a list that silently
-    drops an entry it cannot parse suppresses less than it says it does, and one
-    that keeps a duplicate suppresses under a rule nobody judged.
+    Every malformed entry is fatal, not skipped.  A list that drops an entry it
+    cannot parse suppresses less than it claims, and one that keeps a duplicate
+    suppresses under a rule nobody judged.
     """
     if not os.path.exists(path):
         return []
@@ -1018,8 +1035,8 @@ def fp_scope(entries, res, wanted):
     """The entries this run could have matched.
 
     An entry is out of scope when its module was not analysed (`--module`) or
-    its rule was not asked for (`--rules`): such an entry is not an orphan, the
-    run simply never looked for it.
+    its rule was not asked for (`--rules`).  Such an entry is not an orphan,
+    because the run never looked for it.
     """
     return [e for e in entries if e["module"] in res and e["rule"] in wanted]
 
@@ -1027,11 +1044,11 @@ def fp_scope(entries, res, wanted):
 def apply_fp(fs, entries, res, wanted):
     """Split the findings against the list.
 
-    Returns (kept, suppressed, orphans).  `kept` is what the run reports: every
-    finding with no entry, plus every finding whose entry has gone stale, the
-    latter carrying `fp` -- the entry -- so the report can print the reason.
-    `orphans` are in-scope entries no finding matched at all: the code has moved
-    past them and they should be deleted.
+    Returns (kept, suppressed, orphans).  `kept` is what the run reports, which
+    is every finding with no entry plus every finding whose entry has gone
+    stale.  A stale finding carries its entry as `fp`, so that the report can
+    print the reason.  `orphans` are in-scope entries that no finding matched.
+    The code has moved past them, and they should be deleted.
     """
     index = {fp_ident(e): e for e in entries}
     kept, suppressed, matched = [], [], set()
@@ -1053,13 +1070,14 @@ def apply_fp(fs, entries, res, wanted):
 
 
 def fp_banner(suppressed, stale, orphans, path):
-    """Always printed, `-q` or not: the list may never hide its own size."""
+    """Always printed, with or without `-q`, so the number of suppressed findings is always visible."""
     if not (suppressed or stale or orphans):
         return
     parts = ["%d suppressed" % len(suppressed)]
-    # stale and orphaned entries are named, not just counted: they are what a
-    # --fail-on-stale-false-positives-only job fails on, and a CI log that says
-    # only "1 stale" sends the reader back to the tool to find out which
+    # name stale and orphaned entries, not just count them.  A
+    # --fail-on-stale-false-positives-only job fails on them, and a CI log that
+    # says only "1 stale" makes the reader run the tool again to find out which
+    # entry it is
     if stale:
         parts.append("%d stale (%s)"
                      % (len(stale), ", ".join(sorted(
@@ -1086,10 +1104,10 @@ def parse_fp_spec(spec, res):
 def confirm_fps(specs, reason, fs, entries, res, wanted, path):
     """Re-key stale entries, and add new ones, in place.
 
-    A bare module name re-confirms every stale entry in it, which is what a
-    one-sitting audit of a module produces.  It deliberately cannot *create*
-    entries: adding one is a judgement about a single field and has to name it,
-    or a whole module could be silenced by one word.
+    A bare module name re-confirms every stale entry in it, which is what an
+    audit of one module in one sitting produces.  It cannot create entries, on
+    purpose.  Adding one is a judgement about a single field and has to name it,
+    otherwise one word could silence a whole module.
     """
     found = {fp_ident(f): f for f in fs}
     today = datetime.date.today().isoformat()
@@ -1154,8 +1172,8 @@ def _rekey(e, f, res, reason, today):
     e["key"] = f["key"]
     e["sites"] = finding_sites(f, res)
     e["confirmed"] = today
-    # a sweep that replaces a recorded reason says so: the key cannot detect a
-    # judgement being overwritten by one that was not about this field
+    # a sweep that replaces a recorded reason says so, because the key cannot
+    # detect a judgement overwritten by one that was not about this field
     replaced = bool(reason) and reason != e["reason"]
     if reason:
         e["reason"] = reason
@@ -1167,16 +1185,15 @@ def _rekey(e, f, res, reason, today):
 
 
 # --- optional proof trees via lemmalog --------------------------------------
-# The Datalog rules in rules.lemma restate the Python ones, so when the engine
-# is installed the same findings can be re-derived there and each one printed
-# with the base facts it rests on.  Purely additive: nothing here can change
-# which findings are reported.
+# The Datalog rules in rules.lemma restate the Python ones.  When the engine is
+# installed, it can derive the same findings again and print each one with the
+# base facts it rests on.  Nothing here can change which findings are reported.
 RULES_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "rules.lemma")
 LEMMALOG_TIMEOUT = 120
 
 # `pred(a, b)  (conf 1.000, prov [])` or `pred(a, b)  [unknown fact]`, at column
-# zero; the tree body underneath is indented, and the engine's own progress
-# chatter matches neither shape.
+# zero.  The tree body underneath is indented, and the engine's own progress
+# messages match neither form.
 ANSWER_RE = re.compile(r"^([a-z_]+\([^)]*\))\s\s+(\(conf |\[unknown fact\])")
 # every fact in this fact base is asserted flat, so these annotations are the
 # same on every line and carry no information here
@@ -1186,8 +1203,9 @@ NOISE_RE = re.compile(r"\s+\(conf 1\.000, prov \[\]\)$")
 def find_lemmalog(explicit):
     """The lemmalog binary.  Returns (path, how), or (None, why not).
 
-    Same rule as --src: a path given explicitly never falls back to the search,
-    so a typo is visible instead of quietly using some other binary.
+    The same rule as for --src applies.  An explicit path never falls back to
+    the search, so a typo shows up as an error instead of silently using some
+    other binary.
     """
     if explicit:
         return ((explicit, "--lemmalog") if os.path.isfile(explicit)
@@ -1207,10 +1225,10 @@ def find_lemmalog(explicit):
 def why_goal(f):
     """(query, key) for a finding, or (None, None).
 
-    The two differ because lemmalog echoes a goal back with the quotes stripped,
-    and the echo is what the answers have to be looked up by.  Arity follows the
-    rule: no_lock_share and pointer_share are per field, the rest per
-    unlocked site.
+    The two differ because lemmalog echoes a goal back with the quotes
+    stripped, and the answers have to be looked up by the echo.  The arity
+    depends on the rule.  no_lock_share and pointer_share are per field, and
+    the rest are per unlocked site.
     """
     if f["rule"] in ("no_lock_share", "pointer_share"):
         args = (f["module"], f["field"])
@@ -1227,8 +1245,8 @@ def why_goal(f):
 def why_trees(exe, res, fs):
     """Run every finding's `why` through lemmalog in one pass.
 
-    Returns {goal: [tree lines]}, empty on any failure -- the report is still
-    worth printing without the trees, so nothing here is fatal.
+    Returns {goal: [tree lines]}, or an empty dict on any failure.  The report
+    is still worth printing without the trees, so nothing here is fatal.
     """
     if not os.path.exists(RULES_FILE):
         sys.stderr.write("dt-lockcheck: %s is missing, skipping proof trees\n" % RULES_FILE)
@@ -1251,9 +1269,9 @@ def why_trees(exe, res, fs):
                          % (p.returncode, ": " + first[0] if first else ""))
         return {}
 
-    # Answers come back in query order, but key them by goal rather than by
-    # position: a mismatch then degrades to a missing tree instead of pairing
-    # the wrong proof with a finding.
+    # Answers come back in query order, but key them by goal, not by position.
+    # A mismatch then means a missing tree, not the wrong proof printed with a
+    # finding.
     trees, cur = {}, None
     for line in p.stdout.splitlines():
         if not line.strip():
@@ -1271,10 +1289,10 @@ def why_trees(exe, res, fs):
 
 
 # --- locating darktable's src/iop ------------------------------------------
-# What identifies a checkout root.  imageop.h is the header declaring
-# dt_iop_gui_enter_critical_section(), i.e. the thing this whole analysis is
-# premised on; CMakeLists.txt confirms this is the tree root rather than some
-# parent that merely happens to contain a src/iop.
+# What identifies a checkout root.  imageop.h declares
+# dt_iop_gui_enter_critical_section(), which the whole analysis depends on.
+# CMakeLists.txt confirms that this is the tree root, not some parent directory
+# that also contains a src/iop.
 ROOT_MARKERS = ("src/iop", "src/develop/imageop.h", "CMakeLists.txt")
 MAX_WALK_UP = 12   # levels to climb; no checkout root sits deeper than this
 MIN_SOURCES = 10   # src/iop holds ~90 modules, so a near-empty dir is the wrong one
@@ -1306,8 +1324,8 @@ def _walk_up(start):
 def _as_iop_dir(d):
     """Normalise a user-supplied path to an iop directory, or None.
 
-    Accepts either the iop directory itself or a checkout root, since --src
-    ~/darktable is the thing people type first.
+    Accepts either the iop directory itself or a checkout root, because people
+    often type --src ~/darktable first.
     """
     if _is_root(d):
         d = os.path.join(d, "src", "iop")
@@ -1317,11 +1335,11 @@ def _as_iop_dir(d):
 def find_src(explicit):
     """Locate src/iop.  Returns (path, how) on success, (None, tried) on failure.
 
-    Order: an explicit --src is taken verbatim and never falls back, so a typo
-    fails loudly instead of quietly analysing some other tree.  Otherwise
+    An explicit --src is used as given and never falls back, so a typo fails
+    with an error instead of analysing some other tree.  Otherwise the order is
     $DT_LOCKCHECK_SRC, then a walk up from $PWD, then a walk up from the script
-    itself.  $PWD comes before the script location deliberately: with the script
-    symlinked onto $PATH out of checkout A, running it inside checkout B has to
+    itself.  $PWD comes before the script location on purpose.  With the script
+    symlinked onto $PATH from checkout A, running it inside checkout B has to
     analyse B.
     """
     if explicit:
@@ -1338,8 +1356,8 @@ def find_src(explicit):
     else:
         tried.append(("$DT_LOCKCHECK_SRC", "not set"))
 
-    # realpath, not __file__: a symlink on $PATH has to resolve back into the
-    # checkout the script actually lives in.
+    # realpath, not __file__, because a symlink on $PATH has to resolve to the
+    # checkout that contains the script.
     for what, start in (("$PWD", os.getcwd()),
                         ("script", os.path.dirname(os.path.realpath(__file__)))):
         root = _walk_up(start)
@@ -1355,7 +1373,7 @@ def find_src(explicit):
 
 
 def die(msg):
-    """Exit 2 -- a wrong invocation, as opposed to 0 for a completed run."""
+    """Exit 2 for a wrong invocation, as opposed to 0 for a completed run."""
     sys.stderr.write("dt-lockcheck: %s\n" % msg)
     sys.exit(2)
 
@@ -1366,9 +1384,9 @@ def main():
         epilog="Findings are candidates, not confirmed bugs. See the module docstring "
                "for the known false-positive causes before filing anything.")
     ap.add_argument("--src",
-                    help="darktable's src/iop, or a checkout root; by default it is "
-                         "located from $DT_LOCKCHECK_SRC, the current directory, or "
-                         "the script's own location")
+                    help="darktable's src/iop, or a checkout root.  By default "
+                         "the script looks in $DT_LOCKCHECK_SRC, then up from the "
+                         "current directory, then up from its own location")
     ap.add_argument("-q", "--quiet", action="store_true",
                     help="do not report the located source directory on stderr")
     ap.add_argument("--module", action="append",
@@ -1376,26 +1394,25 @@ def main():
     ap.add_argument("--rules", default=",".join(DEFAULT_RULES), metavar="LIST",
                     help="comma-separated rules to report, from: "
                          + ", ".join(ALL_RULES) + "; or " + ALL_RULES_TOKEN
-                         + " (upper-case) for every rule there is.  "
-                         "discipline_gap is the noisy tier and is the one left "
+                         + " (upper-case) for every rule.  "
+                         "discipline_gap is noisy and is the one rule left "
                          "out by default (default: %(default)s).  "
-                         "Affects report and csv only, since json and "
+                         "Affects report and csv only, because json and "
                          "lemmalog carry the facts the rules run on.  See README.md "
                          "for what each rule checks")
     ap.add_argument("--format", choices=("report", "csv", "json", "lemmalog"),
                     default="report",
                     help="report: human-readable findings; csv: one row per finding, "
                          "with every site; json: the raw extracted facts, before the "
-                         "rules; lemmalog: those facts as Datalog assertions.  Proof "
-                         "trees are added to report only; the other three are "
-                         "unaffected by lemmalog.  See README.md for what each format "
+                         "rules; lemmalog: those facts as Datalog assertions.  Only "
+                         "report gets proof trees, and lemmalog does not affect the "
+                         "other three.  See README.md for what each format "
                          "contains")
     ap.add_argument("--include-false-positives", action="store_true",
                     dest="include_fp",
-                    help="report the findings false-positives.json suppresses, "
-                         "alongside the rest.  The full check, for when the "
-                         "module rather than the tree is the subject and you "
-                         "want to re-read the judgements too")
+                    help="also report the findings that false-positives.json "
+                         "suppresses.  Use it when you review one module and want "
+                         "to re-read its judgements too")
     ap.add_argument("--confirm-false-positive", action="append",
                     metavar="MODULE[:FIELD]", dest="confirm",
                     help="record that a finding is not a defect, or that a stale "
@@ -1404,12 +1421,12 @@ def main():
                          "entry in it, but cannot add new ones.  Rewrites "
                          "false-positives.json and exits without reporting")
     ap.add_argument("--false-positive-reason", metavar="TEXT", dest="reason",
-                    help="why the finding is not a defect.  Required to add a "
-                         "new entry, since this is what gets printed back when "
-                         "the entry goes stale; optional when re-confirming, "
-                         "where it replaces the recorded reason.  One judgement "
-                         "is about one module, so every --confirm-false-positive "
-                         "in the run has to name the same one")
+                    help="why the finding is not a defect.  Required for a new "
+                         "entry, because the tool prints it back when the entry "
+                         "goes stale.  Optional when re-confirming, where it "
+                         "replaces the recorded reason.  One judgement is about "
+                         "one module, so every --confirm-false-positive in the "
+                         "run has to name the same module")
     ap.add_argument("--fail-on-findings", action="store_true",
                     help="exit 1 when anything is reported, for CI.  Off by "
                          "default.  It passes only "
@@ -1418,28 +1435,29 @@ def main():
     ap.add_argument("--fail-on-stale-false-positives-only", action="store_true",
                     dest="fail_on_stale",
                     help="exit 1 only when a false-positive entry has gone "
-                         "stale -- somebody judged that finding harmless and "
-                         "the code has changed since.  The weaker gate, and the "
-                         "one a CI job can use before the findings are worked "
-                         "off.  "
-                         "Reports the stale entries alone: the other findings "
-                         "are not what this gate asks about")
+                         "stale, which means that somebody judged the finding "
+                         "harmless and the code has changed since.  The weaker "
+                         "gate, which a CI job can use before every finding has "
+                         "been dealt with.  Reports only the stale entries, "
+                         "because the other findings are not what this gate "
+                         "checks")
     ap.add_argument("--why", action="store_true",
-                    help="append the lemmalog proof tree behind each finding; needs "
-                         "the lemmalog engine, and is an error if it cannot be found")
+                    help="append the lemmalog proof tree behind each finding.  "
+                         "Needs the lemmalog engine, and is an error if the engine "
+                         "cannot be found")
     ap.add_argument("--lemmalog", metavar="PATH",
                     help="the lemmalog binary to use, when it is not on $PATH or in "
                          "$DT_LOCKCHECK_LEMMALOG.  Implies --why")
     args = ap.parse_args()
 
-    # Everything that can only be wrong about the invocation is checked here,
-    # before any output is produced.  These used to sit after the json/lemmalog
-    # early returns, so `--rules bogus --format json` and `--why --format json`
-    # printed their output and exited 0 instead of failing.
+    # Check everything that can only be wrong about the invocation here, before
+    # any output.  If these checks came after the json and lemmalog early
+    # returns, `--rules bogus --format json` and `--why --format json` would
+    # print their output and exit 0 instead of failing.
     wanted = set(args.rules.split(","))
-    # ALL is upper-case so it can never collide with a rule name, and so that a
-    # lower-case "all" is an unknown rule rather than a second spelling: the set
-    # of rules a run reported has to be legible from the command line alone.
+    # ALL is upper-case so that it can never collide with a rule name, and so
+    # that a lower-case "all" is an unknown rule, not a second spelling.  The
+    # command line alone has to show which rules a run reported.
     if ALL_RULES_TOKEN in wanted:
         wanted = (wanted - {ALL_RULES_TOKEN}) | set(ALL_RULES)
     unknown = wanted - set(ALL_RULES)
@@ -1458,25 +1476,26 @@ def main():
             "consults it for nothing else; "
             "--fail-on-stale-false-positives-only and --confirm-false-positive "
             "both need the list applied")
-    # the list is applied to findings, and these two formats carry the facts the
-    # rules run on rather than findings, so the flag could only be a silent
-    # no-op there -- the same reason --why is an error with them
+    # the list applies to findings, and these two formats carry the facts the
+    # rules run on, not findings.  The flag could only be a silent no-op there,
+    # which is also why --why is an error with them
     if args.include_fp and args.format not in ("report", "csv"):
         die("--include-false-positives changes which findings are reported; "
             "--format %s carries the facts the rules run on, which the list "
             "never touches" % args.format)
-    # a gate acts on findings, and json/lemmalog return the fact base before the
-    # rules have produced any: the run then exited 0 whatever the gate asked
-    # about, so a CI job wired that way was green because it never checked
+    # a gate acts on findings, and json and lemmalog return the fact base before
+    # the rules have produced any.  The run would exit 0 whatever the gate asked
+    # about, so a CI job set up that way would pass without ever checking
     gate = ("--fail-on-findings" if args.fail_on_findings else
             "--fail-on-stale-false-positives-only" if args.fail_on_stale
             else None)
     if gate and args.format not in ("report", "csv"):
         die("%s fails on findings; --format %s carries the facts the rules run "
             "on and produces no finding for a gate to fire on" % (gate, args.format))
-    # the two gates answer different questions and one run cannot report both
-    # answers in its exit status, so asking for both is a mistake rather than a
-    # conjunction: --fail-on-findings already fails on everything the other does
+    # the two gates answer different questions, and one run cannot report both
+    # answers in its exit status, so asking for both is a mistake, not a
+    # conjunction.  --fail-on-findings already fails on everything the other
+    # gate does
     if args.fail_on_findings and args.fail_on_stale:
         die("--fail-on-findings and --fail-on-stale-false-positives-only are "
             "two gates; pick one.  The first fails on any finding; the second "
@@ -1487,11 +1506,11 @@ def main():
     if args.reason and not args.confirm:
         die("--false-positive-reason records why a finding is not a defect, "
             "so it needs a --confirm-false-positive to record it on")
-    # One reason is one judgement, and a judgement is about one module: several
-    # fields of the same module often share one -- rgblevels' state machine
-    # covers more than one field -- but a sentence about one module cannot be
-    # true of another.  Without a reason there is no such limit: each entry then
-    # keeps the reason it already has.
+    # One reason is one judgement, and a judgement is about one module.  Several
+    # fields of the same module often share one, as rgblevels' state machine
+    # does, but a sentence about one module cannot be true of another.  Without
+    # a reason there is no such limit, and each entry keeps the reason it
+    # already has.
     if args.reason:
         mods = {c.partition(":")[0] for c in args.confirm}
         if len(mods) > 1:
@@ -1519,9 +1538,10 @@ def main():
             analysed[r["module"]] = r
 
     if args.module:
-        # a name that is not a source at all, and a source with no gui_data
-        # struct, are different mistakes and neither may pass silently: asking
-        # for one good and one bad name used to analyse the good one and exit 0
+        # a name that is not a source at all and a source with no gui_data
+        # struct are different mistakes, and neither may pass silently.
+        # Otherwise, asking for one good and one bad name would analyse the good
+        # one and exit 0
         missing = [m for m in args.module if m not in sources]
         if missing:
             die("no module named %s among the %d sources in %s"
@@ -1537,9 +1557,10 @@ def main():
         die("no modules with a gui_data struct under %s" % src)
 
     if not args.quiet:
-        # stderr: stdout carries the csv/json/lemmalog output.  Naming the route
-        # is what makes analysing the wrong checkout obvious, and naming the
-        # skipped count is what makes a silently dropped module visible.
+        # stderr, because stdout carries the csv, json or lemmalog output.
+        # Naming the route shows when the wrong checkout is being analysed, and
+        # naming the skipped count shows a module that would otherwise drop out
+        # unnoticed.
         skipped = len(paths) - len(analysed)
         sys.stderr.write("dt-lockcheck: %d sources in %s (%s); %d with a gui_data "
                          "struct, %d skipped\n"
@@ -1554,10 +1575,10 @@ def main():
 
     fs = findings(res, wanted)
 
-    # The list is consulted after the rules ran, not before: it suppresses
-    # findings, it does not change what the rules derive.  --format json and
-    # lemmalog returned above for the same reason --rules does not touch them --
-    # they carry the facts, not the findings.
+    # Consult the list after the rules ran, not before, because it suppresses
+    # findings and does not change what the rules derive.  --format json and
+    # lemmalog returned above, for the same reason that --rules does not affect
+    # them.  They carry the facts, not the findings.
     entries, suppressed, orphans = [], [], []
     if not args.include_fp:
         entries = load_fp_list(FP_FILE)
@@ -1574,10 +1595,9 @@ def main():
     stale = [f for f in fs if f.get("fp")]
     fp_banner(suppressed, stale, orphans, FP_FILE)
 
-    # The narrow gate fails on the stale entries alone, so it reports those
-    # alone: every other finding is a question it is not asking, and on this
-    # tree they outnumber the stale ones by two orders of magnitude.  The
-    # banner above still carries the whole picture.
+    # The narrow gate fails on the stale entries alone, so it reports only
+    # those.  The other findings are not what it checks, and they usually far
+    # outnumber the stale ones.  The banner above still gives the totals.
     reported = stale if args.fail_on_stale else fs
 
     trees = None
@@ -1606,10 +1626,10 @@ def main():
     else:
         print_report(fs, trees, len(suppressed))
 
-    # 1 only on request: a run that merely found something is a completed run.
-    # The wide gate stays red until the findings are worked off; the narrow one
-    # asks only whether a recorded judgement still holds, which a CI job can
-    # answer green before then.
+    # exit 1 only on request, because a run that found something is still a
+    # completed run.  The wide gate fails until every finding is dealt with.
+    # The narrow one asks only whether the recorded judgements still hold, so a
+    # CI job can pass it before then.
     if (args.fail_on_findings and fs) or (args.fail_on_stale and stale):
         sys.exit(1)
 
