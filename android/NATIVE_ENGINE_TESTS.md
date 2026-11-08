@@ -15,7 +15,7 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, Debug and Release each passed 183 JVM tests in 38 classes
+  compilation, Debug and Release each passed 189 JVM tests in 39 classes
   (zero failures, errors or skips), plus `lintDevDebug` and `lintDevRelease`.
   Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
@@ -123,7 +123,7 @@ resolution, regional/script fallback, platform language storage, legacy resource
 wrapping, System-default restoration, the Settings menu, gettext parsing/context
 and display-only binding preservation, and decimal-comma inputs with original
 native validation. All pass in Debug and Release. Each of the three translated
-resource sets covers all 346 translatable default strings, with matching format
+resource sets covers all 352 translatable default strings, with matching format
 arguments. A separate probe compiled the actual Kotlin gettext reader and loaded
 the complete `zh_TW`, `zh_CN` and `es` desktop MO files, verifying exposure,
 orientation, white balance, its context-sensitive presets and unknown-label
@@ -141,6 +141,18 @@ fixture, not native RAW rendering evidence. The Material-token comparison uses
 the same current workspace, not a screenshot of a previous APK. Neither these
 host captures nor the platform colour changes establish physical-device
 system-bar or document-picker execution.
+
+Six `AppThemeTest` host cases cover the saved Desktop gray / Light / OLED black
+menu, preference defaults and invalid-value fallback, live preference observation,
+and access without an image or processing engine. Production workspace captures
+check true-black OLED pixels and readable foreground contrast. Switching among
+all three themes preserves measured control bounds, an unsent numeric draft,
+the Activity and preview identities, and the native callback history; applying
+the draft afterward sends the original parameter address and value. Host window
+checks cover icon-appearance flags, decor background and navigation contrast
+enforcement. Captures are saved as `app-theme-{desktop,light,oled}.png` in the
+same theme-preview directory. These tests use SDK 35 bitmap/callback fixtures;
+they do not measure physical OLED power use or establish OEM system-bar rendering.
 
 The lens regression uses the installed Canon EOS 5D Mark II / EF 24–105mm f/4L
 IS USM calibration with the original RGB pixelpipe. Distortion, vignetting and

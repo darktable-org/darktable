@@ -10,7 +10,7 @@ retaining its ViewModel, open native session and edit history.
 
 The default English resources have complete Traditional Chinese (`zh-Hant`),
 Simplified Chinese (`zh-Hans`) and Latin American Spanish (`es-419`) counterparts.
-Each includes 346 translatable strings, of which 112 are additional mobile
+Each includes 352 translatable strings, of which 112 are additional mobile
 native-control labels. Format arguments remain positional and unchanged.
 Language names stay in their own language so the menu remains recognizable.
 

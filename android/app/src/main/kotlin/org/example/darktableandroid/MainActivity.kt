@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(AppThemes.selected(this).platformTheme)
         super.onCreate(savedInstanceState)
         restoreSource(savedInstanceState)
         if(sourceIntent == null) acceptSourceIntent(intent)

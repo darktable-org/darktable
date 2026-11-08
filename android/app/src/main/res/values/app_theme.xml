@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="app_theme">App theme</string>
+  <string name="app_theme_description">Choose a theme without changing your photo or editing settings.</string>
+  <string name="app_theme_choose">Choose app theme</string>
+  <string name="app_theme_desktop">Desktop gray</string>
+  <string name="app_theme_light">Light</string>
+  <string name="app_theme_oled">OLED black</string>
+</resources>

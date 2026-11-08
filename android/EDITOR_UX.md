@@ -8,7 +8,7 @@ While the keyboard is open, the preview temporarily uses one quarter of the
 remaining content height so the focused parameter still has room. Dismissing
 the keyboard returns the equal split.
 
-The visual theme follows the desktop default `darktable-elegant-grey`: neutral
+The default visual theme follows desktop `darktable-elegant-grey`: neutral
 grey panels, a `#777777` photo surround, grey/white controls and small 3dp
 corners. Selection uses grey/white emphasis in the existing indicators. Colour
 roles are explicit and tonal surface tint is disabled, so the photo is not
@@ -17,8 +17,16 @@ colour, and applied/draft curves keep different brightness levels.
 
 This changes drawing only. Typography, line heights, density, padding, element
 sizes, touch targets, pane proportions and navigation callbacks remain the same.
-Android system-bar and starting-window colours follow the same neutral palette;
-window insets and edge-to-edge behaviour are not changed.
+Settings → App theme offers Desktop gray, Light and OLED black. A choice applies
+immediately and is saved for subsequent launches. Light uses white panels with
+dark text; OLED uses true `#000000` for the panel, toolbar, photo surround and
+system-bar backgrounds, with lighter controls and raised menus for separation.
+Changing the theme preserves the open image, history, selected tools, scroll
+positions and parameter drafts without recreating the Activity. The preview
+bitmap itself is unchanged. The menu is available without an image or engine.
+Android system-bar icon contrast and Activity window colours follow the selected
+theme; window insets and edge-to-edge behaviour are unchanged. The OS starting
+screen uses the manifest's default grey before the saved theme is loaded.
 
 ```text
 ┌──────────────────────────────────┐
@@ -40,7 +48,7 @@ window insets and edge-to-edge behaviour are not changed.
 | Light / Color | Exposure, white balance, tone curves, color grading and color transforms |
 | Detail / Repair | Noise reduction, sharpening, optical detail correction, masks and repair tools |
 | Geometry / Effects | Crop, perspective, lens geometry, framing, overlays, grain and finishing effects |
-| Settings / Licenses | Runtime availability, project information and license notices; available without an image |
+| Settings / Licenses | Language and theme menus, runtime availability, project information and license notices; available without an image |
 
 Each editing tab presents a compact tool selector and a separate power switch
 above the parameter scroller. Only the selected tool's controls are shown, so

@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <resources>
-  <style name="Theme.MobileRawEditor" parent="android:style/Theme.Material.NoActionBar">
+  <style name="Theme.MobileRawEditor.Base" parent="android:style/Theme.Material.NoActionBar">
     <item name="android:fontFamily">sans</item>
     <item name="android:windowBackground">#6A6A6A</item>
     <item name="android:colorBackground">#6A6A6A</item>
@@ -13,5 +13,28 @@
     <item name="android:statusBarColor">#6A6A6A</item>
     <item name="android:navigationBarColor">#6A6A6A</item>
     <item name="android:windowLightStatusBar">false</item>
+  </style>
+  <style name="Theme.MobileRawEditor" parent="Theme.MobileRawEditor.Base"/>
+  <style name="Theme.MobileRawEditor.LightBase" parent="android:style/Theme.Material.Light.NoActionBar">
+    <item name="android:fontFamily">sans</item>
+    <item name="android:windowBackground">#FAFAFA</item>
+    <item name="android:colorBackground">#FAFAFA</item>
+    <item name="android:colorAccent">#202020</item>
+    <item name="android:colorControlNormal">#202020</item>
+    <item name="android:colorControlActivated">#202020</item>
+    <item name="android:colorControlHighlight">#33202020</item>
+    <item name="android:textColorPrimary">#202020</item>
+    <item name="android:textColorSecondary">#505050</item>
+    <item name="android:statusBarColor">#FAFAFA</item>
+    <!-- Readable API 26 window fallback until runtime applies navigation icon contrast. -->
+    <item name="android:navigationBarColor">#303030</item>
+    <item name="android:windowLightStatusBar">true</item>
+  </style>
+  <style name="Theme.MobileRawEditor.Light" parent="Theme.MobileRawEditor.LightBase"/>
+  <style name="Theme.MobileRawEditor.OLED" parent="Theme.MobileRawEditor">
+    <item name="android:windowBackground">#000000</item>
+    <item name="android:colorBackground">#000000</item>
+    <item name="android:statusBarColor">#000000</item>
+    <item name="android:navigationBarColor">#000000</item>
   </style>
 </resources>

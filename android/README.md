@@ -16,6 +16,10 @@ Traditional Chinese, Simplified Chinese and Latin American Spanish. Tool labels
 reuse desktop translations without changing native parameter identities or the
 processing locale. See [app languages](LOCALIZATION.md).
 
+Settings → App theme switches between Desktop gray, Light and OLED black.
+The saved choice applies immediately, including system-bar icon contrast,
+without restarting the editor or changing the preview, controls or edit history.
+
 An engine-enabled build also opens a single photo shared from Android's file
 manager. Share a GPR file and choose this editor; image MIME types and generic
 `application/octet-stream` shares are registered, including GoPro application

@@ -236,7 +236,7 @@ internal fun EditorWorkspace(
         }
     }
     Scaffold(modifier = Modifier.fillMaxSize().imePadding(), bottomBar = {
-        NavigationBar(containerColor = DarktableColors.Toolbar, tonalElevation = 0.dp) {
+        NavigationBar(containerColor = LocalEditorChromeColors.current.toolbar, tonalElevation = 0.dp) {
             val selectedColor = MaterialTheme.colorScheme.onSurface
             WorkspaceTab.entries.forEach { item ->
                 NavigationBarItem(selected = tab == item, onClick = { selectTab(item) },
@@ -244,7 +244,7 @@ internal fun EditorWorkspace(
                         selectedIconColor = selectedColor, selectedTextColor = selectedColor,
                         unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = DarktableColors.Selection),
+                        indicatorColor = LocalEditorChromeColors.current.selection),
                     icon = { Icon(painterResource(item.iconResource()), null) },
                     label = { Text(stringResource(item.labelResource()), maxLines = 2, overflow = TextOverflow.Ellipsis) })
             }
@@ -257,7 +257,7 @@ internal fun EditorWorkspace(
                 maskActive, maskTarget, maskPoint, onPlaceMaskPhoto)
             HorizontalDivider()
             Box(Modifier.fillMaxWidth().weight(if(keyboardVisible) .75f else 1f)
-                .background(DarktableColors.Panel).testTag("editor_tools_pane")) {
+                .background(LocalEditorChromeColors.current.panel).testTag("editor_tools_pane")) {
                 if(tab == WorkspaceTab.SETTINGS) WorkspaceAppInfo(runtime)
                 else if(ready == null) WorkspaceEmptyTools(state, runtime, onOpen)
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
@@ -309,7 +309,7 @@ private fun WorkspacePreview(
     maskPoint: MaskPhotoPoint?,
     onPlaceMaskPhoto: (MaskPhotoTarget, Float, Float) -> Unit,
 ) {
-    Box(modifier.background(DarktableColors.Preview)) {
+    Box(modifier.background(LocalEditorChromeColors.current.preview)) {
         ready?.let {
             Box(Modifier.fillMaxSize().padding(horizontal = 8.dp).padding(bottom = 48.dp)) {
                 Image(it.preview.asImageBitmap(), stringResource(R.string.preview_description),
@@ -366,7 +366,7 @@ private fun WorkspacePreview(
                     maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
         }
-        Surface(Modifier.align(Alignment.BottomCenter).fillMaxWidth(), color = DarktableColors.Toolbar, tonalElevation = 0.dp) {
+        Surface(Modifier.align(Alignment.BottomCenter).fillMaxWidth(), color = LocalEditorChromeColors.current.toolbar, tonalElevation = 0.dp) {
             Row(Modifier.height(48.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically) {
                 WorkspaceAction(R.drawable.workspace_ic_open, R.string.open_photo, "editor_open",
@@ -424,7 +424,7 @@ private fun WorkspaceTools(
     }
     val savedControls = rememberSaveableStateHolder()
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().background(DarktableColors.Toolbar)
+        Row(Modifier.fillMaxWidth().background(LocalEditorChromeColors.current.toolbar)
             .padding(start = 12.dp, end = 4.dp, top = 6.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             var expanded by rememberSaveable(tab) { mutableStateOf(false) }
@@ -558,6 +558,8 @@ private fun WorkspaceAppInfo(runtime: RuntimeAvailability) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         AppLanguageMenu()
+        HorizontalDivider()
+        AppThemeMenu()
         HorizontalDivider()
         Text(stringResource(R.string.about), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.unofficial_notice), style = MaterialTheme.typography.bodyMedium)
