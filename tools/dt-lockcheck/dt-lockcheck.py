@@ -128,7 +128,8 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   A new entry needs --false-positive-reason, because the tool prints that
   sentence back when the entry goes stale.  A bare module re-confirms entries
   but never adds them, so silencing a whole module has to name each field.
-  "The false-positive list" in README.md explains what the key covers and what
+  A confirmation looks at every rule, discipline_gap included, whatever
+  --rules says.  "The false-positive list" in README.md explains what the key covers and what
   was measured.
 
 KNOWN FALSE-POSITIVE CAUSES (check these before you report a finding upstream)
@@ -236,7 +237,8 @@ USAGE
   false-positives.json in a run that reads it, or --why without a lemmalog
   binary.  A wrong invocation includes either --fail-on-* gate with --format
   json or lemmalog, because those carry the facts the rules run on and leave a
-  gate nothing to fire on.  Both gates are off by default.
+  gate nothing to fire on, and --confirm-false-positive with anything that
+  needs a report, because it reports nothing.  Both gates are off by default.
   --fail-on-findings passes only once every finding is either fixed or recorded
   in false-positives.json.  --fail-on-stale-false-positives-only fails only when
   a recorded entry has gone stale, so it can pass while findings are still
@@ -895,8 +897,8 @@ def print_report(fs, trees=None, suppressed=0, total=None):
                 key = why_goal(f)[1]
                 tree = trees.get(key)
                 if tree:
-                    # name the goal, because the unlocked line above lists
-                    # several sites and the tree only explains this one
+                    # name the goal, because the lines above list several
+                    # sites and the tree only explains this one
                     print("   why     : " + key)
                     for line in tree:
                         print(ascii_safe("   " + line.rstrip()))
@@ -1237,11 +1239,23 @@ def why_goal(f):
 
     The two differ because lemmalog echoes a goal back with the quotes
     stripped, and the answers have to be looked up by the echo.  The arity
-    depends on the rule.  no_lock_share and pointer_share are per field, and
-    the rest are per unlocked site.
+    depends on the rule.  no_lock_share and pointer_share are per field,
+    widget_from_pipe is per pipe or either access, and the other two are per
+    unlocked site.
     """
     if f["rule"] in ("no_lock_share", "pointer_share"):
         args = (f["module"], f["field"])
+    elif f["rule"] == "widget_from_pipe":
+        # The rule fires on any pipe or either access, locked or not.  The first
+        # unlocked site can be a gtk one, which does not prove the rule, and
+        # lemmalog would answer that the finding is not derivable.  Take the
+        # first pipe or either site in the order the report prints them.
+        th = f["thread"]
+        sites = [a for a in _pipe_first(f["locked"], th) + _pipe_first(f["unlocked"], th)
+                 if th.get(a[0]) in MAY_PIPE]
+        if not sites:
+            return None, None
+        args = (f["module"], f["field"], sites[0][0])
     else:
         # the site the report leads with, so the tree explains the line above it
         sites = _pipe_first(f["unlocked"], f["thread"])
@@ -1429,8 +1443,11 @@ def main():
                     help="record that a finding is not a defect, or that a stale "
                          "entry still holds (repeatable).  MODULE:FIELD names "
                          "one finding; a bare MODULE re-confirms every stale "
-                         "entry in it, but cannot add new ones.  Rewrites "
-                         "false-positives.json and exits without reporting")
+                         "entry in it, but cannot add new ones.  It looks at "
+                         "every rule, whatever --rules says.  Rewrites "
+                         "false-positives.json and exits without reporting, "
+                         "so it cannot be combined with another --format, "
+                         "--why or a --fail-on-* gate")
     ap.add_argument("--false-positive-reason", metavar="TEXT", dest="reason",
                     help="why the finding is not a defect.  Required for a new "
                          "entry, because the tool prints it back when the entry "
@@ -1476,6 +1493,12 @@ def main():
     if unknown:
         die("unknown rule(s): %s.  Pick from %s, or %s for every one"
             % (", ".join(sorted(unknown)), ", ".join(ALL_RULES), ALL_RULES_TOKEN))
+    # --rules chooses what a report shows, and a confirmation reports nothing.
+    # Scoped to the default rules, a bare MODULE would skip every stale
+    # discipline_gap entry, and MODULE:FIELD would call such an entry an orphan
+    # and ask for it to be deleted.  So a confirmation always sees every rule
+    if args.confirm:
+        wanted = set(ALL_RULES)
     if (args.why or args.lemmalog) and args.format != "report":
         die("--why adds proof trees to the report; --format %s cannot carry them"
             % args.format)
@@ -1512,9 +1535,20 @@ def main():
         die("--fail-on-findings and --fail-on-stale-false-positives-only are "
             "two gates; pick one.  The first fails on any finding; the second "
             "fails only on a judgement the source has moved past")
-    if args.confirm and (args.fail_on_findings or args.fail_on_stale):
-        die("--confirm-false-positive rewrites the list and reports nothing, so "
-            "there is no finding for a --fail-on-* gate to act on")
+    # --confirm-false-positive rewrites the list and exits without a report,
+    # so anything else the run asks for would be dropped without a word.  With
+    # json and lemmalog that includes the judgement itself, because those
+    # formats return before any finding exists to record it on
+    if args.confirm:
+        dropped = [flag for flag, given in (
+            ("--format " + args.format, args.format != "report"),
+            ("--why" if args.why else "--lemmalog", args.why or args.lemmalog),
+            ("--fail-on-findings", args.fail_on_findings),
+            ("--fail-on-stale-false-positives-only", args.fail_on_stale))
+            if given]
+        if dropped:
+            die("--confirm-false-positive rewrites the list and reports "
+                "nothing, so it cannot be combined with %s" % ", ".join(dropped))
     if args.reason and not args.confirm:
         die("--false-positive-reason records why a finding is not a defect, "
             "so it needs a --confirm-false-positive to record it on")

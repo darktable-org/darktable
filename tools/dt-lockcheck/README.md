@@ -84,7 +84,7 @@ The tables list every flag, grouped by purpose.
 
 | flag | what it does |
 | --- | --- |
-| `--confirm-false-positive MODULE[:FIELD]` | record a judgement, or re-key a stale entry. Repeatable. The script rewrites the list and exits without reporting |
+| `--confirm-false-positive MODULE[:FIELD]` | record a judgement, or re-key a stale entry. Repeatable. The script rewrites the list and exits without reporting, so it cannot be combined with another `--format`, `--why` or a gate |
 | `--false-positive-reason TEXT` | the judgement to record. Required for a new entry, optional when re-confirming. Every confirmation in the run has to name the same module |
 
 **For an automated build** (see [Exit status](#exit-status)):
@@ -665,6 +665,8 @@ computes the key:
 in that module, which is what an audit of one module in one sitting produces.
 It cannot add entries, on purpose. Adding one is a judgement about a single
 field and has to name it, otherwise one word could silence a whole module.
+A confirmation looks at every rule, whatever `--rules` says, so it also finds
+the `discipline_gap` entries that the default rules leave out.
 The tool never deletes entries. Delete an orphan from the file by hand.
 
 A new entry requires `--false-positive-reason`, because the tool prints that
@@ -880,9 +882,11 @@ bug report. It also shows when a finding rests on a thread guess you disagree
 with.
 
 The `why     :` line names the goal. `no_lock_share` and `pointer_share` are
-proven per field, the other rules per access. For those, the tree explains
-only the first unlocked site the report lists, which is a `pipe` or `either`
-site when there is one.
+proven per field. `violation` and `discipline_gap` are proven per unlocked
+access, and the tree explains the first unlocked site the report lists, which
+is a `pipe` or `either` site when there is one. `widget_from_pipe` is proven
+per `pipe` or `either` access, locked or not, and the tree explains the first
+such site the report lists.
 
 The Python code and the Datalog rules produce the same findings, so `--why`
 does not change which findings are reported. It does change these things:
