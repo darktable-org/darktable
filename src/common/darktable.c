@@ -1186,6 +1186,16 @@ int dt_init(int argc,
   // make sure that stack/frame limits are good (musl)
   dt_set_rlimits();
 
+  // darktable-cli and darktable-generate-cache call dt_loc_init() before
+  // us to find the locale dir; dt_loc_init() below allocates these again
+  g_free(darktable.datadir);
+  g_free(darktable.sharedir);
+  g_free(darktable.plugindir);
+  g_free(darktable.localedir);
+  g_free(darktable.tmpdir);
+  g_free(darktable.configdir);
+  g_free(darktable.cachedir);
+
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
