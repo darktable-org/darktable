@@ -143,7 +143,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
+  // the preview may still hold a frame from before this run's proof change
+  const dt_iop_order_iccprofile_info_t *const work_profile =
+    dt_ioppr_get_scope_profile_info(dev, &piece->pipe->output_encoding);
 
   // display mask using histogram profile as output
   // FIXME: the histogram already does this work -- use that data instead?
@@ -325,7 +327,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int height = roi_out->height;
 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
+  const dt_iop_order_iccprofile_info_t *const work_profile =
+    dt_ioppr_get_scope_profile_info(dev, &piece->pipe->output_encoding);
 
   // display mask using histogram profile as output
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * ch);
