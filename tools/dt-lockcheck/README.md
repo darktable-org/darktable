@@ -324,12 +324,12 @@ to be read before it is believed.
 It is cheap to read, because the shape is rare: few non-widget pointer fields
 in `gui_data` are touched from both threads, and the other default rules
 already report most of those, because some access to them is unlocked. The
-case the rule was written for is `colorreconstruction`'s `can`, the frozen
-bilateral grid. `process()` copies it out of `gui_data` under `gui_lock` and
-thaws it after releasing the lock, while the preview pipe's own `process()`
-frees it under the lock and stores a new one. Every access is under the lock,
-so the other four rules cannot see it. It was reported as
-[#22060](https://github.com/darktable-org/darktable/issues/22060).
+rule was written for `colorreconstruction`'s `can`, the frozen bilateral grid,
+filed as [#22060](https://github.com/darktable-org/darktable/issues/22060).
+The report describes the shape: `process()` copies the pointer out of
+`gui_data` under `gui_lock` and thaws the grid after releasing the lock, while
+the preview pipe's own `process()` can free it and store a new one. Every
+access in that shape is under the lock, so the other four rules cannot see it.
 
 ```sh
 ./dt-lockcheck.py --rules pointer_share
@@ -574,10 +574,9 @@ against the Datalog rules if you would rather add rules than write code.
 ## Before you file anything
 
 Findings are **candidates**. On the tree the tool was developed against, about
-two thirds of the default-rule findings named a field that a report from the
-`gui_data` audit also named (#21915-#21919, #21974, #22005-#22009,
-#22057-#22064, #22066-#22069). A spot-check of a dozen of the rest found a clear
-majority to be real defects of the same shape. No one has measured a
+two thirds of the default-rule findings named a field that a report from an
+earlier `gui_data` audit also named. A spot-check of a dozen of the rest found
+a clear majority to be real defects of the same shape. No one has measured a
 false-positive rate, and `discipline_gap` is markedly worse than the four it is
 left out beside. `pointer_share` fires rarely, and a handful of hits is not a
 precision measurement either: read them like the rest. Please confirm a finding by reading the code before opening an issue.
