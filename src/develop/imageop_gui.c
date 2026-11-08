@@ -50,90 +50,136 @@ typedef struct _page_params_t
   dt_iop_param_range_t ranges[];
 } _page_params_t;
 
-static const _page_params_t *_page_params(GtkWidget *page)
-{
-  const _page_params_t *bound =
-    page ? g_object_get_data(G_OBJECT(page), DT_IOP_PAGE_PARAMS_KEY) : NULL;
-
-  // the module has to be able to say what its defaults are
-  if(!bound || !bound->module->params || !bound->module->default_params)
-    return NULL;
-
-  return bound;
-}
-
 void dt_iop_page_bind_params(GtkWidget *page,
                              dt_iop_module_t *self,
                              const dt_iop_param_range_t *ranges,
                              const int n_ranges)
 {
-  if(!page || !self || !ranges || n_ranges < 1) return;
-
-  _page_params_t *bound = g_malloc0(sizeof(_page_params_t)
-                                    + n_ranges * sizeof(dt_iop_param_range_t));
+  _page_params_t *bound = g_malloc(sizeof(_page_params_t)
+                                   + n_ranges * sizeof(dt_iop_param_range_t));
   bound->module = self;
   bound->n_ranges = n_ranges;
   memcpy(bound->ranges, ranges, n_ranges * sizeof(dt_iop_param_range_t));
 
-  // params_size is signed, so compare in the same type the offsets are in
-  const size_t params_size = MAX(self->params_size, 0);
-
-  for(int r = 0; r < n_ranges; r++)
-  {
-    // a range that runs past the parameters would read whatever follows them
-    if(ranges[r].offset + ranges[r].size > params_size)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_iop_page_bind_params] %s: range %d (%zu+%zu) is outside"
-               " its %zu byte parameters",
-               self->op, r, ranges[r].offset, ranges[r].size, params_size);
-      g_free(bound);
-      return;
-    }
-  }
-
   g_object_set_data_full(G_OBJECT(page), DT_IOP_PAGE_PARAMS_KEY, bound, g_free);
 }
 
-gboolean dt_iop_page_params_changed(GtkWidget *page)
+/* Collect the parts of a module's params a notebook page governs: the fields
+   of the parameter widgets on it, wherever they are nested, and the ranges it
+   was bound to. Sections and collapsible sections keep folded content in the
+   widget tree, so it is included. With visible_only, widgets a module has
+   hidden are left out; bound ranges always count. */
+static void _page_ranges(GtkWidget *w,
+                         const gboolean visible_only,
+                         dt_iop_module_t **module,
+                         GArray *ranges)
 {
-  const _page_params_t *bound = _page_params(page);
-  if(!bound) return FALSE;
-
-  const uint8_t *params = bound->module->params;
-  const uint8_t *defaults = bound->module->default_params;
-
-  for(int r = 0; r < bound->n_ranges; r++)
+  const _page_params_t *bound = g_object_get_data(G_OBJECT(w), DT_IOP_PAGE_PARAMS_KEY);
+  if(bound)
   {
-    if(memcmp(params + bound->ranges[r].offset,
-              defaults + bound->ranges[r].offset,
-              bound->ranges[r].size))
-      return TRUE;
+    *module = bound->module;
+    g_array_append_vals(ranges, bound->ranges, bound->n_ranges);
   }
 
-  return FALSE;
+  if(visible_only && !gtk_widget_get_visible(w)) return;
+
+  if(DT_IS_BAUHAUS_WIDGET(w))
+  {
+    const size_t size = dt_bauhaus_widget_get_field_size(w);
+    dt_iop_module_t *m = dt_bauhaus_widget_get_module(w);
+    if(!size || !m || !m->params) return;
+
+    const ptrdiff_t offset = (uint8_t *)dt_bauhaus_widget_get_field(w)
+                             - (uint8_t *)m->params;
+    if(offset < 0 || (size_t)offset + size > (size_t)MAX(m->params_size, 0)) return;
+
+    *module = m;
+    g_array_append_val(ranges, ((dt_iop_param_range_t){ offset, size }));
+  }
+  else if(GTK_IS_CONTAINER(w))
+  {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(w));
+    for(GList *c = children; c; c = g_list_next(c))
+      _page_ranges(c->data, visible_only, module, ranges);
+    g_list_free(children);
+  }
 }
 
-gboolean dt_iop_page_params_reset(GtkWidget *page)
+static void _reset_widgets(GtkWidget *w,
+                           gpointer user_data)
 {
-  const _page_params_t *bound = _page_params(page);
-  if(!bound) return FALSE;
-
-  dt_iop_module_t *self = bound->module;
-
-  for(int r = 0; r < bound->n_ranges; r++)
-    memcpy((uint8_t *)self->params + bound->ranges[r].offset,
-           (uint8_t *)self->default_params + bound->ranges[r].offset,
-           bound->ranges[r].size);
-
-  /* Nothing was moved through a widget, so the gui has to be told, and the
-     graph modules redraw from gui_update(). */
-  dt_iop_gui_update(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-
-  return TRUE;
+  if(DT_IS_BAUHAUS_WIDGET(w))
+    dt_bauhaus_widget_reset(w);
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _reset_widgets, NULL);
 }
 
+void dt_iop_page_reset(GtkWidget *page)
+{
+  dt_iop_module_t *module = NULL;
+  GArray *ranges = g_array_new(FALSE, FALSE, sizeof(dt_iop_param_range_t));
+  _page_ranges(page, FALSE, &module, ranges);
+
+  if(module && module->default_params)
+  {
+    for(guint r = 0; r < ranges->len; r++)
+    {
+      const dt_iop_param_range_t *range = &g_array_index(ranges, dt_iop_param_range_t, r);
+      memcpy((uint8_t *)module->params + range->offset,
+             (uint8_t *)module->default_params + range->offset,
+             range->size);
+    }
+
+    dt_iop_gui_update(module);
+    dt_dev_add_history_item(darktable.develop, module, TRUE);
+  }
+  else
+  {
+    // a page that is not part of a processing module resets its widgets
+    _reset_widgets(page, NULL);
+  }
+
+  g_array_free(ranges, TRUE);
+}
+
+static void _highlight_changed_tab(GtkWidget *page,
+                                   gpointer notebook)
+{
+  dt_iop_module_t *module = NULL;
+  GArray *ranges = g_array_new(FALSE, FALSE, sizeof(dt_iop_param_range_t));
+  _page_ranges(page, TRUE, &module, ranges);
+
+  gboolean is_changed = FALSE;
+  for(guint r = 0; module && module->default_params && r < ranges->len && !is_changed; r++)
+  {
+    const dt_iop_param_range_t *range = &g_array_index(ranges, dt_iop_param_range_t, r);
+    is_changed = memcmp((uint8_t *)module->params + range->offset,
+                        (uint8_t *)module->default_params + range->offset,
+                        range->size) != 0;
+  }
+  g_array_free(ranges, TRUE);
+
+  GtkWidget *label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), page);
+  if(is_changed)
+    dt_gui_add_class(label, "changed");
+  else
+    dt_gui_remove_class(label, "changed");
+}
+
+static void _refresh_notebooks(GtkWidget *w,
+                               gpointer user_data)
+{
+  if(GTK_IS_NOTEBOOK(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _highlight_changed_tab, w);
+
+  if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _refresh_notebooks, NULL);
+}
+
+void dt_iop_gui_refresh_tabs(dt_iop_module_t *module)
+{
+  if(module && module->widget) _refresh_notebooks(module->widget, NULL);
+}
 
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {

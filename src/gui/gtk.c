@@ -37,9 +37,9 @@
 #include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 // dt_masks_get_edit_mode: the flexi panel's edge halo stands down while
 // on-canvas mask editing is armed (see _flexi_proximity_poll)
-#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
@@ -5864,7 +5864,6 @@ GdkModifierType dt_key_modifier_state()
 */
 }
 
-
 static void _notebook_size_callback(GtkNotebook *notebook,
                                     GdkRectangle *allocation,
                                     gpointer *data)
@@ -5958,7 +5957,7 @@ static float _action_process_tabs(const gpointer target,
       gtk_notebook_prev_page(notebook);
       break;
     case DT_ACTION_EFFECT_RESET:;
-      dt_bauhaus_reset_page(notebook, reset_page);
+      dt_iop_page_reset(reset_page);
       dt_action_widget_toast(NULL, GTK_WIDGET(notebook), "%s %s",
                              gtk_notebook_get_tab_label_text(notebook, reset_page),
                              _("reset"));
@@ -6069,9 +6068,8 @@ static void _notebook_button_press_callback(GtkGestureSingle *gesture,
   if(n_press != 2) return;
 
   GtkNotebook *notebook = GTK_NOTEBOOK(dt_gui_get_widget(gesture));
-  dt_bauhaus_reset_page(notebook,
-                        gtk_notebook_get_nth_page
-                        (notebook, gtk_notebook_get_current_page(notebook)));
+  dt_iop_page_reset(gtk_notebook_get_nth_page
+                    (notebook, gtk_notebook_get_current_page(notebook)));
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
