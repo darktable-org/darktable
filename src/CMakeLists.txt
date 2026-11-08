@@ -27,6 +27,7 @@ FILE(GLOB SOURCE_FILES
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
+  "common/collection_navigation.c"
   "common/color_harmony.c"
   "common/color_picker.c"
   "common/color_vocabulary.c"

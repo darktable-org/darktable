@@ -474,6 +474,7 @@ typedef struct darktable_t
   const struct dt_pwstorage_t *pwstorage;
   struct dt_camctl_t *camctl;
   const struct dt_collection_t *collection;
+  struct dt_collection_navigation_state_t *collection_navigation;
   struct dt_selection_t *selection;
   struct dt_points_t *points;
   struct dt_imageio_t *imageio;
