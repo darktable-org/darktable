@@ -48,7 +48,7 @@ uninstrumented build of the same build type.
 
 | Value | What it finds | Cost | Notes |
 |---|---|---|---|
-| `address` | heap/stack/global overflows, use-after-free, double free | ~2x CPU, ~3x RSS | includes LeakSanitizer, but leak reporting is off by default (see below) |
+| `address` | heap/stack/global overflows, use-after-free, double free | ~2x CPU, ~3x RSS | includes LeakSanitizer, so leaks are reported too (see below) |
 | `undefined` | signed overflow, bad shifts, misaligned access, invalid casts, null deref | ~1.2x CPU | cheapest useful signal, good default for CI |
 | `leak` | memory leaks at exit | ~native | standalone LSan, without ASan's slowdown |
 | `thread` | data races, lock-order inversions | ~5-15x CPU, ~5-10x RSS | see the OpenMP caveat below |
@@ -138,9 +138,12 @@ Without the preflight the symptom is misleading: every test fails in a fraction
 of a second with `FAILS: darktable-cli errored`, which looks like a darktable
 bug rather than an environment one.
 
-**Leak reporting is off under `address`.** darktable-cli exits without tearing
-down its GTK/glib/lua state, so exit-time leak reports would fire on every
-single test. Build with `--sanitize leak` when you actually want to hunt leaks.
+**`address` reports leaks as well.** ASan's built-in LeakSanitizer runs at exit
+and writes to `lsan.<pid>`, filtered through `lsan.supp`. A test typically shows
+a handful of direct leaks, small allocations darktable never frees, plus a few
+hundred indirect ones reachable only through them. Leaks do not change the exit
+status (that is `halt_on_error=0`), so the image comparison still runs. Use
+`--sanitize leak` for leak checking without ASan's slowdown.
 
 **OpenCL is off by default.** `--with-opencl` makes the suite render every test
 a second time on the GPU, into `output-cl.png` beside the CPU's `output.png`,
@@ -157,11 +160,9 @@ findings in code you neither own nor can fix.
 
 Which sanitizer actually pays for that depends on the build:
 
-* `address` builds run with `detect_leaks=0` (see above), so leaks are never
-  reported and `lsan.supp` is not consulted at all. What can still reach you is
-  driver-internal noise reported through ASan's interceptors.
-* `leak` builds are where `lsan.supp` earns its keep, and where the GPU pass
-  will turn up allocations you have to add to it.
+* `address` and `leak` builds both consult `lsan.supp`, and the GPU pass will
+  turn up driver allocations you have to add to it. `address` builds can also
+  surface driver-internal noise through ASan's interceptors.
 
 To extend it, run the suite, find the `Direct leak` / `Indirect leak` entries in
 the log directory, pick a frame that identifies the owning library, and add one

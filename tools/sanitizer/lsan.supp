@@ -1,7 +1,7 @@
 # LeakSanitizer suppressions for darktable.
 #
-# Only used by -DDT_SANITIZE=leak builds (ASan builds run with detect_leaks=0,
-# see sanitizer-env.sh.in).
+# Used by -DDT_SANITIZE=leak builds and by the LeakSanitizer built into
+# -DDT_SANITIZE=address builds.
 #
 # Syntax: leak:<substring of a function name or of a source/library path>
 # Add entries here as runs turn up allocations that are owned by a library and
