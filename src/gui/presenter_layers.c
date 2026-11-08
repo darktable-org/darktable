@@ -1465,19 +1465,24 @@ static void _target(dt_presenter_backend_t *self,
   if(w->transport->target) w->transport->target(w->transport, headroom);
 }
 
-// a new platform goes here behind its build option, NULL for windows not on it
-dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window)
+// a new platform goes here behind its build option, NULL with no reason
+// for windows not on it
+dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window,
+                                                   gchar **reason)
 {
 #ifdef HAVE_WAYLAND
-  return dt_presenter_wayland_new(window->toplevel, window);
+  return dt_presenter_wayland_new(window->toplevel, window, reason);
 #else
+  *reason = NULL;
   return NULL;
 #endif
 }
 
-dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window)
+dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window,
+                                                 gchar **reason)
 {
-  dt_presenter_transport_t *transport = window->platform->transport(window->platform);
+  dt_presenter_transport_t *transport = window->platform->transport(window->platform,
+                                                                    reason);
   if(!transport) return NULL;
 
   _window_t *w = g_malloc0(sizeof(_window_t));

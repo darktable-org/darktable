@@ -120,11 +120,12 @@ struct dt_presenter_transport_t
 void dt_presenter_window_present(dt_presenter_window_t *window);
 
 #ifdef HAVE_WAYLAND
-/** the Wayland platform of toplevel, or NULL if the compositor cannot take
- * the transport: the window then paints with cairo on its system display
- * profile for as long as it exists */
+/** the Wayland platform of toplevel. NULL with *reason NULL if toplevel is
+ * no Wayland window, NULL with *reason set, which the caller frees, if the
+ * compositor cannot take the transport */
 dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                  dt_presenter_window_t *window);
+                                                  dt_presenter_window_t *window,
+                                                  gchar **reason);
 #endif
 
 // clang-format off

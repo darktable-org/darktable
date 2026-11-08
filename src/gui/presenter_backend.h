@@ -20,12 +20,12 @@
 
 /*
  * internal to the presenter: what presenter.c asks of a window's backend
- * and of its platform. the backend is chosen at the window's first
- * presenting draw, and again whenever the choice changes: layered
+ * and of its platform. the core chooses both in one place, at the
+ * window's first presenting draw and later from an idle: layered
  * (presenter_layers.c) while the platform color-manages the window's tagged
- * content and has a transport for it, otherwise, or with
- * ui_last/display_force_cairo set, cairo (presenter_cairo.c). see
- * dev-doc/display_presentation.md.
+ * content and has a transport for it, otherwise cairo (presenter_cairo.c),
+ * which ui_last/display_force_cairo and a failed native setup also force.
+ * see dev-doc/display_presentation.md.
  */
 
 #include "common/colorspaces.h"
@@ -117,20 +117,29 @@ struct dt_presenter_backend_t
 };
 
 /*
- * a native platform's side of a window, for as long as the window exists,
- * whatever its backend: whether the platform color-manages the window's
- * tagged content now, which a move to another monitor or a new color mode
- * can change, and the transport of the layered backend
- * (presenter_layers.h), which exists only while the window is native
+ * a native platform's side of a window, while the window may be native,
+ * whatever its backend: not forced to cairo, and no native setup failed.
+ * the core frees it when either becomes true and makes another when the
+ * user takes the force back, so a window may have several platforms in
+ * turn. it says whether the platform color-manages the window's tagged
+ * content now, which a move to another monitor or a new color mode can
+ * change, reports the screen's headroom, and makes the transport of the
+ * layered backend (presenter_layers.h), which exists only while the window
+ * is native. the core starts a new headroom target for each platform, so
+ * a platform's report generations need not follow its predecessor's
  */
 struct dt_presenter_platform_t
 {
   // TRUE while the platform color-manages the window's tagged content. the
   // platform calls dt_presenter_window_choose() when that changes
   gboolean (*native)(dt_presenter_platform_t *self);
-  // the transport of the window's layers, or NULL if it cannot set up
-  dt_presenter_transport_t *(*transport)(dt_presenter_platform_t *self);
-  // the window is gone, after its backend
+  // the transport of the window's layers, or NULL with *reason set, which
+  // the caller frees, if it cannot set up
+  dt_presenter_transport_t *(*transport)(dt_presenter_platform_t *self,
+                                         gchar **reason);
+  // the window is gone or may no longer be native. a native backend goes
+  // first, its transport using the platform until freed; a cairo backend
+  // stays and outlives it
   void (*free)(dt_presenter_platform_t *self);
 };
 
@@ -139,11 +148,18 @@ typedef struct dt_presenter_window_t
   GtkWidget *toplevel;
   // DT_COLORSPACE_DISPLAY for the main window, DISPLAY2 for the second
   dt_colorspaces_color_profile_type_t kind;
-  // NULL where the platform has no transport. the backend is layered if
-  // native is TRUE, and NULL while it is chosen
+  // NULL while the window may not be native, and where the platform has
+  // no transport. the backend is layered if native is TRUE, and NULL only
+  // while a backend is being made: a choice that keeps the kind keeps it
   dt_presenter_platform_t *platform;
   dt_presenter_backend_t *backend;
   gboolean native;
+  // ui_last/display_force_cairo as the last choice read it, and whether
+  // native setup failed since the user last changed it: a failed window
+  // tries native again only when the key changes
+  gboolean forced, failed;
+  // the idle source of a queued choice, or 0
+  guint choice;
   // presenter.c's records of the window's presenting widgets
   GList *widgets;
   // the headroom target the core settled from the platform's reports, with
@@ -173,15 +189,22 @@ float dt_presenter_window_target(const dt_presenter_window_t *window);
 /** for backends: draw the window's presenting widgets again */
 void dt_presenter_window_redraw(dt_presenter_window_t *window);
 /** for platforms: what decides the window's backend may have changed.
- * choose it again, and switch to it if it is another one */
+ * queues a choice, which an idle runs and which switches if the backend
+ * chosen is another one; the backend in use stays callable until then.
+ * also allowed while the platform sets up */
 void dt_presenter_window_choose(dt_presenter_window_t *window);
 
-/** the native platform of window, or NULL where the platform has no
- * transport */
-dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window);
-/** the layered backend of window on its platform's transport, or NULL if
- * the transport cannot set up */
-dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window);
+/** the native platform of window. NULL with *reason NULL where native
+ * presentation is not implemented (X11, macOS, Windows, big endian), NULL
+ * with *reason set, which the caller frees, if it cannot set up. may be
+ * made again after it was freed */
+dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window,
+                                                   gchar **reason);
+/** the layered backend of window on its platform's transport, or NULL
+ * with *reason set, which the caller frees, if the transport cannot set
+ * up */
+dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window,
+                                                 gchar **reason);
 /** the cairo backend of window */
 dt_presenter_backend_t *dt_presenter_cairo_new(dt_presenter_window_t *window);
 

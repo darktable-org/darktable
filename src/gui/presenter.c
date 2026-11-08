@@ -119,11 +119,22 @@ static void _settle_stop(dt_presenter_window_t *window)
 
 // whatever the platform owned goes back to the system display profile,
 // which has headroom 1 (_describe_system_display() in colorspaces.c). the
-// target stays: the platform goes on reporting, and a native backend
-// chosen again describes its image for it at setup
+// target stays while the platform does: it goes on reporting, and a native
+// backend chosen again describes its image for it at setup
 static void _give_back(dt_presenter_window_t *window)
 {
   dt_colorspaces_set_window_output(window->kind, NULL);
+}
+
+// the target goes with the platform that reported it: the next platform's
+// first report is taken at once (dt_presenter_target_report()), whatever
+// generation it starts at, which may be its predecessor's
+static void _platform_drop(dt_presenter_window_t *window)
+{
+  _settle_stop(window);
+  window->platform->free(window->platform);
+  window->platform = NULL;
+  dt_presenter_target_init(&window->target);
 }
 
 static void _preferences_changed(gpointer instance,
@@ -132,9 +143,11 @@ static void _preferences_changed(gpointer instance,
 static void _window_free(gpointer data)
 {
   dt_presenter_window_t *window = data;
+  if(window->choice) g_source_remove(window->choice);
   DT_CONTROL_SIGNAL_DISCONNECT(_preferences_changed, window);
   _settle_stop(window);
   while(window->widgets) _widget_detach(window->widgets->data);
+  // before the platform, which its transport may use until it is freed
   window->backend->free(window->backend);
   if(window->platform) window->platform->free(window->platform);
   _give_back(window);
@@ -147,55 +160,112 @@ static void _toplevel_unrealize(GtkWidget *toplevel,
   g_object_set_data(G_OBJECT(toplevel), WINDOW_KEY, NULL);
 }
 
-static gboolean _wants_native(dt_presenter_window_t *window)
+// the one place that decides the window's backend and platform: at the
+// window's first presenting draw, and from the idle every later request
+// queues
+static void _choose(dt_presenter_window_t *window)
 {
-  // an escape hatch for compositor or driver bugs in the native backends
-  return window->platform && !dt_conf_get_bool("ui_last/display_force_cairo")
-    && window->platform->native(window->platform);
+  const char *name = window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second";
+  // an escape hatch for compositor or driver bugs in the native backends.
+  // stored on every choice: the preferences handler retries a failed
+  // window only when the key differs from the one the window follows
+  window->forced = dt_conf_get_bool("ui_last/display_force_cairo");
+
+  // why native setup failed in this choice
+  gchar *reason = NULL;
+  if(!window->forced && !window->failed && !window->platform)
+  {
+    window->platform = dt_presenter_platform_new(window, &reason);
+    if(reason) window->failed = TRUE;
+  }
+
+  const gboolean wanted = !window->forced && !window->failed && window->platform
+                          && window->platform->native(window->platform);
+  // a window being made has no backend yet, which is not a cairo one
+  const gboolean had = window->backend != NULL;
+  const gboolean replace = !had || wanted != window->native;
+  if(replace)
+  {
+    if(had)
+    {
+      // the kept presentations go too, being each backend's own
+      for(GList *l = window->widgets; l; l = g_list_next(l)) _widget_release(l->data);
+      dt_presenter_backend_t *old = window->backend;
+      window->backend = NULL;
+      old->free(old);
+    }
+    window->backend = wanted ? dt_presenter_layered_new(window, &reason) : NULL;
+    window->native = window->backend != NULL;
+    if(wanted && !window->native) window->failed = TRUE;
+    if(!window->native)
+    {
+      window->backend = dt_presenter_cairo_new(window);
+      _give_back(window);
+    }
+  }
+
+  // not tied to the backend changing: a cairo window watching the
+  // platform's verdict keeps its backend when forced, and loses the
+  // platform, so that a forced window makes no color-management requests
+  if((window->forced || window->failed) && window->platform) _platform_drop(window);
+
+  // a failed promotion is logged although the backend stays cairo
+  if(replace || reason)
+  {
+    if(window->native)
+      dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: native", name);
+    else if(window->forced)
+      dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo: forced by"
+               " ui_last/display_force_cairo", name);
+    else if(window->failed)
+      dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo: native setup failed: %s",
+               name, reason ? reason : "no reason given");
+    else if(!window->platform)
+      dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo: no native presentation"
+               " on this platform", name);
+    else
+      dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo: the compositor does not"
+               " color-manage the window now", name);
+  }
+  g_free(reason);
+
+  // the window's producers render for its new serial; until then its
+  // frames are shown converted. a window being made is in its first draw
+  if(replace && had) dt_presenter_window_redraw(window);
 }
 
-static void _set_backend(dt_presenter_window_t *window)
+static gboolean _choice_idle(gpointer data)
 {
-  const gboolean wanted = _wants_native(window);
-  window->backend = wanted ? dt_presenter_layered_new(window) : NULL;
-  window->native = window->backend != NULL;
-  if(!window->native)
-  {
-    window->backend = dt_presenter_cairo_new(window);
-    _give_back(window);
-  }
-  dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: %s",
-           window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-           window->native ? "native"
-           : wanted ? "cairo, the native backend did not set up"
-           : dt_conf_get_bool("ui_last/display_force_cairo")
-             ? "cairo, forced by ui_last/display_force_cairo"
-           : "cairo");
+  dt_presenter_window_t *window = data;
+  // first: a platform this choice makes may ask for another while it sets
+  // up, which then finds nothing to change
+  window->choice = 0;
+  _choose(window);
+  return G_SOURCE_REMOVE;
 }
 
 // the platform's verdict can change while the window exists: chosen
 // again, as Chromium picks the output color space again for the display a
-// window moves to
+// window moves to. never at once: the request may come from a platform's
+// event handler or its own setup, which a switch would free or nest a
+// blocking setup in. the idle's priority is above GDK_PRIORITY_REDRAW, so
+// it runs before the next paint dispatched on its own, but it cannot
+// preempt a frame already running
 void dt_presenter_window_choose(dt_presenter_window_t *window)
 {
-  // being made: _window_get() chooses once the platform is set up
-  if(!window->backend || _wants_native(window) == window->native) return;
-
-  // the kept presentations go too, being each backend's own
-  for(GList *l = window->widgets; l; l = g_list_next(l)) _widget_release(l->data);
-  dt_presenter_backend_t *old = window->backend;
-  window->backend = NULL;
-  old->free(old);
-  _set_backend(window);
-  // the window's producers render for its new serial; until then its
-  // frames are shown converted
-  dt_presenter_window_redraw(window);
+  if(!window->choice)
+    window->choice = g_idle_add_full(G_PRIORITY_HIGH_IDLE, _choice_idle, window, NULL);
 }
 
-// the preferences dialog raises it when it closes, whatever changed
+// the preferences dialog raises it when it closes, whatever changed. a
+// change of the force key is also the user's retry of a failed native
+// setup; any other close leaves the window alone
 static void _preferences_changed(gpointer instance,
                                  dt_presenter_window_t *window)
 {
+  const gboolean forced = dt_conf_get_bool("ui_last/display_force_cairo");
+  if(forced == window->forced) return;
+  window->failed = FALSE;
   dt_presenter_window_choose(window);
 }
 
@@ -213,8 +283,9 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
     ? DT_COLORSPACE_DISPLAY
     : DT_COLORSPACE_DISPLAY2;
   dt_presenter_target_init(&window->target);
-  window->platform = dt_presenter_platform_new(window);
-  _set_backend(window);
+  // the one choice made at once: the draw making the window presents on
+  // its backend
+  _choose(window);
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _preferences_changed, window);
   g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, window, _window_free);
   g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);

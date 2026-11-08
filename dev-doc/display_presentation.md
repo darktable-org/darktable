@@ -296,7 +296,10 @@ description in use, and the compositor clips or fits that range to the
 screen (KWin clamps under relative intent).
 A cairo window has headroom 1 and publishes no target; the target goes
 on settling from the platform's reports, so a window that becomes native
-again ([Backends](#backends)) starts at the screen's.
+again ([Backends](#backends)) starts at the screen's. The target goes
+with the platform: when the core frees it (forced or failed), the settle
+timer stops and the target is 1.0 again, so the next platform's first
+report is taken at once, whatever generation it starts at.
 
 Why settle: every published image-headroom change reruns the window's
 pipes from the start, since `output_headroom` is in every cache line's hash
@@ -428,24 +431,56 @@ window's tagged content to the panel and the transport sets up, otherwise
 cairo. With the preference `ui_last/display_force_cairo` set
 (preferences > miscellaneous), every window is a cairo window
 ([output description](#output-description)): an escape hatch for
-compositor or driver bugs in a native backend. The key is read whenever
-the backend is chosen, and closing the preferences dialog
-(`DT_SIGNAL_PREFERENCES_CHANGE`) chooses every window's backend again.
+compositor or driver bugs in a native backend.
 
 The platform (`dt_presenter_platform_t` in `gui/presenter_backend.h`)
-watches the window for as long as it exists, whatever its backend, and its
-verdict can change while the window exists: a Wayland output switches
-color mode, or the window moves to a monitor described otherwise; on
-Windows, Advanced Color is set per monitor and toggled by the user. The
-backend is chosen when the window's first presenting widget draws and
-again on every new verdict (`dt_presenter_window_choose()` in
-`gui/presenter.c`), as Chromium picks the output color space again for the
-display a window is on. When the choice changes, every presenting widget's
-backend data goes, kept presentations included, the old backend is freed,
-the new one reports the window's output if it is native, or the core gives
-the output back to the system display profile, and the window draws again.
-Where no transport exists, as on X11, macOS and Windows today, a window
-has no platform and is a cairo window for as long as it exists.
+watches the window whatever its backend, and its verdict can change while
+the window exists: a Wayland output switches color mode, or the window
+moves to a monitor described otherwise; on Windows, Advanced Color is set
+per monitor and toggled by the user. A platform reports a new verdict with
+`dt_presenter_window_choose()`, as Chromium picks the output color space
+again for the display a window is on.
+
+One function in `gui/presenter.c`, `_choose()`, decides the backend and
+the platform. It runs at once when the window's first presenting widget
+draws, which needs a backend then, and otherwise from an idle at
+`G_PRIORITY_HIGH_IDLE`, one per window, that `dt_presenter_window_choose()`
+queues. The request may come from a platform's event handler or its own
+setup, which a switch must not free or nest a blocking setup in. The idle
+runs before the next separately dispatched paint (`GDK_PRIORITY_REDRAW` is
+lower), but cannot preempt a frame already running, so the old backend
+stays callable until then. In order, a choice:
+
+1. reads the force key and remembers it;
+2. makes the platform if there is none and the window is neither forced
+   nor failed;
+3. wants native only if not forced, not failed, a platform exists and its
+   verdict says so;
+4. replaces the backend only if there is none yet or it is the other kind:
+   every presenting widget's backend data goes, kept presentations
+   included, the old backend is freed, and the new one reports the
+   window's output if it is native, or the core gives the output back to
+   the system display profile;
+5. frees the platform if the window is forced or failed, whether or not
+   the backend changed, and resets the
+   [headroom target](#headroom-target). A native backend, whose transport
+   uses the platform, is already gone by then (step 4); a cairo backend
+   stays and outlives the platform;
+6. has the window draw again if the backend changed.
+
+So after every choice the platform exists only while the window may be
+native, and a window may have several platforms in turn. A forced window
+makes no color-management requests, and a failed one has no watcher left
+to promote it. Setup failing, the platform's or the transport's, marks the
+window failed: native is not tried again by later verdicts or preference
+changes, only when the force key changes, which closing the preferences
+dialog (`DT_SIGNAL_PREFERENCES_CHANGE`) compares with the key the window
+follows. The constructors return the reason for a failure, and the core
+writes one line per backend change and per failed native attempt, a
+failed promotion of a cairo window included (`-d control`): `native`, or
+`cairo:` with the cause. Where no transport exists, as on X11, macOS and
+Windows today, a window has no platform and is a cairo window for as long
+as it exists.
 
 The core, `gui/presenter.c`, keeps the widget records, the references on the frames
 of each widget's last draw, the test for a draw GTK clipped to a damaged
@@ -694,7 +729,7 @@ frames change. A failed one is dropped, the one in use stays, and the next
 target is described again. Setup waits for the events that end it, the
 preferred description's information and the transport's first
 description, however many round trips they take; a failed first
-description leaves the window on cairo. Preference changes during setup
+description leaves the window on cairo, failed ([Backends](#backends)). Preference changes during setup
 do not drop the description it waits for: the latest preference is read
 once setup is over. Layers are synchronized subsurfaces
 of GDK's surface, placed directly above it and below GTK's own subsurfaces

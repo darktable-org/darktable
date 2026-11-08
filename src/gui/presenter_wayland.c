@@ -18,10 +18,11 @@
 
 /*
  * the Wayland platform of the layered presenter backend. what watches the
- * compositor lives as long as the window, whatever its backend: the
- * globals, what the color manager supports and the preferred description
- * of GDK's surface, which give the headroom reports and whether the
- * compositor color-manages the window's tagged content now. the transport
+ * compositor lives while the window may be native, whatever its backend
+ * (dt_presenter_platform_t in presenter_backend.h): the globals, what the
+ * color manager supports and the preferred description of GDK's surface,
+ * which give the headroom reports and whether the compositor
+ * color-manages the window's tagged content now. the transport
  * exists while the window is native: the image layer is a subsurface
  * tagged with color-management-v1 as linear BT.2020, carrying the image in
  * half floats with its HDR headroom, and the compositor does the one
@@ -126,6 +127,9 @@ typedef struct _transport_t
   // ours: in use, and created, waiting for ready or failed
   struct wp_image_description_v1 *description, *pending;
   uint32_t description_max, pending_max;
+  // while the transport sets up, and why its first description failed
+  gboolean setup;
+  gchar *failure;
 
   GList *widgets;
 } _transport_t;
@@ -311,10 +315,18 @@ static void _description_failed(void *data,
 {
   _transport_t *t = data;
   if(description != t->pending) return;
-  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] %s window: image description for"
-           " headroom %.4f failed (%u): %s",
-           t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-           _headroom(t->pending_max), cause, message);
+  // the core logs a failed setup with its reason
+  if(t->setup)
+  {
+    g_free(t->failure);
+    t->failure = g_strdup_printf("image description for headroom %.4f failed (%u): %s",
+                                 _headroom(t->pending_max), cause, message);
+  }
+  else
+    dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] %s window: image description for"
+             " headroom %.4f failed (%u): %s",
+             t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+             _headroom(t->pending_max), cause, message);
   wp_image_description_v1_destroy(t->pending);
   t->pending = NULL;
 }
@@ -923,6 +935,7 @@ static void _free(dt_presenter_transport_t *self)
   if(t->pending) wp_image_description_v1_destroy(t->pending);
   if(t->description) wp_image_description_v1_destroy(t->description);
   wl_display_flush(t->p->display);
+  g_free(t->failure);
   g_free(t);
 }
 
@@ -932,14 +945,37 @@ static void _target(dt_presenter_transport_t *self,
   _describe((_transport_t *)self, headroom);
 }
 
-static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self)
+// what broke the connection, GDK's too: a protocol error is fatal to it
+// (wayland.xml, wl_display.error)
+static gchar *_display_error(struct wl_display *display)
+{
+  const int error = wl_display_get_error(display);
+  // a dispatch can fail without an error on the display, as when no file
+  // descriptor is left for the events
+  if(!error) return g_strdup("wayland event dispatch failed");
+  if(error != EPROTO) return g_strdup(g_strerror(error));
+  const struct wl_interface *interface;
+  uint32_t id;
+  const uint32_t code = wl_display_get_protocol_error(display, &interface, &id);
+  return g_strdup_printf("protocol error %u on %s@%u", code,
+                         interface ? interface->name : "unknown", id);
+}
+
+static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self,
+                                                gchar **reason)
 {
   _platform_t *p = (_platform_t *)self;
+  *reason = NULL;
   // unmapped, see _toplevel_unmap()
-  if(!p->parent) return NULL;
+  if(!p->parent)
+  {
+    *reason = g_strdup("the window is not mapped");
+    return NULL;
+  }
 
   _transport_t *t = g_malloc0(sizeof(_transport_t));
   t->p = p;
+  t->setup = TRUE;
 
   // wait for the first description on a queue of our own, so that waiting
   // dispatches nothing of GDK's or the platform's: the core may choose a
@@ -959,9 +995,12 @@ static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self)
   if(t->pending) wl_proxy_set_queue((struct wl_proxy *)t->pending, NULL);
   if(t->description) wl_proxy_set_queue((struct wl_proxy *)t->description, NULL);
   wl_event_queue_destroy(queue);
+  t->setup = FALSE;
 
   if(!t->description)
   {
+    // the description failed, or else waiting for it did
+    *reason = t->failure ? g_steal_pointer(&t->failure) : _display_error(p->display);
     _free(&t->transport);
     return NULL;
   }
@@ -1013,8 +1052,10 @@ static void _move_to_default_queue(_platform_t *p)
 }
 
 dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                  dt_presenter_window_t *window)
+                                                  dt_presenter_window_t *window,
+                                                  gchar **reason)
 {
+  *reason = NULL;
   GdkDisplay *gdk_display = gtk_widget_get_display(toplevel);
   GdkWindow *gdk_window = gtk_widget_get_window(toplevel);
   // wl_shm's formats are little endian, cairo's are native
@@ -1079,32 +1120,19 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
              p->gnome);
   if(!ok)
   {
-    const int error = wl_display_get_error(p->display);
-    char protocol_error[256];
-    if(error == EPROTO)
-    {
-      const struct wl_interface *interface;
-      uint32_t id;
-      const uint32_t code = wl_display_get_protocol_error(p->display, &interface, &id);
-      g_snprintf(protocol_error, sizeof(protocol_error), "protocol error %u on %s@%u",
-                 code, interface ? interface->name : "unknown", id);
-    }
-    const char *reason = error == EPROTO ? protocol_error : error ? g_strerror(error)
-      : !p->parent ? "no parent wl_surface"
-      : !p->compositor ? "wl_compositor version 4 not advertised"
-      : !p->subcompositor ? "wl_subcompositor not advertised"
-      : !p->shm ? "wl_shm not advertised"
-      : !p->manager ? "wp_color_manager_v1 not advertised"
-      : !p->done ? "color manager capabilities incomplete"
-      : !p->parametric ? "parametric image descriptions not advertised"
-      : !p->ext_linear ? "ext_linear transfer function not advertised"
-      : !p->bt2020 ? "BT.2020 primaries not advertised"
-      : !p->half_float ? "wl_shm format ABGR16161616F not advertised"
-      : "wayland event dispatch failed";
-    dt_print(error ? DT_DEBUG_ALWAYS : DT_DEBUG_CONTROL,
-             "[presenter wayland] %s window: %s: %s",
-             window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-             error ? "setup failed" : "native presentation unavailable", reason);
+    // the core logs it
+    *reason = wl_display_get_error(p->display) ? _display_error(p->display)
+      : g_strdup(!p->parent ? "no parent wl_surface"
+                 : !p->compositor ? "wl_compositor version 4 not advertised"
+                 : !p->subcompositor ? "wl_subcompositor not advertised"
+                 : !p->shm ? "wl_shm not advertised"
+                 : !p->manager ? "wp_color_manager_v1 not advertised"
+                 : !p->done ? "color manager capabilities incomplete"
+                 : !p->parametric ? "parametric image descriptions not advertised"
+                 : !p->ext_linear ? "ext_linear transfer function not advertised"
+                 : !p->bt2020 ? "BT.2020 primaries not advertised"
+                 : !p->half_float ? "wl_shm format ABGR16161616F not advertised"
+                 : "wayland event dispatch failed");
     _platform_free(&p->platform);
     return NULL;
   }
