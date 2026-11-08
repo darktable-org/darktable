@@ -850,6 +850,20 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(pressed, gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, __typeof__(data))), \
   dt_gui_connect_key(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
 
+/* keyboard focus entering or leaving the widget, called like the "enter" and
+ * "leave" handlers of GTK4's GtkEventControllerFocus; either may be NULL.
+ * The callbacks get no say in further handling: a widget that destroys
+ * itself on leave, and can also be ended another way, needs its own guard
+ * against being ended twice */
+GtkEventController *(dt_gui_connect_focus)(GtkWidget *widget,
+                                            GCallback enter,
+                                            GCallback leave,
+                                            gpointer data);
+#define dt_gui_connect_focus(widget, enter, leave, data) ( \
+  ASSERT_FUNC_TYPE(enter, void(*)(GtkEventController *, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(leave, void(*)(GtkEventController *, __typeof__(data))), \
+  dt_gui_connect_focus(GTK_WIDGET(widget), G_CALLBACK(enter), G_CALLBACK(leave), (data)))
+
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
 

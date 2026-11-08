@@ -9763,10 +9763,9 @@ static void _rename_commit(GtkWidget *entry, dt_iop_module_t *module)
   _queue_masks_list_rebuild(module);
 }
 
-static gboolean _rename_focus_out(GtkWidget *entry, GdkEvent *e, dt_iop_module_t *module)
+static void _rename_focus_out(GtkEventController *controller, dt_iop_module_t *module)
 {
-  _rename_commit(entry, module);
-  return FALSE;
+  _rename_commit(dt_gui_get_widget(controller), module);
 }
 
 
@@ -9816,8 +9815,7 @@ _start_rename_element(GtkWidget *evbox, dt_iop_module_t *module, const dt_mask_i
   dt_gui_box_add(name_box, dt_gui_expand(entry));
   gtk_box_reorder_child(GTK_BOX(name_box), entry, 0);
   g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(_rename_commit), module);
-  g_signal_connect(G_OBJECT(entry), "focus-out-event", G_CALLBACK(_rename_focus_out),
-                   module);
+  dt_gui_connect_focus(entry, NULL, _rename_focus_out, module);
   dt_gui_connect_key(entry, _rename_key_pressed, module);
   gtk_widget_show(entry);
   gtk_widget_grab_focus(entry);
@@ -11401,11 +11399,10 @@ static void _group_rename_commit(GtkWidget *entry, dt_iop_module_t *module)
   _queue_masks_list_rebuild(module);
 }
 
-static gboolean
-_group_rename_focus_out(GtkWidget *entry, GdkEvent *e, dt_iop_module_t *module)
+static void
+_group_rename_focus_out(GtkEventController *controller, dt_iop_module_t *module)
 {
-  _group_rename_commit(entry, module);
-  return FALSE;
+  _group_rename_commit(dt_gui_get_widget(controller), module);
 }
 
 // Escape abandons the edit and restores whatever name the entry started with
@@ -12105,8 +12102,7 @@ static void _start_group_rename(GtkWidget *lbl_box,
   dt_gui_box_add(lbl_box, dt_gui_expand(entry));
   gtk_box_reorder_child(GTK_BOX(lbl_box), entry, 0);
   g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(_group_rename_commit), module);
-  g_signal_connect(G_OBJECT(entry), "focus-out-event",
-                   G_CALLBACK(_group_rename_focus_out), module);
+  dt_gui_connect_focus(entry, NULL, _group_rename_focus_out, module);
   dt_gui_connect_key(entry, _rename_key_pressed, module);
   // disarm the header's drag source (on the ancestor tagged "group-key")
   // while renaming: it can arm on the ctrl+click without movement (as in

@@ -62,14 +62,12 @@ static void _misc_changed(GtkWidget *widget,
   _misc_synchronise(misc);
 }
 
-static gboolean _misc_focus_out(GtkWidget *entry,
-                                GdkEventFocus *event,
-                                gpointer user_data)
+static void _misc_focus_out(GtkEventController *controller,
+                            gpointer user_data)
 {
   _widgets_misc_t *misc = (_widgets_misc_t *)user_data;
-  if(misc->rule->cleaning) return FALSE;
-  _misc_changed(entry, user_data);
-  return FALSE;
+  if(misc->rule->cleaning) return;
+  _misc_changed(dt_gui_get_widget(controller), user_data);
 }
 
 static void _misc_tree_update(_widgets_misc_t *misc)
@@ -420,7 +418,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
 
   gtk_box_pack_start(GTK_BOX(hb), misc->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(misc->name), "activate", G_CALLBACK(_misc_changed), misc);
-  g_signal_connect(G_OBJECT(misc->name), "focus-out-event", G_CALLBACK(_misc_focus_out), misc);
+  dt_gui_connect_focus(misc->name, NULL, _misc_focus_out, misc);
   GtkGestureSingle *misc_gesture = dt_gui_connect_click(misc->name, _misc_press, NULL, misc);
   gtk_gesture_single_set_button(misc_gesture, GDK_BUTTON_SECONDARY);
   gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(misc_gesture), GTK_PHASE_TARGET);

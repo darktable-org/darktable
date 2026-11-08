@@ -3832,12 +3832,13 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_tagging_tag_destroy(GtkWidget *widget,
-                                         GdkEvent *event,
-                                         gpointer user_data)
+// enter and escape end the floating entry themselves, and destroying its
+// window then takes the focus away from it as well
+static void _lib_tagging_tag_destroy(GtkEventController *controller,
+                                     GtkWidget *window)
 {
-  gtk_widget_destroy(GTK_WIDGET(user_data));
-  return FALSE;
+  if(g_object_get_data(G_OBJECT(dt_gui_get_widget(controller)), "done")) return;
+  gtk_widget_destroy(window);
 }
 
 // http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
@@ -3853,8 +3854,7 @@ static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
   {
     case GDK_KEY_Escape:
       entry = dt_gui_get_widget(controller);
-      g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_lib_tagging_tag_destroy), 
-                                           d->floating_tag_window);
+      g_object_set_data(G_OBJECT(entry), "done", GINT_TO_POINTER(TRUE));
       g_list_free(d->floating_tag_imgs);
       gtk_widget_destroy(d->floating_tag_window);
       gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
@@ -3865,8 +3865,7 @@ static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
     case GDK_KEY_KP_Enter:
     {
       entry = dt_gui_get_widget(controller);
-      g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_lib_tagging_tag_destroy), 
-                                           d->floating_tag_window);
+      g_object_set_data(G_OBJECT(entry), "done", GINT_TO_POINTER(TRUE));
       dt_gui_cursor_set_busy();
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
@@ -3968,8 +3967,7 @@ static void _lib_tagging_tag_show(dt_action_t *action)
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_container_add(GTK_CONTAINER(d->floating_tag_window), entry);
-  g_signal_connect(entry, "focus-out-event",
-                   G_CALLBACK(_lib_tagging_tag_destroy), d->floating_tag_window);
+  dt_gui_connect_focus(entry, NULL, _lib_tagging_tag_destroy, d->floating_tag_window);
   dt_gui_connect_key(entry, _lib_tagging_tag_key_press, self);
 
   gtk_widget_show_all(d->floating_tag_window);
@@ -4058,7 +4056,7 @@ static void _menuitem_preferences(GSimpleAction *action,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL);
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_prefs_init_dialog_tagging(dialog);
 
