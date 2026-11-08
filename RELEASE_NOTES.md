@@ -919,6 +919,9 @@ changes (where available).
 - Fixed the wrong raster mask being applied when three or more external
   raster masks were used in one edit.
 
+- Fixed memory leaks of libgphoto2 event data, CameraFile objects, and
+  strdup'd filenames during tether polling and download.
+
 - Fixed diffuse or sharpen giving a different result on the CPU than
   with OpenCL whenever an anisotropy was set: the CPU path computed the
   diffusion weights with a coarse approximation of the exponential.
