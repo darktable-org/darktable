@@ -22494,7 +22494,7 @@ msgstr "Relatif à l’affichage, linéaire, RVB"
 #: ../src/iop/agx.c:1980
 msgctxt "section"
 msgid "basic curve parameters"
-msgstr "Paramètres basique de la courbe"
+msgstr "Paramètres de base de la courbe"
 
 #: ../src/iop/agx.c:1982 ../src/iop/agx.c:2138
 msgctxt "section"
@@ -22727,7 +22727,7 @@ msgstr ""
 #: ../src/iop/agx.c:2219
 msgctxt "section"
 msgid "input exposure range"
-msgstr "Étendu de l’exposition en entrée"
+msgstr "Plage d’exposition en entrée"
 
 #: ../src/iop/agx.c:2227
 msgid "relative exposure above mid-gray (white point)"
@@ -22767,7 +22767,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2254 ../src/iop/agx.c:2262
 msgid "exposure range"
-msgstr "Étendu de l’exposition"
+msgstr "Plage d’exposition"
 
 #: ../src/iop/agx.c:2260
 msgid "read exposure from metadata and exposure module"
