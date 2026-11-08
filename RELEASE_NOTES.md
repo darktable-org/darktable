@@ -294,7 +294,8 @@ changes (where available).
 
 - Drawn masks render faster, most of all masks with nested groups or
   shapes reused by several modules: each group no longer clears and
-  combines a full-size buffer just to copy in its first shape.
+  combines a full-size buffer just to copy in its first shape, and
+  folds each shape only over the part of the image it covers.
 
 - Lens correction with lensfun is faster on the OpenCL path: lensfun
   is now asked for its corrections on a coarse grid instead of for
