@@ -316,6 +316,10 @@ changes (where available).
   longer keeps the decoded raw of every exported image in memory
   until its cache is full.
 
+- darktable keeps fewer decoded raws in memory: the full-size image
+  cache now holds one image per worker thread plus one, instead of
+  twice the number of worker threads.
+
 - Modules showing a histogram of their input (levels, rgb levels, rgb
   curve, tone curve and color zones) now count it on the OpenCL device
   instead of copying the image back to the CPU.
