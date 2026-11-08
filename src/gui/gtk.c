@@ -5688,6 +5688,114 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
   return NULL;
 }
 
+typedef struct dt_gui_dialog_run_t
+{
+  GMainLoop *loop;
+  gint response;
+  gboolean done;     // ended before the loop ran, e.g. answered from show
+  gboolean destroyed;
+} dt_gui_dialog_run_t;
+
+static void _dialog_run_end(dt_gui_dialog_run_t *run)
+{
+  run->done = TRUE;
+  if(g_main_loop_is_running(run->loop)) g_main_loop_quit(run->loop);
+}
+
+static void _dialog_run_response(gpointer dialog,
+                                 const gint response,
+                                 dt_gui_dialog_run_t *run)
+{
+  run->response = response;
+  _dialog_run_end(run);
+}
+
+static void _dialog_run_unmap(GtkWidget *dialog,
+                              dt_gui_dialog_run_t *run)
+{
+  _dialog_run_end(run);
+}
+
+// the unmap that comes with the destroy ends the loop
+static void _dialog_run_destroy(GtkWidget *dialog,
+                                dt_gui_dialog_run_t *run)
+{
+  run->destroyed = TRUE;
+}
+
+// GtkDialog's own handler has already answered GTK_RESPONSE_DELETE_EVENT;
+// stop only the destroy that would follow, as gtk_dialog_run() did
+#if GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _dialog_run_close(GtkWindow *dialog,
+                                  dt_gui_dialog_run_t *run)
+#else
+static gboolean _dialog_run_close(GtkWidget *dialog,
+                                  GdkEvent *event,
+                                  dt_gui_dialog_run_t *run)
+#endif
+{
+  _dialog_run_end(run);
+  return TRUE;
+}
+
+gint dt_gui_dialog_run(GtkDialog *dialog)
+{
+  dt_gui_dialog_run_t run = { .loop = g_main_loop_new(NULL, FALSE),
+                              .response = GTK_RESPONSE_NONE };
+  g_object_ref(dialog);
+
+  const gboolean was_modal = gtk_window_get_modal(GTK_WINDOW(dialog));
+  if(!was_modal) gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  if(!gtk_widget_get_visible(GTK_WIDGET(dialog)))
+    gtk_widget_set_visible(GTK_WIDGET(dialog), TRUE);
+
+  g_signal_connect(dialog, "response", G_CALLBACK(_dialog_run_response), &run);
+  g_signal_connect(dialog, "unmap", G_CALLBACK(_dialog_run_unmap), &run);
+  g_signal_connect(dialog, "destroy", G_CALLBACK(_dialog_run_destroy), &run);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // after GtkDialog's class handler, which emits the response
+  g_signal_connect_after(dialog, "close-request", G_CALLBACK(_dialog_run_close), &run);
+#else
+  // after the handler GtkDialog connects at init, which emits the response
+  g_signal_connect(dialog, "delete-event", G_CALLBACK(_dialog_run_close), &run);
+#endif
+
+  if(!run.done) g_main_loop_run(run.loop);
+  g_main_loop_unref(run.loop);
+
+  // a destroyed dialog has dropped its handlers already
+  if(!run.destroyed)
+  {
+    if(!was_modal) gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
+    g_signal_handlers_disconnect_by_data(dialog, &run);
+  }
+
+  g_object_unref(dialog);
+  return run.response;
+}
+
+gint dt_gui_native_dialog_run(GtkNativeDialog *dialog)
+{
+  dt_gui_dialog_run_t run = { .loop = g_main_loop_new(NULL, FALSE),
+                              .response = GTK_RESPONSE_NONE };
+  g_object_ref(dialog);
+
+  const gboolean was_modal = gtk_native_dialog_get_modal(dialog);
+  gtk_native_dialog_set_modal(dialog, TRUE);
+
+  g_signal_connect(dialog, "response", G_CALLBACK(_dialog_run_response), &run);
+  gtk_native_dialog_show(dialog);
+
+  if(!run.done) g_main_loop_run(run.loop);
+  g_main_loop_unref(run.loop);
+
+  g_signal_handlers_disconnect_by_data(dialog, &run);
+  if(!was_modal) gtk_native_dialog_set_modal(dialog, FALSE);
+
+  g_object_unref(dialog);
+  return run.response;
+}
+
 gboolean dt_gui_show_yes_no_dialog(const char *title,
                                    const char *wname,
                                    const char *format, ...)
