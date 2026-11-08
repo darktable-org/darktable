@@ -3593,22 +3593,17 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-/* the channel tabs hold no widgets: one graph below them is pointed at
-   whichever channel the current tab selects, across two notebooks of which
-   only one is shown at a time. each tab names the bands of its channel */
+/* the channel tabs hold no widgets: one graph below them edits whichever
+   channel the current tab selects, across two notebooks of which only one is
+   shown at a time. each tab names the bands of its channel */
 static void _channel_page(GtkNotebook *notebook,
                           const char *name,
                           dt_iop_module_t *self,
                           const dt_iop_denoiseprofile_channel_t ch)
 {
-  const size_t size = sizeof(float) * DT_IOP_DENOISE_PROFILE_BANDS;
-  const dt_iop_param_range_t bands[] =
-  {
-    { offsetof(dt_iop_denoiseprofile_params_t, x) + ch * size, size },
-    { offsetof(dt_iop_denoiseprofile_params_t, y) + ch * size, size },
-  };
-  dt_iop_page_bind_params(dt_ui_notebook_page(notebook, name, NULL),
-                          self, bands, G_N_ELEMENTS(bands));
+  GtkWidget *page = dt_ui_notebook_page(notebook, name, NULL);
+  dt_iop_page_bind_field(page, self, "x", ch);
+  dt_iop_page_bind_field(page, self, "y", ch);
 }
 
 void gui_init(dt_iop_module_t *self)
