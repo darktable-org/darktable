@@ -203,7 +203,10 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
-  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
+  // while creating there is no point yet: a double-click is just another click,
+  // and an empty form's points must never be dereferenced
+  if(!gui->creation && form->points
+     && which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
   {
     // double-click resets curvature
     dt_masks_point_gradient_t *gradient = form->points->data;
