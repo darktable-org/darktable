@@ -635,11 +635,6 @@ void dt_gui_container_remove_children(GtkContainer *container);
 // instead; it's a bit slower but safer).
 void dt_gui_container_destroy_children(GtkContainer *container);
 
-void dt_gui_menu_popup(GtkMenu *menu,
-                       GtkWidget *button,
-                       GdkGravity widget_anchor,
-                       GdkGravity menu_anchor);
-
 /* Forward the scroll event a scroll controller is currently dispatching to
  * another widget, as if that widget had received it directly (used for the
  * alt+scroll channel-tab switching in the wavelet/channel-band modules).
