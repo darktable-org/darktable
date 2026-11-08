@@ -38,6 +38,7 @@
 
 #include "color-management-v1-client-protocol.h"
 
+#include <errno.h>
 #include <gdk/gdkwayland.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -294,8 +295,9 @@ static void _preferred_failed(void *data,
                               const char *message)
 {
   _platform_t *p = data;
-  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] preferred image description failed: %s",
-           message);
+  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] %s window: preferred image description"
+           " failed (%u): %s", p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           cause, message);
   p->preferred_failed = TRUE;
 }
 
@@ -309,8 +311,10 @@ static void _description_failed(void *data,
 {
   _transport_t *t = data;
   if(description != t->pending) return;
-  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] image description for %u nits failed: %s",
-           t->pending_max, message);
+  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] %s window: image description for"
+           " headroom %.4f failed (%u): %s",
+           t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           _headroom(t->pending_max), cause, message);
   wp_image_description_v1_destroy(t->pending);
   t->pending = NULL;
 }
@@ -460,9 +464,10 @@ static void _create_description(_transport_t *t,
   t->pending = wp_image_description_creator_params_v1_create(creator);
   t->pending_max = t->p->luminances ? max_lum : 0;
   wp_image_description_v1_add_listener(t->pending, &_description_listener, t);
-  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: image description for %u nits"
-           " requested", t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-           t->pending_max);
+  dt_print(DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
+           "[presenter wayland] %s window: image description requested, headroom %.4f,"
+           " %s luminances", t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           _headroom(t->pending_max), t->p->luminances ? "explicit" : "protocol-default");
 }
 
 static void _set_output(_transport_t *t)
@@ -539,8 +544,8 @@ static void _info_done(void *data,
   dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: %s",
            p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
            native ? "the compositor color-manages it"
-                  : "mutter's default color mode (mutter#4597 workaround),"
-                    " using cairo with the system display profile");
+                  : "mutter's default color mode requires application-side display conversion"
+                    " (mutter#4597)");
   dt_presenter_window_choose(p->window);
 }
 
@@ -598,10 +603,11 @@ static void _description_ready(void *data,
   t->description = t->pending;
   t->description_max = t->pending_max;
   t->pending = NULL;
-  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: image description for %u nits"
-           " in use, headroom %.4f",
+  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: linear BT.2020, FP16 shm,"
+           " %s intent, headroom %.4f, %s luminances",
            t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-           t->description_max, _headroom(t->description_max));
+           t->p->relative ? "relative" : "perceptual", _headroom(t->description_max),
+           t->p->luminances ? "explicit" : "protocol-default");
   // set now, and still shown with the image encoded for the old one: an
   // image description is double-buffered state, applied by the image
   // surface's next commit (color-management-v1, set_image_description).
@@ -954,15 +960,15 @@ static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self)
   if(t->description) wl_proxy_set_queue((struct wl_proxy *)t->description, NULL);
   wl_event_queue_destroy(queue);
 
-  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: %s, headroom %.2f",
-           p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-           t->description ? "color managed" : "no image description, using cairo",
-           _headroom(t->description_max));
   if(!t->description)
   {
     _free(&t->transport);
     return NULL;
   }
+  if(!p->luminances)
+    dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: linear output limited to SDR,"
+             " set_luminances not advertised",
+             p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second");
 
   t->transport.reserve = _reserve;
   t->transport.commit = _commit;
@@ -1064,16 +1070,41 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   // on the default queue, answered while GDK dispatches
   if(ok && p->changed_in_setup) _request_preferred(p);
 
-  dt_print
-    (DT_DEBUG_CONTROL,
-     "[presenter wayland] %s window: %s: parametric %d, ext_linear %d, bt2020 %d,"
-     " half float shm %d, luminances %d, gtk_shell1 %d, GNOME %d",
-     window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-     ok ? "color management available" : "color management not available, using cairo",
-     p->parametric, p->ext_linear, p->bt2020, p->half_float, p->luminances, p->gtk_shell,
-     p->gnome);
+  if(p->done)
+    dt_print(DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
+             "[presenter wayland] %s window: parametric %d, ext_linear %d, bt2020 %d,"
+             " half float shm %d, luminances %d, gtk_shell1 %d, GNOME %d",
+             window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+             p->parametric, p->ext_linear, p->bt2020, p->half_float, p->luminances, p->gtk_shell,
+             p->gnome);
   if(!ok)
   {
+    const int error = wl_display_get_error(p->display);
+    char protocol_error[256];
+    if(error == EPROTO)
+    {
+      const struct wl_interface *interface;
+      uint32_t id;
+      const uint32_t code = wl_display_get_protocol_error(p->display, &interface, &id);
+      g_snprintf(protocol_error, sizeof(protocol_error), "protocol error %u on %s@%u",
+                 code, interface ? interface->name : "unknown", id);
+    }
+    const char *reason = error == EPROTO ? protocol_error : error ? g_strerror(error)
+      : !p->parent ? "no parent wl_surface"
+      : !p->compositor ? "wl_compositor version 4 not advertised"
+      : !p->subcompositor ? "wl_subcompositor not advertised"
+      : !p->shm ? "wl_shm not advertised"
+      : !p->manager ? "wp_color_manager_v1 not advertised"
+      : !p->done ? "color manager capabilities incomplete"
+      : !p->parametric ? "parametric image descriptions not advertised"
+      : !p->ext_linear ? "ext_linear transfer function not advertised"
+      : !p->bt2020 ? "BT.2020 primaries not advertised"
+      : !p->half_float ? "wl_shm format ABGR16161616F not advertised"
+      : "wayland event dispatch failed";
+    dt_print(error ? DT_DEBUG_ALWAYS : DT_DEBUG_CONTROL,
+             "[presenter wayland] %s window: %s: %s",
+             window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+             error ? "setup failed" : "native presentation unavailable", reason);
     _platform_free(&p->platform);
     return NULL;
   }

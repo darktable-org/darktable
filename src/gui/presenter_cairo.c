@@ -34,6 +34,7 @@ typedef struct _backend_t
 {
   dt_presenter_backend_t backend;
   dt_presenter_window_t *window;
+  uint32_t logged_serial;
   // the kept presentation is a reference on GTK's target, not a copy
   gboolean reference;
 } _backend_t;
@@ -54,6 +55,20 @@ static cairo_t *_begin(dt_presenter_backend_t *self,
                        void **data,
                        cairo_t *widget_cr)
 {
+  if(darktable.unmuted & DT_DEBUG_CONTROL)
+  {
+    _backend_t *b = (_backend_t *)self;
+    dt_display_output_t output;
+    dt_presenter_window_output(b->window, &output);
+    if(output.serial != b->logged_serial)
+    {
+      char name[512] = { 0 };
+      dt_colorspaces_get_profile_name(output.image.profile, "en", "US", name, sizeof(name));
+      dt_print(DT_DEBUG_CONTROL, "[presenter cairo] %s window: using profile `%s'",
+               b->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second", name);
+      b->logged_serial = output.serial;
+    }
+  }
   if(!*data)
   {
     _widget_t *w = g_malloc0(sizeof(_widget_t));
