@@ -22,6 +22,8 @@
 
 #include <sqlite3.h>
 
+struct dt_presets_params_t; // common/presets.h
+
 // format flags stored into the presets database; the FOR_NOT_
 // variants are negated to keep existing presets
 typedef enum dt_gui_presets_format_flag_t
@@ -144,18 +146,17 @@ void dt_gui_presets_update_filter(const char *name,
 void dt_gui_presets_popup_menu_show_for_module(GtkWidget *button, dt_iop_module_t *module);
 
 /** ops for building a preset popup menu (dt_gui_presets_popup_menu_show()).
- *  The SELECT returned by query() must start with the columns
- *  name, op_params, writeprotect, description; extra columns may follow and
- *  are read from the live statement inside the callbacks. */
+ *  rows() returns the menu's presets as dt_presets_params_t (common/presets.h,
+ *  dt_presets_menu_rows_iop() or _lib()), name and writeprotect at least;
+ *  the callbacks get one row each. */
 typedef struct dt_gui_presets_menu_ops_t
 {
   gpointer data;                     /* caller context, passed to every callback */
   const gchar *hide_defaults_pref;   /* conf key: which default presets to hide */
-  gchar *(*query)(gpointer data);    /* build the SELECT string */
-  void (*bind)(sqlite3_stmt *stmt, gpointer data); /* bind the WHERE parameters */
-  gboolean (*is_default)(sqlite3_stmt *stmt, gpointer data);   /* dimmed built-in; NULL = none */
-  gboolean (*is_disabled)(sqlite3_stmt *stmt, gpointer data);  /* greyed out (wrong op version); NULL = none */
-  gboolean (*is_active)(sqlite3_stmt *stmt, gpointer data,
+  GList *(*rows)(gpointer data);     /* the presets, freed with dt_presets_params_free */
+  gboolean (*is_default)(const struct dt_presets_params_t *row, gpointer data);   /* dimmed built-in; NULL = none */
+  gboolean (*is_disabled)(const struct dt_presets_params_t *row, gpointer data);  /* greyed out (wrong op version); NULL = none */
+  gboolean (*is_active)(const struct dt_presets_params_t *row, gpointer data,
                         gboolean *writeprotect);               /* highlighted current-params match */
   int params_size;               /* 0 disables "store new preset" */
   void *activate_cb;             /* activate preset */

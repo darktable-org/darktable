@@ -1589,24 +1589,19 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
   const int32_t module_version = module_so->version();
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT name, op_version, op_params, blendop_version, blendop_params"
-      " FROM data.presets"
-      " WHERE operation = ?1",
-      -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, -1, SQLITE_TRANSIENT);
+  // read before updating them: the loop rewrites the rows it reads
+  GList *presets = dt_presets_list_stored(module_so->op);
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(const GList *l = presets; l; l = g_list_next(l))
   {
-    const char *name = (char *)sqlite3_column_text(stmt, 0);
-    int32_t old_params_version = sqlite3_column_int(stmt, 1);
-    const void *old_params = (void *)sqlite3_column_blob(stmt, 2);
-    const int32_t old_params_size = sqlite3_column_bytes(stmt, 2);
-    const int32_t old_blend_params_version = sqlite3_column_int(stmt, 3);
-    const void *old_blend_params = (void *)sqlite3_column_blob(stmt, 4);
-    const int32_t old_blend_params_size = sqlite3_column_bytes(stmt, 4);
+    const dt_presets_params_t *preset = l->data;
+    const char *name = preset->name;
+    int32_t old_params_version = preset->op_version;
+    const void *old_params = preset->op_params;
+    const int32_t old_params_size = preset->op_params_size;
+    const int32_t old_blend_params_version = preset->blendop_version;
+    const void *old_blend_params = preset->blendop_params;
+    const int32_t old_blend_params_size = preset->blendop_params_size;
 
     if(old_params_version == 0)
     {
@@ -1648,18 +1643,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                "[imageop_init_presets] found version %d for '%s' preset '%s'",
                old_params_version, module_so->op, name);
 
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "UPDATE data.presets"
-         " SET op_version=?1"
-         " WHERE operation=?2 AND name=?3", -1,
-         &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, old_params_version);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, name, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_presets_set_op_version(module_so->op, name, old_params_version);
     }
 
     if(module_version > old_params_version
@@ -1706,26 +1690,11 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                module_so->op, name, old_params_version, module_version,
                dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
-      // and write the new params back to the database
-      sqlite3_stmt *stmt2;
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE data.presets"
-                                  " SET op_version=?1, op_params=?2"
-                                  " WHERE operation=?3 AND name=?4",
-                                  -1, &stmt2, NULL);
-      // clang-format on
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
+      // and write the new params back to the database;
       // legacy_ret == -1 means that this is to convert to an auto-init module
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2,
-                                 auto_init ? NULL : new_params,
-                                 auto_init ?    0 : new_params_size,
-                                 SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_presets_set_op_params(module->op, name, module->version(),
+                               auto_init ? NULL : new_params,
+                               auto_init ?    0 : new_params_size);
 
       free(new_params);
       dt_iop_cleanup_module(module);
@@ -1795,30 +1764,15 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                module_so->op, name, old_blend_params_version, dt_develop_blend_version());
 
       // and write the new blend params back to the database
-      sqlite3_stmt *stmt2;
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE data.presets"
-                                  " SET blendop_version=?1, blendop_params=?2"
-                                  " WHERE operation=?3 AND name=?4",
-                                  -1, &stmt2, NULL);
-      // clang-format on
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dt_develop_blend_version());
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_blend_params,
-                                 sizeof(dt_develop_blend_params_t),
-                                 SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_presets_set_blendop_params(module->op, name, dt_develop_blend_version(),
+                                    new_blend_params, sizeof(dt_develop_blend_params_t));
 
       free(new_blend_params);
       dt_iop_cleanup_module(module);
       free(module);
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(presets, dt_presets_params_free);
 }
 
 static void _iop_preferences_changed(gpointer instance, gpointer self)
@@ -1834,18 +1788,8 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
 
     if(mod->pref_based_presets)
     {
-      sqlite3_stmt *stmt;
       // first delete auto built-in presets for this module
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "DELETE FROM data.presets"
-         " WHERE writeprotect = 1"
-         "   AND operation = ?1",
-         -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, mod->op, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      dt_presets_delete_builtin(mod->op);
 
       // and reload whatever new presets are needed for the new workflow
       _init_presets(mod);
@@ -1858,19 +1802,10 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
 static void _init_presets_actions(dt_iop_module_so_t *module)
 {
   /** load shortcuts for presets **/
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name"
-                              " FROM data.presets"
-                              " WHERE operation=?1"
-                              " ORDER BY writeprotect DESC, rowid",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    dt_action_define_preset(&module->actions, (const char *)sqlite3_column_text(stmt, 0));
-  }
-  sqlite3_finalize(stmt);
+  GList *names = dt_presets_names_by_rowid(module->op);
+  for(const GList *l = names; l; l = g_list_next(l))
+    dt_action_define_preset(&module->actions, l->data);
+  g_list_free_full(names, g_free);
 }
 
 static void _init_module_so(void *m)

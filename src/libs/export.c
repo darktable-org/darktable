@@ -23,6 +23,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/presets.h"
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -448,20 +449,10 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
   // not in params when the current profile cannot be PQ
   const int pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT op_params"
-      " FROM data.presets"
-      " WHERE operation='export'"
-      " AND name = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, preset_name, -1, SQLITE_TRANSIENT);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  void *op_params = NULL;
+  int op_params_size = 0;
+  if(dt_presets_get_params_any_version("export", preset_name, &op_params, &op_params_size))
   {
-    const void *op_params = (void *)sqlite3_column_blob(stmt, 0);
-    const size_t op_params_size = sqlite3_column_bytes(stmt, 0);
-
     set_params(self, op_params, op_params_size);
 
     gboolean login = TRUE;
@@ -473,7 +464,7 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
     else
       dt_control_log(_("could not login to storage `%s'!"), d->storage_module->name(d->storage_module));
   }
-  sqlite3_finalize(stmt);
+  g_free(op_params);
 
   // restore previous settings
   set_params(self, params, params_size);
@@ -1405,18 +1396,10 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
   gtk_list_store_clear(GTK_LIST_STORE(model));
   gboolean has_active = FALSE;
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT name"
-      " FROM data.presets"
-      " WHERE operation='export'"
-      " AND op_version = ?1"
-      " ORDER BY name", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, self->version());
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *names = dt_presets_version_names("export", self->version(), FALSE);
+  for(const GList *l = names; l; l = g_list_next(l))
   {
-    const char *name = (char *)sqlite3_column_text(stmt, 0);
+    const char *name = l->data;
 
     gchar *setting = g_strdup_printf(CONFIG_PREFIX "batch_%s", name);
     gboolean active = dt_conf_get_bool(setting);
@@ -1441,7 +1424,7 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
       }
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(names, g_free);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->batch_export_button), has_active);
 
@@ -1908,19 +1891,16 @@ void init_presets(dt_lib_module_t *self)
 
   const int version = self->version();
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT rowid, op_version, op_params, name"
-      " FROM data.presets"
-      " WHERE operation='export'", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  // read before updating them: the loop rewrites the rows it reads
+  GList *presets = dt_presets_list_stored("export");
+  for(const GList *l = presets; l; l = g_list_next(l))
   {
-    const int rowid = sqlite3_column_int(stmt, 0);
-    const int op_version = sqlite3_column_int(stmt, 1);
-    const void *op_params = (void *)sqlite3_column_blob(stmt, 2);
-    const size_t op_params_size = sqlite3_column_bytes(stmt, 2);
-    const char *name = (char *)sqlite3_column_text(stmt, 3);
+    const dt_presets_params_t *preset = l->data;
+    const int rowid = preset->rowid;
+    const int op_version = preset->op_version;
+    const void *op_params = preset->op_params;
+    const size_t op_params_size = preset->op_params_size;
+    const char *name = preset->name;
 
     if(op_version != version)
     {
@@ -1930,13 +1910,7 @@ void init_presets(dt_lib_module_t *self)
                "[export_init_presets] found export preset '%s' with version %d,"
                " version %d was expected. dropping preset",
                name, op_version, version);
-      sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "DELETE FROM data.presets WHERE rowid=?1", -1,
-                                  &innerstmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
-      sqlite3_step(innerstmt);
-      sqlite3_finalize(innerstmt);
+      dt_presets_delete_at_rowid(rowid);
     }
     else
     {
@@ -2068,17 +2042,7 @@ void init_presets(dt_lib_module_t *self)
                  "[export_init_presets] updating export preset '%s'"
                  " from versions %d/%d to versions %d/%d",
                  name, fversion, sversion, new_fversion, new_sversion);
-        sqlite3_stmt *innerstmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE data.presets"
-                                    " SET op_params=?1"
-                                    " WHERE rowid=?2",
-                                    -1, &innerstmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_BLOB(innerstmt, 1, new_params, new_params_size,
-                                   SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, rowid);
-        sqlite3_step(innerstmt);
-        sqlite3_finalize(innerstmt);
+        dt_presets_set_op_params_at_rowid(rowid, new_params, new_params_size);
 
         free(new_fdata);
         free(new_sdata);
@@ -2094,16 +2058,10 @@ void init_presets(dt_lib_module_t *self)
                "[export_init_presets] export preset '%s' can't be updated"
                " from versions %d/%d to versions %d/%d. dropping preset",
                name, fversion, sversion, new_fversion, new_sversion);
-      sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "DELETE FROM data.presets WHERE rowid=?1", -1,
-                                  &innerstmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
-      sqlite3_step(innerstmt);
-      sqlite3_finalize(innerstmt);
+      dt_presets_delete_at_rowid(rowid);
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(presets, dt_presets_params_free);
 }
 
 void *legacy_params(dt_lib_module_t *self,

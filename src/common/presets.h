@@ -21,6 +21,9 @@
 #include "common/darktable.h"
 #include "develop/imageop.h"
 
+// upper bound of a preset's focal length range
+#define MAX_FOCAL_LEN 100000
+
 /** save preset to file */
 void dt_presets_save_to_file(const int rowid,
                              const char *preset_name,
@@ -80,6 +83,409 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
                                         gchar ***prev_split,
                                         gboolean isdefault,
                                         gboolean writeprotect);
+
+/** TRUE when the module has a preset of that name at that version */
+gboolean dt_presets_exists(const char *name,
+                           const char *operation,
+                           const int op_version);
+
+/** the module and version of the preset at rowid; FALSE, nothing set,
+    when there is none. Free *operation with g_free() */
+gboolean dt_presets_get_operation_from_rowid(const int rowid,
+                                             char **operation,
+                                             int *op_version);
+
+/** delete the preset at rowid unless it is write-protected */
+void dt_presets_delete_unprotected_from_rowid(const int rowid);
+
+/** a preset's fields as the preset edit dialog shows them */
+typedef struct dt_presets_details_t
+{
+  int rowid;
+  char *description;
+  char *model;
+  char *maker;
+  char *lens;
+  // the ISO bounds as SQLite prints them: the dialog cuts the decimals and
+  // spots FLT_MAX by its "e+38" suffix
+  char *iso_min;
+  char *iso_max;
+  double exposure_min;
+  double exposure_max;
+  double aperture_min;
+  double aperture_max;
+  double focal_length_min;
+  double focal_length_max;
+  int autoapply;
+  int filter;
+  int format;
+  int op_params_size;
+} dt_presets_details_t;
+
+/** read the preset of that name, module and version into details; FALSE
+    when there is none. Release with dt_presets_details_clear() */
+gboolean dt_presets_get_details(const char *name,
+                                const char *operation,
+                                const int op_version,
+                                dt_presets_details_t *details);
+void dt_presets_details_clear(dt_presets_details_t *details);
+
+/** a preset as the preset edit dialog saves it */
+typedef struct dt_presets_write_t
+{
+  const char *name;
+  const char *description;
+  const char *model;
+  const char *maker;
+  const char *lens;
+  double iso_min;
+  double iso_max;
+  double exposure_min;
+  double exposure_max;
+  double aperture_min;
+  double aperture_max;
+  double focal_length_min;
+  double focal_length_max;
+  int autoapply;
+  int filter;
+  int format;
+  // a processing module's preset: the fields below are written
+  gboolean iop;
+  const void *op_params;
+  int op_params_size;
+  int enabled;
+  const char *multi_name;
+  int multi_name_hand_edited;
+  // written for a processing module's preset, or a new one
+  const void *blendop_params;
+  int blendop_params_size;
+  int blendop_version;
+  // written for a new preset only
+  const char *operation;
+  int op_version;
+} dt_presets_write_t;
+
+/** update the preset at rowid, or insert a new one when rowid < 0 */
+void dt_presets_write_to_rowid(const int rowid, const dt_presets_write_t *p);
+
+/** overwrite the module parameters of the module's preset of that name,
+    whatever its version, with the given ones at version op_version */
+void dt_presets_update_params(const char *operation,
+                              const int op_version,
+                              const char *name,
+                              const void *op_params,
+                              const int op_params_size,
+                              const int enabled,
+                              const void *blendop_params,
+                              const int blendop_params_size,
+                              const int blendop_version);
+
+/** a preset's parameters, blobs copied with a zero byte after them: an
+    empty or NULL blob is NULL */
+typedef struct dt_presets_params_t
+{
+  int rowid;
+  char *name;
+  int op_version;
+  void *op_params;
+  int op_params_size;
+  int enabled;
+  void *blendop_params;
+  int blendop_params_size;
+  int blendop_version;
+  int writeprotect;
+  char *multi_name;
+  int multi_name_hand_edited;
+  int autoapply;
+} dt_presets_params_t;
+
+/** read the module's preset of that name and version into p (name is
+    left NULL); FALSE when there is none. Release with
+    dt_presets_params_clear() */
+gboolean dt_presets_get_params(const char *operation,
+                               const int op_version,
+                               const char *name,
+                               dt_presets_params_t *p);
+void dt_presets_params_clear(dt_presets_params_t *p);
+
+/** the name of the module's preset up to |direction| steps after name
+    (direction > 0) or before it (direction < 0), in the presets menu
+    order; the last one when fewer follow, NULL when none does. An empty
+    or NULL name starts from the end of the list. Free with g_free() */
+char *dt_presets_adjacent_name(const char *operation,
+                               const int op_version,
+                               const char *name,
+                               const int direction);
+
+/** the preset to auto-apply to the module for the image, among those
+    whose filters match it and the workflow preset: user presets before
+    built-in ones, the newest first. Read into p (name, op_params and
+    blendop_params only); FALSE when there is none */
+gboolean dt_presets_find_autoapply(const char *operation,
+                                   const int op_version,
+                                   const dt_image_t *image,
+                                   const gboolean is_display_referred,
+                                   const char *workflow_preset,
+                                   dt_presets_params_t *p);
+
+typedef struct dt_presets_name_t
+{
+  char *name;
+  gboolean writeprotect;
+} dt_presets_name_t;
+
+/** the module's presets, all versions, built-in ones first or last, then
+    by name. Free with g_list_free_full(list, dt_presets_name_free) */
+GList *dt_presets_list_names(const char *operation,
+                             const gboolean writeprotect_first);
+void dt_presets_name_free(gpointer data);
+
+/** the names of the module's presets at that version, by name, built-in
+    ones first when builtin_first. Free with g_list_free_full(list, g_free) */
+GList *dt_presets_version_names(const char *operation,
+                                const int op_version,
+                                const gboolean builtin_first);
+
+/** the name and module parameters of the module's presets at that
+    version, the user's only or all of them.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_list_params(const char *operation,
+                              const int op_version,
+                              const gboolean user_only);
+void dt_presets_params_free(gpointer data);
+
+/** delete all the module's presets at that version, built-in ones too */
+void dt_presets_delete_version(const char *operation, const int op_version);
+
+/** rename the module's preset at that version */
+void dt_presets_rename(const char *operation,
+                       const int op_version,
+                       const char *name,
+                       const char *new_name);
+
+/** the name of the auto-applied preset of a utility module matching the
+    image: built-in ones first, then by name, descending; NULL when there
+    is none. Free with g_free() */
+char *dt_presets_find_lib_autoapply(const char *operation,
+                                    const int op_version,
+                                    const dt_image_t *image);
+
+/** every stored preset of the module, all versions, with rowid, name,
+    op_version, op_params, blendop_version and blendop_params.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_list_stored(const char *operation);
+
+/** the names of the module's presets, built-in ones first, then in the
+    order they were stored. Free with g_list_free_full(list, g_free) */
+GList *dt_presets_names_by_rowid(const char *operation);
+
+/** set the version of the module's preset of that name, every version */
+void dt_presets_set_op_version(const char *operation,
+                               const char *name,
+                               const int op_version);
+
+/** replace the module parameters, and their version, of the module's
+    preset of that name; NULL params for an auto-init preset */
+void dt_presets_set_op_params(const char *operation,
+                              const char *name,
+                              const int op_version,
+                              const void *op_params,
+                              const int op_params_size);
+
+/** replace the blend parameters, and their version, of the module's
+    preset of that name */
+void dt_presets_set_blendop_params(const char *operation,
+                                   const char *name,
+                                   const int blendop_version,
+                                   const void *blendop_params,
+                                   const int blendop_params_size);
+
+/** delete the module's built-in presets */
+void dt_presets_delete_builtin(const char *operation);
+
+/** insert an unfiltered, user preset of a utility module */
+void dt_presets_insert_lib_preset(const char *name,
+                                  const char *operation,
+                                  const int op_version,
+                                  const void *op_params,
+                                  const int op_params_size);
+
+/** the module parameters of the module's preset of that name, whatever
+    its version; FALSE when there is none. Free *op_params with g_free() */
+gboolean dt_presets_get_params_any_version(const char *operation,
+                                           const char *name,
+                                           void **op_params,
+                                           int *op_params_size);
+
+/** replace the module parameters of the preset at rowid */
+void dt_presets_set_op_params_at_rowid(const int rowid,
+                                       const void *op_params,
+                                       const int op_params_size);
+
+/** delete the preset at rowid, write-protected or not */
+void dt_presets_delete_at_rowid(const int rowid);
+
+/** built-in presets: dt_gui_presets_add_with_blendop() and the
+    dt_gui_presets_update_*() setters of gui/presets.h call these; see there.
+    The operation is a module name. */
+void dt_presets_update_mml(const char *name,
+                           const char *op,
+                           const int32_t version,
+                           const char *maker,
+                           const char *model,
+                           const char *lens);
+
+void dt_presets_update_iso(const char *name,
+                           const char *op,
+                           const int32_t version,
+                           const float min,
+                           const float max);
+
+void dt_presets_update_av(const char *name,
+                          const char *op,
+                          const int32_t version,
+                          const float min,
+                          const float max);
+
+void dt_presets_update_tv(const char *name,
+                          const char *op,
+                          const int32_t version,
+                          const float min,
+                          const float max);
+
+void dt_presets_update_fl(const char *name,
+                          const char *op,
+                          const int32_t version,
+                          const float min,
+                          const float max);
+
+void dt_presets_update_format(const char *name,
+                              const char *op,
+                              const int32_t version,
+                              const int flag);
+
+void dt_presets_update_autoapply(const char *name,
+                                 const char *op,
+                                 const int32_t version,
+                                 const gboolean autoapply);
+
+void dt_presets_update_filter(const char *name,
+                              const char *op,
+                              const int32_t version,
+                              const int filter);
+
+void dt_presets_add_builtin(const char *name,
+                            const char *op,
+                            const int32_t version,
+                            const void *params,
+                            const int32_t params_size,
+                            const void *blend_params,
+                            const gboolean enabled);
+
+/** delete the built-in presets of every module */
+void dt_presets_delete_all_builtin(void);
+
+/** utility module presets: the dt_lib_presets_*() functions of libs/lib.h
+    call these; see there */
+void dt_presets_remove(const char *name, const char *operation, const int op_version);
+gchar *dt_presets_duplicate(const char *name, const char *operation, const int op_version);
+void dt_presets_update_named(const char *name,
+                             const char *operation,
+                             const int op_version,
+                             const char *new_name,
+                             const char *description,
+                             const void *op_params,
+                             const int32_t op_params_size);
+void dt_presets_add_lib(const char *name,
+                        const char *operation,
+                        const int32_t op_version,
+                        const void *op_params,
+                        const int32_t op_params_size,
+                        const gboolean readonly,
+                        const int format);
+
+/** delete all the module's presets, user ones too */
+void dt_presets_delete_module(const char *operation);
+
+/** set the version and module parameters of the preset at rowid */
+void dt_presets_upgrade_at_rowid(const int rowid,
+                                 const int op_version,
+                                 const void *op_params,
+                                 const int op_params_size);
+
+/** a preset as the preferences' presets tab lists it */
+typedef struct dt_presets_line_t
+{
+  int rowid;
+  char *name;
+  char *operation;
+  int autoapply;
+  char *model;
+  char *maker;
+  char *lens;
+  double iso_min;
+  double iso_max;
+  double exposure_min;
+  double exposure_max;
+  double aperture_min;
+  double aperture_max;
+  double focal_length_min;
+  double focal_length_max;
+  int writeprotect;
+} dt_presets_line_t;
+
+/** every preset of every module, by module then name.
+    Free with g_list_free_full(list, dt_presets_line_free) */
+GList *dt_presets_list_lines(void);
+/** the preset at rowid; FALSE when there is none. Release with
+    dt_presets_line_clear() */
+gboolean dt_presets_get_line_at_rowid(const int rowid, dt_presets_line_t *line);
+void dt_presets_line_clear(dt_presets_line_t *line);
+void dt_presets_line_free(gpointer data);
+
+/** the name and module parameters of every preset of the module, all
+    versions, built-in ones first, then by name when by_name.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_list_all_params(const char *operation, const gboolean by_name);
+
+/** stage in memory.history the auto-applied presets matching the image
+    (format flags iformat, excluded as dt_presets_get_filter() computes
+    them): the user's, or the built-in ones of the modules that have no
+    matching user preset. auto_module labels them by preset name rather
+    than instance number; skip_basecurve and skip_denoise leave out
+    basecurve, and denoiseprofile with rawdenoise */
+void dt_presets_stage_auto_apply(const dt_imgid_t imgid,
+                                 const dt_image_t *image,
+                                 const int iformat,
+                                 const int excluded,
+                                 const gboolean auto_module,
+                                 const gboolean skip_basecurve,
+                                 const gboolean skip_denoise);
+
+/** the module order list of the auto-applied ioporder preset matching the
+    image, the user's first; FALSE when there is none.
+    Free *op_params with g_free() */
+gboolean dt_presets_find_auto_ioporder(const dt_imgid_t imgid,
+                                       const dt_image_t *image,
+                                       const int iformat,
+                                       const int excluded,
+                                       void **op_params,
+                                       int *op_params_size);
+
+/** the rows of a processing module's presets menu, matching the image's
+    filters (all of them when image is NULL), built-in ones first or last,
+    then by name: name, op_params, writeprotect, blendop_params, op_version
+    and enabled. Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_menu_rows_iop(const char *operation,
+                                const dt_image_t *image,
+                                const gboolean default_first);
+
+/** the rows of a utility module's presets menu at that version: name,
+    op_params and writeprotect.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_menu_rows_lib(const char *operation,
+                                const int op_version,
+                                const gboolean default_first);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
