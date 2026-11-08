@@ -143,15 +143,12 @@ KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
     idioms -- holding the lock through the last use, copying the data instead of
     the pointer, transferring ownership so the publisher cannot free it -- leave
     the field a shared pointer.  None is distinguishable here, so a module that
-    has done one of them still gets flagged.  No such module is in the tree
-    today, which is why the rule returns one finding and that finding is a
-    confirmed defect; that is a fact about the tree, not a property of the rule.
-  * A widget touched from the pipe only to hand it to the main loop.
-    colorharmonizer's `_update_histogram()` does `g_object_ref(g->auto_detect)`
-    and `gdk_threads_add_idle()`; the ref is atomic and the GTK call happens on
-    the main thread, so this is the correct idiom, not a defect.  This one and
-    rgblevels' g->params are the two entries false-positives.json ships with, so
-    a default run does not show them.
+    has done one of them still gets flagged.  How many hits are real depends on
+    how many modules use one of these idioms, not on the rule.
+  * A widget touched from the pipe only to hand it to the main loop.  Taking
+    `g_object_ref()` on the widget and passing it to `g_idle_add()` or
+    `gdk_threads_add_idle()` is the correct idiom: the ref is atomic and the GTK
+    calls happen on the main thread.
   * A finding resting only on an `either` site -- see WHICH THREAD above.
 
 KNOWN LIMITS
@@ -171,15 +168,13 @@ KNOWN LIMITS
     property, the full pipe reads it (dev-doc/GUI_Threading.md, "Passing Values
     Between Pipes Through gui_data").  That needs the same lock, and no rule
     here looks for it: a field both pipes touch and GTK never does is invisible.
-    Not worth a rule, on the measurements: the whole population is the four
-    modules that call dt_dev_sync_pixelpipe_hash() -- colorreconstruction,
-    hazeremoval, levels, globaltonemap -- which `grep -l` enumerates faster than
-    any rule, and all four already lock every pipe-side access to payload and
-    hash, so nothing distinguishes them in the fact base.  Two of them were
-    hand-audited clean; colorreconstruction is a real defect, but for a reason
-    no lock-presence rule can see, which is what pointer_share is for.  Nor does
-    the complement help: fields touched on `pipe` and never on `gtk` number two
-    on the whole tree, one of them the colorharmonizer false positive above.
+    Not worth a rule: the population is the modules that call
+    dt_dev_sync_pixelpipe_hash(), which `grep -l` enumerates faster than any
+    rule.  Their payload and hash fields are also touched on the GTK side, so
+    the existing rules already treat them as shared and judge their locking,
+    and a rule for fields touched on `pipe` and never on `gtk` would find none
+    of them.  What a correctly locked payload can still get wrong is a pointer
+    escaping the lock, which is what pointer_share is for.
   * `g` is matched by convention, not by type.  A function that binds `g` to
     something other than the module's GUI data is skipped whole, so a real
     gui_data access in it is missed too.
@@ -220,12 +215,13 @@ USAGE
   expect.
 
   Python 3.8+, standard library only.  Exit status is 0 for a completed run
-  whatever it found, 1 when --fail-on-findings was given and something was
-  reported, and 2 for a wrong invocation -- which includes either --fail-on-*
-  gate with --format json or lemmalog, since those carry the facts the rules run
-  on and leave a gate nothing to fire on.  --fail-on-findings is off by default
-  and red on this tree: it passes only once every finding is either fixed or
-  recorded in false-positives.json, which is why nothing wires it into CI yet.
+  whatever it found, 1 when a --fail-on-* gate was given and fired, and 2 for a
+  wrong invocation -- which includes either --fail-on-* gate with --format json
+  or lemmalog, since those carry the facts the rules run on and leave a gate
+  nothing to fire on.  Both gates are off by default.  --fail-on-findings passes
+  only once every finding is either fixed or recorded in false-positives.json;
+  --fail-on-stale-false-positives-only fails only when a recorded entry has gone
+  stale, so it can pass while findings are still unreviewed.
   See BEFORE YOU FILE ANYTHING.
 """
 import argparse
@@ -258,12 +254,16 @@ EITHER = {
     "blend_colorspace", "default_colorspace",
 }
 # GTK-side: called from the main loop.
+#   change_image -- the darkroom's image switch calls it from the idle callback
+#                   _dev_load_requested_image(); its name matches no GTK_RE
+#                   pattern, so a module that does not also call it from
+#                   gui_init() would otherwise leave it unlabelled
 GTK = {
     "gui_init", "gui_update", "gui_cleanup", "gui_changed", "gui_focus",
     "gui_reset", "gui_post_expose", "gui_moved", "gui_button_pressed",
     "gui_button_released", "gui_scrolled", "gui_key_pressed",
     "mouse_moved", "button_pressed", "button_released", "scrolled",
-    "reload_defaults", "color_picker_apply", "init_presets",
+    "reload_defaults", "color_picker_apply", "init_presets", "change_image",
 }
 # Name-based labelling, applied before any propagation.  (^|_)action_process is
 # darktable's shortcut dispatch (dt_action_def_t.process): those handlers are
@@ -805,8 +805,8 @@ def lemmalog_facts(res):
         # Dedupe over what is emitted, not over the accesses: the fact carries
         # no line number, so two accesses that differ only by their line are
         # the same assertion, and asserting it twice tells the engine nothing.
-        # Deduping over the access tuple instead left 5041 of 9963 access facts
-        # duplicated on this tree.  Sorted for the same reason the field scan
+        # Deduping over the access tuple instead left about half the access
+        # facts duplicated.  Sorted for the same reason the field scan
         # above is: a fixed order is what makes two runs diffable.
         for (fn, f, lock, mode) in sorted({(a[0], a[1], a[2], a[4])
                                            for a in r["accesses"]}):
@@ -924,9 +924,10 @@ def finding_key(f, res, srcdir, cache):
 
     The text half is the source line behind every access.  It is what catches
     the edits that turn a false positive into a defect while leaving the facts
-    identical: colorharmonizer's `gdk_threads_add_idle(...)` replaced by a
-    direct GTK call, or its `g_object_ref` dropped, are both the same function,
-    the same lock and the same mode as before.  The facts half catches the
+    identical.  The example the key was designed on is colorharmonizer's former
+    widget hand-off (dropped in 7b8a19f0f5): its `gdk_threads_add_idle(...)`
+    replaced by a direct GTK call, or its `g_object_ref` dropped, would both
+    have kept the same function, lock and mode.  The facts half catches the
     converse -- a critical section removed around an access, which the text of
     the access line itself does not show.
     """
@@ -1411,7 +1412,7 @@ def main():
                          "in the run has to name the same one")
     ap.add_argument("--fail-on-findings", action="store_true",
                     help="exit 1 when anything is reported, for CI.  Off by "
-                         "default and red on this tree today: it passes only "
+                         "default.  It passes only "
                          "once every finding is either fixed or recorded in "
                          "false-positives.json")
     ap.add_argument("--fail-on-stale-false-positives-only", action="store_true",
@@ -1419,8 +1420,8 @@ def main():
                     help="exit 1 only when a false-positive entry has gone "
                          "stale -- somebody judged that finding harmless and "
                          "the code has changed since.  The weaker gate, and the "
-                         "one that passes on this tree today, so it is the one "
-                         "a CI job can use before the findings are worked off.  "
+                         "one a CI job can use before the findings are worked "
+                         "off.  "
                          "Reports the stale entries alone: the other findings "
                          "are not what this gate asks about")
     ap.add_argument("--why", action="store_true",
@@ -1478,9 +1479,8 @@ def main():
     # conjunction: --fail-on-findings already fails on everything the other does
     if args.fail_on_findings and args.fail_on_stale:
         die("--fail-on-findings and --fail-on-stale-false-positives-only are "
-            "two gates; pick one.  The first fails on any finding and is red on "
-            "this tree today; the second fails only on a judgement the source "
-            "has moved past")
+            "two gates; pick one.  The first fails on any finding; the second "
+            "fails only on a judgement the source has moved past")
     if args.confirm and (args.fail_on_findings or args.fail_on_stale):
         die("--confirm-false-positive rewrites the list and reports nothing, so "
             "there is no finding for a --fail-on-* gate to act on")
@@ -1607,9 +1607,9 @@ def main():
         print_report(fs, trees, len(suppressed))
 
     # 1 only on request: a run that merely found something is a completed run.
-    # The wide gate is red on this tree until the findings are worked off; the
-    # narrow one asks only whether a recorded judgement still holds, which is a
-    # question a CI job can already answer green.
+    # The wide gate stays red until the findings are worked off; the narrow one
+    # asks only whether a recorded judgement still holds, which a CI job can
+    # answer green before then.
     if (args.fail_on_findings and fs) or (args.fail_on_stale and stale):
         sys.exit(1)
 

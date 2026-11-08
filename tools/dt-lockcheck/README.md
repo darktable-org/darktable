@@ -89,8 +89,8 @@ detail that does not fit in a row.
 
 | flag | what it does |
 | --- | --- |
-| `--fail-on-findings` | exit 1 when anything is reported. The wide gate, and red on this tree today — see [Exit status](#exit-status) |
-| `--fail-on-stale-false-positives-only` | exit 1 only when a recorded false positive has gone stale, reporting those alone. The narrow gate, and the one that passes today |
+| `--fail-on-findings` | exit 1 when anything is reported. The wide gate: it fails until every finding is fixed or recorded as a false positive. See [Exit status](#exit-status) |
+| `--fail-on-stale-false-positives-only` | exit 1 only when a recorded false positive has gone stale, reporting those alone. The narrow gate, which can pass while findings are still unreviewed |
 
 Two environment variables stand in for a flag each, for CI, where a path does
 not belong in the invocation:
@@ -140,8 +140,8 @@ by it, for the same reason `--rules` does not touch them.
 
 `--fail-on-findings` and `--fail-on-stale-false-positives-only` are the two CI
 gates, both off by default, and a run may ask for at most one. See
-[Exit status](#exit-status) for what each fails on and why only the second one
-passes on this tree today.
+[Exit status](#exit-status) for what each fails on, and why only the second one
+can pass while findings are still unreviewed.
 
 
 ## Exit status
@@ -154,16 +154,18 @@ passes on this tree today.
 
 There are two gates, and a run may ask for at most one of them:
 
-- **`--fail-on-findings`** — exit 1 when anything is reported. It is red on this
-  tree today: 74 findings survive the
-  [false-positive list](#the-false-positive-list), and most are unreviewed or
-  filed-and-unfixed rather than wrong. It passes once every finding is either
-  fixed or recorded as judged, which is the condition for wiring it into CI.
+- **`--fail-on-findings`** — exit 1 when anything is reported. It stays red
+  while any finding survives the
+  [false-positive list](#the-false-positive-list), whether that finding is
+  unreviewed, filed and unfixed, or wrong. It passes once every finding is
+  either fixed or recorded as judged, which is the condition for wiring it into
+  CI.
 - **`--fail-on-stale-false-positives-only`** — exit 1 only when a recorded false
   positive has gone stale, i.e. somebody's judgement no longer covers the code
-  it was made about. This one **passes today**, so it is the gate a CI job or a
-  pre-commit hook can use now. It says nothing about findings nobody has ruled
-  on, which is exactly why it can be green. It also *reports* the stale entries
+  it was made about. It passes as long as the list is kept up to date, so it is
+  the gate a CI job or a pre-commit hook can use before every finding has been
+  reviewed. It says nothing about findings nobody has ruled on, which is exactly
+  why it can be green. It also *reports* the stale entries
   alone — in `report` and in `csv` — since a gate's output is read to find out
   why it fired, and the other findings are not what it fired on.
 
@@ -209,12 +211,13 @@ sentence.
 `distort_transform`, `distort_backtransform`, `blend_colorspace` and
 `default_colorspace`. It is easy to read those as pipe-only and be wrong:
 
-- `basecurve`'s `init_pipe()` calls `commit_params()` straight back
-  (`src/iop/basecurve.c:1450`), and switching image rebuilds the screen pipes
-  from an idle callback (`src/views/darkroom.c:1398`) — that is the GTK main
+- `basecurve`'s `init_pipe()` calls `commit_params()` straight back, and
+  switching image rebuilds the screen pipes from an idle callback,
+  `_dev_load_requested_image()` in `src/views/darkroom.c`. That is the GTK main
   loop, so both run there.
 - The colour picker calls `default_colorspace()` while building a picker button
-  (`src/gui/color_picker_proxy.c:148`), with `NULL` for both `pipe` and `piece`;
+  (`_init_picker()` in `src/gui/color_picker_proxy.c`), with `NULL` for both
+  `pipe` and `piece`;
   the blend GUI calls `blend_colorspace()` the same way.
 - Mask handling and darkroom zoom call `distort_transform()` and
   `distort_backtransform()` directly.
@@ -242,8 +245,7 @@ The first row is what covers darktable's own helpers: `dt_gui_connect_motion()`
 and the bauhaus quad setters register handlers without any of the spellings a
 keyword list would look for. The third is how the `dev->proxy` accessors are
 labelled — another module calls them and cannot take your `gui_lock`, which
-`dev-doc/GUI_Threading.md` covers under *Publishing `gui_data` Through a Proxy*
-(that document arrives with the pending dev-doc PR).
+`dev-doc/GUI_Threading.md` covers under *Publishing `gui_data` Through a Proxy*.
 
 Labels that come from the tables above are ground truth taken from the module
 API, and propagation never overwrites them.
@@ -281,33 +283,26 @@ exception: `widget_from_pipe` only fires on a `pipe` or `either` function, and
 those three are labelled `gtk`, while `pointer_share` asks about the field's
 type and threads rather than about any one access.
 
-`widget_from_pipe` is the narrowest of the five: on the tree this was written
-against it returns five fields across every module. One is a real defect
-([#21915](https://github.com/darktable-org/darktable/issues/21915)); three are
-`exposure`'s bauhaus sliders, read by `_exposure_proxy_handle_event()` through
-`dt_bauhaus_slider_get()` from a `dev->proxy` accessor another module calls on a
-thread of its own (two of the three are named by
-[#21974](https://github.com/darktable-org/darktable/issues/21974)); the last, `colorharmonizer`'s `auto_detect`, is a false
-positive — see [the widget hand-off](#before-you-file-anything) below. Five hits
-say nothing about how often the rule is right, only that it asks for little.
+`widget_from_pipe` is the narrowest of the five: across all of `src/iop` it
+returns only a handful of fields. That says nothing about how often it is
+right, only that it asks for little. Read each hit for how the pipe-side
+function is reached. A `dev->proxy` accessor such as `exposure`'s
+`_exposure_proxy_handle_event()` is labelled `either` because another module
+calls it, and only the callers in the source can tell whether any of them runs
+on a pipe thread. See [the widget hand-off](#before-you-file-anything) below for
+a shape that is a false positive.
 
-Rule by rule, over all of `src/iop` on that tree. The second column counts
-findings that name a field an already-confirmed defect report also names; the
-rest are unreviewed candidates, not refutations:
+The last line of a report counts its findings, so
+`./dt-lockcheck.py --rules NAME --include-false-positives` gives one rule's
+count on the tree you have.
 
-| rule | findings | names a confirmed defect's field |
-| --- | --- | --- |
-| `widget_from_pipe` | 5 | 3 |
-| `violation` | 34 | 16 |
-| `no_lock_share` | 36 | 25 |
-| `discipline_gap` | 59 | 1 |
-| `pointer_share` | 1 | 1 |
-
-`discipline_gap` is the one rule outside the default set, and that last row is
-why. It asks the least of the
-five: a lock somewhere, an unlocked access anywhere, and — unlike `violation` —
-no requirement that the two threads ever meet on the field. Most of what comes back is a field locked for one reason and
-read unlocked for another, which is not a defect. It is worth turning on when
+`discipline_gap` is the one rule outside the default set. It asks the least of
+the five: a lock somewhere, an unlocked access anywhere, and, unlike
+`violation`, no requirement that the two threads ever meet on the field. On the
+tree the tool was developed against it returned more findings than any other
+rule, and only one of them named a field from a confirmed defect report. Most
+of what comes back is a field locked for one reason and read unlocked for
+another, which is not a defect. It is worth turning on when
 you are auditing a single module by hand:
 
 ```sh
@@ -326,32 +321,29 @@ escape needs dataflow inside a function, which is out of reach here (see
 KNOWN LIMITS in the script), so the rule fires on the shape and every hit has
 to be read before it is believed.
 
-It is cheap to read, because the shape is rare. On the tree this was written
-against, `gui_data` holds 11 non-widget pointer fields touched from both
-threads, and the other three default rules already report 10 of them. The
-eleventh is `colorreconstruction`'s `can`, the frozen bilateral grid: copied
-out of `gui_data` under `gui_lock` at `colorreconstruction.c:634`, dereferenced
-at `:641` after the lock is released, and freed by the preview pipe at `:659`.
-Every access is under the lock, so the other four rules cannot see it, and it
-is a confirmed defect
-([#22060](https://github.com/darktable-org/darktable/issues/22060)).
+It is cheap to read, because the shape is rare: few non-widget pointer fields
+in `gui_data` are touched from both threads, and the other default rules
+already report most of those, because some access to them is unlocked. The
+case the rule was written for is `colorreconstruction`'s `can`, the frozen
+bilateral grid. `process()` copies it out of `gui_data` under `gui_lock` and
+thaws it after releasing the lock, while the preview pipe's own `process()`
+frees it under the lock and stores a new one. Every access is under the lock,
+so the other four rules cannot see it. It was reported as
+[#22060](https://github.com/darktable-org/darktable/issues/22060).
 
 ```sh
 ./dt-lockcheck.py --rules pointer_share
 ```
 
-One finding tree-wide is the whole point, and the rule cannot grow far past it:
-its output is bounded by the shared-pointer population, which is 11 fields on a
-91-module tree. Even in the worst case — every open finding in this tool
-"fixed" by adding locks, which is the wrong fix for a pointer — it returns 10.
-A bounded, readable list is what keeps it in the default set; if it ever stops
+The rule cannot grow far: its output is bounded by the number of shared
+pointer fields, which is small. Even in the worst case, with every open finding
+in this tool "fixed" by adding locks (the wrong fix for a pointer), it returns
+no more than that population. A bounded, readable list is what keeps it in the default set; if it ever stops
 being one, move it out beside `discipline_gap`.
 
-What it is really guarding is that fix path. Lock every access to
-`zonesystem`'s `in_preview_buffer`, `colormapping`'s `buffer`, `ashift`'s `buf`,
-`exposure`'s `deflicker_histogram`, `channelmixerrgb`'s `checker` or
-`toneequal`'s `full_preview_buf`, and every other rule here goes quiet on a
-field that is still use-after-free shaped. This one does not.
+What it is really guarding is that fix path. Lock every access to a shared
+buffer pointer, and every other rule here goes quiet on a field that is still
+use-after-free shaped. This one does not.
 
 
 ## Output formats
@@ -407,12 +399,12 @@ A finding whose [false-positive entry](#the-false-positive-list) has gone stale
 carries the judgement that was recorded, and the command that acts on it:
 
 ```
-colorharmonizer.c  g->auto_detect   (GtkWidget *)
-   unlocked: _update_histogram:306[pipe]
-   was a known false positive, confirmed 2026-08-30:
-     _update_histogram() runs on the pipe but never calls GTK: ...
+exposure.c  g->black   (GtkWidget *)
+   unlocked: _exposure_proxy_handle_event:880[either], _exposure_set_black:830[gtk], gui_changed:1052[gtk]
+   was a known false positive, confirmed 2026-09-01:
+     The widget accesses the rule flags are in _exposure_proxy_handle_event(), ...
    re-read the source; if it is still not a defect:
-     ./dt-lockcheck.py --confirm-false-positive colorharmonizer:auto_detect
+     ./dt-lockcheck.py --confirm-false-positive exposure:black
 ```
 
 A trailing `N findings.` line closes the report, counting every rule asked for,
@@ -461,7 +453,7 @@ ran:
 | key | contents |
 | --- | --- |
 | `module` | the module name, the key repeated |
-| `src` | the basename of the analysed source, with its extension — `.cc` for `bilateral`, `lens` and `tonemap`, which are C++ |
+| `src` | the basename of the analysed source, with its extension — `.cc` for the modules written in C++ |
 | `fields` | every field of the `gui_data` struct, mapped to its declared type. A nested anonymous struct appears once, under its own member name, with type `struct` |
 | `accesses` | one entry per `g->field` mention, `[function, field, lock, line, mode]` |
 | `thread` | every function in the file, mapped to its inferred thread |
@@ -557,8 +549,8 @@ cross-thread — including whether that went through an
 - you are writing the finding up, and want the evidence chain as the skeleton of
   a bug report.
 
-Narrow it first — one `--module`, or one `--rules` — since the trees take a full
-report from roughly 250 lines to 1600. It needs the lemmalog engine, attaches to
+Narrow it first — one `--module`, or one `--rules` — since the trees make a
+full report about six times longer. It needs the lemmalog engine, attaches to
 `--format report` only, and explains the *first* unlocked site of each finding
 rather than all of them. See [Proof trees](#proof-trees).
 
@@ -581,18 +573,14 @@ against the Datalog rules if you would rather add rules than write code.
 
 ## Before you file anything
 
-Findings are **candidates**. On the tree this was developed against, 52 of the
-76 default-settings findings name a field from a defect report that already
-existed (76 is the count before suppression: two of them are recorded in the
-[false-positive list](#the-false-positive-list), so a default run reports 74),
-measured against the 23 reports of the `gui_data` audit (#21915-#21919, #21974,
-#22005-#22009, #22057-#22064, #22066-#22069); the other 24 have not been ruled
-on either way, and a spot-check of a dozen of them found a clear majority to be
-real defects of the same shape. No one has measured a false-positive rate, and
-`discipline_gap` is markedly worse than the four it is left out beside.
-`pointer_share` returns a single field on this tree and that field is a
-confirmed defect, but one hit is not a precision measurement — read it like the
-rest. Please confirm a finding by reading the code before opening an issue.
+Findings are **candidates**. On the tree the tool was developed against, about
+two thirds of the default-rule findings named a field that a report from the
+`gui_data` audit also named (#21915-#21919, #21974, #22005-#22009,
+#22057-#22064, #22066-#22069). A spot-check of a dozen of the rest found a clear
+majority to be real defects of the same shape. No one has measured a
+false-positive rate, and `discipline_gap` is markedly worse than the four it is
+left out beside. `pointer_share` fires rarely, and a handful of hits is not a
+precision measurement either: read them like the rest. Please confirm a finding by reading the code before opening an issue.
 
 Five false-positive causes are worth knowing, because you will meet them:
 
@@ -612,14 +600,11 @@ Five false-positive causes are worth knowing, because you will meet them:
   field.** Partly handled: a function that writes eight or more distinct fields
   under the lock, and never reads them back, is treated as bulk initialisation
   and no longer counts as evidence of a per-field convention.
-- **A widget touched from the pipe only to hand it to the main loop.**
-  colorharmonizer's `_update_histogram()` runs on a pipe thread and does
-  `g_object_ref(g->auto_detect)` followed by `gdk_threads_add_idle()`. The ref
-  is atomic and the GTK call itself happens on the main thread, so this is the
-  correct idiom — but `widget_from_pipe` sees a widget field touched from the
-  pipe and reports it. This one and `rgblevels`' `g->params` are the two
-  entries the [false-positive list](#the-false-positive-list) ships with, so a
-  default run no longer shows them.
+- **A widget touched from the pipe only to hand it to the main loop.** Taking
+  `g_object_ref()` on the widget and passing it to `g_idle_add()` or
+  `gdk_threads_add_idle()` is the correct idiom: the ref is atomic and the GTK
+  calls happen on the main thread. `widget_from_pipe` still reports it, because
+  it sees a widget field touched from the pipe.
 - **A finding that rests entirely on an `either` site.** `either` counts on both
   sides of the cross-thread test because it *can* run on either thread — but on
   the path that matters it may always run on one. Check the proof tree, or the
@@ -637,20 +622,18 @@ And the limits:
   pipe uses to hand a value to another — the preview pipe computes a
   whole-image property and the full pipe reads it. That needs the same lock
   (see *Passing Values Between Pipes Through `gui_data`* in
-  `dev-doc/GUI_Threading.md`, arriving with the pending dev-doc PR), and no rule here looks
-  for it: a field both pipes touch and the GTK thread never does is invisible
+  `dev-doc/GUI_Threading.md`), and no rule here looks for it: a field both pipes touch and the GTK thread never does is invisible
   to this tool.
 - Coverage is `src/iop/*.c` and `*.cc` only. Shared code under `src/develop/`
-  and `src/libs/` is not analysed. Widening the glob would not help: across all
-  of `src`, a `*_gui_data_t` struct exists in 91 `src/iop` sources and 4 others
-  (`imageio/format/{jxl,jpeg,webp}.c`, `imageio/storage/piwigo.c`), and those
-  four hand their GUI values to the worker through a params snapshot
+  and `src/libs/` is not analysed. Widening the glob would not help. Outside
+  `src/iop`, the `*_gui_data_t` structs belong to imageio format and storage
+  modules, which hand their GUI values to the worker through a params snapshot
   (`write_image()` takes a `dt_imageio_module_data_t *` and never reaches
-  `gui_data`), which is the separation this tool exists to recommend.
+  `gui_data`). That is the separation this tool exists to recommend.
   `src/libs` uses a different convention entirely — `dt_lib_<name>_t *d =
   self->data` — and has no IOP callbacks for the thread labels to key off.
-  Covering `src/develop/preview_data.c`, the one file outside `src/iop` that
-  takes the same `gui_lock`, would need a different extractor: it has no
+  Shared code that takes the same `gui_lock`, such as
+  `src/develop/preview_data.c`, would need a different extractor: it has no
   `gui_data` struct.
 - `g` is matched by convention, not by type. A function that binds `g` to
   something that is not the module's GUI data — a gain map, a gaussian handle —
@@ -706,13 +689,15 @@ Two halves, because neither is safe alone:
   around or renaming a local does not fire it;
 - the **text of every access line**, verbatim from the source.
 
-Each catches what the other misses. Replacing colorharmonizer's
-`gdk_threads_add_idle()` with a direct GTK call, or dropping its `g_object_ref`,
-turns that entry's false positive into a real defect while leaving every fact
-identical — same function, same lock, same mode — so a facts-only key would
-carry the suppression silently forward. The converse is a critical section
-removed from around an access: the facts show it, the access line's own text
-does not.
+Each catches what the other misses. When the key was designed,
+colorharmonizer's `_update_histogram()` handed its `auto_detect` button to the
+main loop with `g_object_ref()` and `gdk_threads_add_idle()`, recorded as a false
+positive (the module dropped that hand-off in 7b8a19f0f5). Replacing the idle
+call with a direct GTK call, or dropping the ref, would have turned that
+false positive into a real defect while leaving every fact identical: the same
+function, the same lock, the same mode. A facts-only key would have carried the
+suppression silently forward. The converse is a critical section removed from
+around an access: the facts show it, the access line's own text does not.
 
 This was measured rather than guessed, over 6105 finding-transitions across 80
 commits touching `src/iop`, plus seven targeted edits against a real entry:
@@ -762,6 +747,11 @@ the recorded reason unless you pass a new one. Either way the tool rewrites the
 key, the site list and the confirmation date, prints what it touched, and exits
 without reporting.
 
+Name functions in a reason, not line numbers. The report already prints
+`function:line` for every site, and the key does not cover the reason, so a line
+number in it goes out of date with every unrelated edit above it while the
+entry stays current.
+
 ### Reading and overriding it
 
 ```sh
@@ -774,8 +764,8 @@ An ordinary run is how you read them in context: the stderr banner names every
 stale entry, and each one is marked in the report with its recorded reason among
 the other findings. The gate below narrows the report to the stale entries
 themselves, which is what you want when the question is why the gate fired; it
-filters the output only — a full run takes about a second either way and
-`--module` does not make it faster.
+filters the output only: a full run takes as long either way, and `--module`
+does not make it faster.
 
 `--include-false-positives` puts the *suppressed* findings back in the report,
 which is the run to make when a module rather than the tree is the subject and
@@ -784,8 +774,8 @@ it is an error with `--format json` or `lemmalog`, which carry the facts the
 rules run on and never see the list at all.
 
 `--fail-on-stale-false-positives-only` is the gate over the same question, for a
-CI job or a pre-commit hook, and it is the only gate here that passes on this
-tree today. Its report and its csv carry the stale entries and nothing else. It is mutually exclusive with `--fail-on-findings`; asking for both
+CI job or a pre-commit hook, and it is the gate that can pass before every
+finding has been reviewed. Its report and its csv carry the stale entries and nothing else. It is mutually exclusive with `--fail-on-findings`; asking for both
 is an error rather than a conjunction.
 
 Each entry also carries its site list as `function:line[thread](lock)`, purely
@@ -795,10 +785,10 @@ so a diff of the file is legible. Those line numbers are informational and are
 ### What it is not
 
 It is not a baseline of every finding, and neither gate is a new-findings gate.
-`--fail-on-findings` fails on all 74, most of which are unreviewed or filed and
-unfixed rather than wrong; `--fail-on-stale-false-positives-only` fails only on
-the handful of judgements recorded here, and is blind to a defect nobody has
-ever looked at. A gate that fails on findings that are *new* would need a
+`--fail-on-findings` fails on every finding the list does not suppress,
+including the unreviewed and the filed but unfixed;
+`--fail-on-stale-false-positives-only` fails only on the judgements recorded
+here, and is blind to a defect nobody has ever looked at. A gate that fails on findings that are *new* would need a
 checked-in baseline of all of them, a different artifact with different
 invalidation needs; that does not exist here.
 
@@ -856,8 +846,8 @@ unlocked sites and the tree explains only the first one — the `pipe` or
 **This is additive.** The Python and the Datalog implement the same rules and
 produce the same findings; nothing about which findings are reported changes.
 
-- **Off by default**, because the trees take a full report from roughly 250
-  lines to 1600. They pay for themselves on a narrowed run — one `--module`, or
+- **Off by default**, because the trees make a full report about six times
+  longer. They pay for themselves on a narrowed run — one `--module`, or
   one rule you are about to write up.
 - `--why` **fails (exit 2) when no lemmalog binary can be found**, rather than
   quietly printing a plain report. You asked for the trees, so a missing engine
@@ -874,7 +864,8 @@ produce the same findings; nothing about which findings are reported changes.
   engine's output is captured rather than inherited, so it cannot reach stdout;
   the line naming the binary goes to stderr, like the other status lines.
 
-Cost is one `lemmalog` run for the whole report, about 0.5 s over ~3.3k facts.
+Cost is one `lemmalog` run for the whole report, over the facts
+`--format lemmalog` writes, which roughly doubles the run time.
 A failure *after* the engine has been located and started — engine error,
 timeout, missing `rules.lemma` — degrades to a warning on stderr and a report
 without trees, since by then there is a report worth printing.
