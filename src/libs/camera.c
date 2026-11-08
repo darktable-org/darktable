@@ -332,6 +332,7 @@ static void _show_property_popupmenu_clicked(GtkWidget *widget, gpointer user_da
     gtk_widget_insert_action_group(widget, 
                                    "camera",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
 

@@ -2306,6 +2306,7 @@ static void _primaries_popupmenu_callback(GtkWidget *button,
     gtk_widget_insert_action_group(button,
                                    "agx-primaries",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();

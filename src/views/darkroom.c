@@ -2018,6 +2018,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w,
     gtk_widget_insert_action_group(w, 
                                    "styles",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   /* if we got any styles, lets popup menu for selection */

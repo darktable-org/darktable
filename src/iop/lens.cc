@@ -4270,6 +4270,7 @@ static void _set_camera_action_group(GtkWidget *button,
     gtk_widget_insert_action_group(button,
                                    "camera",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 }
 
@@ -4637,6 +4638,7 @@ static void _set_lens_action_group(GtkWidget *button,
     gtk_widget_insert_action_group(button,
                                    "lens",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 }
 

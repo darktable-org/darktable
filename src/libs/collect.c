@@ -643,6 +643,7 @@ static void _view_popup_menu(GtkWidget *treeview,
     gtk_widget_insert_action_group(treeview, 
                                    "collections",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -4128,6 +4129,7 @@ static void _history_show(GtkWidget *widget,
     gtk_widget_insert_action_group(widget, 
                                    "history",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   // we show a popup with all the history entries

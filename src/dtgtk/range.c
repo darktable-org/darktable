@@ -1125,6 +1125,7 @@ static GMenu *_popup_get_numeric_menu(GtkDarktableRangeSelect *range,
     gtk_widget_insert_action_group(w, 
                                    "range",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();

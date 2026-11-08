@@ -801,6 +801,7 @@ static void _pop_menu_view(GtkWidget *view,
     gtk_widget_insert_action_group(view, 
                                    "map_locations",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();

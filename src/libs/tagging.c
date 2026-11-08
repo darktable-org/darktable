@@ -1466,6 +1466,7 @@ static void _pop_menu_attached(GtkWidget *treeview,
     gtk_widget_insert_action_group(treeview, 
                                    "tags_attached",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -2596,6 +2597,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     gtk_widget_insert_action_group(treeview, 
                                    "tags_dictionary",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GtkTreeIter iter, child;
