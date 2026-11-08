@@ -418,6 +418,7 @@ static void _translucent_paint(cairo_t *cr,
  *   N <- (a I + (1 - a)(1 - b) N) / (1 - (1 - a) b), I's alpha 1
  * the bound, per channel of encoded value v = sum_j m_j N_j:
  *   |got - v| <= 2^-11 |v| + 2^-24 + 1e-6 max(1, sum_j |m_j| hi)
+ * UNORM16 instead clips v to [0, 1] and has rounding error <= 0.5 / 65535.
  * the half float rounding to nearest is within 2^-11 |v| for normal values
  * and 2^-25 below; the rest covers float arithmetic: bilinear weights in
  * float, the lerp and the weight's division, each a few float ulps of
@@ -490,39 +491,45 @@ static void _check_scene(GRand *rand,
   }
 
   uint16_t *out = g_new(uint16_t, (size_t)4 * W * H);
-  const dt_presenter_reservation_t r = { .image = out, .image_stride = (size_t)8 * W,
-                                         .encoding = *e };
-  assert_true(_compose(sources, scene->count, W, H, &r));
-
-  for(size_t k = 0; k < (size_t)W * H; k++)
+  dt_presenter_reservation_t r = { .image = out, .image_stride = (size_t)8 * W,
+                                   .encoding = *e };
+  for(int storage = DT_PRESENTER_FLOAT16; storage <= DT_PRESENTER_UNORM16; storage++)
   {
-    for(int c = 0; c < 4; c++)
+    r.encoding.storage = storage;
+    const gboolean unorm = storage == DT_PRESENTER_UNORM16;
+    assert_true(_compose(sources, scene->count, W, H, &r));
+    for(size_t k = 0; k < (size_t)W * H; k++)
     {
-      const double *n = ref + 4 * k;
-      double want = n[3], weights = 1.0;
-      if(c < 3)
+      for(int c = 0; c < 4; c++)
       {
-        want = weights = 0.0;
-        for(int j = 0; j < 3; j++)
+        const double *n = ref + 4 * k;
+        double want = n[3], weights = 1.0;
+        if(c < 3)
         {
-          want += (double)e->matrix[c][j] * n[j];
-          weights += fabs(e->matrix[c][j]) * hi;
+          want = weights = 0.0;
+          for(int j = 0; j < 3; j++)
+          {
+            want += (double)e->matrix[c][j] * n[j];
+            weights += fabs(e->matrix[c][j]) * hi;
+          }
         }
+        if(unorm) want = CLAMP(want, 0.0, 1.0);
+        const double got = unorm ? out[4 * k + c] / 65535.0 : _half_value(out[4 * k + c]);
+        const double error = fabs(got - want);
+        const double rounding = unorm ? 0.5 / 65535.0 : ldexp(fabs(want), -11) + ldexp(1.0, -24);
+        const double bound = rounding + 1e-6 * fmax(1.0, weights);
+        if(error > bound)
+          fail_msg("storage %d pixel (%zu, %zu) channel %d: %.9g, reference %.9g", storage,
+                   k % W, k / W, c, got, want);
+        *worst = fmax(*worst, error - rounding);
       }
-      const double got = _half_value(out[4 * k + c]);
-      const double error = fabs(got - want);
-      const double bound = ldexp(fabs(want), -11) + ldexp(1.0, -24) + 1e-6 * fmax(1.0, weights);
-      if(error > bound)
-        fail_msg("pixel (%zu, %zu) channel %d: %.9g, reference %.9g", k % W, k / W, c, got,
-                 want);
-      *worst = fmax(*worst, error - ldexp(fabs(want), -11));
+      // w stays in [0, 1], so does N's alpha
+      assert_true(unorm || _half_value(out[4 * k + 3]) <= 1.0);
+      // over an opaque backdrop the image layer is opaque wherever an image
+      // covers anything, as everything below the foreground is
+      if(scene->backdrop == BACKDROP_OPAQUE && !scene->overlay)
+        assert_true(out[4 * k + 3] == 0 || out[4 * k + 3] == (unorm ? 0xffff : 0x3c00));
     }
-    // w stays in [0, 1], so does N's alpha
-    assert_true(_half_value(out[4 * k + 3]) <= 1.0);
-    // over an opaque backdrop the image layer is opaque wherever an image
-    // covers anything, as everything below the foreground is
-    if(scene->backdrop == BACKDROP_OPAQUE && !scene->overlay)
-      assert_true(out[4 * k + 3] == 0 || out[4 * k + 3] == 0x3c00);
   }
 
   for(int i = 0; i < scene->count; i++)
@@ -581,7 +588,7 @@ static void test_compose_random(void **state)
                                       : _diagonal(max, n % 7 == 0 ? 1.0f : 1.0f / max);
     _check_scene(rand, &scene, &e, &worst);
   }
-  print_message("worst error beyond the half float rounding: %.3g\n", worst);
+  print_message("worst error beyond storage rounding: %.3g\n", worst);
   g_rand_free(rand);
 }
 
@@ -620,7 +627,7 @@ static void test_compose_preview_fallback(void **state)
     const dt_presenter_encoding_t e = _diagonal(4.0f, 0.25f);
     _check_scene(rand, &scene, &e, &worst);
   }
-  print_message("worst error beyond the half float rounding: %.3g\n", worst);
+  print_message("worst error beyond storage rounding: %.3g\n", worst);
   g_rand_free(rand);
 }
 

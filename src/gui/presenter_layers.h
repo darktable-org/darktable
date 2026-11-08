@@ -41,16 +41,24 @@ typedef struct dt_presenter_layers_t
   int x, y;
 } dt_presenter_layers_t;
 
+typedef enum dt_presenter_storage_t
+{
+  DT_PRESENTER_FLOAT16,
+  DT_PRESENTER_UNORM16,
+} dt_presenter_storage_t;
+
 /*
  * how the image layer stores a straight color c of the window's output
  * image encoding, which the transport reported (1 is reference white):
  * each channel clipped to [clip[0], clip[1]], outside which colorimetry is
- * undefined, then matrix x c, premultiplied, in signed half floats
+ * undefined, then matrix x c, premultiplied, quantized to storage.
+ * FLOAT16 saturates to finite signed half floats, UNORM16 to [0, 1]
  */
 typedef struct dt_presenter_encoding_t
 {
   float clip[2];
   float matrix[3][3];
+  dt_presenter_storage_t storage;
 } dt_presenter_encoding_t;
 
 /*
@@ -64,8 +72,8 @@ typedef struct dt_presenter_reservation_t
   // each row used
   uint8_t *foreground;
   size_t foreground_stride;
-  // the image: RGBA half floats, rows of image_stride bytes; NULL while
-  // the platform holds every image buffer
+  // the image: RGBA with 16 bits per channel, rows of image_stride bytes;
+  // NULL while the platform holds every image buffer
   uint16_t *image;
   size_t image_stride;
   dt_presenter_encoding_t encoding;

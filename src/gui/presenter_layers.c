@@ -808,6 +808,11 @@ static inline uint16_t _signed_half(const float v)
   return (v < 0.0f ? 0x8000 : 0) | _half(fminf(fabsf(v), 65504.0f));
 }
 
+static inline uint16_t _unorm(const float v)
+{
+  return (uint16_t)(CLAMPF(v, 0.0f, 1.0f) * 65535.0f + 0.5f);
+}
+
 // v weighed by w > 0, 0 for w = 0 even if v is infinite
 static inline float _weighed(const float v,
                              const float w)
@@ -902,6 +907,7 @@ static gboolean _compose(const _source_t *sources,
   if(!rows) return FALSE;
 
   const float lo = r->encoding.clip[0], hi = r->encoding.clip[1];
+  const gboolean unorm = r->encoding.storage == DT_PRESENTER_UNORM16;
   float m[3][3];
   memcpy(m, r->encoding.matrix, sizeof(m));
   // a diagonal map of values that stay positive, as Wayland's, quantizes
@@ -955,15 +961,22 @@ static gboolean _compose(const _source_t *sources,
     }
     if(diagonal)
     {
-      _halves(n, scale, out, width);
+      if(unorm)
+        for(int x = 0; x < width; x++)
+          for(int k = 0; k < 4; k++) out[4 * x + k] = _unorm(scale[k] * n[4 * x + k]);
+      else
+        _halves(n, scale, out, width);
       continue;
     }
     for(int x = 0; x < width; x++)
     {
       const float *p = n + (size_t)4 * x;
       for(int k = 0; k < 3; k++)
-        out[4 * x + k] = _signed_half(m[k][0] * p[0] + m[k][1] * p[1] + m[k][2] * p[2]);
-      out[4 * x + 3] = _half(p[3]);
+      {
+        const float v = m[k][0] * p[0] + m[k][1] * p[1] + m[k][2] * p[2];
+        out[4 * x + k] = unorm ? _unorm(v) : _signed_half(v);
+      }
+      out[4 * x + 3] = unorm ? _unorm(p[3]) : _half(p[3]);
     }
   }
   dt_free_align(rows);

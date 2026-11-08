@@ -519,7 +519,7 @@ Windows DirectComposition always composes above a window's GDI content, so
 an underlay would not port):
 
 1. GTK's surface: everything GTK draws, untagged.
-2. The image layer: premultiplied half float, in the window's output,
+2. The image layer: premultiplied FP16 or UNORM16, in the window's output,
    alpha 0 off the images.
 3. The foreground layer: premultiplied 8-bit, untagged like GTK's surface,
    with everything the presenting widget draws. Where an image is, its
@@ -528,7 +528,7 @@ an underlay would not port):
 
 ```
   foreground layer   8-bit, untagged    pickers, masks, guides, overlays
-  image layer        float, managed     darkroom image, snapshots
+  image layer        16-bit, managed    darkroom image, snapshots
   GTK's surface      8-bit, untagged    panels, thumbnails, everything else
 ```
 
@@ -649,9 +649,10 @@ Code is split by what it works around:
   gives the storage of both layers (`dt_presenter_reservation_t`), each
   with its row stride, and the image's encoding
   (`dt_presenter_encoding_t`): a clip range for straight color in the
-  window's output, then a 3x3 linear map, stored as signed half floats,
-  which covers a transport that encodes in other primaries or with
-  another white level, and the layered backend writes them and commits.
+  window's output, then a 3x3 linear map, stored as signed half floats or
+  UNORM16 (saturated to [0, 1]), which covers a transport that encodes in
+  other primaries or with another white level, and the layered backend
+  writes them and commits.
   The transport may refuse a reservation while the compositor holds its
   buffers; a reservation without an image buffer is refused too when the
   image changed. Nothing of the present is then shown, and the widget
@@ -678,8 +679,13 @@ box.
 
 `gui/presenter_wayland.c`, built with `USE_WAYLAND`. It needs `wl_compositor`
 4 and `wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
-primaries and `ABGR16161616F` shm buffers; `set_luminances` is optional
-(without it the output is SDR). Without the rest the window is on cairo.
+primaries and `ABGR16161616F` or `ABGR16161616` shm buffers; `set_luminances`
+is optional (without it the output is SDR). Without the rest the window
+is on cairo.
+
+FP16 is preferred for its precision near black. Otherwise UNORM16 stores
+the same linear values.
+
 The platform keeps the globals, GDK's surface, its feedback and the
 preferred description; the transport the layers, their buffers and its
 image descriptions, made when the window becomes native and destroyed when

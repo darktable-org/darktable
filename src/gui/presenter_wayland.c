@@ -25,10 +25,10 @@
  * color-manages the window's tagged content now. the transport
  * exists while the window is native: the image layer is a subsurface
  * tagged with color-management-v1 as linear BT.2020, carrying the image in
- * half floats with its HDR headroom, and the compositor does the one
- * conversion to the screen. the foreground layer above it is an untagged
- * 8-bit subsurface, which the compositor treats like GTK's own untagged
- * surface. see dev-doc/display_presentation.md.
+ * 16-bit floats or integers with its HDR headroom, and the compositor does
+ * the one conversion to the screen. the foreground layer above it is an
+ * untagged 8-bit subsurface, which the compositor treats like GTK's own
+ * untagged surface. see dev-doc/display_presentation.md.
  */
 
 // for memfd_create()
@@ -85,7 +85,7 @@ typedef struct _platform_t
   struct wp_color_manager_v1 *manager;
 
   // what the compositor supports
-  gboolean done, parametric, luminances, ext_linear, bt2020, relative, half_float;
+  gboolean done, parametric, luminances, ext_linear, bt2020, relative, half_float, unorm16;
   // announces GTK's private protocol, as mutter does, and the session is
   // GNOME's
   gboolean gtk_shell, gnome;
@@ -118,6 +118,8 @@ typedef struct _transport_t
 {
   dt_presenter_transport_t transport;
   _platform_t *p;
+  // fixed for the lifetime of the transport's buffer pools
+  uint32_t image_format;
   // what makes the descriptions: the platform's color manager, or while
   // the transport sets up, a wrapper of it on the setup's queue
   struct wp_color_manager_v1 *manager;
@@ -615,9 +617,10 @@ static void _description_ready(void *data,
   t->description = t->pending;
   t->description_max = t->pending_max;
   t->pending = NULL;
-  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: linear BT.2020, FP16 shm,"
+  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: linear BT.2020, %s shm,"
            " %s intent, headroom %.4f, %s luminances",
            t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           t->image_format == WL_SHM_FORMAT_ABGR16161616F ? "FP16" : "UNORM16",
            t->p->relative ? "relative" : "perceptual", _headroom(t->description_max),
            t->p->luminances ? "explicit" : "protocol-default");
   // set now, and still shown with the image encoded for the old one: an
@@ -761,6 +764,7 @@ static void _shm_format(void *data,
 {
   _platform_t *p = data;
   if(format == WL_SHM_FORMAT_ABGR16161616F) p->half_float = TRUE;
+  if(format == WL_SHM_FORMAT_ABGR16161616) p->unorm16 = TRUE;
 }
 
 static const struct wl_shm_listener _shm_listener = { .format = _shm_format };
@@ -858,7 +862,7 @@ static gboolean _reserve(dt_presenter_transport_t *self,
                                        4 * layers->width, WL_SHM_FORMAT_ARGB8888);
   if(!w->reserved_foreground) return FALSE;
   w->reserved_image = _buffer_get(t, &w->image, layers->width, layers->height,
-                                  8 * layers->width, WL_SHM_FORMAT_ABGR16161616F);
+                                  8 * layers->width, t->image_format);
   w->layers = *layers;
 
   // the description is ext_linear with luminances (0, max, reference): a
@@ -871,7 +875,9 @@ static gboolean _reserve(dt_presenter_transport_t *self,
     .foreground_stride = (size_t)4 * layers->width,
     .image = w->reserved_image ? w->reserved_image->data : NULL,
     .image_stride = (size_t)8 * layers->width,
-    .encoding = { .clip = { 0.0f, headroom },
+    .encoding = { .storage = t->image_format == WL_SHM_FORMAT_ABGR16161616F
+                              ? DT_PRESENTER_FLOAT16 : DT_PRESENTER_UNORM16,
+                  .clip = { 0.0f, headroom },
                   .matrix = { { white, 0.0f, 0.0f },
                               { 0.0f, white, 0.0f },
                               { 0.0f, 0.0f, white } } } };
@@ -975,6 +981,7 @@ static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self,
 
   _transport_t *t = g_malloc0(sizeof(_transport_t));
   t->p = p;
+  t->image_format = p->half_float ? WL_SHM_FORMAT_ABGR16161616F : WL_SHM_FORMAT_ABGR16161616;
   t->setup = TRUE;
 
   // wait for the first description on a queue of our own, so that waiting
@@ -1091,7 +1098,7 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
     && wl_display_roundtrip_queue(p->display, queue) >= 0
     && p->compositor && p->subcompositor && p->shm && p->manager
     && wl_display_roundtrip_queue(p->display, queue) >= 0
-    && p->done && p->parametric && p->ext_linear && p->bt2020 && p->half_float;
+    && p->done && p->parametric && p->ext_linear && p->bt2020 && (p->half_float || p->unorm16);
 
   // the first verdict, which the core reads once the platform is made:
   // the preferred description gets ready or failed, and its information
@@ -1114,10 +1121,10 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   if(p->done)
     dt_print(DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
              "[presenter wayland] %s window: parametric %d, ext_linear %d, bt2020 %d,"
-             " half float shm %d, luminances %d, gtk_shell1 %d, GNOME %d",
+             " half float shm %d, unorm16 shm %d, luminances %d, gtk_shell1 %d, GNOME %d",
              window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
-             p->parametric, p->ext_linear, p->bt2020, p->half_float, p->luminances, p->gtk_shell,
-             p->gnome);
+             p->parametric, p->ext_linear, p->bt2020, p->half_float, p->unorm16,
+             p->luminances, p->gtk_shell, p->gnome);
   if(!ok)
   {
     // the core logs it
@@ -1131,7 +1138,8 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
                  : !p->parametric ? "parametric image descriptions not advertised"
                  : !p->ext_linear ? "ext_linear transfer function not advertised"
                  : !p->bt2020 ? "BT.2020 primaries not advertised"
-                 : !p->half_float ? "wl_shm format ABGR16161616F not advertised"
+                 : !(p->half_float || p->unorm16)
+                     ? "wl_shm formats ABGR16161616F and ABGR16161616 not advertised"
                  : "wayland event dispatch failed");
     _platform_free(&p->platform);
     return NULL;
