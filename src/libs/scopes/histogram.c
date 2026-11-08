@@ -90,7 +90,10 @@ static void _hist_draw_grid(const dt_scopes_mode_t *const self,
 {
   // FIXME: now that vectorscope grid represents log scale, should
   // histogram grid do the same?
-  dt_draw_grid(cr, 4, 0, 0, width, height);
+  if(self->scopes->hdr_active)
+    lib_histogram_draw_hdr_grid(cr, width, height, FALSE, self->scopes->hdr_active);
+  else
+    dt_draw_grid(cr, 4, 0, 0, width, height);
 }
 
 static void _hist_draw_highlight(const dt_scopes_mode_t *const self,

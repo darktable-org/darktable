@@ -815,9 +815,17 @@ void dt_ioppr_set_thread_pq_peak_nits(const int nits)
   _thread_pq_peak_nits = nits;
 }
 
-static float _output_headroom(const dt_colorspaces_color_profile_type_t type)
+// the transfer of the darkroom scopes' HDR scale, DT_HDR_NONE when off
+static int _scopes_hdr_transfer = DT_HDR_NONE;
+
+void dt_ioppr_set_scopes_hdr_transfer(const int transfer)
 {
-  switch(dt_colorspaces_hdr_transfer(type))
+  _scopes_hdr_transfer = transfer;
+}
+
+static float _transfer_headroom(const int transfer)
+{
+  switch(transfer)
   {
     case DT_HDR_PQ:
     {
@@ -863,7 +871,12 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
   }
   pipe->output_profile_info = profile_info;
-  pipe->output_headroom = _output_headroom(profile_info->type);
+  pipe->output_headroom = _transfer_headroom(dt_colorspaces_hdr_transfer(profile_info->type));
+  // the scopes read the preview pipe, and on an HDR scale they show what an
+  // export would encode, so the preview is tone mapped for the export headroom
+  if(dev && pipe == dev->preview_pipe)
+    pipe->output_headroom = fmaxf(pipe->output_headroom,
+                                  _transfer_headroom(_scopes_hdr_transfer));
 
   return profile_info;
 }

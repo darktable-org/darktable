@@ -120,6 +120,11 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
    or 0 to read it from the export module's setting again */
 void dt_ioppr_set_thread_pq_peak_nits(const int nits);
 
+/** set the HDR transfer (DT_HDR_PQ, DT_HDR_HLG_REC2020 or DT_HDR_NONE) shown
+   by the darkroom scopes; the preview pipe takes the output headroom of an
+   export with that transfer when it is larger than the display's */
+void dt_ioppr_set_scopes_hdr_transfer(const int transfer);
+
 /** Record the export profile, used as a cache-identity tag. Returns the (possibly NULL)
    interned profile-info pointer, no fallback for sRGB in case of failure. */
 dt_iop_order_iccprofile_info_t *
