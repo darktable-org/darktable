@@ -25,3 +25,11 @@ leak:libnvidia
 # GTK/gdk-pixbuf module and icon theme caches are process-lifetime.
 leak:gtk_init
 leak:gdk_pixbuf_io_init
+
+# fontconfig parses its configuration once (FcInit, started by pango) and keeps
+# it for the lifetime of the process; nobody calls FcFini.
+leak:libfontconfig.so
+
+# lensfun's lfDatabase::Load() drops a g_build_filename() result. It is called
+# once, from the lens module's init_global().
+leak:liblensfun.so
