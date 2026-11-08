@@ -40,7 +40,7 @@
 #include "develop/develop.h"
 #include "develop/frame.h"
 #include "develop/imageop.h"
-#include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
 #include "libs/modulegroups.h"
@@ -1585,7 +1585,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
 
     // the parameters just moved, so the tabs of the module may read
     // differently now
-    dt_bauhaus_refresh_module_tabs(module);
+    dt_iop_gui_refresh_tabs(module);
 
     /* signal that history has changed */
     if(tag_change)
