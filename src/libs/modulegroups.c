@@ -2569,6 +2569,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
     gtk_widget_insert_action_group(widget,
                                     "modulegroups",
                                     G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -2829,6 +2830,7 @@ static void _set_action_group(GtkWidget *widget,
     gtk_widget_insert_action_group(widget,
                                     "qap",
                                     G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 }
 
@@ -3042,6 +3044,7 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
     gtk_widget_insert_action_group(widget,
                                    "activemodules",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
 

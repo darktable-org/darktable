@@ -3316,6 +3316,7 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
   gtk_widget_insert_action_group(darktable.gui->ui->main_window,
                                  "modules",
                                  G_ACTION_GROUP(action_group));
+  g_object_unref(action_group);
 
   const dt_view_type_flags_t cv = dt_view_get_current();
   GMenu *menu = g_menu_new();

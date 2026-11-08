@@ -30,6 +30,7 @@
 #include "gui/presets.h"
 #include <glib-2.0/gio/gio.h>
 #include <glib-2.0/gio/gmenu.h>
+#include <glib-2.0/glib-object.h>
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -1336,6 +1337,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
     gtk_widget_insert_action_group(favorite_presets_button, 
                                    "favorites",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -1447,6 +1449,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
     gtk_widget_insert_action_group(button, 
                                    "presets",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();

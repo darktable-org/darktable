@@ -3841,6 +3841,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_insert_action_group(module->multimenu_button,
                                  "instances",
                                  G_ACTION_GROUP(instance_action_group));
+  g_object_unref(instance_action_group);
 
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(module->presets_button,
