@@ -339,6 +339,14 @@ unsigned int dt_opencl_tiling_align(const int devid)
   return 4;
 }
 
+static void _opencl_found_free(gpointer data)
+{
+  dt_opencl_found_t *found = data;
+  g_free(found->cname);
+  g_free(found->name);
+  free(found);
+}
+
 static void _opencl_write_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return;
@@ -1148,6 +1156,16 @@ end:
   // we always write the device config to keep track of disabled devices
   _opencl_write_device_config(dev);
 
+  if(cl->dev[dev].cname)
+  {
+    dt_opencl_found_t *found = calloc(1, sizeof(dt_opencl_found_t));
+    found->cname = g_strdup(cl->dev[dev].cname);
+    found->name = g_strdup(cl->dev[dev].fullname);
+    found->unified_memory = cl->dev[dev].unified_memory;
+    found->devid = res ? -1 : dev;
+    cl->found = g_list_append(cl->found, found);
+  }
+
   if(res)
     dt_pthread_mutex_destroy(&cl->dev[dev].lock);
 
@@ -1218,6 +1236,8 @@ void dt_opencl_init(dt_opencl_t *cl,
                     const gboolean print_statistics)
 {
   const gboolean exclude_opencl = options & DT_OPENCL_OPTION_EXCLUDE;
+  g_list_free_full(cl->found, _opencl_found_free);
+  cl->found = NULL;
   dt_pthread_mutex_init(&cl->lock);
   cl->inited = FALSE;
   cl->enabled = FALSE;
@@ -1698,6 +1718,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   }
 
   free(cl->dev);
+  g_list_free_full(cl->found, _opencl_found_free);
+  cl->found = NULL;
   dt_pthread_mutex_destroy(&cl->lock);
 }
 
@@ -3853,6 +3875,56 @@ gboolean dt_opencl_running(void)
 gboolean dt_opencl_running_fast(void)
 {
   return _cl_running() ? darktable.opencl->fastcl : FALSE;
+}
+
+gboolean dt_opencl_device_conf_enabled(const char *cname)
+{
+  gchar *key = g_strdup_printf("%s%s", DT_CLDEVICE_HEAD, cname);
+  const gboolean enabled = !dt_conf_key_not_empty(key)
+                           || !strstr(dt_conf_get_string_const(key), "device:off");
+  g_free(key);
+  return enabled;
+}
+
+void dt_opencl_device_conf_set_enabled(const char *cname,
+                                       const gboolean enabled)
+{
+  gchar *key = g_strdup_printf("%s%s", DT_CLDEVICE_HEAD, cname);
+  if(dt_conf_key_not_empty(key))
+  {
+    // only the device:on/off token changes, the other settings are kept
+    gchar **tokens = g_strsplit(dt_conf_get_string_const(key), " ", -1);
+    for(gchar **t = tokens; *t; t++)
+    {
+      if(g_str_has_prefix(*t, "device:"))
+      {
+        g_free(*t);
+        *t = g_strdup(enabled ? "device:on" : "device:off");
+      }
+    }
+    gchar *dat = g_strjoinv(" ", tokens);
+    dt_conf_set_string(key, dat);
+    g_free(dat);
+    g_strfreev(tokens);
+  }
+  g_free(key);
+}
+
+int dt_opencl_get_device_headroom(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0 || devid >= cl->num_devs) return 0;
+  return cl->dev[devid].headroom;
+}
+
+void dt_opencl_set_device_headroom(const int devid,
+                                   const int headroom)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0 || devid >= cl->num_devs) return;
+  cl->dev[devid].headroom = headroom;
+  _opencl_write_device_config(devid);
+  dt_opencl_update_settings();
 }
 
 /** update enabled flag and profile with value from preferences */
