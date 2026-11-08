@@ -1557,7 +1557,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
     }
   }
 
-  float *border_init = dt_alloc_align_float((size_t)6 * nb);
+  float *border_init = dt_calloc_align_float((size_t)6 * nb);
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
 
