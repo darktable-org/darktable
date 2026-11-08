@@ -77,7 +77,8 @@ gboolean dt_color_harmony_get(const dt_imgid_t imgid,
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found)
   {
     layout->type = sqlite3_column_int(stmt, 0);
     layout->rotation = sqlite3_column_int(stmt, 1);
@@ -85,10 +86,9 @@ gboolean dt_color_harmony_get(const dt_imgid_t imgid,
     // Custom angles are not persisted — they are set live by the IOP module.
     layout->custom_n = 0;
     memset(layout->custom_angles, 0, sizeof(layout->custom_angles));
-    return TRUE;
   }
-  else
-    return FALSE;
+  sqlite3_finalize(stmt);
+  return found;
 }
 
 // clang-format off
