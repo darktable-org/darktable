@@ -166,7 +166,7 @@ typedef struct dt_iop_demosaic_params_t
   float cs_boost;                               // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "corner boost"
   int cs_iter;                                  // $MIN: 1 $MAX: 25 $DEFAULT: 8 $DESCRIPTION: "iterations"
   float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
-  gboolean cs_enabled;                          // $DEFAULT: FALSE $DESCRIPTION: "capture sharpen"
+  gboolean cs_enabled;                          // $DEFAULT: FALSE $DESCRIPTION: "enabled"
   float moire_thrs;                             // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "moire threshold"
   float moire_mix;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "moire mix"
 } dt_iop_demosaic_params_t;
@@ -1752,15 +1752,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->demosaic_method_xtrans, xtrans);
   gtk_widget_set_visible(g->demosaic_method_mono, true_monochrome);
 
-  gtk_widget_set_visible(g->cs_radius, do_capture);
-  gtk_widget_set_visible(g->cs_thrs, do_capture);
-  gtk_widget_set_visible(g->cs_boost, do_capture);
-  gtk_widget_set_visible(g->cs_center, do_capture && p->cs_boost);
-  gtk_widget_set_visible(g->cs_iter, do_capture);
+  gtk_widget_set_sensitive(g->cs_radius, do_capture);
+  gtk_widget_set_sensitive(g->cs_thrs, do_capture);
+  gtk_widget_set_sensitive(g->cs_boost, do_capture);
+  gtk_widget_set_sensitive(g->cs_center, do_capture && p->cs_boost);
+  gtk_widget_set_sensitive(g->cs_iter, do_capture);
 
   dt_bauhaus_toggle_set(g->cs_enabled, p->cs_enabled);
-  gtk_widget_set_visible(g->cs_enabled, capture_support);
-  gtk_widget_set_visible(GTK_WIDGET(g->capture.expander), do_capture);
+  gtk_widget_set_sensitive(g->cs_enabled, capture_support);
 
   // we might have a wrong method due to xtrans/bayer - mode mismatch
   const gboolean method_mismatch = use_method != p->demosaicing_method;
@@ -2019,14 +2018,12 @@ void gui_init(dt_iop_module_t *self)
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
   gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method. only applies for some old sensors"));
 
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(_("capture sharpen controls")));
+
   g->cs_enabled = dt_bauhaus_toggle_from_params(self, "cs_enabled");
   gtk_widget_set_tooltip_text(g->cs_enabled, _("capture sharpen recovers details lost due to in-camera blurring\n"
                                             "which can be caused by diffraction, the anti-aliasing filter or other\n"
                                             "sources of gaussian-type blur"));
-
-  dt_gui_new_collapsible_section(&g->capture, "plugins/darkroom/demosaic/expand_capture",
-                                 _("capture sharpen controls"), GTK_BOX(box_raw), DT_ACTION(self));
-  self->widget = GTK_WIDGET(g->capture.container);
 
   g->cs_iter = dt_bauhaus_slider_from_params(self, "cs_iter");
   gtk_widget_set_tooltip_text(g->cs_iter, _("set effect strength by iterations"));
