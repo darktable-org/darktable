@@ -23,6 +23,30 @@
 #include "config.h"
 #include "common/file_location.h"
 #include "common/module.h"
+#include "common/module_layout.h"
+
+gboolean dt_module_get_directory(char *directory, size_t size, const char *subdir)
+{
+#ifdef __ANDROID__
+  if(!dt_module_android_prefix(subdir)) return FALSE;
+#endif
+  dt_loc_get_plugindir(directory, size);
+#ifndef __ANDROID__
+  if(g_strlcat(directory, subdir, size) >= size) return FALSE;
+#endif
+  return directory[0] != '\0';
+}
+
+gchar *dt_module_get_name(const char *filename, const char *subdir)
+{
+#ifdef __ANDROID__
+  const char *prefix = dt_module_android_prefix(subdir);
+#else
+  (void)subdir;
+  const char *prefix = SHARED_MODULE_PREFIX;
+#endif
+  return dt_module_name_from_filename(filename, prefix, SHARED_MODULE_SUFFIX);
+}
 
 GList *dt_module_load_modules(const char *subdir,
                               const size_t module_size,
@@ -35,22 +59,15 @@ GList *dt_module_load_modules(const char *subdir,
   GList *plugin_list = NULL;
   char plugindir[PATH_MAX] = { 0 };
   const gchar *dir_name;
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, subdir, sizeof(plugindir));
+  if(!dt_module_get_directory(plugindir, sizeof(plugindir), subdir)) return NULL;
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return NULL;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
   while((dir_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(!g_str_has_prefix(dir_name, SHARED_MODULE_PREFIX))
-      continue;
-    if(!g_str_has_suffix(dir_name, SHARED_MODULE_SUFFIX))
-      continue;
-    char *plugin_name = g_strndup(dir_name + name_offset, strlen(dir_name) - name_end);
+    char *plugin_name = dt_module_get_name(dir_name, subdir);
+    if(!plugin_name) continue;
     void *module = calloc(1, module_size);
-    gchar *libname = g_module_build_path(plugindir, plugin_name);
+    gchar *libname = g_build_filename(plugindir, dir_name, NULL);
     const int res = load_module_so(module, libname, plugin_name);
     g_free(libname);
     g_free(plugin_name);

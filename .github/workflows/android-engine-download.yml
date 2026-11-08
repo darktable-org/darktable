@@ -1,0 +1,212 @@
+name: Android engine APK downloads
+
+on:
+  workflow_call:
+    inputs:
+      run-id:
+        description: Successful engine-apk job's workflow run (empty selects latest successful run)
+        type: string
+        required: false
+        default: ""
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: Engine workflow run ID (empty selects latest successful feature-branch run)
+        type: string
+        required: false
+        default: ""
+  push:
+    branches: [feature/android-raw-editor]
+    paths: [.github/workflows/android-engine-download.yml]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: android-engine-downloads-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      REQUESTED_RUN_ID: ${{ inputs.run-id || '' }}
+    steps:
+      - name: Prepare delivery paths
+        shell: bash
+        run: |
+          echo "ARTIFACT_DIR=$RUNNER_TEMP/android-engine-download" >> "$GITHUB_ENV"
+          echo "RELEASE_DIR=$RUNNER_TEMP/android-engine-release" >> "$GITHUB_ENV"
+      - name: Resolve and verify successful engine build
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$REQUESTED_RUN_ID" ]]; then
+            [[ "$REQUESTED_RUN_ID" =~ ^[0-9]+$ ]] || { echo 'Invalid run ID' >&2; exit 1; }
+            source_run_id="$REQUESTED_RUN_ID"
+          else
+            gh api "repos/$REPOSITORY/actions/workflows/android-engine.yml/runs?branch=feature/android-raw-editor&status=success&per_page=1" > "$RUNNER_TEMP/engine-runs.json"
+            source_run_id=$(python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); assert r["workflow_runs"], "No successful engine workflow"; print(r["workflow_runs"][0]["id"])' "$RUNNER_TEMP/engine-runs.json")
+          fi
+          gh api "repos/$REPOSITORY/actions/runs/$source_run_id" > "$RUNNER_TEMP/engine-source-run.json"
+          gh api "repos/$REPOSITORY/actions/runs/$source_run_id/jobs?per_page=100" > "$RUNNER_TEMP/engine-source-jobs.json"
+          gh api "repos/$REPOSITORY/actions/runs/$source_run_id/artifacts?per_page=100" > "$RUNNER_TEMP/engine-source-artifacts.json"
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          run = json.loads((root / 'engine-source-run.json').read_text())
+          jobs = json.loads((root / 'engine-source-jobs.json').read_text())['jobs']
+          assert run['repository']['full_name'] == os.environ['REPOSITORY']
+          assert run['head_repository']['full_name'] == os.environ['REPOSITORY']
+          assert run['path'].split('@')[0] == '.github/workflows/android-engine.yml'
+          assert run['head_branch'] == 'feature/android-raw-editor'
+          assert re.fullmatch('[0-9a-f]{40}', run['head_sha'])
+          # A reusable publisher runs before its containing workflow completes;
+          # the producer job itself must already have succeeded.
+          assert any(job['name'] == 'engine-apk' and job['conclusion'] == 'success' for job in jobs)
+          name = f"experimental-android-engine-{run['head_sha']}"
+          artifacts = json.loads((root / 'engine-source-artifacts.json').read_text())['artifacts']
+          matches = [a for a in artifacts if a['name'] == name and not a['expired']]
+          assert len(matches) == 1, 'Expected one unexpired full-engine artifact'
+          artifact = matches[0]
+          assert 0 < artifact['size_in_bytes'] < 512 * 1024 * 1024
+          (root / 'engine-source-artifact.json').write_text(json.dumps(artifact))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f"run-id={run['id']}\nsha={run['head_sha']}\n")
+              out.write(f"artifact-id={artifact['id']}\n")
+              out.write(f"tag=android-engine-{run['head_sha'][:12]}\n")
+          PY
+      - name: Download the original artifact ZIP
+        shell: bash
+        env:
+          ARTIFACT_ID: ${{ steps.source.outputs.artifact-id }}
+        run: gh api "repos/$REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/engine-artifact.zip"
+      - name: Verify downloaded APKs and prepare direct downloads
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          SOURCE_RUN_ID: ${{ steps.source.outputs.run-id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re, shutil, stat, zipfile
+          from pathlib import Path
+          source = Path(os.environ['ARTIFACT_DIR'])
+          output = Path(os.environ['RELEASE_DIR'])
+          source.mkdir()
+          output.mkdir()
+          metadata = json.loads((Path(os.environ['RUNNER_TEMP']) / 'engine-source-artifact.json').read_text())
+          archive_path = Path(os.environ['RUNNER_TEMP']) / 'engine-artifact.zip'
+          archive_digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+          assert archive_path.stat().st_size == metadata['size_in_bytes']
+          expected_digest = metadata.get('digest')
+          if expected_digest:
+              assert expected_digest == f'sha256:{archive_digest}', 'Artifact ZIP digest mismatch'
+          inventory = []
+          with zipfile.ZipFile(archive_path) as archive:
+              entries = archive.infolist()
+              assert len(entries) == len(set(e.filename for e in entries)), 'Duplicate ZIP member'
+              assert sum(e.file_size for e in entries) < 1024 * 1024 * 1024
+              for entry in entries:
+                  assert entry.filename == Path(entry.filename).name and '\\' not in entry.filename
+                  assert entry.filename not in ('', '.', '..') and not entry.is_dir()
+                  assert not stat.S_ISLNK(entry.external_attr >> 16) and not entry.flag_bits & 1
+                  inventory.append({'name': entry.filename, 'bytes': entry.file_size,
+                      'compression': entry.compress_type, 'flags': entry.flag_bits, 'extractVersion': entry.extract_version})
+              assert archive.testzip() is None, 'Artifact ZIP CRC failure'
+              for entry in entries:
+                  with archive.open(entry) as src, (source / entry.filename).open('wb') as dst:
+                      shutil.copyfileobj(src, dst)
+          (output / 'ARTIFACT-INVENTORY.json').write_text(json.dumps({
+              'artifactId': metadata['id'], 'zipSha256': archive_digest,
+              'apiDigestVerified': bool(expected_digest), 'zipCrcChecked': True, 'files': inventory
+          }, indent=2) + '\n')
+          assert (source / 'source-commit.txt').read_text().strip() == os.environ['SOURCE_SHA']
+          expected = {}
+          for line in (source / 'APK-SHA256SUMS').read_text().splitlines():
+              match = re.fullmatch(r'([0-9a-f]{64})  (app-dev-debug(?:-androidTest)?\.apk)', line)
+              assert match, 'Unexpected checksum entry'
+              digest, name = match.groups()
+              assert name not in expected, 'Duplicate checksum entry'
+              expected[name] = digest
+          assert set(expected) == {'app-dev-debug.apk', 'app-dev-debug-androidTest.apk'}
+          delivered = {}
+          for name, destination in [('app-dev-debug.apk', 'darktable-android-engine-arm64.apk'),
+                                    ('app-dev-debug-androidTest.apk', 'darktable-android-engine-arm64-androidTest.apk')]:
+              path = source / name
+              assert path.is_file() and path.stat().st_size > 0
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              assert digest == expected[name], f'Checksum mismatch: {name}'
+              with zipfile.ZipFile(path) as archive:
+                  assert archive.testzip() is None, f'Corrupt APK: {name}'
+                  entries = set(archive.namelist())
+                  assert 'AndroidManifest.xml' in entries and 'classes.dex' in entries
+                  if name == 'app-dev-debug.apk':
+                      for library in ['libdt_mobile.so', 'libdarktable.so']:
+                          assert f'lib/arm64-v8a/{library}' in entries, f'Missing engine library: {library}'
+              shutil.copyfile(path, output / destination)
+              delivered[destination] = digest
+          for name in ['VALIDATION.txt', 'source-commit.txt']:
+              shutil.copyfile(source / name, output / name)
+          (output / 'APK-SHA256SUMS').write_text(''.join(f'{digest}  {name}\n' for name, digest in delivered.items()))
+          (output / 'DELIVERY-VALIDATION.json').write_text(json.dumps({
+              'sourceCommit': os.environ['SOURCE_SHA'], 'sourceRunId': os.environ['SOURCE_RUN_ID'],
+              'apks': delivered, 'apkZipCrcChecked': True,
+              'scope': 'Original CI APK bytes, source identity and ZIP integrity verified after artifact download; no device execution in this delivery job.'
+          }, indent=2) + '\n')
+          PY
+      - name: Publish APK files without an outer ZIP
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          SOURCE_RUN_ID: ${{ steps.source.outputs.run-id }}
+          RELEASE_TAG: ${{ steps.source.outputs.tag }}
+        run: |
+          set -euo pipefail
+          notes_file="$RUNNER_TEMP/engine-download-notes.md"
+          cat > "$notes_file" <<EOF
+          Experimental Android ARM64 engine built from $SOURCE_SHA.
+
+          Download **darktable-android-engine-arm64.apk** to install the editor directly; no outer ZIP extraction is required.
+          The separate androidTest APK is for instrumentation testing.
+
+          Source build: https://github.com/$REPOSITORY/actions/runs/$SOURCE_RUN_ID
+          The build's runtime hashes, signature and 16 KiB native alignment passed.
+          This delivery job also downloaded the artifact and checked both APK checksums and ZIP CRCs.
+          This release does not establish physical-device support, all RAW types or full desktop feature parity. The default Gradle engine remains disabled.
+          EOF
+          if gh api "repos/$REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/engine-existing-release.json" 2>/dev/null; then
+            python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          release = json.loads((Path(os.environ['RUNNER_TEMP']) / 'engine-existing-release.json').read_text())
+          assert release['target_commitish'] == os.environ['SOURCE_SHA'], 'Existing release targets another source'
+          assert release['prerelease'] and not release['draft']
+          PY
+          else
+            gh release create "$RELEASE_TAG" --repo "$REPOSITORY" --target "$SOURCE_SHA" \
+              --title "Experimental Android engine ${SOURCE_SHA:0:12}" --notes-file "$notes_file" --prerelease --latest=false
+          fi
+          gh api "repos/$REPOSITORY/git/ref/tags/$RELEASE_TAG" > "$RUNNER_TEMP/engine-release-tag.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          tag = json.loads((Path(os.environ['RUNNER_TEMP']) / 'engine-release-tag.json').read_text())
+          assert tag['object']['type'] == 'commit' and tag['object']['sha'] == os.environ['SOURCE_SHA'], 'Release tag targets another source'
+          PY
+          gh release upload "$RELEASE_TAG" --repo "$REPOSITORY" --clobber "$RELEASE_DIR"/*
+          {
+            echo '### Android APK downloads'
+            echo
+            echo "[Install editor APK](https://github.com/$REPOSITORY/releases/download/$RELEASE_TAG/darktable-android-engine-arm64.apk)"
+            echo
+            echo "[Release, matching test APK and checksums](https://github.com/$REPOSITORY/releases/tag/$RELEASE_TAG)"
+            echo
+            echo 'Download the editor APK directly; no artifact ZIP extraction is needed.'
+          } >> "$GITHUB_STEP_SUMMARY"

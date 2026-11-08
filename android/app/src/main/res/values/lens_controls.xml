@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="lens_camera_profile">Camera profile</string>
+  <string name="lens_profile">Lens profile</string>
+  <string name="lens_profile_unselected">No profile selected</string>
+  <string name="lens_camera_profile_unmatched">No matching camera profile</string>
+  <string name="lens_profile_requires_camera">Choose a matching camera profile first</string>
+  <string name="lens_profile_names_hint">Camera profiles describe the body. Lens profiles contain optical calibration and can have a different name, such as fixed lens.</string>
+  <string name="lens_unverified_stored_lens">Stored lens setting: %1$s. It has not been verified for this camera.</string>
+  <string name="lens_profile_search">Search profiles</string>
+  <string name="lens_profile_no_matches">No matching profiles.</string>
+  <string name="lens_profile_none">No compatible profiles are listed. Check the camera selection or use manual vignetting.</string>
+  <string name="lens_image_camera">Camera in image: %1$s</string>
+  <string name="lens_image_lens">Lens in image: %1$s</string>
+  <string name="lens_status_manual">Manual vignette mode. Increase strength to apply it; no lens profile is required.</string>
+  <string name="lens_status_ready">Lens correction settings are ready.</string>
+  <string name="lens_status_missing_database">The Lensfun profile database is missing from this runtime. Manual vignetting is still available.</string>
+  <string name="lens_status_missing_lens">No matching lens profile. Select the correct camera and lens profile, or use manual vignetting.</string>
+  <string name="lens_status_missing_camera">The camera name in the photo is not a matched Lensfun camera profile. Compatible lens selection requires a matching camera profile.</string>
+  <string name="lens_status_unverified_camera">The stored lens setting is unverified for this camera and may still affect the preview. Use image lens defaults to reset it.</string>
+  <string name="lens_status_missing_settings">Complete the shooting settings required by this lens profile.</string>
+  <string name="lens_status_no_calibration">The image data or selected profile provides no effective calibration at these settings.</string>
+  <string name="lens_distortion">distortion</string>
+  <string name="lens_tca">chromatic aberration</string>
+  <string name="lens_vignetting">vignetting</string>
+  <string name="lens_available_corrections">Available corrections: %1$s</string>
+  <string name="lens_ca_warp_hint">Warp strength adjusts this image’s embedded chromatic aberration correction. Its metadata does not provide geometric distortion correction.</string>
+  <string name="lens_shooting_settings">Shooting settings</string>
+  <string name="lens_shooting_hint">Lens calibration uses the original focal length, aperture, focus distance and crop factor. Fill missing image values before expecting profile corrections.</string>
+  <string name="lens_correction_settings">Profile correction settings</string>
+  <string name="lens_manual_vignette">Manual vignette correction</string>
+  <string name="lens_manual_vignette_hint">This works independently of a lens profile. Increase strength to use radius and steepness.</string>
+</resources>

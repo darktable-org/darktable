@@ -1,0 +1,7 @@
+{
+  global:
+    dt_mobile_gpr_prepare;
+    dt_mobile_gpr_cleanup;
+  local:
+    *;
+};

@@ -37,15 +37,21 @@ macro (add_iop _lib _src)
   # yes, input is added as part of the library. since we just set it's LANGUAGE
   # to "", no compilation will happen. this is needed for proper IDE support.
   add_library(${_lib} MODULE ${_output} ${OPT_SRC} ${_input})
+  if(ANDROID)
+    set_target_properties(${_lib} PROPERTIES PREFIX "libdt_iop_")
+  endif()
   target_link_libraries(${_lib} lib_darktable)
 
-  if (WIN32)
+  if(ANDROID)
+    # Android packages every module beside the core in nativeLibraryDir.
+    set_target_properties(${_lib} PROPERTIES INSTALL_RPATH "${RPATH_ORIGIN}")
+  elseif (WIN32)
     _detach_debuginfo (${_lib} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
   else()
       set_target_properties(${_lib}
                             PROPERTIES
                             INSTALL_RPATH ${RPATH_ORIGIN}/..)
-  endif(WIN32)
+  endif()
 
   install(TARGETS ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
 

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "darktable-android-engine-bootstrap",
+  "version-string": "1.0.0",
+  "dependencies": [
+    { "name": "gtk3", "default-features": false },
+    { "name": "exiv2", "features": ["bmff", "png", "xmp"] },
+    { "name": "libjpeg-turbo", "features": ["jpeg8"] },
+    "curl", "json-glib", "lcms", "lensfun", "libpng",
+    "librsvg", "libxml2", "potrace", "pugixml", "sqlite3", "tiff", "zlib"
+  ]
+}

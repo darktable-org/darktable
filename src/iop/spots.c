@@ -191,7 +191,7 @@ static void _resynch_params(dt_iop_module_t *self)
   int nalgo[64] = { 2 };
 
   // we go through all forms in blend params
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, bp->mask_id);
+  dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
     int i = 0;
@@ -217,6 +217,14 @@ static void _resynch_params(dt_iop_module_t *self)
     p->clone_algo[i] = nalgo[i];
     p->clone_id[i] = nid[i];
   }
+}
+
+/* Native single-image clients share the original mask-to-parameter sync.
+ * The owning engine serializes access and records masks/history atomically. */
+G_MODULE_EXPORT void dt_iop_mobile_sync_mask_forms(dt_iop_module_t *self)
+{
+  if(self && self->params && self->blend_params && self->dev
+     && self->params_size == sizeof(dt_iop_spots_params_t)) _resynch_params(self);
 }
 
 static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)

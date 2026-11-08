@@ -1,11 +1,11 @@
 name: Android CI and dev release
 on:
   push:
-    branches: [master]
-    paths: ["android/**", "mobile/**", "src/**", "CMakeLists.txt", "cmake/**", ".github/workflows/android-ci.yml"]
+    branches: [master, feature/android-raw-editor]
+    paths: ["android/**", "mobile/**", "src/**", "tools/introspection/**", "tools/module-layout-tests/**", "tools/sidecar-tests/**", "CMakeLists.txt", "cmake/**", ".github/workflows/android-ci.yml"]
   pull_request:
     branches: [master]
-    paths: ["android/**", "mobile/**", "src/**", "CMakeLists.txt", "cmake/**", ".github/workflows/android-ci.yml"]
+    paths: ["android/**", "mobile/**", "src/**", "tools/introspection/**", "tools/module-layout-tests/**", "tools/sidecar-tests/**", "CMakeLists.txt", "cmake/**", ".github/workflows/android-ci.yml"]
   workflow_dispatch:
 env:
   ANDROID_ABI: arm64-v8a
@@ -21,6 +21,65 @@ concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  desktop-engine-adapter:
+    # This checks the real adapter and pixelpipe. The Android dependency-only
+    # build below cannot prove that RAW processing/edit/export actually works.
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+        with: {submodules: recursive}
+      - name: Install desktop engine build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            cmake ninja-build build-essential pkg-config perl intltool gettext xsltproc \
+            libgtk-3-dev liblensfun-dev libpotrace-dev libjson-glib-dev libexiv2-dev \
+            libpugixml-dev libsqlite3-dev liblcms2-dev libjpeg-dev libpng-dev libtiff-dev \
+            libxml2-dev libcurl4-gnutls-dev librsvg2-dev zlib1g-dev
+      - name: Configure the real desktop engine adapter
+        run: |
+          cmake -S . -B build/mobile-engine -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBINARY_PACKAGE_BUILD=ON \
+            -DBUILD_MOBILE_LIBRARY_ONLY=ON -DDT_MOBILE_BUILD_TESTS=ON \
+            -DDT_MOBILE_WITH_GPR_SDK=ON -DRAWSPEED_ENABLE_DEBUG_INFO=OFF \
+            -DDT_MOBILE_ANDROID_DEPENDENCIES=OFF -DBUILD_TESTING=OFF \
+            -DUSE_LUA=OFF -DUSE_MAP=OFF -DBUILD_PRINT=OFF -DUSE_COLORD=OFF \
+            -DUSE_KWALLET=OFF -DUSE_LIBSECRET=OFF -DUSE_GRAPHICSMAGICK=OFF \
+            -DUSE_GMIC=OFF -DUSE_SDL2=OFF -DUSE_OPENCL=OFF -DUSE_AI=OFF \
+            -DUSE_JXL=OFF -DUSE_AVIF=OFF -DUSE_HEIF=OFF -DUSE_OPENJPEG=OFF \
+            -DUSE_WEBP=OFF -DUSE_OPENEXR=OFF -DUSE_XCF=ON -DUSE_ICU=OFF \
+            -DUSE_CAMERA_SUPPORT=OFF -DUSE_PORTMIDI=OFF -DUSE_XMLLINT=OFF
+      - name: Verify generated anonymous enum choices
+        run: |
+          cmake -S tools/introspection/tests -B build/introspection-tests -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/introspection-tests --parallel 2
+          ctest --test-dir build/introspection-tests --output-on-failure
+      - name: Verify Android plugin classification and sidecar discovery
+        run: |
+          cmake -S tools/module-layout-tests -B build/module-layout-tests -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/module-layout-tests --parallel 2
+          ctest --test-dir build/module-layout-tests --output-on-failure
+          cmake -S tools/sidecar-tests -B build/sidecar-tests -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/sidecar-tests --parallel 2
+          ctest --test-dir build/sidecar-tests --output-on-failure
+      - name: Build and verify editing and full resolution export
+        run: |
+          cmake --build build/mobile-engine --parallel 2 --target \
+            dt_mobile_engine_test dt_mobile_raw_engine_test dt_mobile_rawspeed_gpr_test dt_mobile_api_test \
+            dt_mobile_mock_api_test dt_mobile_gpr_test dt_mobile_temperature_test dt_mobile_zonemap_test \
+            dt_mobile_locations_desktop_test dt_mobile_locations_android_test
+          ctest --test-dir build/mobile-engine -R '^dt_mobile_' --output-on-failure
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: desktop-engine-adapter-diagnostics-${{ matrix.build_type }}
+          path: |
+            build/mobile-engine/Testing/**
+            build/mobile-engine/CMakeFiles/CMakeConfigureLog.yaml
   build:
     runs-on: ubuntu-24.04
     steps:
@@ -29,6 +88,8 @@ jobs:
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: "17"}
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - name: Install pinned Android tools
         run: |
           sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
@@ -66,6 +127,8 @@ jobs:
       - uses: gradle/actions/wrapper-validation@v4
       - name: Native host test
         run: cmake -S mobile -B build/mobile -DDT_MOBILE_BUILD_TESTS=ON && cmake --build build/mobile && ctest --test-dir build/mobile --output-on-failure
+      - name: Offline Android runtime staging and APK verification tests
+        run: python3 -B -m unittest discover -s mobile/dependencies/tests -v
       - name: Lint, unit tests, and dev release
         working-directory: android
         run: ./gradlew --no-daemon lintDevRelease testDevReleaseUnitTest assembleDevRelease

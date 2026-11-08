@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/gaussian.h"
 #include "common/math.h"
+#include "common/zonemap.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -128,29 +129,7 @@ static inline int _iop_zonesystem_zone_index_from_lightness(float lightness, flo
 /* calculate a zonemap with scale values for each zone based on controlpoints from param */
 static inline void _iop_zonesystem_calculate_zonemap(dt_iop_zonesystem_params_t *p, float *zonemap)
 {
-  int steps = 0;
-  int pk = 0;
-
-  for(int k = 0; k < p->size; k++)
-  {
-    if((k > 0 && k < p->size - 1) && p->zone[k] == -1)
-      steps++;
-    else
-    {
-      /* set 0 and 1.0 for first and last element in zonesystem size, or the actually parameter value */
-      zonemap[k] = k == 0 ? 0.0 : k == (p->size - 1) ? 1.0 : p->zone[k];
-
-      /* for each step from pk to k, calculate values
-          for now this is linear distributed
-      */
-      for(int l = 1; l <= steps; l++)
-        zonemap[pk + l] = zonemap[pk] + (((zonemap[k] - zonemap[pk]) / (steps + 1)) * l);
-
-      /* store k into pk and reset zone steps for next range*/
-      pk = k;
-      steps = 0;
-    }
-  }
+  dt_zonesystem_calculate_zonemap(p->zone, p->size, zonemap);
 }
 
 static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,

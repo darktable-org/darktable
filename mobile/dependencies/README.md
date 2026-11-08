@@ -22,7 +22,7 @@ only its installed output and download cache.
 
 | Dependency | Pinned source | Link | License | Upstream reason |
 |---|---|---|---|---|
-| RawSpeed | repository gitlink `7cf3dc3b9d9c82b414198b1f57460478be6c6c9d` | static | LGPL-2.1-or-later | primary RAW parser/decoder and camera metadata |
+| RawSpeed | repository gitlink `7cf3dc3b9d9c82b414198b1f57460478be6c6c9d` | static | LGPL-2.1-or-later | primary RAW parser/decoder, including GoPro VC-5, and camera metadata |
 | Exiv2 | vcpkg 2025.06.13 `exiv2` port | static | GPL-2.0-or-later | EXIF/XMP and ISO-BMFF/CR3 metadata |
 | GLib | vcpkg 2025.06.13 `glib` port | static | LGPL-2.1-or-later | upstream core containers, threads, I/O and module abstractions |
 | SQLite | vcpkg 2025.06.13 `sqlite3` port | static | public domain | darktable image/history database |
@@ -42,10 +42,23 @@ ports) are locked and checksum-verified by the same catalog. Android's Bionic,
 `liblog`, C++ shared runtime, pthread and dynamic loader come from the pinned
 NDK rather than being duplicated.
 
-All third-party libraries above are linked into `libdt_mobile.so` statically;
-only the NDK's `libc++_shared.so` is packaged as another runtime library. Static
-linking is deliberate: it avoids unstable plugin lookup paths and ensures the
-APK carries a single auditable native engine. LGPL replacement/relinking and
+RawSpeed already decodes the VC-5 sensor data in GoPro GPR files directly.
+The additional official SDK selected by `DT_MOBILE_WITH_GPR_SDK` is an independent
+reference decoder and optional conversion utility, downloaded with an immutable
+revision and verified archive hash. It is not needed for the normal GPR path.
+See [GPR.md](GPR.md) for the direct decoder tests, reference source pin and
+optional SDK distribution requirements. The app advertises GPR capability only
+when its processing engine and the native decoder are linked.
+
+The third-party libraries in the vcpkg table above are linked into
+`libdt_mobile.so` statically; the NDK's `libc++_shared.so` supplies their C++
+runtime. When the optional SDK helper is included, `libdt_mobile_gpr.so`
+must also be packaged by AGP. It isolates the SDK's bundled Adobe XMP/Expat
+from the versions inside Exiv2 and exports only the two GPR cache bridge
+functions. The Android engine integration is not enabled or package-verified
+yet; builds that include the SDK helper must check all three runtime libraries
+on a device. The ordinary RawSpeed path does not need that helper library.
+LGPL replacement/relinking and
 GPL corresponding-source obligations apply to distributed APKs; the production
 workflow's recursive source archive and the notices at repository root must be
 distributed with releases.
@@ -67,3 +80,23 @@ unzip -l android/app/build/outputs/apk/dev/release/app-dev-release.apk
 Host API tests intentionally do not require this Android-only bundle. The CI
 verification additionally uses `llvm-readelf -d` on the unpacked library and
 checks that the three databases and `libc++_shared.so` are present.
+
+The separate [Android GTK dependency probe](GTK_PROBE.md) resolves and builds
+the Broadway-only GTK closure, then links every GTK/GDK archive object against
+Bionic. It is an optional porting check; it does not enable the production
+engine or verify an Android editing session.
+
+The experimental [editor engine bootstrap](ENGINE_BOOTSTRAP.md) extends that
+route to the root core/module/JNI graph with a separate manifest and output
+directory. Its source and Android runtime verification are still incomplete;
+it does not enable the production Gradle engine.
+Unlike the standalone bundle, that route uses the desktop gitlink's original
+LibRaw 0.22.0 sources rather than the catalog's older LibRaw 0.21.4. Its JPEG 8
+dependency preserves the original lossy-DNG fallback path, and its OpenMP
+runtime also needs Android packaging verification.
+
+The offline [runtime staging tool](STAGING.md) validates a complete installed
+Android engine and prepares the full data tree plus a flat native-library
+closure. It checks the configured module manifest, AArch64 ELF dependencies,
+library collisions and runtime asset contents. Full engine staging and device
+loading remain unverified while the complete native build is blocked.

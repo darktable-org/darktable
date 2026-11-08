@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="mask_path_node">Node %1$d</string>
+    <string name="mask_path_select_node">Select mask node</string>
+    <string name="mask_path_diagram_description">Applied %1$s with %2$d nodes. Selected node %3$d: x %4$s, y %5$s.</string>
+    <string name="mask_path_diagram_hint">The square grid shows the applied native path or brush spine. Handles and brush radii are schematic. Select a node to edit its coordinates and handles below.</string>
+</resources>

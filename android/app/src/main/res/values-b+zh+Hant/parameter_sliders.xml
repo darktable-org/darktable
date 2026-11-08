@@ -1,0 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="parameter_slider_description">%1$s 滑桿</string>
+  <string name="parameter_reset">重設</string>
+  <string name="parameter_reset_description">將 %1$s 重設為原始預設值</string>
+</resources>

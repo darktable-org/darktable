@@ -36,12 +36,12 @@
 
 #define ROUND_POSISTIVE(f) ((unsigned int)((f)+0.5))
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_rlce_params_t)
 
 typedef struct dt_iop_rlce_params_t
 {
-  double radius;
-  double slope;
+  double radius; // $MIN: 0.0 $MAX: 256.0 $DEFAULT: 64.0 $DESCRIPTION: "radius"
+  double slope;  // $MIN: 1.0 $MAX: 3.0 $DEFAULT: 1.25 $DESCRIPTION: "amount"
 } dt_iop_rlce_params_t;
 
 typedef struct dt_iop_rlce_gui_data_t

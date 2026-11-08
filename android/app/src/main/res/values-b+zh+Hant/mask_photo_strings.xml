@@ -1,0 +1,13 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="mask_photo_mode">在照片上放置遮罩</string>
+  <string name="mask_photo_hint">選擇遮罩及其中心或仿製來源，再點選照片以移動位置。復原可回到原本位置。</string>
+  <string name="mask_photo_loading">正在載入遮罩位置…</string>
+  <string name="mask_photo_preparing">正在準備遮罩位置…</string>
+  <string name="mask_photo_empty">此照片沒有可放置的遮罩中心或仿製來源。</string>
+  <string name="mask_photo_choose_form">選擇遮罩</string>
+  <string name="mask_photo_center">遮罩中心</string>
+  <string name="mask_photo_source">仿製來源</string>
+  <string name="mask_photo_target">照片遮罩定位</string>
+  <string name="mask_photo_place_middle">放置於照片中央</string>
+</resources>

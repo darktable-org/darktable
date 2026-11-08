@@ -16,9 +16,19 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/system_signal_handling.h"
+
+#ifdef __ANDROID__
+/* The engine lives inside ART. Preserve Android's sigaction handlers and
+ * debuggerd crash reporting; the desktop handler forks and invokes gdb and
+ * cannot safely own process-wide signals in this shared-library host. */
+void dt_set_signal_handlers(void)
+{
+}
+#else
+
 #include "common/darktable.h"     // for darktable, darktable_t
 #include "common/file_location.h" // for dt_loc_get_datadir
-#include "common/system_signal_handling.h"
 #include <errno.h>       // for errno
 #include <glib.h>        // for g_free, g_printerr, g_strdup_printf
 #include <glib/gstdio.h> // for g_unlink
@@ -249,6 +259,8 @@ void dt_set_signal_handlers()
 
 #endif //!defined(__APPLE__) && !defined(_WIN32)
 }
+
+#endif /* !__ANDROID__ */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -522,13 +522,19 @@ static void *_control_work_res(void *ptr)
     if(_control_run_job_res(s, threadid_res))
     {
       // wait for a new job.
+#ifndef __ANDROID__
+      // Bionic has no POSIX thread cancellation. Android workers still use
+      // the same condition variable and cooperative dt_control_running() exit.
       int old;
       pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old);
+#endif
       dt_pthread_mutex_lock(&s->cond_mutex);
       dt_pthread_cond_wait(&s->cond, &s->cond_mutex);
       dt_pthread_mutex_unlock(&s->cond_mutex);
+#ifndef __ANDROID__
       int tmp;
       pthread_setcancelstate(old, &tmp);
+#endif
     }
   }
   return NULL;

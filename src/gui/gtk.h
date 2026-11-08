@@ -723,11 +723,13 @@ dt_gui_session_type_t dt_gui_get_session_type(void);
 #undef G_CALLBACK
 static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a macro it gets expanded before reaching here
 #define DISABLINGPREFIXG_CALLBACK
-#define BOOLSIGNAL(s, signal) || !strcmp(s, #signal)
+// Compile-time checks must bypass libc wrappers such as Bionic's fortified
+// strlen overload, which is not an integer constant expression.
+#define BOOLSIGNAL(s, signal) || !__builtin_strcmp(s, #signal)
 #undef _Static_assert
 #undef  g_signal_connect
 #define g_signal_connect(instance, signal, c_handler, user_data) do { \
-  _Static_assert(((strlen(signal)>4 && !strcmp("event", &signal[strlen(signal)-5])) \
+  _Static_assert(((__builtin_strlen(signal)>4 && !__builtin_strcmp("event", &signal[__builtin_strlen(signal)-5])) \
     BOOLSIGNAL(signal, drag-motion) \
     BOOLSIGNAL(signal, drag-failed) \
     BOOLSIGNAL(signal, drag-drop) \

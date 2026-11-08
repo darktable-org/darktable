@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="lens_camera_profile">相机配置</string>
+  <string name="lens_profile">镜头配置</string>
+  <string name="lens_profile_unselected">未选择配置</string>
+  <string name="lens_camera_profile_unmatched">没有匹配的相机配置</string>
+  <string name="lens_profile_requires_camera">请先选择匹配的相机配置</string>
+  <string name="lens_profile_names_hint">相机配置描述机身；镜头配置包含光学校准数据，名称可能不同，例如固定镜头。</string>
+  <string name="lens_unverified_stored_lens">已保存的镜头设置：%1$s。尚未验证其是否适用于此相机。</string>
+  <string name="lens_profile_search">搜索配置</string>
+  <string name="lens_profile_no_matches">没有匹配的配置。</string>
+  <string name="lens_profile_none">没有列出兼容配置。请检查相机选择，或使用手动暗角校正。</string>
+  <string name="lens_image_camera">照片中的相机：%1$s</string>
+  <string name="lens_image_lens">照片中的镜头：%1$s</string>
+  <string name="lens_status_manual">手动暗角模式。增加强度即可应用，无需镜头配置。</string>
+  <string name="lens_status_ready">镜头校正设置已就绪。</string>
+  <string name="lens_status_missing_database">此运行环境缺少 Lensfun 配置数据库，仍可使用手动暗角校正。</string>
+  <string name="lens_status_missing_lens">没有匹配的镜头配置。请选择正确的相机和镜头配置，或使用手动暗角校正。</string>
+  <string name="lens_status_missing_camera">照片中的相机名称未匹配到 Lensfun 相机配置。需要先匹配相机，才能选择兼容镜头。</string>
+  <string name="lens_status_unverified_camera">已保存的镜头设置尚未针对这台相机验证，仍可能影响预览。请使用照片的镜头默认值重置。</string>
+  <string name="lens_status_missing_settings">请补全此镜头配置所需的拍摄设置。</string>
+  <string name="lens_status_no_calibration">照片数据或所选配置在当前设置下没有有效校准数据。</string>
+  <string name="lens_distortion">畸变</string>
+  <string name="lens_tca">色差</string>
+  <string name="lens_vignetting">暗角</string>
+  <string name="lens_available_corrections">可用校正：%1$s</string>
+  <string name="lens_ca_warp_hint">变形强度用于调整照片内嵌的色差校正；其元数据不包含几何畸变校正。</string>
+  <string name="lens_shooting_settings">拍摄设置</string>
+  <string name="lens_shooting_hint">镜头校准使用原始焦距、光圈、对焦距离和裁剪系数。请先补全照片中缺失的数值，再使用配置校正。</string>
+  <string name="lens_correction_settings">配置校正设置</string>
+  <string name="lens_manual_vignette">手动暗角校正</string>
+  <string name="lens_manual_vignette_hint">此功能独立于镜头配置。增加强度后即可使用半径和陡峭度。</string>
+</resources>

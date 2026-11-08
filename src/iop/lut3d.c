@@ -1185,18 +1185,22 @@ static int _calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)
   { // read the file
 #endif  // HAVE_GMIC
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-    if(filepath[0] && lutfolder[0])
+    const gboolean absolute = g_path_is_absolute(filepath);
+    if(filepath[0] && (absolute || lutfolder[0]))
     {
-      char *fullpath = g_build_filename(lutfolder, filepath, NULL);
-      if(g_str_has_suffix (filepath, ".png") || g_str_has_suffix (filepath, ".PNG"))
+      // A mobile document import supplies its retained private cache path.
+      // Existing desktop relative paths still resolve beneath the LUT folder.
+      char *fullpath = absolute ? g_strdup(filepath) : g_build_filename(lutfolder, filepath, NULL);
+      const char *extension = strrchr(filepath, '.');
+      if(extension && !g_ascii_strcasecmp(extension, ".png"))
       {
         level = _calculate_clut_haldclut(p, fullpath, clut);
       }
-      else if(g_str_has_suffix (filepath, ".cube") || g_str_has_suffix (filepath, ".CUBE"))
+      else if(extension && !g_ascii_strcasecmp(extension, ".cube"))
       {
         level = _calculate_clut_cube(fullpath, clut);
       }
-      else if(g_str_has_suffix (filepath, ".3dl") || g_str_has_suffix (filepath, ".3DL"))
+      else if(extension && !g_ascii_strcasecmp(extension, ".3dl"))
       {
         level = _calculate_clut_3dl(fullpath, clut);
       }

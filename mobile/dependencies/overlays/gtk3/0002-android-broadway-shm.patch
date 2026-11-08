@@ -1,0 +1,89 @@
+diff --git a/gdk/broadway/gdkbroadway-server.c b/gdk/broadway/gdkbroadway-server.c
+--- a/gdk/broadway/gdkbroadway-server.c
++++ b/gdk/broadway/gdkbroadway-server.c
+@@ -545,7 +545,13 @@
+   void *ptr;
+   int res;
+ 
++#ifdef __ANDROID__
++  /* Bionic has no shm_open(). Use the existing temporary-file transport. */
++  errno = ENOSYS;
++  fd = -1;
++#else
+   fd = shm_open(name, O_RDWR|O_CREAT|O_EXCL, 0600);
++#endif
+   if (fd == -1)
+     {
+       if (errno == EEXIST)
+@@ -554,11 +560,11 @@
+       filename = g_build_filename (g_get_tmp_dir (), name, NULL);
+ 
+       fd = open (filename, O_RDWR | O_CREAT | O_EXCL, 0600);
+-      g_free (filename);
+       if (fd == -1)
+ 	{
+ 	  if (errno != EEXIST)
+ 	    g_error ("Unable to allocate shared mem for window");
++          g_free (filename);
+ 	  return NULL;
+ 	}
+       else
+@@ -576,8 +582,10 @@
+     {
+       if (filename)
+ 	unlink (filename);
++#ifndef __ANDROID__
+       else
+ 	shm_unlink (name);
++#endif
+       g_error ("Not enough shared memory for window surface");
+     }
+ #endif
+@@ -585,6 +593,7 @@
+   ptr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+ 
+   (void) close(fd);
++  g_free (filename);
+ 
+   return ptr;
+ 
+@@ -692,9 +701,11 @@
+ #ifdef G_OS_UNIX
+ 
+   munmap (data->data, data->data_size);
++#ifndef __ANDROID__
+   if (data->is_shm)
+     shm_unlink (data->name);
+   else
++#endif
+     {
+       char *filename = g_build_filename (g_get_tmp_dir (), data->name, NULL);
+       unlink (filename);
+diff --git a/gdk/broadway/broadway-server.c b/gdk/broadway/broadway-server.c
+--- a/gdk/broadway/broadway-server.c
++++ b/gdk/broadway/broadway-server.c
+@@ -838,7 +838,13 @@
+   void *ptr;
+   char *filename = NULL;
+ 
++#ifdef __ANDROID__
++  /* Match the client's temporary-file transport on Bionic. */
++  errno = ENOSYS;
++  fd = -1;
++#else
+   fd = shm_open (name, O_RDONLY, 0600);
++#endif
+   if (fd == -1)
+     {
+       filename = g_build_filename (g_get_tmp_dir (), name, NULL);
+@@ -861,8 +867,10 @@
+       unlink (filename);
+       g_free (filename);
+     }
++#ifndef __ANDROID__
+   else
+     shm_unlink (name);
++#endif
+ 
+   return ptr;
+ 

@@ -47,3 +47,6 @@ build/mobile/
 *.pfx
 *.pkcs12
 android/gradle/wrapper/gradle-wrapper.jar
+
+# Local dependency downloads, toolchains and verification scratch files
+/work/

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="parameter_slider_description">%1$s slider</string>
+    <string name="parameter_reset">Reset</string>
+    <string name="parameter_reset_description">Reset %1$s to its original default</string>
+</resources>

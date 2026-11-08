@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "darktable-android-gtk-probe",
+  "version-string": "1.0.0",
+  "dependencies": [
+    {
+      "name": "gtk3",
+      "default-features": false
+    }
+  ]
+}

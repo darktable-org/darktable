@@ -553,6 +553,13 @@ struct dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
                                                     const gboolean reorder_iop);
 struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev,
                                                 struct dt_iop_module_t *base);
+/** Duplicate using at least minimum_priority, for callers retaining retired
+ * instance identities across their own undo branches. Existing desktop callers
+ * keep the original priority-selection behavior through the wrappers above. */
+struct dt_iop_module_t *dt_dev_module_duplicate_at_priority(dt_develop_t *dev,
+                                                          struct dt_iop_module_t *base,
+                                                          const gboolean reorder_iop,
+                                                          const int minimum_priority);
 /** remove an existent module */
 void dt_dev_module_remove(dt_develop_t *dev,
                           struct dt_iop_module_t *module);

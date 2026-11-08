@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="parametric_mask_title">参数蒙版</string>
+  <string name="parametric_input">输入图像</string>
+  <string name="parametric_output">输出图像</string>
+  <string name="parametric_channel_selector">选择蒙版通道</string>
+  <string name="parametric_graph_description">%1$s已应用的阈值分布</string>
+  <string name="parametric_threshold_hint">阈值使用通道的 0–1 归一化范围。外侧控制柄用于羽化选区。控制柄须保持顺序；移动相邻控制柄即可释放被限制的控制柄。每次调整在松手或点按应用后生效。</string>
+</resources>

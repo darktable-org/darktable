@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+cmake_minimum_required(VERSION 3.22.1)
+project(dt_mobile_gtk_probe LANGUAGES C CXX)
+if(NOT ANDROID OR NOT ANDROID_ABI STREQUAL "arm64-v8a")
+  message(FATAL_ERROR "The GTK runtime probe must target Android ARM64")
+endif()
+# The NDK legacy toolchain uses CMAKE_SYSTEM_VERSION=1 as a CMake sentinel;
+# ANDROID_PLATFORM_LEVEL records the actual resolved compiler API instead.
+set(_dt_gtk_android_api "${CMAKE_SYSTEM_VERSION}")
+if(DEFINED ANDROID_PLATFORM_LEVEL)
+  set(_dt_gtk_android_api "${ANDROID_PLATFORM_LEVEL}")
+elseif(DEFINED CMAKE_ANDROID_API)
+  set(_dt_gtk_android_api "${CMAKE_ANDROID_API}")
+elseif(DEFINED ANDROID_NATIVE_API_LEVEL)
+  set(_dt_gtk_android_api "${ANDROID_NATIVE_API_LEVEL}")
+endif()
+if(NOT _dt_gtk_android_api STREQUAL "26")
+  message(FATAL_ERROR "The GTK probe must target the API 26 baseline")
+endif()
+if(NOT IS_DIRECTORY "${DT_MOBILE_GTK_PREFIX}/lib/pkgconfig")
+  message(FATAL_ERROR "DT_MOBILE_GTK_PREFIX must name the installed Android dependency prefix")
+endif()
+# Host generator tools are installed beside the Android libraries. Keep their
+# .pc files, and the host environment's .pc files, out of this cross link.
+set(ENV{PKG_CONFIG_PATH} "")
+set(ENV{PKG_CONFIG_LIBDIR}
+  "${DT_MOBILE_GTK_PREFIX}/lib/pkgconfig:${DT_MOBILE_GTK_PREFIX}/share/pkgconfig")
+set(ENV{PKG_CONFIG_SYSROOT_DIR} "")
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH FALSE)
+find_package(PkgConfig REQUIRED)
+set(PKG_CONFIG_ARGN --static)
+pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+find_library(_dt_gtk_archive NAMES gtk-3 REQUIRED)
+find_library(_dt_gdk_archive NAMES gdk-3 REQUIRED)
+foreach(_dt_archive IN ITEMS "${_dt_gtk_archive}" "${_dt_gdk_archive}")
+  if(NOT _dt_archive MATCHES "\\.a$")
+    message(FATAL_ERROR "GTK verification requires the pinned static/PIC bundle: ${_dt_archive}")
+  endif()
+endforeach()
+foreach(_dt_path IN LISTS GTK3_INCLUDE_DIRS GTK3_LIBRARY_DIRS)
+  cmake_path(IS_PREFIX DT_MOBILE_GTK_PREFIX "${_dt_path}" NORMALIZE _dt_is_target)
+  if(NOT _dt_is_target)
+    message(FATAL_ERROR "GTK pkg-config resolved a path outside the Android prefix: ${_dt_path}")
+  endif()
+endforeach()
+add_library(dt_mobile_gtk_probe SHARED probe.c)
+target_compile_features(dt_mobile_gtk_probe PRIVATE c_std_11)
+set_target_properties(dt_mobile_gtk_probe PROPERTIES LINKER_LANGUAGE CXX)
+target_compile_options(dt_mobile_gtk_probe PRIVATE -Wall -Wextra -Werror)
+target_link_options(dt_mobile_gtk_probe PRIVATE -Wl,--no-undefined)
+# Keep every GTK/GDK object so unavailable Bionic APIs cannot hide in an
+# archive member that the small entry point happens not to reference.
+target_link_libraries(dt_mobile_gtk_probe PRIVATE
+  "-Wl,--whole-archive,${_dt_gtk_archive},${_dt_gdk_archive},--no-whole-archive"
+  PkgConfig::GTK3)

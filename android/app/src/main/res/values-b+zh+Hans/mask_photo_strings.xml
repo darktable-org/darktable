@@ -1,0 +1,13 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="mask_photo_mode">在照片上放置蒙版</string>
+  <string name="mask_photo_hint">选择蒙版及其中心或克隆源，然后点按照片移动位置。撤销可恢复上一个位置。</string>
+  <string name="mask_photo_loading">正在载入蒙版位置…</string>
+  <string name="mask_photo_preparing">正在准备蒙版位置…</string>
+  <string name="mask_photo_empty">此照片上没有可放置的蒙版中心或克隆源。</string>
+  <string name="mask_photo_choose_form">选择蒙版</string>
+  <string name="mask_photo_center">蒙版中心</string>
+  <string name="mask_photo_source">克隆源</string>
+  <string name="mask_photo_target">照片蒙版定位</string>
+  <string name="mask_photo_place_middle">放置在照片中心</string>
+</resources>

@@ -1,5 +1,7 @@
 if(USE_XCF)
   add_subdirectory(libxcf)
+  include("${CMAKE_SOURCE_DIR}/mobile/cmake/XcfWriter.cmake")
+  dt_mobile_prepare_xcf_writer()
 endif()
 
 add_library(whereami STATIC "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/whereami.c")

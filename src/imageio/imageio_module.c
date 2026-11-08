@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "common/module.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
@@ -134,28 +135,25 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
   iio->plugins_format = NULL;
   GList *res = NULL;
 
-  char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
+  char plugindir[PATH_MAX] = { 0 };
   const gchar *d_name;
 
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, "/plugins/imageio/format", sizeof(plugindir));
+  const char *subdir = "/plugins/imageio/format";
+  if(!dt_module_get_directory(plugindir, sizeof(plugindir), subdir)) return 1;
 
   GDir *dir = g_dir_open(plugindir, 0, NULL);
 
   if(!dir) return 1;
 
-  const int name_offset = strlen(SHARED_MODULE_PREFIX);
-  const int name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
-
   while((d_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
+    gchar *plugin_name = dt_module_get_name(d_name, subdir);
+    if(!plugin_name) continue;
     dt_imageio_module_format_t *module = calloc(1, sizeof(dt_imageio_module_format_t));
-    gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
-    if(dt_imageio_load_module_format(module, libname, plugin_name))
+    gchar *libname = g_build_filename(plugindir, d_name, NULL);
+    const int result = dt_imageio_load_module_format(module, libname, plugin_name);
+    g_free(plugin_name);
+    if(result)
     {
       g_free(libname);
       free(module);
@@ -254,23 +252,21 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
 {
   iio->plugins_storage = NULL;
   dt_imageio_module_storage_t *module;
-  char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
+  char plugindir[PATH_MAX] = { 0 };
   const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, "/plugins/imageio/storage", sizeof(plugindir));
+  const char *subdir = "/plugins/imageio/storage";
+  if(!dt_module_get_directory(plugindir, sizeof(plugindir), subdir)) return 1;
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
+    gchar *plugin_name = dt_module_get_name(d_name, subdir);
+    if(!plugin_name) continue;
     module = calloc(1, sizeof(dt_imageio_module_storage_t));
-    gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
-    if(dt_imageio_load_module_storage(module, libname, plugin_name))
+    gchar *libname = g_build_filename(plugindir, d_name, NULL);
+    const int result = dt_imageio_load_module_storage(module, libname, plugin_name);
+    g_free(plugin_name);
+    if(result)
     {
       g_free(libname);
       free(module);

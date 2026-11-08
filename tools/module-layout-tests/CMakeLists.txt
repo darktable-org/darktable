@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+cmake_minimum_required(VERSION 3.22.1)
+project(dt_module_layout_tests LANGUAGES C)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+enable_testing()
+add_executable(dt_module_layout_test module_layout_test.c)
+target_include_directories(dt_module_layout_test PRIVATE ../../src)
+target_link_libraries(dt_module_layout_test PRIVATE PkgConfig::GLIB)
+target_compile_options(dt_module_layout_test PRIVATE -Wall -Wextra -Werror)
+add_test(NAME dt_module_layout_test COMMAND dt_module_layout_test)

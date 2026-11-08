@@ -10,6 +10,9 @@ readonly root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 readonly triplet_dir="$root_dir/mobile/dependencies/triplets"
 readonly source_dir=${DT_MOBILE_VCPKG_ROOT:-"$root_dir/.vcpkg/$VCPKG_TAG"}
 readonly install_dir=${DT_MOBILE_VCPKG_INSTALLED:-"$root_dir/.vcpkg/installed"}
+readonly manifest_dir=${DT_MOBILE_VCPKG_MANIFEST_ROOT:-"$root_dir/mobile/dependencies"}
+readonly overlay_ports=${DT_MOBILE_VCPKG_OVERLAY_PORTS:-}
+readonly environment_file=${DT_MOBILE_VCPKG_ENV_FILE:-"$root_dir/mobile/dependencies/android-dependencies.env"}
 readonly cmake_toolchain_file="$source_dir/scripts/buildsystems/vcpkg.cmake"
 
 : "${ANDROID_NDK_HOME:?ANDROID_NDK_HOME must name NDK 27.2.12479018}"
@@ -61,13 +64,26 @@ env | LC_ALL=C sort | grep -E '^(ANDROID_(ABI|PLATFORM)|CMAKE_ANDROID_)' || true
 printf 'CPPFLAGS=%s\n' "${CPPFLAGS-<unset>}"
 printf 'CMAKE_ANDROID_ARCH_ABI=%s\n' "$CMAKE_ANDROID_ARCH_ABI"
 
-"$source_dir/vcpkg" install \
-  --triplet "$ABI" \
-  --overlay-triplets="$triplet_dir" \
-  --x-manifest-root="$root_dir/mobile/dependencies" \
-  --x-install-root="$install_dir" \
-  --clean-after-build
+install_arguments=(
+  --triplet "$ABI"
+  --overlay-triplets="$triplet_dir"
+  --x-manifest-root="$manifest_dir"
+  --x-install-root="$install_dir"
+)
+if [[ ${DT_MOBILE_VCPKG_CLEAN_AFTER_BUILD:-1} == 1 ]]; then
+  install_arguments+=(--clean-after-build)
+fi
+if [[ -n "$overlay_ports" ]]; then
+  install_arguments+=("--overlay-ports=$overlay_ports")
+fi
+"$source_dir/vcpkg" install "${install_arguments[@]}" "$@"
+
+# A resolution-only probe has not installed libraries; do not emit a build
+# environment file that a later caller could mistake for a completed bundle.
+for argument in "$@"; do
+  [[ "$argument" != --dry-run ]] || exit 0
+done
 
 printf 'VCPKG_ROOT=%s\nVCPKG_INSTALLED_DIR=%s\nVCPKG_DEFAULT_TRIPLET=%s\nVCPKG_TARGET_TRIPLET=%s\nANDROID_ABI=%s\nANDROID_PLATFORM=%s\n' \
   "$source_dir" "$install_dir" "$ABI" "$ABI" "$ANDROID_ABI" "$ANDROID_PLATFORM" \
-  > "$root_dir/mobile/dependencies/android-dependencies.env"
+  > "$environment_file"

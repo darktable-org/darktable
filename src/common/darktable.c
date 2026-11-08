@@ -1778,7 +1778,13 @@ int dt_init(int argc,
   }
 
   // import default styles from shared directory
+#ifdef __ANDROID__
+  /* The APK stages the installed darktable tree as data/, with styles inside
+   * it, rather than retaining the desktop share/darktable directory name. */
+  gchar *styledir = g_build_filename(darktable.datadir, "styles", NULL);
+#else
   gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
+#endif
   if(styledir)
   {
     dt_splash_screen_set_progress(_("importing default styles"));

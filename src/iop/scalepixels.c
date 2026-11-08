@@ -102,15 +102,20 @@ static void _transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
   }
 }
 
-static void _precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static gboolean _precalculate_scale(dt_dev_pixelpipe_iop_t *piece)
 {
-  // Since the scaling is calculated by modify_roi_in use that to get them
-  // This doesn't seem strictly needed but since clipping.c also does it we try
-  // and avoid breaking any assumptions elsewhere in the code
-  dt_iop_roi_t roi_out, roi_in;
-  roi_out.width = piece->buf_in.width;
-  roi_out.height = piece->buf_in.height;
-  self->modify_roi_in(self, piece, &roi_out, &roi_in);
+  // Geometry callbacks use full-resolution image coordinates. Derive the same
+  // input/output ratios as process() and distort_mask(), including the rounded
+  // output dimensions. modify_roi_in() instead chooses a larger input ROI for
+  // resampling and can change its scale; its ratios describe that buffer, not
+  // the full-resolution image geometry.
+  if(piece->buf_in.width <= 0 || piece->buf_in.height <= 0
+     || piece->buf_out.width <= 0 || piece->buf_out.height <= 0)
+    return FALSE;
+  dt_iop_scalepixels_data_t *d = piece->data;
+  d->x_scale = (float)piece->buf_in.width / piece->buf_out.width;
+  d->y_scale = (float)piece->buf_in.height / piece->buf_out.height;
+  return TRUE;
 }
 
 gboolean distort_transform(dt_iop_module_t *self,
@@ -118,7 +123,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *points,
                            size_t points_count)
 {
-  _precalculate_scale(self, piece);
+  if(!_precalculate_scale(piece)) return FALSE;
   dt_iop_scalepixels_data_t *d = piece->data;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -135,7 +140,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *points,
                                size_t points_count)
 {
-  _precalculate_scale(self, piece);
+  if(!_precalculate_scale(piece)) return FALSE;
   dt_iop_scalepixels_data_t *d = piece->data;
 
   for(size_t i = 0; i < points_count * 2; i += 2)

@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+  <locale android:name="en"/>
+  <locale android:name="zh-Hant"/>
+  <locale android:name="zh-Hans"/>
+  <locale android:name="es-419"/>
+</locale-config>

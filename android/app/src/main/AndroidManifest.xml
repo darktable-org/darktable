@@ -1,14 +1,28 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <application android:allowBackup="true" android:label="@string/app_name" android:theme="@style/Theme.MobileRawEditor">
+  <application android:allowBackup="true" android:label="@string/app_name" android:theme="@style/Theme.MobileRawEditor" android:localeConfig="@xml/locales_config">
     <activity android:name=".MainActivity" android:exported="true">
       <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+      <!-- Shared documents arrive in EXTRA_STREAM/ClipData, often under opaque
+           content URIs. Extension/path filters cannot match those payloads. -->
+      <intent-filter>
+        <action android:name="android.intent.action.SEND"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="image/*"/>
+        <data android:mimeType="application/octet-stream"/>
+        <data android:mimeType="application/x-gopro-gpr"/>
+        <data android:mimeType="application/x-gpr"/>
+        <data android:mimeType="application/gpr"/>
+      </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/><action android:name="android.intent.action.EDIT"/>
         <category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>
         <data android:mimeType="image/x-adobe-dng"/><data android:mimeType="image/x-canon-cr2"/>
         <data android:mimeType="image/x-canon-cr3"/><data android:mimeType="image/x-nikon-nef"/>
         <data android:mimeType="image/x-sony-arw"/>
+        <data android:mimeType="image/x-fuji-raf"/><data android:mimeType="image/x-olympus-orf"/>
+        <data android:mimeType="image/x-panasonic-rw2"/><data android:mimeType="image/x-pentax-pef"/>
+        <data android:mimeType="image/x-gopro-gpr"/><data android:mimeType="image/gpr"/>
       </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/><action android:name="android.intent.action.EDIT"/>

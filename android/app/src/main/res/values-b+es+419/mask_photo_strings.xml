@@ -1,0 +1,13 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="mask_photo_mode">Colocar máscaras en la foto</string>
+  <string name="mask_photo_hint">Elige una máscara y su centro u origen de clonación; luego toca la foto para moverlo. Deshacer restaura la posición anterior.</string>
+  <string name="mask_photo_loading">Cargando posiciones de máscaras…</string>
+  <string name="mask_photo_preparing">Preparando posiciones de máscaras…</string>
+  <string name="mask_photo_empty">No hay centros de máscara ni orígenes de clonación que se puedan colocar en esta foto.</string>
+  <string name="mask_photo_choose_form">Elegir máscara</string>
+  <string name="mask_photo_center">Centro de la máscara</string>
+  <string name="mask_photo_source">Origen de clonación</string>
+  <string name="mask_photo_target">Posición de máscara en la foto</string>
+  <string name="mask_photo_place_middle">Colocar en el centro de la foto</string>
+</resources>

@@ -257,7 +257,19 @@ gboolean dt_check_opendir(const char* context, const char* directory)
 
 void dt_loc_init_localedir(const char* application_directory, const char *localedir)
 {
+#ifdef __ANDROID__
+  /* The process executable is Android's app_process, outside the installed
+   * application's runtime. RuntimeAssets installs translations beside data/;
+   * derive the default from the already resolved data directory instead. */
+  (void)application_directory;
+  gchar *runtime_root = g_path_get_dirname(darktable.datadir);
+  gchar *default_localedir = g_build_filename(runtime_root, "locale", NULL);
+  darktable.localedir = dt_loc_init_generic(localedir, NULL, default_localedir);
+  g_free(default_localedir);
+  g_free(runtime_root);
+#else
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, DARKTABLE_LOCALEDIR);
+#endif
   dt_check_opendir("darktable.localedir", darktable.localedir);
 }
 
@@ -269,7 +281,16 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
 
 void dt_loc_init_sharedir(const char* application_directory)
 {
+#ifdef __ANDROID__
+  /* Native modules remain in nativeLibraryDir; writable runtime data lives
+   * in the app's private directory, never beside the system executable. */
+  (void)application_directory;
+  gchar *runtime_root = g_path_get_dirname(darktable.datadir);
+  darktable.sharedir = dt_loc_init_generic(runtime_root, NULL, NULL);
+  g_free(runtime_root);
+#else
   darktable.sharedir = dt_loc_init_generic(NULL, application_directory, DARKTABLE_SHAREDIR);
+#endif
   dt_check_opendir("darktable.sharedir", darktable.sharedir);
 }
 

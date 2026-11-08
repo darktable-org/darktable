@@ -124,6 +124,9 @@ endif(USE_AI)
 
 # Add libs references
 foreach(module ${MODULES})
+  if(ANDROID)
+    set_target_properties(${module} PROPERTIES PREFIX "libdt_lib_")
+  endif()
   target_link_libraries(${module} lib_darktable)
 endforeach(module)
 

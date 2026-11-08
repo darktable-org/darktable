@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="parametric_mask_title">Parametric mask</string>
+  <string name="parametric_input">Input image</string>
+  <string name="parametric_output">Output image</string>
+  <string name="parametric_channel_selector">Select mask channel</string>
+  <string name="parametric_graph_description">Applied threshold layout for %1$s</string>
+  <string name="parametric_threshold_hint">Thresholds use the channel’s normalized 0–1 scale. Outer handles feather the selection. Handles stay ordered; move a neighbor to unlock a fixed handle. Each adjustment applies on release or Apply.</string>
+</resources>

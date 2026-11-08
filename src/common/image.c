@@ -52,7 +52,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#ifndef _WIN32
+#if defined(__ANDROID__)
+#include "common/sidecar.h"
+#elif !defined(_WIN32)
 #include <glob.h>
 #endif
 #include <glib/gstdio.h>
@@ -1627,7 +1629,7 @@ gboolean dt_image_basic(const dt_imgid_t imgid)
   return status & DT_HISTORY_HASH_BASIC;
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__ANDROID__)
 static gboolean _valid_glob_match(const char *const name, size_t offset)
 {
   // verify that the name matched by glob() is a valid sidecar name by
@@ -1643,10 +1645,13 @@ static gboolean _valid_glob_match(const char *const name, size_t offset)
   }
   return name[i] == '.';
 }
-#endif /* !_WIN32 */
+#endif /* !_WIN32 && !__ANDROID__ */
 
 GList* dt_image_find_duplicates(const char* filename)
 {
+#if defined(__ANDROID__)
+  return dt_sidecar_find_duplicates(filename);
+#else
   // find all duplicates of an image by looking for all possible
   //   sidecars for the file: file.ext.xmp, file_NN.ext.xmp,
   //   file_NNN.ext.xmp, and file_NNNN.ext.xmp because a glob() needs
@@ -1707,6 +1712,7 @@ GList* dt_image_find_duplicates(const char* filename)
 #else
   return win_image_find_duplicates(filename);
 #endif
+#endif /* __ANDROID__ */
 }
 
 // Search for duplicate's sidecar files and import them if found and not in DB yet

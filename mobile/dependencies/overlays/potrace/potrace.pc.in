@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: potrace
+Description: Potrace bitmap tracing library
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lpotrace
+Libs.private: -lm
+Cflags: -I${includedir}

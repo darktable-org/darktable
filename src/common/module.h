@@ -20,6 +20,11 @@
 
 #include <glib.h>
 
+/* Resolve a plugin category in the platform's installed library layout.
+ * The returned logical name is allocated and must be freed with g_free(). */
+gboolean dt_module_get_directory(char *directory, size_t size, const char *subdir);
+gchar *dt_module_get_name(const char *filename, const char *subdir);
+
 GList *dt_module_load_modules(const char *subdir,
                               const size_t module_size,
                               int (*load_module_so)(void *module,

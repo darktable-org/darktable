@@ -1,0 +1,27 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="workspace_tab_adjustments">Luz / Color</string>
+  <string name="workspace_tab_detail">Detalle / Reparación</string>
+  <string name="workspace_tab_geometry">Geometría / Efectos</string>
+  <string name="workspace_tab_settings">Configuración</string>
+  <string name="workspace_choose_tool">Elegir herramienta de edición</string>
+  <string name="workspace_no_tools">No hay herramientas coincidentes</string>
+  <string name="workspace_tool_toggle">Activar %1$s</string>
+  <string name="workspace_enabled">Activada</string>
+  <string name="workspace_disabled">Desactivada</string>
+  <string name="workspace_disabled_hint">Activa la herramienta para ajustar. Sus valores se conservan al desactivarla.</string>
+  <string name="workspace_close_search">Cerrar búsqueda de herramientas</string>
+  <string name="workspace_search_results">%1$d resultados · Todas las pestañas</string>
+  <string name="workspace_search_result_detail">%1$s · %2$s</string>
+  <string name="workspace_choose_photo">Elige una foto para comenzar</string>
+  <string name="workspace_layout_hint">La foto permanece sobre las herramientas. Usa las pestañas inferiores para explorar ajustes, detalle y geometría; cada pestaña recuerda su última herramienta.</string>
+  <string name="workspace_license_title">Licencia</string>
+  <string name="workspace_upstream">Código fuente y licencias de darktable</string>
+  <string name="workspace_runtime_ready">El motor de procesamiento de fotos está listo.</string>
+  <string name="workspace_runtime_missing">Se necesita una versión con el motor de procesamiento para abrir y editar fotos.</string>
+  <string name="app_language">Idioma</string>
+  <string name="app_language_system">Predeterminado del sistema</string>
+  <string name="app_language_description">Elige el idioma de la app. Se conservan la foto abierta y el historial de ediciones.</string>
+  <string name="app_language_choose">Elegir idioma de la app</string>
+  <string name="workspace_upstream_commit">Revisión de origen: %1$s</string>
+</resources>

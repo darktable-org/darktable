@@ -1,0 +1,5 @@
+/* The only configuration values consumed by the four upstream library files.
+ * Header/type availability is checked with the selected target compiler. */
+#define VERSION "@PROJECT_VERSION@"
+#cmakedefine HAVE_INTTYPES_H 1
+#cmakedefine HAVE_GCC_LOOP_BUG 1

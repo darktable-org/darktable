@@ -1,0 +1,11 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="crop_bounds_title">Crop bounds</string>
+  <string name="crop_aspect_title">Fit draft to ratio</string>
+  <string name="crop_aspect_free">Free</string>
+  <string name="crop_aspect_input">Input image</string>
+  <string name="crop_aspect_orientation">Portrait orientation</string>
+  <string name="crop_aspect_hint">Fits within the draft using the crop tool’s input dimensions. Apply commits the complete rectangle. Editing an edge returns to Free.</string>
+  <string name="crop_aspect_dimensions">Crop input: %1$d × %2$d px</string>
+  <string name="crop_aspect_minimum">This ratio cannot satisfy the minimum crop size.</string>
+</resources>

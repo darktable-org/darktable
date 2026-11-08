@@ -28,6 +28,9 @@ if(CUPS_FOUND)
 endif(CUPS_FOUND)
 
 foreach(module ${MODULES})
+    if(ANDROID)
+        set_target_properties(${module} PROPERTIES PREFIX "libdt_view_")
+    endif()
     target_link_libraries(${module} lib_darktable)
 endforeach(module)
 

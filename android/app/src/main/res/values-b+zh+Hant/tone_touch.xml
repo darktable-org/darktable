@@ -1,0 +1,17 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="tone_touch_title">從照片調整色調</string>
+  <string name="tone_touch_mode">在照片上調整</string>
+  <string name="tone_touch_hint">點選照片中的區域，再拖曳滑桿或使用 ±0.1 EV，即可立即調整。亮度相近的區域會一起變更。</string>
+  <string name="tone_touch_centre">選取照片中央</string>
+  <string name="tone_touch_choose_point">請在照片上選擇取樣色調的位置。</string>
+  <string name="tone_touch_sample">選取色調：%1$.2f EV</string>
+  <string name="tone_touch_adjustment">選取色調的亮度</string>
+  <string name="tone_touch_darker">−0.1 EV</string>
+  <string name="tone_touch_brighter">+0.1 EV</string>
+  <string name="tone_touch_target">在照片中選擇色調</string>
+  <string name="tone_touch_sampling">正在取樣色調…</string>
+  <string name="tone_touch_updating">正在更新選取色調…</string>
+  <string name="tone_touch_stale_preview">預覽已過期。請先更新預覽，再選擇色調。</string>
+  <string name="tone_touch_retry_preview">重試預覽</string>
+</resources>

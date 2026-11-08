@@ -1,0 +1,10 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <style name="Theme.MobileRawEditor" parent="Theme.MobileRawEditor.Base">
+    <item name="android:windowLightNavigationBar">false</item>
+  </style>
+  <style name="Theme.MobileRawEditor.Light" parent="Theme.MobileRawEditor.LightBase">
+    <item name="android:navigationBarColor">#FAFAFA</item>
+    <item name="android:windowLightNavigationBar">true</item>
+  </style>
+</resources>

@@ -97,6 +97,7 @@ FILE(GLOB SOURCE_FILES
   "common/utility.c"
   "common/variables.c"
   "common/wb_presets.c"
+  "common/whitebalance.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -176,6 +177,10 @@ FILE(GLOB SOURCE_FILES
   )
 
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+
+if(ANDROID)
+  list(APPEND SOURCE_FILES "common/sidecar.c")
+endif()
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
@@ -313,7 +318,12 @@ find_package(GTK3 3.24.15 REQUIRED)
 add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 #add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
-list(APPEND LIBS ${GTK3_LIBRARIES})
+if(NOT ANDROID OR NOT TARGET PkgConfig::DT_ANDROID_ENGINE)
+  list(APPEND LIBS ${GTK3_LIBRARIES})
+endif()
+# The Android engine links the complete, target-only imported pkg-config chain
+# below. Legacy GTK3_LIBRARIES contains bare jpeg/tiff names which CMake would
+# resolve to darktable's export plugin targets, creating a core/plugin cycle.
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -426,7 +436,17 @@ endif()
 # For now we use the LibRaw submodule
 if(USE_LIBRAW)
   if(DONT_USE_INTERNAL_LIBRAW)
-    find_package(libraw 0.21.0)
+    if(ANDROID)
+      # The pinned Android port publishes a reentrant imported target with its
+      # codec/runtime dependencies. A single libraw.a path loses that closure.
+      find_package(libraw 0.21.0 CONFIG REQUIRED)
+      if(NOT TARGET libraw::raw_r)
+        message(FATAL_ERROR "Android LibRaw must provide the reentrant libraw::raw_r target")
+      endif()
+      set(libraw_LIBRARY libraw::raw_r)
+    else()
+      find_package(libraw 0.21.0)
+    endif()
     if(libraw_FOUND)
       message(STATUS "Using system LibRaw")
       list(APPEND LIBS ${libraw_LIBRARY})
@@ -1031,6 +1051,7 @@ add_dependencies(lib_darktable generate_authors_h)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
+  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit -framework Security")
 endif(APPLE)
 if(NOT WIN32)
   # lib_darktable and ONNX Runtime are installed to the same directory
@@ -1042,7 +1063,15 @@ if(WIN32)
   set_target_properties(lib_darktable PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 endif(WIN32)
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
-set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
+if(ANDROID)
+  set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE CXX)
+  if(TARGET PkgConfig::DT_ANDROID_ENGINE)
+    target_link_libraries(lib_darktable PUBLIC PkgConfig::DT_ANDROID_ENGINE)
+  endif()
+  target_link_options(lib_darktable PRIVATE -Wl,--no-undefined)
+else()
+  set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
+endif()
 
 #
 # Link external libs
@@ -1075,10 +1104,12 @@ else(WIN32)
 endif(WIN32)
 
 # Compile views modules
-add_subdirectory(views ${DARKTABLE_LIBDIR}/views)
+if(NOT BUILD_MOBILE_LIBRARY_ONLY)
+  add_subdirectory(views ${DARKTABLE_LIBDIR}/views)
 
 # Compile lighttable modules
-add_subdirectory(libs ${DARKTABLE_LIBDIR}/plugins/lighttable)
+  add_subdirectory(libs ${DARKTABLE_LIBDIR}/plugins/lighttable)
+endif()
 
 # Compile darkroom modules
 add_subdirectory(iop ${DARKTABLE_LIBDIR}/plugins)
@@ -1086,6 +1117,7 @@ add_subdirectory(iop ${DARKTABLE_LIBDIR}/plugins)
 # Compile export modules
 add_subdirectory(imageio ${DARKTABLE_LIBDIR}/plugins/imageio)
 
+if(NOT BUILD_MOBILE_LIBRARY_ONLY)
 if(HAVE_OPENCL)
   # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
   add_subdirectory(cltest)
@@ -1115,9 +1147,6 @@ endif(BUILD_TESTING)
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
-if(APPLE)
-  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit -framework Security")
-endif(APPLE)
 target_link_libraries(darktable lib_darktable)
 
 if (WIN32)
@@ -1133,6 +1162,7 @@ endif(WIN32)
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
 
 InstallDependencyFiles()
+endif() # NOT BUILD_MOBILE_LIBRARY_ONLY
 
 # Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
 set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)

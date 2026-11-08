@@ -3659,19 +3659,11 @@ void dt_dev_masks_selection_change(dt_develop_t *dev,
 }
 
 /** duplicate a existent module */
-dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
-                                             dt_iop_module_t *base,
-                                             const gboolean reorder_iop)
+dt_iop_module_t *dt_dev_module_duplicate_at_priority(dt_develop_t *dev,
+                                                     dt_iop_module_t *base,
+                                                     const gboolean reorder_iop,
+                                                     const int minimum_priority)
 {
-  // we create the new module
-  dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, base->so, base->dev))
-  {
-    // failed module already freed while failing to load
-    return NULL;
-  }
-  module->instance = base->instance;
-
   // we set the multi-instance priority and the iop order
   int pmax = 0;
   for(GList *modules = base->dev->iop; modules; modules = g_list_next(modules))
@@ -3683,7 +3675,18 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
     }
   }
   // create a unique multi-priority
-  pmax += 1;
+  if(pmax == INT_MAX || minimum_priority < 0) return NULL;
+  pmax = MAX(pmax + 1, minimum_priority);
+
+  // we create the new module only after checking the priority range
+  dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
+  if(!module) return NULL;
+  if(dt_iop_load_module(module, base->so, base->dev))
+  {
+    // failed module already freed while failing to load
+    return NULL;
+  }
+  module->instance = base->instance;
   dt_iop_update_multi_priority(module, pmax);
 
   // add this new module position into the iop-order-list
@@ -3693,12 +3696,12 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   // module does not have the same name. Indeed the multi_priority are
   // always rebased to start from 0, to it may be the case that the
   // same multi_name be generated when duplicating a module.
-  int pname = module->multi_priority;
+  guint64 pname = module->multi_priority;
   char mname[128];
 
   do
   {
-    snprintf(mname, sizeof(mname), "%d", pname);
+    snprintf(mname, sizeof(mname), "%" G_GUINT64_FORMAT, pname);
     gboolean dup = FALSE;
 
     for(GList *modules = base->dev->iop; modules; modules = g_list_next(modules))
@@ -3737,6 +3740,13 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
 
   // that's all. rest of insertion is gui work !
   return module;
+}
+
+dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
+                                             dt_iop_module_t *base,
+                                             const gboolean reorder_iop)
+{
+  return dt_dev_module_duplicate_at_priority(dev, base, reorder_iop, 0);
 }
 
 dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base)

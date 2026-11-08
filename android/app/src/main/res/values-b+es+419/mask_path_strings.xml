@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="mask_path_node">Nodo %1$d</string>
+  <string name="mask_path_select_node">Seleccionar nodo de máscara</string>
+  <string name="mask_path_diagram_description">%1$s aplicado con %2$d nodos. Nodo seleccionado %3$d: x %4$s, y %5$s.</string>
+  <string name="mask_path_diagram_hint">La cuadrícula muestra el trazado nativo o el eje del pincel aplicado. Los puntos de control y radios del pincel son esquemáticos. Selecciona un nodo para editar sus coordenadas y controles abajo.</string>
+</resources>

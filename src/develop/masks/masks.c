@@ -942,8 +942,7 @@ void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms)
 
   while(dev->forms)
   {
-    darktable.develop->allforms =
-      g_list_append(darktable.develop->allforms, dev->forms->data);
+    dev->allforms = g_list_append(dev->allforms, dev->forms->data);
     dev->forms = g_list_delete_link(dev->forms, dev->forms);
   }
 

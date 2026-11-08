@@ -58,6 +58,7 @@ struct dt_imageio_preview_cancel_t
   GMutex mutex;
   dt_dev_pixelpipe_t *pipe;
   gboolean cancelled;
+  dt_imageio_toneequal_sample_t *toneequal_sample;
 };
 
 #ifdef HAVE_LIBAVIF
@@ -517,12 +518,12 @@ static dt_magic_bytes_t _windows_BMP_signature = { DT_FILETYPE_BMP, FALSE, 0, 2,
 // need to open and examine dng images to find out the type of
 // content.
 static const gchar *_supported_raw[]
-    = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff",
+    = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff", "gpr",
         "ia",  "iiq", "k25", "kc2", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw",
         "orf", "ori", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti",
         "x3f", NULL };
 static const gchar *_supported_ldr[]
-    = { "bmp", "bmq", "cap", "cin", "cine", "cs1", "dcm",  "gif", "gpr", "j2c",  "j2k",
+    = { "bmp", "bmq", "cap", "cin", "cine", "cs1", "dcm",  "gif", "j2c",  "j2k",
         "jng", "jp2", "jpc", "jpeg", "jpg", "miff", "mng", "pbm", "pfm",  "pgm",
         "png", "pnm", "ppm", "pxn",  "qoi", "qtk",  "rdc", "tif", "tiff", "webp",
         NULL };
@@ -1129,6 +1130,7 @@ static gboolean _imageio_export_with_flags(const dt_imgid_t imgid,
   {
     g_mutex_lock(&cancel->mutex);
     cancel->pipe = &pipe;
+    pipe.toneequal_sample = cancel->toneequal_sample;
     if(cancel->cancelled)
       dt_atomic_set_int(&pipe.shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
     g_mutex_unlock(&cancel->mutex);
@@ -1333,6 +1335,12 @@ static gboolean _imageio_export_with_flags(const dt_imgid_t imgid,
 
   const int processed_width = floor(scale * pipe.processed_width);
   const int processed_height = floor(scale * pipe.processed_height);
+  if(pipe.toneequal_sample)
+  {
+    pipe.toneequal_sample->output_scale = scale;
+    pipe.toneequal_sample->output_width = processed_width;
+    pipe.toneequal_sample->output_height = processed_height;
+  }
   if(scale == max_possible_scale && !thumbnail_export)
     dt_control_log(_("export reduced to %dx%d because of memory restrictions"),
             processed_width, processed_height);
@@ -1876,6 +1884,39 @@ void dt_imageio_preview_cancel_free(dt_imageio_preview_cancel_t *cancel)
   g_free(cancel);
 }
 
+gboolean dt_imageio_export_to_file(const dt_imgid_t imgid,
+                                  const char *filename,
+                                  dt_imageio_module_format_t *format,
+                                  dt_imageio_module_data_t *format_params,
+                                  dt_export_metadata_t *metadata,
+                                  dt_imageio_preview_cancel_t *cancel)
+{
+  return dt_imageio_export_to_file_with_options(imgid, filename, format, format_params,
+    FALSE, TRUE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, metadata, cancel);
+}
+
+gboolean dt_imageio_export_to_file_with_options(const dt_imgid_t imgid,
+                                  const char *filename,
+                                  dt_imageio_module_format_t *format,
+                                  dt_imageio_module_data_t *format_params,
+                                  gboolean ignore_exif, gboolean copy_metadata,
+                                  dt_colorspaces_color_profile_type_t icc_type,
+                                  const gchar *icc_filename,
+                                  dt_iop_color_intent_t icc_intent,
+                                  dt_export_metadata_t *metadata,
+                                  dt_imageio_preview_cancel_t *cancel)
+{
+  if(!strcmp(format->mime(format_params), "x-copy"))
+    return dt_imageio_export(imgid, filename, format, format_params,
+                             TRUE, FALSE, FALSE, 1.0, copy_metadata, FALSE,
+                             icc_type, icc_filename, icc_intent,
+                             NULL, NULL, 1, 1, metadata);
+  return _imageio_export_with_flags
+    (imgid, filename, format, format_params, ignore_exif, FALSE, TRUE, FALSE,
+     FALSE, 1.0, FALSE, NULL, copy_metadata, FALSE, icc_type, icc_filename,
+     icc_intent, NULL, NULL, 1, 1, metadata, -1, cancel);
+}
+
 gboolean dt_imageio_preview_to_memory(const dt_imgid_t imgid,
                                       const size_t max_width,
                                       const size_t max_height,
@@ -1923,8 +1964,8 @@ gboolean dt_imageio_preview_to_memory(const dt_imgid_t imgid,
     dt_free_align(dat.buf);
     return TRUE;
   }
-  /* display_byteorder makes export produce BGRx bytes, matching Android's
-   * little-endian ARGB_8888 integer layout after alpha is made opaque. */
+  /* display_byteorder produces BGRx. The mobile API preserves that byte order
+   * with opaque alpha; platform adapters must convert to their bitmap layout. */
   memcpy(result, dat.buf, bytes);
   for(size_t k = 3; k < bytes; k += 4) result[k] = 0xff;
   dt_free_align(dat.buf);
@@ -1932,6 +1973,34 @@ gboolean dt_imageio_preview_to_memory(const dt_imgid_t imgid,
   *width = dat.width;
   *height = dat.height;
   return FALSE;
+}
+
+gboolean dt_imageio_toneequal_sample(const dt_imgid_t imgid,
+                                      const size_t max_width,
+                                      const size_t max_height,
+                                      dt_imageio_toneequal_sample_t *sample,
+                                      dt_imageio_preview_cancel_t *cancel)
+{
+  if(!sample || !cancel) return TRUE;
+  sample->found = FALSE;
+  sample->exposure = NAN;
+  g_mutex_lock(&cancel->mutex);
+  if(cancel->pipe || cancel->toneequal_sample)
+  {
+    g_mutex_unlock(&cancel->mutex);
+    return TRUE;
+  }
+  cancel->toneequal_sample = sample;
+  g_mutex_unlock(&cancel->mutex);
+  uint8_t *pixels = NULL;
+  uint32_t width = 0, height = 0;
+  const gboolean failed = dt_imageio_preview_to_memory(imgid, max_width, max_height,
+                                                       &pixels, &width, &height, cancel);
+  free(pixels);
+  g_mutex_lock(&cancel->mutex);
+  cancel->toneequal_sample = NULL;
+  g_mutex_unlock(&cancel->mutex);
+  return failed || !sample->found || !isfinite(sample->exposure);
 }
 
 // clang-format off

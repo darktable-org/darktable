@@ -37,6 +37,22 @@ endif()
 
 include(DefineOptions.cmake)
 
+option(BUILD_MOBILE_ENGINE "Build the JNI/mobile adapter against libdarktable" OFF)
+option(BUILD_MOBILE_LIBRARY_ONLY "Build the native editor libraries, processing modules and runtime data without desktop applications" OFF)
+if(BUILD_MOBILE_LIBRARY_ONLY)
+  set(BUILD_MOBILE_ENGINE ON)
+  set(BUILD_TOOLS OFF)
+  set(BUILD_RS_IDENTIFY OFF)
+  set(BINARY_PACKAGE_BUILD ON)
+endif()
+
+if(ANDROID AND BUILD_MOBILE_LIBRARY_ONLY)
+  if(CMAKE_VERSION VERSION_LESS 3.22.1)
+    message(FATAL_ERROR "The Android engine build requires CMake 3.22.1 or newer")
+  endif()
+  include(mobile/cmake/AndroidEnginePackages.cmake)
+endif()
+
 # Include GNUInstallDirs, which sets sensible defaults for install directories.
 # See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
 # These values can be easily overridden if required.
@@ -258,9 +274,11 @@ message(STATUS "Looking for external programs")
 find_program(perl_BIN perl REQUIRED)
 message(STATUS "Found perl")
 
-# we need intltool-merge for org.darktable.darktable.desktop
-find_program(intltool_merge_BIN intltool-merge REQUIRED)
-message(STATUS "Found intltool-merge")
+# Desktop integration files are not installed by the native editor build.
+if(NOT BUILD_MOBILE_LIBRARY_ONLY)
+  find_program(intltool_merge_BIN intltool-merge REQUIRED)
+  message(STATUS "Found intltool-merge")
+endif()
 
 # we need desktop-file-validate to check org.darktable.darktable.desktop
 find_program(desktop_file_validate_BIN desktop-file-validate)
@@ -451,21 +469,25 @@ set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
 # lets continue into build directories
 include(data/supported_extensions.cmake) # this file needs to be included first as it gets amended in bin/
 add_subdirectory(src "${DARKTABLE_BINDIR}") # directory needs to be there before data directory so that the correct CSS file gets installed
-option(BUILD_MOBILE_ENGINE "Build the JNI/mobile adapter against libdarktable" OFF)
 if(BUILD_MOBILE_ENGINE)
   set(DT_MOBILE_WITH_DARKTABLE_ENGINE ON CACHE BOOL "" FORCE)
+  if(DT_MOBILE_BUILD_TESTS)
+    enable_testing()
+  endif()
   add_subdirectory(mobile)
 endif()
 add_subdirectory(data "${DARKTABLE_DATADIR}")
-add_subdirectory(doc)
-add_subdirectory(tools "${DARKTABLE_DATADIR}/tools")
+if(NOT BUILD_MOBILE_LIBRARY_ONLY)
+  add_subdirectory(doc)
+  add_subdirectory(tools "${DARKTABLE_DATADIR}/tools")
 
 # This contains fixup_bundle
 # And adding a separate subderectory as a last one will make sure
 # that fixup_bundle will run _after_ all files has been installed
-add_subdirectory(packaging)
+  add_subdirectory(packaging)
 
-include(cmake/darktable-packaging.cmake)
+  include(cmake/darktable-packaging.cmake)
+endif()
 
 # uninstall target
 configure_file(

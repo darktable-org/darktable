@@ -1,0 +1,279 @@
+name: Experimental Android engine APK
+
+# Native changes on the Android feature branch produce a complete runtime APK.
+# This does not enable the default Gradle engine or establish device execution.
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/android-raw-editor]
+    paths:
+      - .github/workflows/android-engine.yml
+      - mobile/core/**
+      - mobile/jni/**
+      - mobile/include/**
+      - mobile/cmake/**
+      - mobile/dependencies/**
+      - '!mobile/dependencies/**/*.md'
+      - mobile/CMakeLists.txt
+      - src/**
+      - cmake/**
+      - CMakeLists.txt
+      - .gitmodules
+      - android/app/build.gradle.kts
+      - android/app/src/main/**
+      - android/app/src/androidTest/**
+      - android/build.gradle.kts
+      - android/settings.gradle.kts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      DT_MOBILE_ENGINE_BUILD_TYPE: Release
+      # GTK also builds target-only tools and input modules. Clean successful
+      # port build trees/packages to avoid retaining their large intermediates.
+      DT_MOBILE_VCPKG_CLEAN_AFTER_BUILD: "1"
+      VCPKG_MAX_CONCURRENCY: "2"
+      CMAKE_BUILD_PARALLEL_LEVEL: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize pinned engine sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The desktop integration sample submodule is not used by this cross
+          # build. Retain every external gitlink without fetching that RAW corpus.
+          git submodule update --init --recursive -- \
+            src/external/LibRaw src/external/OpenCL src/external/libxcf \
+            src/external/lua-scripts src/external/rawspeed src/external/whereami
+          git submodule status --recursive
+      - name: Prepare build and artifact directories
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_root="$RUNNER_TEMP/darktable-android-engine"
+          mkdir -p "$task_root/android-user" "$task_root/gradle-user" \
+            "$task_root/downloads" "$task_root/binaries" \
+            "$task_root/logs" "$task_root/artifacts"
+          {
+            printf 'ANDROID_USER_HOME=%s\n' "$task_root/android-user"
+            printf 'GRADLE_USER_HOME=%s\n' "$task_root/gradle-user"
+            printf 'DT_MOBILE_VCPKG_ROOT=%s\n' "$task_root/vcpkg"
+            printf 'DT_MOBILE_VCPKG_INSTALLED=%s\n' "$task_root/installed"
+            printf 'DT_MOBILE_ENGINE_BUILD=%s\n' "$task_root/build"
+            printf 'VCPKG_DOWNLOADS=%s\n' "$task_root/downloads"
+            printf 'VCPKG_DEFAULT_BINARY_CACHE=%s\n' "$task_root/binaries"
+          } >> "$GITHUB_ENV"
+      - name: Install host build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential cmake ninja-build git pkg-config python3 perl \
+            autoconf automake libtool libtool-bin bison flex nasm gperf \
+            gettext autopoint intltool xsltproc curl zip unzip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install pinned Android tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" \
+            "ndk;27.2.12479018" "cmake;3.22.1"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          echo "$ANDROID_SDK_ROOT/build-tools/35.0.0" >> "$GITHUB_PATH"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.VCPKG_DOWNLOADS }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: android-engine-${{ runner.os }}-arm64-api26-ndk27.2.12479018-vcpkg2025.06.13-${{ hashFiles('mobile/dependencies/**', '.gitmodules') }}
+          restore-keys: |
+            android-engine-${{ runner.os }}-arm64-api26-ndk27.2.12479018-vcpkg2025.06.13-
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.4"
+          cache-disabled: true
+      - name: Restore official Gradle Wrapper JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          wrapper_dir=$(mktemp -d "$RUNNER_TEMP/darktable-wrapper.XXXXXX")
+          trap 'rm -rf "$wrapper_dir"' EXIT
+          touch "$wrapper_dir/settings.gradle" "$wrapper_dir/build.gradle"
+          gradle --no-daemon -p "$wrapper_dir" wrapper \
+            --gradle-version 8.14.4 --distribution-type bin --no-validate-url
+          cp "$wrapper_dir/gradle/wrapper/gradle-wrapper.jar" android/gradle/wrapper/gradle-wrapper.jar
+      - uses: gradle/actions/wrapper-validation@v4
+      - name: Verify offline runtime tooling
+        run: python3 -B -m unittest discover -s mobile/dependencies/tests -v
+      - name: Build Android core, JNI, configured modules and runtime data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mobile/dependencies/build-android-engine.sh 2>&1 \
+            | tee "$RUNNER_TEMP/darktable-android-engine/logs/native-build.log"
+      - name: Install and stage that exact native build
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_root="$RUNNER_TEMP/darktable-android-engine"
+          install_prefix="$task_root/engine-install"
+          runtime_stage="$task_root/runtime-stage"
+          # Both destinations are new, separate directories in this fresh job.
+          test ! -e "$install_prefix"
+          test ! -e "$runtime_stage"
+          # Strip only the fresh installation; keep the build's original debug
+          # symbols available for diagnostics. Staging/Gradle preserve these
+          # installed bytes exactly, with no further binary rewriting.
+          cmake --install "$DT_MOBILE_ENGINE_BUILD" --config "$DT_MOBILE_ENGINE_BUILD_TYPE" \
+            --prefix "$install_prefix" --strip 2>&1 | tee "$task_root/logs/native-install.log"
+          python3 mobile/dependencies/stage-android-runtime.py \
+            --prefix "$install_prefix" \
+            --library-root "$DT_MOBILE_VCPKG_INSTALLED/arm64-android/lib" \
+            --lensfun-data "$DT_MOBILE_VCPKG_INSTALLED/arm64-android/share/lensfun/version_1" \
+            --ndk "$ANDROID_NDK_HOME" --output "$runtime_stage" \
+            | tee "$task_root/logs/runtime-stage.json"
+      - name: Inspect every staged native library
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_root="$RUNNER_TEMP/darktable-android-engine"
+          "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
+            -d -lW "$task_root/runtime-stage/jniLibs/arm64-v8a/"*.so \
+            > "$task_root/artifacts/native-elf-report.txt"
+          cat > "$task_root/check-native-alignment.py" <<'PY'
+          import argparse
+          import json
+          from pathlib import Path
+          import struct
+          import zipfile
+
+          parser = argparse.ArgumentParser()
+          source = parser.add_mutually_exclusive_group(required=True)
+          source.add_argument("--stage", type=Path)
+          source.add_argument("--apk", type=Path)
+          parser.add_argument("--output", type=Path, required=True)
+          args = parser.parse_args()
+
+          def audit(libraries):
+              report = []
+              for name, data in libraries:
+                  header = struct.unpack_from("<16sHHIQQQIHHHHHH", data)
+                  if data[:6] != b"\x7fELF\x02\x01" or header[2] != 183 or header[9] != 56:
+                      raise SystemExit(f"{name}: expected little-endian AArch64 ELF64")
+                  segments = []
+                  for index in range(header[10]):
+                      segment = struct.unpack_from("<IIQQQQQQ", data, header[5] + index * header[9])
+                      if segment[0] == 1:  # PT_LOAD
+                          alignment = segment[7]
+                          if alignment < 16384 or (segment[3] - segment[2]) % 16384:
+                              raise SystemExit(f"{name}: load segment is not 16 KiB compatible")
+                          segments.append(alignment)
+                  if not segments:
+                      raise SystemExit(f"{name}: no load segments")
+                  report.append({"library": name, "loadAlignments": segments})
+              if not report:
+                  raise SystemExit("No native libraries")
+              return report
+
+          if args.stage:
+              libraries = sorted((args.stage / "jniLibs/arm64-v8a").glob("*.so"))
+              report = audit((library.name, library.read_bytes()) for library in libraries)
+          else:
+              with zipfile.ZipFile(args.apk) as archive:
+                  names = sorted(name for name in archive.namelist()
+                                 if name.startswith("lib/arm64-v8a/") and name.endswith(".so"))
+                  report = audit((name, archive.read(name)) for name in names)
+          args.output.write_text(json.dumps({"scope": "stage" if args.stage else "apk",
+                                            "libraryCount": len(report), "libraries": report}, indent=2) + "\n")
+          PY
+          python3 "$task_root/check-native-alignment.py" --stage "$task_root/runtime-stage" \
+            --output "$task_root/artifacts/native-load-alignment.json"
+      - name: Build and audit the engine-enabled development APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_root="$RUNNER_TEMP/darktable-android-engine"
+          # The explicit stage disables the dependency-only JNI build. Assemble
+          # includes verifyDevDebugPrebuiltRuntimeApk on the final signed APK.
+          android/gradlew --no-daemon --console=plain --max-workers=2 \
+            --project-cache-dir "$task_root/gradle-project-cache" -p android \
+            :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleDevDebugAndroidTest \
+            -PdarktableRuntimeStage="$task_root/runtime-stage" \
+            2>&1 | tee "$task_root/logs/gradle-build.log"
+      - name: Collect audited APK, signature and matching runtime manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_root="$RUNNER_TEMP/darktable-android-engine"
+          apk=android/app/build/outputs/apk/dev/debug/app-dev-debug.apk
+          test_apk=android/app/build/outputs/apk/androidTest/dev/debug/app-dev-debug-androidTest.apk
+          test -s "$apk"
+          test -s "$test_apk"
+          # Gradle may add pinned application dependencies beyond the engine
+          # stage. Inspect the final APK itself rather than inferring its layout.
+          python3 "$task_root/check-native-alignment.py" --apk "$apk" \
+            --output "$task_root/artifacts/apk-native-load-alignment.json"
+          apksigner verify --verbose --min-sdk-version 26 "$apk" \
+            | tee "$task_root/artifacts/apk-signature.txt"
+          apksigner verify --verbose --min-sdk-version 26 "$test_apk" \
+            | tee "$task_root/artifacts/test-apk-signature.txt"
+          cp "$apk" "$task_root/artifacts/"
+          cp "$test_apk" "$task_root/artifacts/"
+          cp android/NATIVE_ENGINE_TESTS.md "$task_root/artifacts/"
+          cp "$task_root/runtime-stage/manifest.json" "$task_root/artifacts/"
+          cp "$task_root/runtime-stage/android-runtime-libraries.txt" "$task_root/artifacts/"
+          git rev-parse HEAD > "$task_root/artifacts/source-commit.txt"
+          (cd "$task_root/artifacts" && sha256sum app-dev-debug.apk app-dev-debug-androidTest.apk > APK-SHA256SUMS)
+          cat > "$task_root/artifacts/VALIDATION.txt" <<'TEXT'
+          Experimental ARM64/API 26 engine APK, built from the recorded source commit.
+          Native build, staged dependency closure, 16 KiB ELF load alignment, final
+          APK runtime hashes and APK signature were checked. No Android device
+          installation, native loading, RAW/GPR editing or export was executed.
+          The accompanying instrumentation APK can run the separate device test
+          described in NATIVE_ENGINE_TESTS.md with an original RAW/GPR fixture.
+          The bootstrap disables optional codecs and integrations; this artifact
+          does not establish complete desktop RAW/format or editing feature parity.
+          TEXT
+          cat "$task_root/artifacts/VALIDATION.txt" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experimental-android-engine-${{ github.sha }}
+          if-no-files-found: error
+          compression-level: 0
+          path: ${{ runner.temp }}/darktable-android-engine/artifacts/
+      - name: Preserve build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-engine-diagnostics-${{ github.sha }}
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/darktable-android-engine/logs/
+            ${{ env.DT_MOBILE_ENGINE_BUILD }}/CMakeFiles/CMakeConfigureLog.yaml
+            ${{ env.DT_MOBILE_VCPKG_ROOT }}/buildtrees/**/*.log
+            android/app/build/reports/
+            android/app/build/test-results/
+  publish-apk:
+    needs: engine-apk
+    if: github.ref == 'refs/heads/feature/android-raw-editor'
+    permissions:
+      actions: read
+      contents: write
+    uses: ./.github/workflows/android-engine-download.yml
+    with:
+      run-id: ${{ format('{0}', github.run_id) }}

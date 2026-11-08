@@ -35,7 +35,7 @@ endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
 #
-if(NOT WIN32)
+if(NOT WIN32 AND NOT BUILD_MOBILE_LIBRARY_ONLY)
   if("avif" IN_LIST DT_SUPPORTED_EXTENSIONS)
     list(APPEND DESKTOP_MIME_TYPES image/avif)
   endif()
@@ -113,7 +113,7 @@ if(NOT WIN32)
   add_custom_target(darktable.appdata_file ALL DEPENDS ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml)
 
   install(FILES ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo COMPONENT DTApplication)
-endif(NOT WIN32)
+endif()
 
 #
 # Install watermarks
@@ -259,6 +259,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTAL
 #
 # Install bash completion file. users/packagers can symlink that to /etc/bash_completion.d/
 #
-if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
+if (NOT BUILD_MOBILE_LIBRARY_ONLY AND ((NOT WIN32) OR BUILD_MSYS2_INSTALL))
   install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 endif()

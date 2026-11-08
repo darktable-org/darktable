@@ -83,6 +83,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   }
 
   XCF *xcf = xcf_open(filename);
+#define XCF_CHECK(call) do { if(!(call)) goto exit; } while(0)
 
   if(!xcf)
   {
@@ -90,16 +91,16 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     goto exit;
   }
 
-  xcf_set(xcf, XCF_BASE_TYPE, XCF_BASE_TYPE_RGB);
-  xcf_set(xcf, XCF_WIDTH, d->global.width);
-  xcf_set(xcf, XCF_HEIGHT, d->global.height);
+  XCF_CHECK(xcf_set(xcf, XCF_BASE_TYPE, XCF_BASE_TYPE_RGB));
+  XCF_CHECK(xcf_set(xcf, XCF_WIDTH, d->global.width));
+  XCF_CHECK(xcf_set(xcf, XCF_HEIGHT, d->global.height));
 
   if(d->bpp == 8)
-    xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_I_8_L : XCF_PRECISION_I_8_G);
+    XCF_CHECK(xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_I_8_L : XCF_PRECISION_I_8_G));
   else if(d->bpp == 16)
-    xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_I_16_L : XCF_PRECISION_I_16_G);
+    XCF_CHECK(xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_I_16_L : XCF_PRECISION_I_16_G));
   else if(d->bpp == 32)
-    xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_F_32_L : XCF_PRECISION_F_32_G);
+    XCF_CHECK(xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_F_32_L : XCF_PRECISION_F_32_G));
   else
   {
     dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported", d->bpp);
@@ -108,23 +109,24 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   if(profile)
   {
-    xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "icc-profile", XCF_PARASITE_PERSISTENT | XCF_PARASITE_UNDOABLE,
-            profile_len, profile);
+    XCF_CHECK(xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "icc-profile", XCF_PARASITE_PERSISTENT | XCF_PARASITE_UNDOABLE,
+            profile_len, profile));
   }
 
-  xcf_set(xcf, XCF_N_LAYERS, 1);
+  XCF_CHECK(xcf_set(xcf, XCF_N_LAYERS, 1));
   int n_channels = 0;
   if(export_masks && pipe)
   {
     for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
       n_channels += g_hash_table_size(((dt_dev_pixelpipe_iop_t *)iter->data)->raster_masks);
   }
-  xcf_set(xcf, XCF_N_CHANNELS, n_channels);
-  xcf_set(xcf, XCF_OMIT_BASE_ALPHA, 1);
+  XCF_CHECK(xcf_set(xcf, XCF_N_CHANNELS, n_channels));
+  XCF_CHECK(xcf_set(xcf, XCF_OMIT_BASE_ALPHA, 1));
 
   char *comment = g_strdup_printf("Created with %s", darktable_package_string);
-  xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-comment", XCF_PARASITE_PERSISTENT, strlen(comment) + 1, comment);
+  const int comment_added = xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-comment", XCF_PARASITE_PERSISTENT, strlen(comment) + 1, comment);
   g_free(comment);
+  XCF_CHECK(comment_added);
 
   if(exif && exif_len > 0)
   {
@@ -137,8 +139,9 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     memcpy(exif_buf, "Exif\0\0", 6);
     memcpy(exif_buf + 6, exif, exif_len);
-    xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "exif-data", XCF_PARASITE_PERSISTENT, exif_len + 6, exif_buf);
+    const int exif_added = xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "exif-data", XCF_PARASITE_PERSISTENT, exif_len + 6, exif_buf);
     g_free(exif_buf);
+    XCF_CHECK(exif_added);
   }
 
   // TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested
@@ -151,19 +154,20 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       // Prepend the expected "GIMP_XMP_1"
       const char *GIMP_XMP_PREFIX = "GIMP_XMP_1";
       char *xmp_buf = g_strjoin(NULL, GIMP_XMP_PREFIX, xmp_string, NULL);
-      xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT,
+      const int xmp_added = xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT,
               xmp_len + strlen(GIMP_XMP_PREFIX), xmp_buf);
       g_free(xmp_string);
       g_free(xmp_buf);
+      XCF_CHECK(xmp_added);
     }
   }
 
-  xcf_add_layer(xcf);
-  xcf_set(xcf, XCF_WIDTH, d->global.width);
-  xcf_set(xcf, XCF_HEIGHT, d->global.height);
-  xcf_set(xcf, XCF_NAME, _("image"));
+  XCF_CHECK(xcf_add_layer(xcf));
+  XCF_CHECK(xcf_set(xcf, XCF_WIDTH, d->global.width));
+  XCF_CHECK(xcf_set(xcf, XCF_HEIGHT, d->global.height));
+  XCF_CHECK(xcf_set(xcf, XCF_NAME, _("image")));
   // we only add one layer and omit its alpha channel. thus we can just pass ivoid and ignore its 4th channel!
-  xcf_add_data(xcf, ivoid, 4);
+  XCF_CHECK(xcf_add_data(xcf, ivoid, 4));
 
   if(n_channels > 0)
     for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
@@ -182,14 +186,18 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         if(!raster_mask)
            goto exit;
 
-        xcf_add_channel(xcf);
-        xcf_set(xcf, XCF_PROP, XCF_PROP_VISIBLE, 0);
+        if(!xcf_add_channel(xcf) || !xcf_set(xcf, XCF_PROP, XCF_PROP_VISIBLE, 0))
+        {
+          if(free_mask) dt_free_align(raster_mask);
+          goto exit;
+        }
 
         const char *pagename = g_hash_table_lookup(piece->module->raster_mask.source.masks, key);
-        if(pagename)
-          xcf_set(xcf, XCF_NAME, pagename);
-        else
-          xcf_set(xcf, XCF_NAME, piece->module->name());
+        if(!xcf_set(xcf, XCF_NAME, pagename ? pagename : piece->module->name()))
+        {
+          if(free_mask) dt_free_align(raster_mask);
+          goto exit;
+        }
 
         void *channel_data = NULL;
         gboolean free_channel_data = TRUE;
@@ -221,8 +229,9 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
           free_channel_data = FALSE;
         }
 
+        int channel_added = 0;
         if(channel_data)
-          xcf_add_data(xcf, channel_data, 1);
+          channel_added = xcf_add_data(xcf, channel_data, 1);
         else
           dt_print(DT_DEBUG_ALWAYS, "[xcf] out of memory writing image data to %s", filename);
 
@@ -230,14 +239,16 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
           free(channel_data);
         if(free_mask)
           dt_free_align(raster_mask);
+        XCF_CHECK(channel_added);
       }
     }
 
   res = 0;
 
 exit:
-  xcf_close(xcf);
+  if(!xcf_close(xcf)) res = 1;
   free(profile);
+#undef XCF_CHECK
 
   return res;
 }

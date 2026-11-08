@@ -788,20 +788,9 @@ static cmsHPROFILE _colorspaces_create_linear_infrared_profile(void)
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile
   (const dt_imgid_t imgid)
 {
-  // find the colorin module -- the pointer stays valid until darktable shuts down
-  static const dt_iop_module_so_t *colorin = NULL;
-  if(colorin == NULL)
-  {
-    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
-    {
-      const dt_iop_module_so_t *mod_so = (const dt_iop_module_so_t *)(modules->data);
-      if(dt_iop_module_so_is(mod_so, "colorin"))
-      {
-        colorin = mod_so;
-        break;
-      }
-    }
-  }
+  // A mobile process can clean up and reinitialize darktable between documents.
+  // Resolve the module from this runtime instead of retaining an unloaded module.
+  const dt_iop_module_so_t *colorin = dt_iop_get_module_so("colorin");
 
   const dt_colorspaces_color_profile_t *p = NULL;
 
@@ -847,20 +836,8 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile
    dt_colorspaces_color_profile_type_t over_type,
    const char *over_filename)
 {
-  // find the colorout module -- the pointer stays valid until darktable shuts down
-  static const dt_iop_module_so_t *colorout = NULL;
-  if(colorout == NULL)
-  {
-    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
-    {
-      const dt_iop_module_so_t *mod_so = (const dt_iop_module_so_t *)(modules->data);
-      if(dt_iop_module_so_is(mod_so, "colorout"))
-      {
-        colorout = mod_so;
-        break;
-      }
-    }
-  }
+  // The module registry belongs to the current darktable runtime (see above).
+  const dt_iop_module_so_t *colorout = dt_iop_get_module_so("colorout");
 
   const dt_colorspaces_color_profile_t *p = NULL;
 

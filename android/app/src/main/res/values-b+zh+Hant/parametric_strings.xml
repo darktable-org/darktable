@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="parametric_mask_title">參數式遮罩</string>
+  <string name="parametric_input">輸入影像</string>
+  <string name="parametric_output">輸出影像</string>
+  <string name="parametric_channel_selector">選擇遮罩色版</string>
+  <string name="parametric_graph_description">%1$s 已套用的閾值配置</string>
+  <string name="parametric_threshold_hint">閾值採用色版正規化後的 0–1 範圍。外側控制柄用於羽化選取範圍。控制柄需維持順序；移動相鄰控制柄可解除限制。放開滑桿或按下「套用」時，調整即會生效。</string>
+</resources>

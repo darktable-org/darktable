@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="app_theme">應用程式主題</string>
+  <string name="app_theme_description">切換介面主題，不影響照片或編輯設定。</string>
+  <string name="app_theme_choose">選擇應用程式主題</string>
+  <string name="app_theme_desktop">桌面灰階</string>
+  <string name="app_theme_light">亮色</string>
+  <string name="app_theme_oled">OLED 黑色</string>
+</resources>
