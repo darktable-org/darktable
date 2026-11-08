@@ -723,7 +723,7 @@ int dt_lua_init_call(lua_State *L)
   string_job_init();
   end_job_init();
 
-  g_thread_new("lua thread",lua_thread_main,NULL);
+  g_thread_unref(g_thread_new("lua thread",lua_thread_main,NULL));
   return 0;
 }
 
