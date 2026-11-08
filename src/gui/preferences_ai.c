@@ -738,7 +738,7 @@ static void _ai_update_check_done_cb(gpointer instance, gpointer user_data)
       GTK_BUTTONS_OK,
       "%s", none);
     gtk_window_set_title(GTK_WINDOW(msg), _("check for updates"));
-    gtk_dialog_run(GTK_DIALOG(msg));
+    dt_gui_dialog_run(GTK_DIALOG(msg));
     gtk_widget_destroy(msg);
     g_free(none);
     return;
@@ -785,7 +785,7 @@ static void _ai_update_check_done_cb(gpointer instance, gpointer user_data)
                          _("_update now"), GTK_RESPONSE_ACCEPT, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(msg), GTK_RESPONSE_ACCEPT);
   gtk_window_set_title(GTK_WINDOW(msg), _("check for updates"));
-  const gint response = gtk_dialog_run(GTK_DIALOG(msg));
+  const gint response = dt_gui_dialog_run(GTK_DIALOG(msg));
   // destroyed before downloading: each download runs its own modal dialog,
   // which must not be nested inside this one's run loop
   gtk_widget_destroy(msg);
@@ -1102,7 +1102,7 @@ _download_model_with_dialog(dt_prefs_ai_data_t *data, const char *model_id)
   guint timer_id = g_timeout_add(100, _update_progress_idle, dl);
 
   // run dialog
-  gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+  gint response = dt_gui_dialog_run(GTK_DIALOG(dialog));
 
   // handle cancellation (atomic so curl progress callback can read it safely)
   if(response == GTK_RESPONSE_CANCEL)
@@ -1135,7 +1135,7 @@ _download_model_with_dialog(dt_prefs_ai_data_t *data, const char *model_id)
       GTK_BUTTONS_OK,
       "%s", dl->error);
     gtk_window_set_title(GTK_WINDOW(err), _("model download failed"));
-    gtk_dialog_run(GTK_DIALOG(err));
+    dt_gui_dialog_run(GTK_DIALOG(err));
     gtk_widget_destroy(err);
   }
 
@@ -1402,7 +1402,7 @@ static void _on_repo_combo_changed(GtkWidget *combo, gpointer user_data)
   g_free(repository);
 }
 
-// the first fetch must not run before gtk_dialog_run(): until its loop is
+// the first fetch must not run before dt_gui_dialog_run(): until its loop is
 // up, closing the window destroys the dialog outright, and the fetch pumps
 // events for as long as the network takes. from an idle the loop is
 // already running, and a close is a response rather than a destroy
@@ -1476,7 +1476,7 @@ static gboolean _verify_repository(GtkWindow *parent, const char *repository)
                   : _("this repository offers no models for this version "
                       "of darktable"));
     gtk_window_set_title(GTK_WINDOW(err), _("repository not usable"));
-    gtk_dialog_run(GTK_DIALOG(err));
+    dt_gui_dialog_run(GTK_DIALOG(err));
     gtk_widget_destroy(err);
     g_free(error);
     return FALSE;
@@ -1565,7 +1565,7 @@ static void _repo_add(dt_repo_edit_t *ed)
     GtkWidget *err = gtk_message_dialog_new(
       parent, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
       "%s", _("that repository is already listed"));
-    gtk_dialog_run(GTK_DIALOG(err));
+    dt_gui_dialog_run(GTK_DIALOG(err));
     gtk_widget_destroy(err);
   }
   else
@@ -1669,7 +1669,7 @@ static void _on_manage_repositories(GtkButton *button, gpointer user_data)
   gtk_widget_set_sensitive(remove_btn, FALSE);
 
   gtk_widget_show_all(dialog);
-  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+  const gint response = dt_gui_dialog_run(GTK_DIALOG(dialog));
 
   if(response == GTK_RESPONSE_ACCEPT)
   {
@@ -1849,7 +1849,7 @@ static void _on_install_from_repository(GtkButton *button, gpointer user_data)
   gtk_widget_show_all(dialog);
   rd.idle_id = g_idle_add(_repo_initial_fetch, &rd);  // fetches the first
 
-  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+  const gint response = dt_gui_dialog_run(GTK_DIALOG(dialog));
 
   // rd lives on this stack, so nothing may reference it past here
   if(rd.idle_id) g_source_remove(rd.idle_id);
@@ -1924,7 +1924,7 @@ static void _on_install_model(GtkButton *button, gpointer user_data)
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
   gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser))
+  if(dt_gui_native_dialog_run(GTK_NATIVE_DIALOG(filechooser))
      != GTK_RESPONSE_ACCEPT)
   {
     g_object_unref(filechooser);
@@ -1968,7 +1968,7 @@ static void _on_install_model(GtkButton *button, gpointer user_data)
       GTK_MESSAGE_ERROR,
       GTK_BUTTONS_OK,
       "%s", errors->str);
-    gtk_dialog_run(GTK_DIALOG(err_dialog));
+    dt_gui_dialog_run(GTK_DIALOG(err_dialog));
     gtk_widget_destroy(err_dialog);
   }
   g_string_free(errors, TRUE);
@@ -2119,7 +2119,7 @@ static void _show_model_card(dt_prefs_ai_data_t *data,
   }
 
   gtk_widget_show_all(dlg);
-  gtk_dialog_run(GTK_DIALOG(dlg));
+  dt_gui_dialog_run(GTK_DIALOG(dlg));
   gtk_widget_destroy(dlg);
 
   dt_ai_model_card_free(card);
@@ -2239,7 +2239,7 @@ static void _show_ort_probe_result(GtkWindow *parent, const char *path, const ch
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
       _("not a valid ONNX Runtime library:\n%s"), path);
-  gtk_dialog_run(GTK_DIALOG(dlg));
+  dt_gui_dialog_run(GTK_DIALOG(dlg));
   gtk_widget_destroy(dlg);
 }
 
@@ -2269,7 +2269,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
       _("no system ONNX Runtime library found.\n\n"
         "install one via your package manager or use\n"
         "the browse button to select a custom build."));
-    gtk_dialog_run(GTK_DIALOG(dlg));
+    dt_gui_dialog_run(GTK_DIALOG(dlg));
     gtk_widget_destroy(dlg);
   }
   else if(count == 1)
@@ -2283,7 +2283,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
       GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
       _("ONNX Runtime %s [%s]\n%s\n\nRestart darktable to apply."),
       f->version, f->eps, f->path);
-    gtk_dialog_run(GTK_DIALOG(dlg));
+    dt_gui_dialog_run(GTK_DIALOG(dlg));
     gtk_widget_destroy(dlg);
   }
   else
@@ -2317,7 +2317,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
     gtk_container_add(GTK_CONTAINER(content), combo);
     gtk_widget_show_all(content);
 
-    if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
+    if(dt_gui_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
     {
       const int sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
       if(sel >= 0)
@@ -2406,7 +2406,7 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
   g_free(cur);
 
   gchar *filename = NULL;
-  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser))
+  if(dt_gui_native_dialog_run(GTK_NATIVE_DIALOG(chooser))
      == GTK_RESPONSE_ACCEPT)
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 

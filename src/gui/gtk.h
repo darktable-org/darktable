@@ -590,6 +590,13 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
                                    const char *wname,
                                    const char *format, ...);
 
+// gtk_dialog_run() and gtk_native_dialog_run(), which GTK4 removes: show the
+// dialog modally and return its response once it has one. Closing the
+// window answers GTK_RESPONSE_DELETE_EVENT and leaves the dialog alive, so
+// the caller still disposes of it
+gint dt_gui_dialog_run(GtkDialog *dialog);
+gint dt_gui_native_dialog_run(GtkNativeDialog *dialog);
+
 void dt_gui_add_help_link(GtkWidget *widget,
                           const char *link);
 char *dt_gui_get_help_url(GtkWidget *widget);
