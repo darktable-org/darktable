@@ -983,6 +983,12 @@ changes (where available).
 - Fixed scale pixels output shifted by a fraction of a pixel in each
   tile when the image was processed in tiles.
 
+- Fixed defining a key + right-click shortcut in shortcut mapping mode.
+  The mouse button release was taken as mapping mode's own right-click
+  instead of completing the shortcut, so the shortcut was only assigned
+  when the key was let go, as a long key press if the key had been held
+  longer than a double-click.
+
 ## Lua
 
 ### API Version
