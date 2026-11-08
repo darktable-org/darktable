@@ -12,7 +12,7 @@ WHAT IT LOOKS FOR
 
 WHICH THREAD
   The script labels every function `gtk`, `pipe` or `either`, and the report
-  labels every site the same way.
+  labels every site the same way.  A function it cannot label shows as `?`.
 
     gtk     the GTK main thread: gui_init, gui_update, gui_changed, widget and
             draw callbacks, mouse and scroll handlers.
@@ -48,18 +48,20 @@ WHICH THREAD
 
     widget_from_pipe  a Gtk*- or Dtgtk*-typed field touched from a `pipe` or
                       `either` function.  Only the main thread may call GTK.
-    violation         the module locks the field somewhere, and also accesses it
-                      unlocked from the other side.  The module's own code is
-                      the evidence that the field needs the lock.
+    violation         the field is shared across the two threads and locked
+                      somewhere, and some access to it is unlocked.  The
+                      module's own code is the evidence that the field needs
+                      the lock.
     no_lock_share     the field is written and shared across the two threads,
                       and the module never locks it.
     discipline_gap    the module locks the field somewhere and accesses it
                       unlocked, but no cross-thread sharing was proven.  The
                       noisiest rule, so read it last.
-    pointer_share     a pointer-typed field shared across the two threads, with
-                      no unlocked access anywhere.  The lock protects the
-                      pointer load, not the object, which the other thread may
-                      free while the reader uses it.  The rule fires on the
+    pointer_share     a pointer-typed field shared across the two threads that
+                      no rule above reported: every access is locked, or the
+                      field is never locked and only read.  A lock protects
+                      the pointer load, not the object, which the other thread
+                      may free while the reader uses it.  The rule fires on the
                       pattern, not on a proven escape, so read each hit before
                       you believe it.  The pattern is rare, and the number of
                       such fields limits the rule's output.
@@ -73,12 +75,13 @@ WHICH THREAD
 PROOF TREES (--why, off by default)
   rules.lemma, next to this script, contains the same rules written as Datalog.
   With --why, the report follows each finding with the proof tree behind it.
-  The tree shows the locked site that established the convention, the thread
-  facts, and the unlocked site that broke it.  --why needs the lemmalog engine
+  The tree shows the facts behind the finding, such as the locked site that
+  established a convention, the thread facts, and the unlocked site that broke
+  it.  --why needs the lemmalog engine
   (github.com/JordyZomer/lemmalog) on $PATH, in $DT_LOCKCHECK_LEMMALOG, or named
   by --lemmalog PATH.  Asking for --why without one is an error, not a silent
   plain report.  The trees do not change which findings are reported.  They make
-  a full report about six times longer, which is why they are opt-in.
+  a full report several times longer, which is why they are opt-in.
 
   Only the report carries the trees.  --format csv, json and lemmalog never run
   the engine and never carry a tree, so --why with one of those is an error too.
@@ -86,17 +89,18 @@ PROOF TREES (--why, off by default)
   cannot reach stdout.  The line that names the binary goes to stderr.
 
 HOW TO READ THE OUTPUT
-  Each finding names the locked sites, which are the evidence that a convention
-  exists, and the unlocked sites, which are the suspected defect.  It gives the
-  line numbers and the thread inferred for each function.  Open both and decide.
-  This is a lexical analysis, not a verified race detector.  A person has to
-  confirm, for every finding, that the two sites can really run at the same
-  time.
+  Each finding names its locked sites, which are the evidence that a convention
+  exists, and its unlocked sites, which are the suspected defect, with the line
+  numbers and the thread inferred for each function.  A finding lists only the
+  kinds of site it has: no_lock_share has no locked site.  This is a lexical
+  analysis, not a verified race detector.  A person has to confirm, for every
+  finding, that the accesses can really run at the same time.
 
-  pointer_share is the exception.  It prints no unlocked line, because it has no
-  unlocked site.  Its claim is that locking every access is still not enough.
-  Read its locked sites for the load and the free, and decide whether the object
-  can be freed while the reader still uses it.
+  pointer_share is the exception.  Its claim is not a missing lock, but that a
+  lock on the pointer does not protect the object behind it, so it usually has
+  no unlocked site.  Read its sites and the code that frees or replaces the
+  object, and decide whether the object can be freed while the reader still
+  uses it.
 
 THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   The list records the findings that somebody has read and judged not to be
@@ -105,9 +109,10 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   with or without -q.
 
   Every entry carries a key over the finding's facts and over the source text of
-  its access lines.  An edit that could change the judgement changes the key.
-  The entry then goes stale, the finding comes back, and the report prints the
-  recorded reason with it.  An entry that matches no finding at all is an
+  its access lines.  An edit to either changes the key.  The entry then goes
+  stale, the finding comes back, and the report prints the recorded reason with
+  it.  An edit elsewhere does not, even when the judgement depends on it, such
+  as a change to the state machine that makes an access safe.  An entry that matches no finding at all is an
   orphan.  The banner names orphans, so that they can be deleted and the list
   does not grow.
 
@@ -168,8 +173,9 @@ KNOWN LIMITS
     critical section.
   * Thread inference uses function names, call-graph propagation within one
     file, and the address-taken rules above.  A function it still cannot label
-    gets thread `None`.  Such a function counts on neither side of the
-    cross-thread test, so it can never be what makes a field shared.
+    gets no thread (`?` in the report, null in json).  Such a function counts
+    on neither side of the cross-thread test, so it can never be what makes a
+    field shared.
   * Sharing means pipe versus GTK only.  One pipe also uses gui_data to hand a
     value to another.  For example, the preview pipe computes a whole-image
     property and the full pipe reads it (dev-doc/GUI_Threading.md, "Passing
@@ -193,9 +199,11 @@ KNOWN LIMITS
     in column zero.  darktable uses that style throughout, but C in general
     does not.
   * Only `src/iop/*.c` and `*.cc` are covered, not shared code under
-    `src/develop/` or `src/libs/`.  The script skips a source with no
-    `dt_iop_<module>_gui_data_t`, because it has nothing to share, and the
-    stderr banner says how many it skipped.
+    `src/develop/` or `src/libs/`.  A source that a module includes from a
+    subdirectory, such as hlreconstruct/opposed.c in highlights.c, is not
+    read either, so its gui_data accesses are missing.  The script skips a
+    source with no `dt_iop_<module>_gui_data_t`, because it has nothing to
+    share, and the stderr banner says how many it skipped.
 
 USAGE
   Run it from anywhere inside a darktable checkout, or with the script on $PATH.
@@ -223,14 +231,16 @@ USAGE
   positives to expect.
 
   Python 3.8+, standard library only.  The exit status is 0 for a completed run,
-  whatever it found, 1 when a --fail-on-* gate was given and fired, and 2 for a
-  wrong invocation.  A wrong invocation includes either --fail-on-* gate with
-  --format json or lemmalog, because those carry the facts the rules run on and
-  leave a gate nothing to fire on.  Both gates are off by default.
+  whatever it found, 1 when a --fail-on-* gate was given and fired, and 2 when
+  the run did not complete: a wrong invocation, a malformed
+  false-positives.json in a run that reads it, or --why without a lemmalog
+  binary.  A wrong invocation includes either --fail-on-* gate with --format
+  json or lemmalog, because those carry the facts the rules run on and leave a
+  gate nothing to fire on.  Both gates are off by default.
   --fail-on-findings passes only once every finding is either fixed or recorded
   in false-positives.json.  --fail-on-stale-false-positives-only fails only when
   a recorded entry has gone stale, so it can pass while findings are still
-  unreviewed.  See "Before you file anything" in README.md.
+  unreviewed.  See "Exit status" in README.md.
 """
 import argparse
 import csv
@@ -864,9 +874,9 @@ def print_report(fs, trees=None, suppressed=0, total=None):
                 print("   locked  : " + _sites(f["locked"], th, 6,
                                                lambda a: f"({a[2]})"))
             # pointer_share rests on the field's type and its threads, not on
-            # a missing lock, so it is the one rule that reaches here with no
-            # unlocked site to name.  Its evidence is the locked list above.
-            # Every access is under the lock, and the field is unsafe anyway.
+            # a missing lock, so it can reach here with no unlocked site to
+            # name.  Its evidence is then the locked list above: every access
+            # is under the lock, and the field is unsafe anyway.
             if f["unlocked"]:
                 print("   unlocked: " + _sites(f["unlocked"], th, 8))
             # A stale entry means that somebody judged this exact finding
@@ -904,9 +914,9 @@ def print_report(fs, trees=None, suppressed=0, total=None):
 # review does not have to read them again.  The risk is that a suppression
 # outlives the code it was true about and hides a real defect.  So every entry
 # carries a key over the finding's own facts and over the source text of its
-# access lines.  An edit that could change the judgement changes the key, the
-# entry goes stale, and the finding comes back with the recorded reason
-# attached.  "The false-positive list" in README.md has the measurements behind
+# access lines.  An edit to either changes the key, the entry goes stale, and
+# the finding comes back with the recorded reason attached.  An edit elsewhere
+# that the judgement depends on does not.  "The false-positive list" in README.md has the measurements behind
 # that choice.
 FP_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                        "false-positives.json")
@@ -1411,8 +1421,9 @@ def main():
     ap.add_argument("--include-false-positives", action="store_true",
                     dest="include_fp",
                     help="also report the findings that false-positives.json "
-                         "suppresses.  Use it when you review one module and want "
-                         "to re-read its judgements too")
+                         "suppresses, without their recorded reasons.  Use it "
+                         "when you review one module and want to see every "
+                         "finding")
     ap.add_argument("--confirm-false-positive", action="append",
                     metavar="MODULE[:FIELD]", dest="confirm",
                     help="record that a finding is not a defect, or that a stale "
@@ -1436,7 +1447,8 @@ def main():
                     dest="fail_on_stale",
                     help="exit 1 only when a false-positive entry has gone "
                          "stale, which means that somebody judged the finding "
-                         "harmless and the code has changed since.  The weaker "
+                         "harmless and its facts or access lines have changed "
+                         "since.  The weaker "
                          "gate, which a CI job can use before every finding has "
                          "been dealt with.  Reports only the stale entries, "
                          "because the other findings are not what this gate "
