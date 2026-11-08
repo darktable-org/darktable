@@ -969,7 +969,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   if(imgid != data.imgid
      || g_strcmp0(data.style_name, name)
      || data.hash_len != hash.current_len
-     || memcmp(data.hash, hash.current, data.hash_len))
+     || (data.hash_len && memcmp(data.hash, hash.current, data.hash_len)))
   {
     if(data.surface)
     {

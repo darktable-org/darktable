@@ -272,7 +272,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         i->UShort.Default;
       break;
     case DT_INTROSPECTION_TYPE_INT8:
-      *(short*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
+      *(int8_t*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
       break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Enum.Default;
