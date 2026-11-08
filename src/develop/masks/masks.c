@@ -2701,9 +2701,9 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * point_size, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
     sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
     free(ptbuf);
   }
+  sqlite3_finalize(stmt);
 }
 
 void dt_masks_free_form(dt_masks_form_t *form)
