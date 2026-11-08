@@ -1643,6 +1643,7 @@ static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
     gtk_widget_insert_action_group(w, 
                                    "styles",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   /* if we got any styles, lets popup menu for selection */

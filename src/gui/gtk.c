@@ -152,6 +152,9 @@ typedef struct dt_ui_t
   GtkWidget *flexi_content;        // where blend_gui.c reparents flexi masks content into
   GtkWidget *flexi_handle;         // resize-handle drawing area, side toggled with the panel
   GtkWidget *flexi_content_row;    // horizontal box holding the scroll and, beside it, the handle
+  // the scrollers of the split content (dt_ui_flexi_panel_set_split), weak
+  // references: the module owning them can go with its widgets
+  GtkWidget *flexi_split_scroll[2];
   /* the edge strips: narrow full-height columns in centerrow, one each side
      of the canvas. Columns, not overlays: a strip over the image edge would
      take the clicks that mask nodes at and beyond the image border need (see
@@ -2443,12 +2446,11 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   gui->dpi_factor = gui->dpi / DT_UI_DEFAULT_DPI_RESOLUTION;
 }
 
-static gboolean _focus_in_out_event(GtkWidget *widget,
-                                    GdkEvent *event,
-                                    const gpointer user_data)
+static void _window_active_changed(GtkWindow *window,
+                                   GParamSpec *pspec,
+                                   gpointer user_data)
 {
-  gtk_window_set_urgency_hint(GTK_WINDOW(user_data), FALSE);
-  return FALSE;
+  gtk_window_set_urgency_hint(window, FALSE);
 }
 
 
@@ -2520,10 +2522,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
                    G_CALLBACK(_gui_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(widget), "focus-in-event",
-                   G_CALLBACK(_focus_in_out_event), widget);
-  g_signal_connect(G_OBJECT(widget), "focus-out-event",
-                   G_CALLBACK(_focus_in_out_event), widget);
+  g_signal_connect(G_OBJECT(widget), "notify::is-active",
+                   G_CALLBACK(_window_active_changed), NULL);
 
   container = widget;
 
@@ -3313,6 +3313,7 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
   gtk_widget_insert_action_group(darktable.gui->ui->main_window,
                                  "modules",
                                  G_ACTION_GROUP(action_group));
+  g_object_unref(action_group);
 
   const dt_view_type_flags_t cv = dt_view_get_current();
   GMenu *menu = g_menu_new();
@@ -3323,8 +3324,11 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
     dt_lib_module_t *module = iter->data;
     if(!module->name || dt_masks_gui_is_host_lib(module)) continue;
     const dt_view_type_flags_t mv = module->views(module);
+    // the navigation module is not expandable but can be hidden, see
+    // _lib_navigation_collapse_callback() in libs/navigation.c
     if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
-       && module->expandable(module))
+       && (module->expandable(module)
+           || module == darktable.lib->proxy.navigation.module))
     {
       gchar *action_name = g_strdup_printf("toggle_%s", module->plugin_name);
       GSimpleAction *item_action = g_simple_action_new_stateful(action_name,
@@ -3349,9 +3353,33 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
   g_menu_append(section, _("restore defaults"), "modules.restore");
 
   // popup the menu
+  //
+  // anchor the popover on an ancestor whose allocation does not move
+  // when modules are shown or hidden: the widget the click arrived on
+  // is the filler box at the end of the panel's module list, so its
+  // origin shifts by the height of every module toggled from the menu,
+  // dragging the still-open popover with it
+  gint ax = x, ay = y;
+  GtkWidget *anchor = NULL;
+
+  if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, parent))
+    anchor = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];
+  else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, parent))
+    anchor = darktable.gui->ui->panels[DT_UI_PANEL_RIGHT];
+  else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_FLEXI, parent))
+    anchor = darktable.gui->ui->panels[DT_UI_PANEL_FLEXI];
+
+  if(!anchor)
+    anchor = gtk_widget_get_ancestor(parent, GTK_TYPE_SCROLLED_WINDOW);
+
+  if(anchor && gtk_widget_translate_coordinates(parent, anchor, x, y, &ax, &ay))
+    parent = anchor;
+  else
+    ax = x, ay = y;
+
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(parent, menu);
   g_object_unref(menu);
-  GdkRectangle rect = { x, y, 1, 1 };
+  GdkRectangle rect = { ax, ay, 1, 1 };
   gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
@@ -4117,6 +4145,23 @@ static gboolean _flexi_handle_draw(GtkWidget *w, cairo_t *cr, gpointer user_data
   return FALSE;
 }
 
+// a scrolled window as the panel's content has it (see the comment where
+// _ui_init_panel_flexi makes the outer one), for the split content's too
+static GtkWidget *_flexi_scroll_new(void)
+{
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_can_focus(scroll, TRUE);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER,
+                                 dt_conf_get_bool("panel_scrollbars_always_visible")
+                                 ? GTK_POLICY_ALWAYS
+                                 : GTK_POLICY_AUTOMATIC);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  g_signal_connect(G_OBJECT(scroll), "scroll-event",
+                   G_CALLBACK(_ui_init_panel_container_center_scroll_event), NULL);
+#endif
+  return scroll;
+}
+
 static void _ui_init_panel_flexi(dt_ui_t *ui,
                                  GtkWidget *container)
 {
@@ -4167,16 +4212,7 @@ static void _ui_init_panel_flexi(dt_ui_t *ui,
   // _ui_init_panel_container_center) -- without this, a bare wheel scroll
   // over the masks panel would always fall through to whatever slider is
   // under the pointer instead of scrolling the panel, unlike LEFT/RIGHT
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_can_focus(scroll, TRUE);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER,
-                                 dt_conf_get_bool("panel_scrollbars_always_visible")
-                                 ? GTK_POLICY_ALWAYS
-                                 : GTK_POLICY_AUTOMATIC);
-#if !GTK_CHECK_VERSION(4, 0, 0)
-  g_signal_connect(G_OBJECT(scroll), "scroll-event",
-                   G_CALLBACK(_ui_init_panel_container_center_scroll_event), NULL);
-#endif
+  GtkWidget *scroll = _flexi_scroll_new();
 
   // the handle's row: the scrollable content and the handle beside it, not
   // beside the whole panel, so that the header, which folds the panel on a
@@ -4501,9 +4537,11 @@ static void _flexi_sync_scrollbar_side(dt_ui_t *ui)
   if(!GTK_IS_SCROLLED_WINDOW(scroll)) return;
   // TOP_RIGHT places the child at the top right, which puts the vertical
   // scrollbar on the left; TOP_LEFT is the default, scrollbar on the right
-  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(scroll),
-                                    ui->flexi_panel_right ? GTK_CORNER_TOP_LEFT
-                                                          : GTK_CORNER_TOP_RIGHT);
+  const GtkCornerType corner = ui->flexi_panel_right ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT;
+  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(scroll), corner);
+  for(int i = 0; i < 2; i++)
+    if(ui->flexi_split_scroll[i])
+      gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(ui->flexi_split_scroll[i]), corner);
   _flexi_sync_header_scrollbar_pad(ui);
 }
 
@@ -4516,7 +4554,11 @@ static void _flexi_sync_scrollbar_side(dt_ui_t *ui)
 static void _flexi_sync_header_scrollbar_pad(dt_ui_t *ui)
 {
   if(!ui || !ui->flexi_header || !ui->flexi_content) return;
-  GtkWidget *scroll = gtk_widget_get_ancestor(ui->flexi_content, GTK_TYPE_SCROLLED_WINDOW);
+  // split, the header sits above the top half, whose scrollbar is the one
+  // that takes width from the rows under it
+  GtkWidget *scroll = ui->flexi_split_scroll[0]
+                          ? ui->flexi_split_scroll[0]
+                          : gtk_widget_get_ancestor(ui->flexi_content, GTK_TYPE_SCROLLED_WINDOW);
   if(!GTK_IS_SCROLLED_WINDOW(scroll)) return;
 
   GtkWidget *vsb = gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(scroll));
@@ -4832,7 +4874,10 @@ static gboolean _flexi_header_pad_idle_cb(gpointer data)
 static void _flexi_content_row_size_allocate(GtkWidget *w, GdkRectangle *a, gpointer d)
 {
   if(!_flexi_header_pad_idle)
-    _flexi_header_pad_idle = g_idle_add(_flexi_header_pad_idle_cb, NULL);
+    // ahead of the frame clock's repaint (G_PRIORITY_HIGH_IDLE + 20), or the
+    // header would be drawn once without its inset and then jump
+    _flexi_header_pad_idle = g_idle_add_full(G_PRIORITY_HIGH_IDLE, _flexi_header_pad_idle_cb,
+                                             NULL, NULL);
 }
 
 // the edge strips: shown whenever there is a mask panel to show at all -- NOT only while it is
@@ -4885,6 +4930,51 @@ GtkWidget *dt_ui_flexi_panel_header(dt_ui_t *ui)
 GtkWidget *dt_ui_flexi_panel_content(dt_ui_t *ui)
 {
   return ui ? ui->flexi_content : NULL;
+}
+
+GtkWidget *dt_ui_flexi_panel_scroller_new(dt_ui_t *ui)
+{
+  GtkWidget *scroll = _flexi_scroll_new();
+  if(ui)
+    gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(scroll),
+                                      ui->flexi_panel_right ? GTK_CORNER_TOP_LEFT
+                                                            : GTK_CORNER_TOP_RIGHT);
+  return scroll;
+}
+
+void dt_ui_flexi_panel_set_split(dt_ui_t *ui, GtkWidget *top, GtkWidget *bottom)
+{
+  if(!ui || !ui->flexi_content) return;
+  GtkWidget *now[2] = { top, bottom };
+  for(int i = 0; i < 2; i++)
+  {
+    if(ui->flexi_split_scroll[i])
+      g_object_remove_weak_pointer(G_OBJECT(ui->flexi_split_scroll[i]),
+                                   (gpointer *)&ui->flexi_split_scroll[i]);
+    ui->flexi_split_scroll[i] = now[i];
+    if(now[i])
+      g_object_add_weak_pointer(G_OBJECT(now[i]), (gpointer *)&ui->flexi_split_scroll[i]);
+  }
+
+  // the half's scrollbar comes and goes with its own content, which does not
+  // reallocate the content row the header's inset normally follows
+  if(top)
+  {
+    GtkWidget *vsb = gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(top));
+    g_signal_handlers_disconnect_by_func(vsb, G_CALLBACK(_flexi_content_row_size_allocate), NULL);
+    g_signal_connect(vsb, "size-allocate", G_CALLBACK(_flexi_content_row_size_allocate), NULL);
+  }
+
+  // split, the panel is as tall as its window and the two halves scroll apart:
+  // the outer scroller must not, or the halves would scroll inside it
+  GtkWidget *outer = gtk_widget_get_ancestor(ui->flexi_content, GTK_TYPE_SCROLLED_WINDOW);
+  if(GTK_IS_SCROLLED_WINDOW(outer))
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(outer), GTK_POLICY_NEVER,
+                                   top && bottom ? GTK_POLICY_NEVER
+                                   : dt_conf_get_bool("panel_scrollbars_always_visible")
+                                     ? GTK_POLICY_ALWAYS
+                                     : GTK_POLICY_AUTOMATIC);
+  _flexi_sync_scrollbar_side(ui);
 }
 
 void dt_ui_flexi_panel_set_active(dt_ui_t *ui, const gboolean active)
@@ -5596,6 +5686,114 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
 
   g_free(result.entry_text);
   return NULL;
+}
+
+typedef struct dt_gui_dialog_run_t
+{
+  GMainLoop *loop;
+  gint response;
+  gboolean done;     // ended before the loop ran, e.g. answered from show
+  gboolean destroyed;
+} dt_gui_dialog_run_t;
+
+static void _dialog_run_end(dt_gui_dialog_run_t *run)
+{
+  run->done = TRUE;
+  if(g_main_loop_is_running(run->loop)) g_main_loop_quit(run->loop);
+}
+
+static void _dialog_run_response(gpointer dialog,
+                                 const gint response,
+                                 dt_gui_dialog_run_t *run)
+{
+  run->response = response;
+  _dialog_run_end(run);
+}
+
+static void _dialog_run_unmap(GtkWidget *dialog,
+                              dt_gui_dialog_run_t *run)
+{
+  _dialog_run_end(run);
+}
+
+// the unmap that comes with the destroy ends the loop
+static void _dialog_run_destroy(GtkWidget *dialog,
+                                dt_gui_dialog_run_t *run)
+{
+  run->destroyed = TRUE;
+}
+
+// GtkDialog's own handler has already answered GTK_RESPONSE_DELETE_EVENT;
+// stop only the destroy that would follow, as gtk_dialog_run() did
+#if GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _dialog_run_close(GtkWindow *dialog,
+                                  dt_gui_dialog_run_t *run)
+#else
+static gboolean _dialog_run_close(GtkWidget *dialog,
+                                  GdkEvent *event,
+                                  dt_gui_dialog_run_t *run)
+#endif
+{
+  _dialog_run_end(run);
+  return TRUE;
+}
+
+gint dt_gui_dialog_run(GtkDialog *dialog)
+{
+  dt_gui_dialog_run_t run = { .loop = g_main_loop_new(NULL, FALSE),
+                              .response = GTK_RESPONSE_NONE };
+  g_object_ref(dialog);
+
+  const gboolean was_modal = gtk_window_get_modal(GTK_WINDOW(dialog));
+  if(!was_modal) gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  if(!gtk_widget_get_visible(GTK_WIDGET(dialog)))
+    gtk_widget_set_visible(GTK_WIDGET(dialog), TRUE);
+
+  g_signal_connect(dialog, "response", G_CALLBACK(_dialog_run_response), &run);
+  g_signal_connect(dialog, "unmap", G_CALLBACK(_dialog_run_unmap), &run);
+  g_signal_connect(dialog, "destroy", G_CALLBACK(_dialog_run_destroy), &run);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // after GtkDialog's class handler, which emits the response
+  g_signal_connect_after(dialog, "close-request", G_CALLBACK(_dialog_run_close), &run);
+#else
+  // after the handler GtkDialog connects at init, which emits the response
+  g_signal_connect(dialog, "delete-event", G_CALLBACK(_dialog_run_close), &run);
+#endif
+
+  if(!run.done) g_main_loop_run(run.loop);
+  g_main_loop_unref(run.loop);
+
+  // a destroyed dialog has dropped its handlers already
+  if(!run.destroyed)
+  {
+    if(!was_modal) gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
+    g_signal_handlers_disconnect_by_data(dialog, &run);
+  }
+
+  g_object_unref(dialog);
+  return run.response;
+}
+
+gint dt_gui_native_dialog_run(GtkNativeDialog *dialog)
+{
+  dt_gui_dialog_run_t run = { .loop = g_main_loop_new(NULL, FALSE),
+                              .response = GTK_RESPONSE_NONE };
+  g_object_ref(dialog);
+
+  const gboolean was_modal = gtk_native_dialog_get_modal(dialog);
+  gtk_native_dialog_set_modal(dialog, TRUE);
+
+  g_signal_connect(dialog, "response", G_CALLBACK(_dialog_run_response), &run);
+  gtk_native_dialog_show(dialog);
+
+  if(!run.done) g_main_loop_run(run.loop);
+  g_main_loop_unref(run.loop);
+
+  g_signal_handlers_disconnect_by_data(dialog, &run);
+  if(!was_modal) gtk_native_dialog_set_modal(dialog, FALSE);
+
+  g_object_unref(dialog);
+  return run.response;
 }
 
 gboolean dt_gui_show_yes_no_dialog(const char *title,
@@ -6952,37 +7150,6 @@ void dt_gui_container_destroy_children(GtkContainer *container)
   gtk_container_foreach(container, _delete_child, NULL);
 }
 
-void dt_gui_menu_popup(GtkMenu *menu,
-                       GtkWidget *button,
-                       const GdkGravity widget_anchor,
-                       const GdkGravity menu_anchor)
-{
-  gtk_widget_show_all(GTK_WIDGET(menu));
-  g_object_ref_sink(G_OBJECT(menu));
-  g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(g_object_unref), NULL);
-
-  GdkEvent *event = gtk_get_current_event();
-  if(button && event)
-  {
-    gtk_menu_popup_at_widget(menu, button, widget_anchor, menu_anchor, event);
-  }
-  else
-  {
-    if(!event)
-    {
-      event = gdk_event_new(GDK_BUTTON_PRESS);
-      event->button.device =
-        gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
-      event->button.window =
-        gtk_widget_get_window(GTK_WIDGET(darktable.gui->ui->main_window));
-      g_object_ref(event->button.window);
-    }
-
-    gtk_menu_popup_at_pointer(menu, event);
-  }
-  gdk_event_free(event);
-}
-
 gboolean dt_gui_forward_scroll(GtkEventControllerScroll *controller,
                                GtkWidget *target)
 {
@@ -7860,6 +8027,73 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
   return controller;
 }
 
+/*
+ * GTK3 bridge for focus changes.
+ *
+ * GTK 3.24's GtkEventControllerKey does have "focus-in" and "focus-out",
+ * but gtk_widget_event_internal() only runs TARGET-phase controllers on the
+ * widget owning the event's GdkWindow. A GtkEntry has no window of its own,
+ * so they never fire there. Connect the classic focus signals instead and
+ * call the controller-style callbacks.
+ *
+ * GTK4 migration: DELETE this bridge; dt_gui_connect_focus() then connects
+ * GtkEventControllerFocus "enter" and "leave" directly.
+ */
+#if !GTK_CHECK_VERSION(4, 0, 0)
+typedef struct _FocusBridgeData
+{
+  GCallback cb;
+  gpointer data;
+  GtkEventController *controller;
+} FocusBridgeData;
+
+static gboolean _focus_bridge_handler(GtkWidget *widget,
+                                      GdkEventFocus *event,
+                                      gpointer user)
+{
+  FocusBridgeData *d = user;
+  ((void(*)(GtkEventController *, gpointer))d->cb)(d->controller, d->data);
+  return FALSE;
+}
+
+static void _focus_bridge_connect(GtkWidget *widget,
+                                  const char *signal,
+                                  GCallback cb,
+                                  gpointer data,
+                                  GtkEventController *controller)
+{
+  FocusBridgeData *d = g_new0(FocusBridgeData, 1);
+  d->cb = cb;
+  d->data = data;
+  d->controller = controller;
+  g_signal_connect_data(widget, signal,
+                        G_CALLBACK(_focus_bridge_handler), d, _key_bridge_free, 0);
+}
+#endif
+
+GtkEventController *(dt_gui_connect_focus)(GtkWidget *widget,
+                                            GCallback enter,
+                                            GCallback leave,
+                                            gpointer data)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GtkEventController *controller = gtk_event_controller_focus_new();
+  dt_gui_add_controller(widget, controller);
+  if(enter) g_signal_connect(controller, "enter", G_CALLBACK(enter), data);
+  if(leave) g_signal_connect(controller, "leave", G_CALLBACK(leave), data);
+#else
+  // only there for dt_gui_get_widget() in the callbacks; GTK_PHASE_NONE
+  // keeps it from also handling the key and focus events it can see
+  GtkEventController *controller = gtk_event_controller_key_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_NONE);
+  dt_gui_add_controller(widget, controller);
+  if(enter) _focus_bridge_connect(widget, "focus-in-event", enter, data, controller);
+  if(leave) _focus_bridge_connect(widget, "focus-out-event", leave, data, controller);
+#endif
+
+  return controller;
+}
+
 static int busy_nest_count = 0;
 
 void dt_gui_cursor_set_busy()
@@ -7926,13 +8160,12 @@ GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *functi
   return GTK_WIDGET(box);
 }
 
-static gboolean _focus_out_commit(GtkCellEditable *editable,
-                                  GdkEvent *event,
-                                  gpointer user_data)
+static void _focus_out_commit(GtkEventController *controller,
+                              gpointer user_data)
 {
+  GtkCellEditable *editable = GTK_CELL_EDITABLE(dt_gui_get_widget(controller));
   gtk_cell_editable_editing_done(editable);
   gtk_cell_editable_remove_widget(editable);
-  return FALSE;
 }
 
 static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
@@ -7944,7 +8177,7 @@ static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
   if(active_editable)
     g_set_weak_pointer(active_editable, editable);
 
-  g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
+  dt_gui_connect_focus(editable, NULL, _focus_out_commit, NULL);
 }
 
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable)
@@ -8235,13 +8468,16 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model,
     char *label = NULL;
     if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label))
     {
+      gchar *plain_label = dt_str_replace(label, "__", "_");
       for(GList *b = buttons; b; b = b->next)
       {
         gchar *text = NULL;
         g_object_get(b->data, "text", &text, NULL);
-        if(!g_strcmp0(text, label)) _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
+        if(!g_strcmp0(text, label) || !g_strcmp0(text, plain_label))
+          _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
         g_free(text);
       }
+      g_free(plain_label);
     }
     g_free(label);
   }

@@ -1688,10 +1688,9 @@ static gboolean _timezone_key_pressed(GtkEventControllerKey *controller,
   return FALSE;
 }
 
-static gboolean _timezone_focus_out(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static void _timezone_focus_out(GtkEventController *controller, dt_lib_module_t *self)
 {
   _timezone_save(self);
-  return FALSE;
 }
 
 static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
@@ -1877,7 +1876,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_minimum_key_length(completion, 0);
   gtk_entry_set_completion(GTK_ENTRY(d->timezone), completion);
   dt_gui_connect_key(d->timezone, _timezone_key_pressed, self);
-  g_signal_connect(G_OBJECT(d->timezone), "focus-out-event", G_CALLBACK(_timezone_focus_out), self);
+  dt_gui_connect_focus(d->timezone, NULL, _timezone_focus_out, self);
 
   // gpx
   d->gpx_button = dt_action_button_new(self, N_("apply GPX track file..."), _choose_gpx_callback, self,

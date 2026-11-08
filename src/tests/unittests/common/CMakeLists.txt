@@ -68,3 +68,9 @@ if(USE_OPENCL)
         _copy_required_library(test_iop_xyz_opencl lib_darktable)
     endif(WIN32)
 endif()
+add_cmocka_test(test_collection_navigation
+                SOURCES test_collection_navigation.c
+                LINK_LIBRARIES lib_darktable cmocka)
+if(WIN32)
+    _copy_required_library(test_collection_navigation lib_darktable)
+endif(WIN32)

@@ -468,6 +468,13 @@ GtkWidget *dt_ui_flexi_panel_header(struct dt_ui_t *ui);
 /** \brief flexi masks panel: box to reparent flexi masks content into
     (see develop/blend_gui.c, plugins/darkroom/blend/masks_panel_position) */
 GtkWidget *dt_ui_flexi_panel_content(struct dt_ui_t *ui);
+/** \brief flexi masks panel: a scrolled window like the one around its
+    content, for content that scrolls in parts (see dt_ui_flexi_panel_set_split) */
+GtkWidget *dt_ui_flexi_panel_scroller_new(struct dt_ui_t *ui);
+/** \brief flexi masks panel: its content scrolls in two parts, each in its own
+    scroller (top and bottom, from dt_ui_flexi_panel_scroller_new), so the
+    panel's own scroller stops scrolling. NULL for both restores it */
+void dt_ui_flexi_panel_set_split(struct dt_ui_t *ui, GtkWidget *top, GtkWidget *bottom);
 /** \brief flexi masks panel: mark its module-like frame active (the mask it
     shows is on) or not, as dt_module_active marks an enabled module, so themes
     style the panel's header the way they style an enabled module's */
@@ -583,6 +590,13 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
                                    const char *wname,
                                    const char *format, ...);
 
+// gtk_dialog_run() and gtk_native_dialog_run(), which GTK4 removes: show the
+// dialog modally and return its response once it has one. Closing the
+// window answers GTK_RESPONSE_DELETE_EVENT and leaves the dialog alive, so
+// the caller still disposes of it
+gint dt_gui_dialog_run(GtkDialog *dialog);
+gint dt_gui_native_dialog_run(GtkNativeDialog *dialog);
+
 void dt_gui_add_help_link(GtkWidget *widget,
                           const char *link);
 char *dt_gui_get_help_url(GtkWidget *widget);
@@ -627,11 +641,6 @@ void dt_gui_container_remove_children(GtkContainer *container);
 // of the children (if in doubt, use dt_gui_container_remove_children
 // instead; it's a bit slower but safer).
 void dt_gui_container_destroy_children(GtkContainer *container);
-
-void dt_gui_menu_popup(GtkMenu *menu,
-                       GtkWidget *button,
-                       GdkGravity widget_anchor,
-                       GdkGravity menu_anchor);
 
 /* Forward the scroll event a scroll controller is currently dispatching to
  * another widget, as if that widget had received it directly (used for the
@@ -847,6 +856,20 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 #define dt_gui_connect_key(widget, pressed, data) ( \
   ASSERT_FUNC_TYPE(pressed, gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, __typeof__(data))), \
   dt_gui_connect_key(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
+
+/* keyboard focus entering or leaving the widget, called like the "enter" and
+ * "leave" handlers of GTK4's GtkEventControllerFocus; either may be NULL.
+ * The callbacks get no say in further handling: a widget that destroys
+ * itself on leave, and can also be ended another way, needs its own guard
+ * against being ended twice */
+GtkEventController *(dt_gui_connect_focus)(GtkWidget *widget,
+                                            GCallback enter,
+                                            GCallback leave,
+                                            gpointer data);
+#define dt_gui_connect_focus(widget, enter, leave, data) ( \
+  ASSERT_FUNC_TYPE(enter, void(*)(GtkEventController *, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(leave, void(*)(GtkEventController *, __typeof__(data))), \
+  dt_gui_connect_focus(GTK_WIDGET(widget), G_CALLBACK(enter), G_CALLBACK(leave), (data)))
 
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))

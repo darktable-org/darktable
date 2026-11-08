@@ -274,10 +274,9 @@ static float _calcRadiusMono(const float *in,
   return sqrtf(1.0f / logf(maxRatio));
 }
 
-static float _calcRadiusXtrans(const float *in,
-                               const int width,
-                               const int height,
-                               const uint8_t(*const xtrans)[6])
+static void _xtrans_radius_start(const uint8_t(*const xtrans)[6],
+                                 int *pstartx,
+                                 int *pstarty)
 {
   int startx, starty;
   gboolean found = FALSE;
@@ -301,6 +300,17 @@ static float _calcRadiusXtrans(const float *in,
       }
     }
   }
+  *pstartx = startx;
+  *pstarty = starty;
+}
+
+static float _calcRadiusXtrans(const float *in,
+                               const int width,
+                               const int height,
+                               const uint8_t(*const xtrans)[6])
+{
+  int startx, starty;
+  _xtrans_radius_start(xtrans, &startx, &starty);
 
   float maxRatio = 1.0f;
   DT_OMP_FOR(reduction(max: maxRatio))
@@ -405,19 +415,22 @@ static float _calcRadiusXtrans(const float *in,
   return sqrtf(1.0f / logf(maxRatio));
 }
 
-static float _calc_auto_radius(float *const in,
-                               const dt_image_t *img,
-                               const dt_iop_roi_t *const roi,
-                               const uint32_t filters,
-                               const uint8_t(*const xtrans)[6],
-                               const dt_iop_buffer_dsc_t *dsc)
+static void _auto_radius_coeffs(const dt_iop_buffer_dsc_t *dsc,
+                                dt_aligned_pixel_t coeff)
 {
-  // calculating the radius should be done on sensor data so we need this extra step
   const gboolean wbon = dsc->temperature.enabled;
-  const dt_aligned_pixel_t coeff = {wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[0]) : 1.0f,
-                                    wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[1]) : 1.0f,
-                                    wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[2]) : 1.0f, 1.0f };
+  for_three_channels(c)
+    coeff[c] = wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[c]) : 1.0f;
+  coeff[3] = 1.0f;
+}
 
+static gboolean _auto_radius_area(const dt_image_t *img,
+                                  const dt_iop_roi_t *const roi,
+                                  int *pdx,
+                                  int *pdy,
+                                  int *powidth,
+                                  int *poheight)
+{
   const int iwidth = roi->width;
   const int iheight = roi->height;
   const int pwidth = img->p_width;
@@ -434,20 +447,40 @@ static float _calc_auto_radius(float *const in,
   const int owidth = MIN(iwidth - dx,   0.8f * pwidth - roi->x - dx);
   const int oheight = MIN(iheight - dy, 0.8f * pheight - roi->y - dy);
 
-  if((((float)owidth / (float)pwidth) < 0.2f )
-      || (((float)oheight / (float)pheight) < 0.2f)
-      || pwidth < 1000
-      || pheight < 1000)
-  {
-    /** with a very small available roi this doesn't make sense so let's use the default.
-        As this can only happen
-          - with very small images
-          - when using an auto-calculating preset plus cropping in unedited images
-          - when working in HQ processing mode with heavy crops requesting an auto-calculation
-        there is no need to tell the user; fallback to the default.
-    */
+  *pdx = dx;
+  *pdy = dy;
+  *powidth = owidth;
+  *poheight = oheight;
+
+  /** with a very small available roi this doesn't make sense so let's use the default.
+      As this can only happen
+        - with very small images
+        - when using an auto-calculating preset plus cropping in unedited images
+        - when working in HQ processing mode with heavy crops requesting an auto-calculation
+      there is no need to tell the user; fallback to the default.
+  */
+  return !((((float)owidth / (float)pwidth) < 0.2f )
+            || (((float)oheight / (float)pheight) < 0.2f)
+            || pwidth < 1000
+            || pheight < 1000);
+}
+
+static float _calc_auto_radius(float *const in,
+                               const dt_image_t *img,
+                               const dt_iop_roi_t *const roi,
+                               const uint32_t filters,
+                               const uint8_t(*const xtrans)[6],
+                               const dt_iop_buffer_dsc_t *dsc)
+{
+  // calculating the radius should be done on sensor data so we need this extra step
+  const gboolean wbon = dsc->temperature.enabled;
+  dt_aligned_pixel_t coeff;
+  _auto_radius_coeffs(dsc, coeff);
+
+  const int iwidth = roi->width;
+  int dx, dy, owidth, oheight;
+  if(!_auto_radius_area(img, roi, &dx, &dy, &owidth, &oheight))
     return 0.5f;
-  }
 
   float *input = dt_iop_image_alloc(owidth, oheight, 1);
   if(!input)
@@ -911,33 +944,89 @@ static void _capture_sharpen(dt_iop_module_t *self,
 #if HAVE_OPENCL
 
 static float _capture_radius_cl(dt_iop_module_t *self,
-                              dt_dev_pixelpipe_iop_t *const piece,
-                              const cl_mem dev_in,
-                              const dt_iop_roi_t *const roi,
-                              const uint8_t (*const xtrans)[6],
-                              const uint32_t filters,
-                              const gboolean mono)
+                                dt_dev_pixelpipe_iop_t *const piece,
+                                const cl_mem dev_in,
+                                const cl_mem dev_xtrans,
+                                const dt_iop_roi_t *const roi,
+                                const uint8_t (*const xtrans)[6],
+                                const uint32_t filters)
 {
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
-  const int ch = mono ? 4 : 1;
-  float *in = dt_iop_image_alloc(roi->width, roi->height, ch);
-  float radius = 0.5f;
-  if(!in) goto finish;
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
+  const dt_image_t *img = &self->dev->image_storage;
+  const int devid = pipe->devid;
 
-  err = dt_opencl_copy_image_to_host(pipe->devid, in, dev_in, roi->width, roi->height, sizeof(float) * ch);
-  if(err == CL_SUCCESS)
-    radius = _capture_radius(self, piece, in, roi, xtrans, filters);
+  int dx, dy, owidth, oheight;
+  if(!_auto_radius_area(img, roi, &dx, &dy, &owidth, &oheight))
+    return 0.5f;
+
+  dt_aligned_pixel_t coeff;
+  _auto_radius_coeffs(&pipe->dsc, coeff);
+
+  const gboolean is_xtrans = filters == 9u;
+  int startx = 0;
+  int starty = 0;
+  if(is_xtrans) _xtrans_radius_start(xtrans, &startx, &starty);
+
+  // one work item per tested site, see the loops in _calcRadiusBayer() and _calcRadiusXtrans()
+  const int sites_x = is_xtrans ? owidth / 3 : owidth / 2;
+  const int sites_y = is_xtrans ? oheight / 3 : oheight;
+
+  float *partial = NULL;
+  cl_mem dev_partial = NULL;
+  float radius = 0.5f;
+
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 4, .sizey = 1 << 4 };
+
+  cl_int err = dt_opencl_local_buffer_opt(devid, gd->capture_radius, &locopt);
+  if(err != CL_SUCCESS) goto finish;
+
+  const size_t bwidth = ROUNDUP(sites_x, locopt.sizex);
+  const size_t bheight = ROUNDUP(sites_y, locopt.sizey);
+  const int groups = (bwidth / locopt.sizex) * (bheight / locopt.sizey);
+
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  dev_partial = dt_opencl_alloc_device_buffer(devid, sizeof(float) * groups);
+  if(!dev_partial) goto finish;
+
+  const size_t sizes[2] = { bwidth, bheight };
+  const size_t local[2] = { locopt.sizex, locopt.sizey };
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->capture_radius, sizes, local,
+          CLARG(dev_in), CLARG(dev_xtrans), CLARG(filters), CLARG(coeff),
+          CLARG(dx), CLARG(dy), CLARG(owidth), CLARG(oheight),
+          CLARG(startx), CLARG(starty), CLARG(dev_partial),
+          CLLOCAL(sizeof(float) * locopt.sizex * locopt.sizey));
+  if(err != CL_SUCCESS) goto finish;
+
+  err = DT_OPENCL_SYSMEM_ALLOCATION;
+  partial = dt_alloc_align_float(groups);
+  if(!partial) goto finish;
+
+  // only the per-group maxima come back, not the raw data
+  err = dt_opencl_read_buffer_from_device(devid, partial, dev_partial, 0, sizeof(float) * groups, TRUE);
+  if(err != CL_SUCCESS) goto finish;
+
+  float maxRatio = 1.0f;
+  for(int k = 0; k < groups; k++)
+    maxRatio = MAX(maxRatio, partial[k]);
+
+  radius = sqrtf(1.0f / logf(maxRatio));
+  if(is_xtrans) radius += 0.2f;
+  radius = CLAMP(radius, 0.0f, 1.5f);
 
   finish:
 
   if(err != CL_SUCCESS)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, filters == 9u ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
-            pipe, self, pipe->devid, roi, NULL, "OpenCL calculation failed");
+    dt_print_pipe(DT_DEBUG_PIPE, is_xtrans ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
+            pipe, self, devid, roi, NULL, "OpenCL calculation failed: %s", cl_errstr(err));
   }
 
-  dt_free_align(in);
+  dt_free_align(partial);
+  dt_opencl_release_mem_object(dev_partial);
   return radius;
 }
 

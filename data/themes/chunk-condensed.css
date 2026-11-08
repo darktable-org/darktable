@@ -15,6 +15,18 @@
   padding: 0 1px 1px;
 }
 
+/* the mask options popover is not under .dt_plugin_ui, but holds bauhaus
+   combos (condensed above) next to check buttons: size those alike */
+#masks-options-popover checkbutton
+{
+  font-size: 0.85em;
+}
+
+#masks-options-popover checkbutton label
+{
+  font-size: 0.98em;
+}
+
 .dt_plugin_ui entry
 {
   font-size: 0.95em;

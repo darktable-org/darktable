@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
@@ -47,6 +48,11 @@ typedef struct dt_iop_scalepixels_data_t {
   float x_scale;
   float y_scale;
 } dt_iop_scalepixels_data_t;
+
+typedef struct dt_iop_scalepixels_global_data_t
+{
+  int kernel_scalepixels;
+} dt_iop_scalepixels_global_data_t;
 
 const char *name()
 {
@@ -211,6 +217,41 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->scale = roi_out->scale * MAX(d->x_scale, d->y_scale);
   roi_in->x = roi_out->x * d->x_scale;
   roi_in->y = roi_out->y * d->y_scale;
+
+  // a tile at the far edge of the whole roi gets the input up to its far
+  // edge: the rounding above can leave it one input row or column short, and
+  // the last output row or column would then mirror the border too early
+  const dt_iop_roi_t *const full_in = &piece->processed_roi_in;
+  const dt_iop_roi_t *const full_out = &piece->processed_roi_out;
+  if(piece->pipe->tiling && full_out->width > 0 && full_in->width > 0)
+  {
+    if(roi_out->x + roi_out->width >= full_out->x + full_out->width)
+      roi_in->width = MAX(roi_in->width, full_in->x + full_in->width - roi_in->x);
+    if(roi_out->y + roi_out->height >= full_out->y + full_out->height)
+      roi_in->height = MAX(roi_in->height, full_in->y + full_in->height - roi_in->y);
+  }
+}
+
+// output pixel (i, j) reads the input at ((i, j) + shift) * scale - offset, on
+// the grid of the whole roi: a tile's own rois have slightly different ratios,
+// which would shift each tile. Untiled, shift and offset are 0
+static void _sampling_grid(const dt_dev_pixelpipe_iop_t *const piece,
+                           const dt_iop_roi_t *const roi_in,
+                           const dt_iop_roi_t *const roi_out,
+                           float scale[2],
+                           int shift[2],
+                           float offset[2])
+{
+  const gboolean whole = piece->processed_roi_out.width > 0 && piece->processed_roi_in.width > 0;
+  const dt_iop_roi_t *const full_in = whole ? &piece->processed_roi_in : roi_in;
+  const dt_iop_roi_t *const full_out = whole ? &piece->processed_roi_out : roi_out;
+
+  scale[0] = (full_in->width * 1.0f) / (full_out->width * 1.0f);
+  scale[1] = (full_in->height * 1.0f) / (full_out->height * 1.0f);
+  shift[0] = roi_out->x - full_out->x;
+  shift[1] = roi_out->y - full_out->y;
+  offset[0] = roi_in->x - full_in->x;
+  offset[1] = roi_in->y - full_in->y;
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -220,11 +261,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int ch_width = ch * roi_in->width;
   const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-  // Compute scale factors locally from the actual roi_in/roi_out to ensure
-  // consistency, rather than relying on d->x_scale/d->y_scale which may have
-  // been overwritten by modify_roi_in() with different ROI dimensions.
-  const float x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
-  const float y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
+  float scale[2], offset[2];
+  int shift[2];
+  _sampling_grid(piece, roi_in, roi_out, scale, shift, offset);
 
   DT_OMP_FOR()
   // (slow) point-by-point transformation.
@@ -234,12 +273,55 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += 4)
     {
-      const float x = i * x_scale;
-      const float y = j * y_scale;
+      const float x = (i + shift[0]) * scale[0] - offset[0];
+      const float y = (j + shift[1]) * scale[1] - offset[1];
       dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, x, y, roi_in->width,
                                        roi_in->height, ch_width);
     }
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_scalepixels_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  float scale[2], offset[2];
+  int shift[2];
+  _sampling_grid(piece, roi_in, roi_out, scale, shift, offset);
+  const int itype = interpolation->id;
+  const int iwidth = interpolation->width;
+
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scalepixels, roi_out->width, roi_out->height,
+                                          CLARG(dev_in), CLARG(dev_out),
+                                          CLARG(roi_out->width), CLARG(roi_out->height),
+                                          CLARG(roi_in->width), CLARG(roi_in->height),
+                                          CLARG(scale), CLARG(shift), CLARG(offset),
+                                          CLARG(itype), CLARG(iwidth));
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_scalepixels_global_data_t *gd = malloc(sizeof(dt_iop_scalepixels_global_data_t));
+  self->data = gd;
+  gd->kernel_scalepixels = dt_opencl_create_kernel(program, "scalepixels");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_scalepixels_global_data_t *gd = self->data;
+  dt_opencl_free_kernel(gd->kernel_scalepixels);
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,

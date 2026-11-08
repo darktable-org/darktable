@@ -1125,6 +1125,7 @@ static GMenu *_popup_get_numeric_menu(GtkDarktableRangeSelect *range,
     gtk_widget_insert_action_group(w, 
                                    "range",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -1242,10 +1243,9 @@ static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
   _bound_change(range, gtk_entry_get_text(GTK_ENTRY(entry)), bound);
 }
 
-static gboolean _event_entry_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+static void _event_entry_focus_out(GtkEventController *controller, gpointer user_data)
 {
-  _event_entry_activated(entry, user_data);
-  return FALSE;
+  _event_entry_activated(dt_gui_get_widget(controller), user_data);
 }
 
 static double _graph_value_to_pos(GtkDarktableRangeSelect *range, const double value)
@@ -1761,7 +1761,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     gtk_widget_set_can_default(range->entry_min, TRUE);
     _entry_set_tooltip(range->entry_min, BOUND_MIN, range->type);
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
-    g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
+    dt_gui_connect_focus(range->entry_min, NULL, _event_entry_focus_out, range);
     GtkGestureSingle *g_min = dt_gui_connect_click(range->entry_min, _event_entry_press_cb, NULL, range);
     gtk_gesture_single_set_button(g_min, GDK_BUTTON_SECONDARY);
     gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_min), GTK_PHASE_TARGET);
@@ -1771,7 +1771,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
     _entry_set_tooltip(range->entry_max, BOUND_MAX, range->type);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
-    g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
+    dt_gui_connect_focus(range->entry_max, NULL, _event_entry_focus_out, range);
     GtkGestureSingle *g_max = dt_gui_connect_click(range->entry_max, _event_entry_press_cb, NULL, range);
     gtk_gesture_single_set_button(g_max, GDK_BUTTON_SECONDARY);
     gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_max), GTK_PHASE_TARGET);

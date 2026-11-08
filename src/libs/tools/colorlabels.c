@@ -213,14 +213,12 @@ static gboolean _lib_colorlabels_key_press_cb(GtkEventControllerKey *controller,
   return FALSE; /* event not handled */
 }
 
-static gboolean _lib_colorlabels_destroy(GtkWidget *widget,
-                                         GdkEvent *event,
-                                         dt_lib_module_t *self)
+static void _lib_colorlabels_destroy(GtkEventController *controller,
+                                     dt_lib_module_t *self)
 {
   dt_lib_colorlabels_t *d = self->data;
 
   gtk_widget_destroy(d->floating_window);
-  return FALSE;
 }
 
 static void _lib_colorlabels_edit(dt_lib_module_t *self,
@@ -239,7 +237,7 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
-  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_lib_colorlabels_destroy), self);
+  dt_gui_connect_focus(entry, NULL, _lib_colorlabels_destroy, self);
   dt_gui_connect_key(entry, _lib_colorlabels_key_press_cb, self);
   gtk_widget_set_tooltip_text(entry, _("enter a description of how you use this color label"));
 

@@ -866,6 +866,33 @@ void dt_masks_combine_screen(float *const restrict dest,
   }
 }
 
+// dt_masks_combine_maximum() onto a zero seed, with the member already in
+// `buffer`: the same expression, so the result is bit for bit the same
+static void _fold_first_maximum(float *const restrict buffer,
+                                const size_t npixels,
+                                const float opacity,
+                                const int inverted)
+{
+  if(inverted)
+  {
+    DT_OMP_FOR_SIMD(aligned(buffer : 64))
+    for(size_t index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - buffer[index]);
+      buffer[index] = MAX(0.0f, mask);
+    }
+  }
+  else
+  {
+    DT_OMP_FOR_SIMD(aligned(buffer : 64))
+    for(size_t index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * buffer[index];
+      buffer[index] = MAX(0.0f, mask);
+    }
+  }
+}
+
 // Flexi group fold (flexi masks only). A group's list starts with its marker,
 // which holds the group's settings, followed by its members. The members fold
 // into the mask in list order with the group's operator (see the list below);
@@ -890,8 +917,8 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
   const int height = roi->height;
   const size_t npixels = (size_t)width * height;
 
-  float *const restrict bufs = dt_alloc_align_float(npixels); // one raw member
-  if(bufs == NULL) return 0;
+  // one raw member, allocated once a member needs it (see first_in_place)
+  float *bufs = NULL;
 
   // the refinements previewed as off: the pipe's snapshot, committed with the
   // params (dt_masks_refine_bypass_commit). Never read blend_data from this
@@ -916,10 +943,14 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
   // max/soft-union/add/exclusion in, each of which copies its first member onto
   // 0). Difference has no seed that copies, so its first member is copied
   // explicitly below
-  if(flexi_minimum || flexi_product)
-    for(size_t i = 0; i < npixels; i++) buffer[i] = 1.0f;
-  else
-    memset(buffer, 0, npixels * sizeof(float));
+  //
+  // maximum onto the zero seed is max(0, op * member), so the first member of
+  // a maximum or a difference is drawn straight into `buffer` and folded in
+  // place. That spares a full-size scratch buffer, its clear and a combine
+  // pass for every group level, and a group of one member needs no scratch
+  const gboolean first_in_place = !(flexi_minimum || flexi_product || screen || flexi_sum || flexi_exclusion);
+  if(!first_in_place)
+    dt_iop_image_fill(buffer, flexi_minimum || flexi_product ? 1.0f : 0.0f, width, height, 1);
 
   int nb_members = 0; // members whose mask actually folded into `buffer`
   int nb_folded = 0;  // the same, counting no-op parametric channels too
@@ -930,10 +961,22 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
     dt_masks_form_t *const sel = dt_masks_get_from_id_ext(piece->pipe->forms, m->formid);
     if(!sel) continue;
 
-    memset(bufs, 0, npixels * sizeof(float));
-    _pixels_missing = FALSE;
-    if(!dt_masks_get_mask_roi(module, piece, sel, roi, bufs))
+    const gboolean in_place = first_in_place && nb_folded == 0;
+    if(!in_place && !bufs)
     {
+      bufs = dt_alloc_align_float(npixels);
+      if(!bufs) return 0;
+    }
+    float *const restrict dest = in_place ? buffer : bufs;
+
+    // a shape draws only its own area, onto zeros. A member group seeds its
+    // whole buffer itself, and a full-size clear costs as much as a shape
+    if(!(sel->type & DT_MASKS_GROUP)) dt_iop_image_fill(dest, 0.0f, width, height, 1);
+    _pixels_missing = FALSE;
+    if(!dt_masks_get_mask_roi(module, piece, sel, roi, dest))
+    {
+      // a member left out in place leaves `buffer` to the next member, which
+      // clears or seeds it, or to the fallback below, which fills it.
       // a stored mask that cannot be read fails the whole group, as in the
       // classic fold below. any other member that renders nothing, a hidden
       // group included, is left out
@@ -952,7 +995,7 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
       dt_masks_refine_bypass_lookup(bypass, dt_masks_refine_key_element(m->formid));
     if(m->refinement.enabled == DT_MASKS_REFINE_ELEMENT && !elem_bypassed)
       dt_develop_blend_refine_form_mask((dt_iop_module_t *)module,
-                                        (dt_dev_pixelpipe_iop_t *)piece, bufs, roi,
+                                        (dt_dev_pixelpipe_iop_t *)piece, dest, roi,
                                         &m->refinement);
 
     const float op = m->opacity;
@@ -962,7 +1005,9 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
     // (blend.c). The panel badges its row
     const int inverted = (m->state & DT_MASKS_STATE_INVERSE)
                          && !dt_masks_raster_is_unresolved(module, piece, sel);
-    if(flexi_minimum)
+    if(in_place)
+      _fold_first_maximum(buffer, npixels, op, inverted);
+    else if(flexi_minimum)
       dt_masks_combine_minimum(buffer, bufs, npixels, op, inverted);
     else if(screen)
       dt_masks_combine_screen(buffer, bufs, npixels, op, inverted);
@@ -995,7 +1040,7 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
     // dt is a fully opaque mask (the module stays 100% active), matching the
     // `mode_drawn && !form` fallback in dt_develop_blend_process. As a nested group,
     // returning 0 makes its parent skip it
-    for(size_t i = 0; i < npixels; i++) buffer[i] = 1.0f;
+    dt_iop_image_fill(buffer, 1.0f, width, height, 1);
     return 0;
   }
 
@@ -1011,14 +1056,15 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
   // invert-output (true group invert, see DT_MASKS_STATE_OP_INVERT): applied
   // to the folded mask, after any group refinement
   if(head->state & DT_MASKS_STATE_OP_INVERT)
-    for(size_t i = 0; i < npixels; i++) buffer[i] = 1.0f - buffer[i];
+    dt_iop_image_invert(buffer, 1.0f, width, height, 1);
 
   // group-level opacity (see dt_masks_point_group_t.group_opacity): a
   // multiplicative gain on the group's finished mask, on top of each member's
   // own opacity. Applied after invert-output, for the same reason element
   // opacity multiplies a shape's already-inverted mask in dt_masks_combine_maximum
   // et al: it scales the group's actual contribution
-  for(size_t i = 0; i < npixels; i++) buffer[i] *= head->group_opacity;
+  if(head->group_opacity != 1.0f)
+    dt_iop_image_mul_const(buffer, head->group_opacity, width, height, 1);
 
   return 1;
 }

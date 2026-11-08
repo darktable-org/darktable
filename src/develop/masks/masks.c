@@ -593,6 +593,8 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
                                      dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui)
 {
+  // the panel's list is rebuilt once, for what this leaves, not at each step
+  if(module) dt_iop_gui_blend_masks_hold_rebuild(module);
   // we check if the id is already registered
   _check_id(form);
 
@@ -2699,9 +2701,9 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * point_size, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
     sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
     free(ptbuf);
   }
+  sqlite3_finalize(stmt);
 }
 
 void dt_masks_free_form(dt_masks_form_t *form)
@@ -3199,6 +3201,13 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
      && (!darktable.develop->form_gui->creation
          || darktable.develop->form_gui->creation_module != was_creating))
     dt_iop_gui_blend_masks_creation_ended(was_creating);
+
+  // a continuous creation (ctrl+click on a shape button) arms the next shape
+  // as soon as one is committed. Its callers set creation_module only after
+  // this returns, so the panel is told here, for its pending row to come back
+  if(newform && darktable.develop->form_gui->creation
+     && darktable.develop->form_gui->creation_continuous)
+    dt_iop_gui_blend_masks_creation_continued(darktable.develop->form_gui->creation_continuous_module);
 }
 
 // the keyboard twin of the shapes' right-click cancel (see circle.c), so it

@@ -253,10 +253,10 @@ typedef struct dt_masks_point_parametric_t
   uint32_t disabled;                           // bit 0: input range off, bit 1: output range off
 } dt_masks_point_parametric_t;
 
-/** which sliders a parametric row shows (bits 1-2 of in_out): the input one
-    always, and the output one with BOTH. AUTO, what every row held before the
-    choice existed, shows the output one when its range is in use; OUTPUT, once
-    a choice of its own, now shows both */
+/** which sliders a parametric row shows (the low two bits of in_out): the
+    input one always, and the output one with BOTH. AUTO, what every row held
+    before the choice existed, shows the output one when its range is in use;
+    OUTPUT, once a choice of its own, now shows both */
 typedef enum dt_masks_param_view_t
 {
   DT_MASKS_PARAM_VIEW_AUTO = 0,
@@ -265,35 +265,15 @@ typedef enum dt_masks_param_view_t
   DT_MASKS_PARAM_VIEW_BOTH,
 } dt_masks_param_view_t;
 
-/** bit 0 of in_out: a row used to expand to its extra controls. Only groups
-    expand now; stored files may still have it set, and it is left as found */
-#define DT_MASKS_PARAM_EXPANDED 1u
-/** bit 3 of in_out: the boost factor shows with the sliders, and not with the
-    opacity */
-#define DT_MASKS_PARAM_BOOST_WITH_SLIDERS 8u
-
 static inline dt_masks_param_view_t dt_masks_param_get_view(const dt_masks_point_parametric_t *p)
 {
-  return (dt_masks_param_view_t)((p->in_out >> 1) & 3u);
+  return (dt_masks_param_view_t)(p->in_out & 3u);
 }
 
 static inline void dt_masks_param_set_view(dt_masks_point_parametric_t *p,
                                            const dt_masks_param_view_t view)
 {
-  p->in_out = (p->in_out & (DT_MASKS_PARAM_EXPANDED | DT_MASKS_PARAM_BOOST_WITH_SLIDERS))
-              | ((uint32_t)view << 1);
-}
-
-static inline gboolean dt_masks_param_boost_with_sliders(const dt_masks_point_parametric_t *p)
-{
-  return (p->in_out & DT_MASKS_PARAM_BOOST_WITH_SLIDERS) != 0;
-}
-
-static inline void dt_masks_param_set_boost_with_sliders(dt_masks_point_parametric_t *p,
-                                                         const gboolean with_sliders)
-{
-  p->in_out = (p->in_out & ~DT_MASKS_PARAM_BOOST_WITH_SLIDERS)
-              | (with_sliders ? DT_MASKS_PARAM_BOOST_WITH_SLIDERS : 0u);
+  p->in_out = (uint32_t)view;
 }
 
 /** point struct for a DT_MASKS_RASTER form: a reference to another module's
@@ -434,6 +414,15 @@ typedef struct dt_iop_gui_blend_data_t
   // children keep their own visibility
   GtkBox *masks_panel_body;
   GtkWidget *masks_panel_reveal;
+  // the panel's two halves, which the docked position puts in scrollers of
+  // their own, with a divider between (dt_masks_gui_split_dock): above it the
+  // blend settings and the mask layout, below it the selection's controls
+  // and the refinements. Everywhere else they stack in the panel as one.
+  // The paned is made with the first docking
+  GtkWidget *masks_split_top;
+  GtkWidget *masks_split_bottom;
+  GtkWidget *masks_split_paned;
+  gboolean masks_split_on;
   GtkBox *masks_box;
 
   GtkWidget *showmask;
@@ -605,6 +594,9 @@ typedef struct dt_iop_gui_blend_data_t
   // rebuilds the list for every shape it removes, so a caller removing several
   // sets this around its loop and rebuilds once afterwards
   gboolean masks_rebuild_suppressed;
+  // the suppression is held by dt_iop_gui_blend_masks_hold_rebuild, which the
+  // deferred rebuild lifts
+  gboolean masks_rebuild_held;
   // a range slider of a parametric row is committing its edit: the list is not
   // rebuilt under it, which would replace the slider being dragged
   gboolean masks_param_committing;
@@ -717,6 +709,10 @@ typedef struct dt_iop_gui_blend_data_t
   // id, nested group rows by their form id. A group missing from it is
   // expanded. Created on first use
   GHashTable *masks_groups_expanded;
+  // folded run (the id of its bottom element) -> whether its other
+  // elements are shown (see _tail_set_open). A run missing from it is folded.
+  // Created on first use
+  GHashTable *masks_groups_tail;
   // group cid -> the page its preset note shows (see _make_group_note), so a
   // rebuild of the note keeps it. Created on first use
   GHashTable *masks_note_page;
@@ -1122,10 +1118,21 @@ void dt_iop_gui_blend_delete_element(dt_iop_module_t *module, const dt_mask_id_t
     are named after it */
 void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
 
+// hold back the rebuilds of this module's list until the handler that calls
+// this has returned, then rebuild once, before the next repaint. Committing a
+// shape rebuilds the list at each step it takes, and the panel would show each
+// of them (dt_masks_gui_form_save_creation)
+void dt_iop_gui_blend_masks_hold_rebuild(dt_iop_module_t *module);
+
 // shape creation ended for this module: queues the rebuild that drops the
 // panel's pending row. Called from dt_masks_change_form_gui, which every way
 // of canceling goes through, a click outside the canvas included
 void dt_iop_gui_blend_masks_creation_ended(dt_iop_module_t *module);
+
+// the next shape of a continuous creation is armed for this module: queues the
+// rebuild that shows the panel's pending row for it. Called from
+// dt_masks_change_form_gui, before its caller has set creation_module
+void dt_iop_gui_blend_masks_creation_continued(dt_iop_module_t *module);
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,

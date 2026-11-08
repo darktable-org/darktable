@@ -855,6 +855,7 @@ int main(int argc, char *arg[])
     g_free(output_ext);
     exit(1);
   }
+  g_free(output_ext);
 
   uint32_t w, h, fw, fh, sw, sh;
   fw = fh = sw = sh = 0;

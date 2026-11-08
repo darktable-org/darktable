@@ -3590,6 +3590,48 @@ button.dt_masks_enable_toggle:checked:hover
   border: 2px dashed alpha(@fg_color, 0.32);
 }
 
+/* the divider of the docked panel, between the mask layout and the rest, which
+   scroll apart (see dt_masks_gui_split_dock) */
+#masks-split > separator
+{
+  min-height: 6px;
+  background-color: alpha(@fg_color, 0.12);
+}
+
+#masks-split > separator:hover
+{
+  background-color: alpha(@fg_color, 0.3);
+}
+
+/* the line standing in for the elements a run does not show (see
+   _pack_group_members): dim text next to the run's node on the rail, with a
+   tick to it like a member's, starting where the icons of the rows do */
+.dt_masks_more_line
+{
+  padding: 3px 0 3px 8px;
+}
+
+/* the unseen cells of that line only give it a member row's height: none of
+   their width, which a narrow panel would have to find room for */
+.dt_masks_more_ruler button.dt_masks_icon
+{
+  min-width: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.dt_masks_more_label
+{
+  opacity: 0.6;
+}
+
+.dt_masks_more:hover .dt_masks_more_label
+{
+  opacity: 1;
+}
+
 /* a transparent border keeps the box model stable across states. A
    background image starts at the padding box by default and repeats into
    that border, where the far end of the selection gradient showed as a
@@ -4150,13 +4192,15 @@ button.dt_masks_channel_picker
    edged like the row's buttons, and as high as their place. A row showing both
    ranges has two strips, one above the other (the upper one is
    .dt_masks_param_swatch, the lower also .dt_masks_param_swatch_lower),
-   sharing that height. Their own columns are drawn by the swatch itself (see
+   sharing that height. Their minimum is small enough for two strips to
+   take no more than a member row's other parts do, so that the row is as
+   tall as any other: the strips stretch to the row's height. Their own columns are drawn by the swatch itself (see
    _param_swatch_draw) */
 .dt_masks_param_swatch
 {
   min-width: 2.2em;
-  min-height: 0.5em;
-  margin: 0.07em 0.15em;
+  min-height: 0.3em;
+  margin: 0.05em 0.15em;
   border: 1px solid alpha(@button_fg, 0.3);
   border-radius: 3px;
 }
@@ -4165,7 +4209,7 @@ button.dt_masks_channel_picker
    margin */
 .dt_masks_param_swatch_lower
 {
-  margin-top: 0.14em;
+  margin-top: 0.12em;
 }
 
 /* the name over the swatch, in the theme's text color with an outline of its ground
