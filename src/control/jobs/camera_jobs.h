@@ -25,8 +25,8 @@
 #include <inttypes.h>
 
 /** Camera capture job */
-dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets,
-                                       uint32_t steps);
+dt_job_t *dt_camera_capture_job_create(uint32_t delay, uint32_t count,
+    uint32_t brackets, uint32_t steps);
 
 /** Camera import job */
 dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,

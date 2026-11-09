@@ -37,18 +37,14 @@ typedef struct dt_camera_shared_t
 
 typedef struct dt_camera_capture_t
 {
-  dt_camera_shared_t shared;
-
   /** delay between each capture, 0 no delay */
   uint32_t delay;
   /** count of images to capture, 0==1 */
   uint32_t count;
   /** bracket capture, 0=no bracket */
   uint32_t brackets;
-
-  /** steps for each bracket, only used ig bracket capture*/
+  /** steps for each bracket, only used ig bracket capture */
   uint32_t steps;
-
 } dt_camera_capture_t;
 
 typedef struct dt_camera_get_previews_t
@@ -75,7 +71,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   dt_camera_capture_t *params = dt_control_job_get_params(job);
   double fraction = 0;
 
-  int total = params->brackets ? params->count * params->brackets : params->count;
+  int total = params->brackets
+                ? (int)(params->count * ((params->brackets * 2)  + 1))
+                : (int)params->count;
   dt_control_job_set_progress_message(job,
            ngettext("capturing %d image", "capturing %d images", total), total);
 
@@ -192,27 +190,15 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
 
 static dt_camera_capture_t *dt_camera_capture_alloc()
 {
-  dt_camera_capture_t *params = calloc(1, sizeof(dt_camera_capture_t));
-  if(!params)
-    return NULL;
-
-  // FIXME: unused
-  params->shared.session = dt_import_session_new();
-
-  return params;
+  return calloc(1, sizeof(dt_camera_capture_t));
 }
 
 static void dt_camera_capture_cleanup(void *p)
 {
-  dt_camera_capture_t *params = p;
-
-  dt_import_session_destroy(params->shared.session);
-
-  free(params);
+  free(p);
 }
 
-dt_job_t *dt_camera_capture_job_create(const char *jobcode,
-                                       const uint32_t delay,
+dt_job_t *dt_camera_capture_job_create(const uint32_t delay,
                                        const uint32_t count,
                                        const uint32_t brackets,
                                        const uint32_t steps)
@@ -230,8 +216,6 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode,
   }
   dt_control_job_add_progress(job, _("capture images"), FALSE);
   dt_control_job_set_params(job, params, dt_camera_capture_cleanup);
-
-  dt_import_session_set_name(params->shared.session, jobcode);
 
   params->delay = delay;
   params->count = count;
