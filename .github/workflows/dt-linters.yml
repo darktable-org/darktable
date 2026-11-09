@@ -1,4 +1,4 @@
-name: Report gui_data locking changes in src/iop
+name: Linters
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ permissions:
 jobs:
   dt-lockcheck:
     if: github.repository == 'darktable-org/darktable'
-    name: Compare dt-lockcheck findings with the target branch
+    name: dt-lockcheck
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
