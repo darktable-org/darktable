@@ -1010,6 +1010,13 @@ changes (where available).
 - Fixed scale pixels output shifted by a fraction of a pixel in each
   tile when the image was processed in tiles.
 
+- Fixed darktable hanging at startup, when opening an image in the
+  darkroom, or when browsing folders in the import dialog, while
+  folders were on an unreachable network share. Folders that do not
+  respond within a timeout, set in preferences > storage > film roll
+  folders, are marked unavailable, and are checked again when one of
+  their images is opened.
+
 ## Lua
 
 ### API Version

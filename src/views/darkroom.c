@@ -28,6 +28,7 @@
 #include "common/debug.h"
 #include "common/dtdata.h"
 #include "common/file_location.h"
+#include "common/film.h"
 #include "common/focus_peaking.h"
 #include "common/history.h"
 #include "common/image.h"
@@ -1261,7 +1262,12 @@ gboolean try_enter(dt_view_t *self)
   char imgfilename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
-  if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+  // a folder marked unavailable is checked again with a timeout before the file
+  // is accessed, as the file access may block on an unresponsive mount
+  if((!from_cache
+      && !dt_film_is_folder_available(img->film_id)
+      && !dt_film_check_folder_available(img->film_id))
+     || !g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
     dt_image_cache_read_release(img);
