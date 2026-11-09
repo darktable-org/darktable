@@ -790,6 +790,103 @@ void dt_masks_combine_exclusion(float *const restrict dest,
 // pipes render on threads of their own
 static __thread gboolean _pixels_missing = FALSE;
 
+// the shapes that take an extent (get_mask_roi in masks.h). A member group
+// seeds its whole buffer, and the other forms draw on a cleared one
+static gboolean _draws_extent(const dt_masks_form_t *const form)
+{
+  return (form->type & (DT_MASKS_CIRCLE | DT_MASKS_ELLIPSE | DT_MASKS_PATH | DT_MASKS_BRUSH
+                        | DT_MASKS_GRADIENT))
+         && !(form->type & DT_MASKS_GROUP);
+}
+
+// how a member drawn on part of the frame folds in, see _fold_extent()
+typedef enum _extent_fold_t
+{
+  _EXTENT_NONE,
+  _EXTENT_FIRST,      // the first member of a maximum or difference, in place
+  _EXTENT_MAXIMUM,
+  _EXTENT_DIFFERENCE,
+  _EXTENT_MINIMUM,
+  _EXTENT_PRODUCT,
+} _extent_fold_t;
+
+// _fold_first_maximum() and dt_masks_combine_maximum(), _difference(),
+// _minimum() and _product(), not inverted, inside the drawn rectangle only,
+// with the same expressions, so the result is bit for bit the same. Outside
+// it the member is 0: a maximum or a difference leaves the mask as it is
+// (it is never negative), and the others make it 0
+static void _fold_extent(float *const restrict buffer,
+                         const float *const restrict member,
+                         const int width,
+                         const int height,
+                         const float opacity,
+                         const _extent_fold_t fold,
+                         const int x0,
+                         const int y0,
+                         const int x1,
+                         const int y1)
+{
+  const gboolean clear = fold == _EXTENT_FIRST || fold == _EXTENT_MINIMUM || fold == _EXTENT_PRODUCT;
+  const int ys = clear ? 0 : y0;
+  const int ye = clear ? height : y1;
+  DT_OMP_FOR()
+  for(int y = ys; y < ye; y++)
+  {
+    float *const restrict row = buffer + (size_t)y * width;
+    const float *const restrict mrow = member + (size_t)y * width;
+    if(y < y0 || y >= y1)
+    {
+      memset(row, 0, sizeof(float) * width);
+      continue;
+    }
+    if(clear)
+    {
+      memset(row, 0, sizeof(float) * x0);
+      memset(row + x1, 0, sizeof(float) * (width - x1));
+    }
+    switch(fold)
+    {
+      case _EXTENT_FIRST:
+        for(int x = x0; x < x1; x++)
+        {
+          const float mask = opacity * row[x];
+          row[x] = MAX(0.0f, mask);
+        }
+        break;
+      case _EXTENT_MAXIMUM:
+        for(int x = x0; x < x1; x++)
+        {
+          const float mask = opacity * mrow[x];
+          row[x] = MAX(row[x], mask);
+        }
+        break;
+      case _EXTENT_DIFFERENCE:
+        for(int x = x0; x < x1; x++)
+        {
+          const float mask = opacity * mrow[x];
+          row[x] *= (1.0f - mask * both_positive(row[x], mask));
+        }
+        break;
+      case _EXTENT_MINIMUM:
+        for(int x = x0; x < x1; x++)
+        {
+          const float mask = opacity * mrow[x];
+          row[x] = MIN(MAX(row[x], 0.0f), MAX(mask, 0.0f));
+        }
+        break;
+      case _EXTENT_PRODUCT:
+        for(int x = x0; x < x1; x++)
+        {
+          const float mask = opacity * mrow[x];
+          row[x] *= mask;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 // a pixel form, or a group holding one: rendering nothing then means a stored
 // mask could not be read, not a shape with nothing to draw
 static gboolean _holds_pixels(GList *forms, const dt_masks_form_t *form)
@@ -969,11 +1066,40 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
     }
     float *const restrict dest = in_place ? buffer : bufs;
 
+    const gboolean elem_bypassed =
+      dt_masks_refine_bypass_lookup(bypass, dt_masks_refine_key_element(m->formid));
+    const gboolean elem_refine = m->refinement.enabled == DT_MASKS_REFINE_ELEMENT && !elem_bypassed;
+
+    // a shape need only clear and fold the part of the frame it draws on,
+    // mostly far smaller than the frame, where the operator leaves the mask
+    // alone or zero outside it. Its own refinement, or an inversion, reaches
+    // the rest of the frame
+    _extent_fold_t fold = _EXTENT_MAXIMUM;
+    if(in_place)
+      fold = _EXTENT_FIRST;
+    else if(flexi_difference)
+      fold = _EXTENT_DIFFERENCE;
+    else if(flexi_minimum)
+      fold = _EXTENT_MINIMUM;
+    else if(flexi_product)
+      fold = _EXTENT_PRODUCT;
+    else if(screen || flexi_sum || flexi_exclusion)
+      fold = _EXTENT_NONE;
+    const gboolean use_extent = fold != _EXTENT_NONE && _draws_extent(sel) && !elem_refine
+                                && !(m->state & DT_MASKS_STATE_INVERSE);
+    // x1 < x0 until the shape sets it
+    dt_masks_extent_t extent = { 0, 0, -1, -1 };
+
     // a shape draws only its own area, onto zeros. A member group seeds its
     // whole buffer itself, and a full-size clear costs as much as a shape
-    if(!(sel->type & DT_MASKS_GROUP)) dt_iop_image_fill(dest, 0.0f, width, height, 1);
+    if(!(sel->type & DT_MASKS_GROUP) && !use_extent)
+      dt_iop_image_fill(dest, 0.0f, width, height, 1);
     _pixels_missing = FALSE;
-    if(!dt_masks_get_mask_roi(module, piece, sel, roi, dest))
+    const int rendered =
+      dt_masks_get_mask_roi(module, piece, sel, roi, dest, use_extent ? &extent : NULL);
+    if(use_extent && rendered && extent.x1 < extent.x0)
+      dt_print(DT_DEBUG_ALWAYS, "[masks] %s drew without setting its extent", sel->name);
+    if(!rendered)
     {
       // a member left out in place leaves `buffer` to the next member, which
       // clears or seeds it, or to the fallback below, which fills it.
@@ -991,9 +1117,7 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
 
     // the member's own refinement, on its raw mask before inversion and
     // combining, where the classic fold below applies it too
-    const gboolean elem_bypassed =
-      dt_masks_refine_bypass_lookup(bypass, dt_masks_refine_key_element(m->formid));
-    if(m->refinement.enabled == DT_MASKS_REFINE_ELEMENT && !elem_bypassed)
+    if(elem_refine)
       dt_develop_blend_refine_form_mask((dt_iop_module_t *)module,
                                         (dt_dev_pixelpipe_iop_t *)piece, dest, roi,
                                         &m->refinement);
@@ -1005,7 +1129,12 @@ static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict modul
     // (blend.c). The panel badges its row
     const int inverted = (m->state & DT_MASKS_STATE_INVERSE)
                          && !dt_masks_raster_is_unresolved(module, piece, sel);
-    if(in_place)
+    if(use_extent)
+      _fold_extent(buffer, dest, width, height, op, fold,
+                   CLAMP(extent.x0, 0, width), CLAMP(extent.y0, 0, height),
+                   CLAMP(MAX(extent.x0, extent.x1), 0, width),
+                   CLAMP(MAX(extent.y0, extent.y1), 0, height));
+    else if(in_place)
       _fold_first_maximum(buffer, npixels, op, inverted);
     else if(flexi_minimum)
       dt_masks_combine_minimum(buffer, bufs, npixels, op, inverted);
@@ -1113,7 +1242,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
       // ensure that we start with a zeroed buffer regardless of what
       // was previously written into 'bufs'
       memset(bufs, 0, npixels*sizeof(float));
-      const int ok = dt_masks_get_mask_roi(module, piece, sel, roi, bufs);
+      const int ok = dt_masks_get_mask_roi(module, piece, sel, roi, bufs, NULL);
       const float op = fpt->opacity;
       const int state = fpt->state;
 
@@ -1229,7 +1358,7 @@ int dt_masks_group_render_roi(dt_iop_module_t *module,
 
   double start = dt_get_debug_wtime();
   _pixels_missing = FALSE;
-  const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
+  const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer, NULL);
   if(pixels_missing) *pixels_missing = !ok && _pixels_missing;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
@@ -1313,7 +1442,8 @@ static int _group_get_mask_roi_guarded(const dt_iop_module_t *const restrict mod
                                        const dt_dev_pixelpipe_iop_t *const restrict piece,
                                        dt_masks_form_t *const form,
                                        const dt_iop_roi_t *const roi,
-                                       float *const restrict buffer)
+                                       float *const restrict buffer,
+                                       dt_masks_extent_t *const extent)
 {
   if(_render_depth > DT_MASKS_NESTING_MAX) return 0;
   _render_depth++;
