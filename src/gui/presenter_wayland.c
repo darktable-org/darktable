@@ -40,6 +40,7 @@
 #include "color-management-v1-client-protocol.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <gdk/gdkwayland.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -166,6 +167,26 @@ static void _buffer_release(void *data,
 
 static const struct wl_buffer_listener _buffer_listener = { .release = _buffer_release };
 
+// an fd to anonymous shared memory, or -1
+static int _anonymous_file(void)
+{
+#ifdef MFD_CLOEXEC
+  return memfd_create("darktable-presenter", MFD_CLOEXEC);
+#else
+  // without memfd_create(), a POSIX shared memory object unlinked at
+  // once, as GTK 3 does (gdk/wayland/gdkdisplay-wayland.c)
+  int fd;
+  do
+  {
+    char name[32];
+    g_snprintf(name, sizeof(name), "/darktable-presenter-%08x", g_random_int());
+    fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
+    if(fd >= 0) shm_unlink(name);
+  } while(fd < 0 && errno == EEXIST);
+  return fd;
+#endif
+}
+
 static _buffer_t *_buffer_new(_transport_t *t,
                               const int width,
                               const int height,
@@ -173,7 +194,7 @@ static _buffer_t *_buffer_new(_transport_t *t,
                               const uint32_t format)
 {
   const size_t size = (size_t)stride * height;
-  const int fd = memfd_create("darktable-presenter", MFD_CLOEXEC);
+  const int fd = _anonymous_file();
   if(fd < 0) return NULL;
   if(ftruncate(fd, size) < 0)
   {
@@ -213,7 +234,7 @@ static _buffer_t *_buffer_get(_transport_t *t,
     _buffer_t *buffer = layer->buffers[k];
     // even while the compositor holds it: a wl_buffer may go before its
     // release as long as its storage is not written again, and each one
-    // has a memfd of its own
+    // has a file of its own
     if(buffer && (buffer->width != width || buffer->height != height))
     {
       _buffer_destroy(buffer);

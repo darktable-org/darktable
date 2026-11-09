@@ -387,6 +387,16 @@ if(USE_WAYLAND)
     list(APPEND SOURCES "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}" "gui/presenter_wayland.c")
     # GDK links libwayland-client too, but we call into it directly
     list(APPEND LIBS PkgConfig::WAYLAND_CLIENT)
+    # without memfd_create() the presenter's buffers come from shm_open(),
+    # which NetBSD has in librt only
+    check_symbol_exists(shm_open "sys/mman.h" HAVE_SHM_OPEN)
+    if(NOT HAVE_SHM_OPEN)
+      include(CheckLibraryExists)
+      check_library_exists(rt shm_open "" HAVE_SHM_OPEN_IN_RT)
+      if(HAVE_SHM_OPEN_IN_RT)
+        list(APPEND LIBS rt)
+      endif()
+    endif()
     set_property(SOURCE common/darktable.c gui/presenter_layers.c gui/presenter_wayland.c
                  APPEND PROPERTY COMPILE_DEFINITIONS HAVE_WAYLAND)
     set_property(SOURCE gui/presenter_wayland.c
