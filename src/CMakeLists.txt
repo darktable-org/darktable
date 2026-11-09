@@ -364,8 +364,9 @@ list(APPEND LIBS ${GTK3_LIBRARIES})
 if(USE_WAYLAND)
   find_package(PkgConfig)
   pkg_check_modules(GDK_WAYLAND QUIET gdk-wayland-3.0)
-  # 1.18 has the half float shm formats
-  pkg_check_modules(WAYLAND_CLIENT QUIET IMPORTED_TARGET wayland-client>=1.18)
+  # 1.20 adds the 16-bit integer shm format, and the code wayland-scanner
+  # 1.20 and later generate calls wl_proxy_marshal_flags(), also new in 1.20
+  pkg_check_modules(WAYLAND_CLIENT QUIET IMPORTED_TARGET wayland-client>=1.20)
   find_program(WAYLAND_SCANNER wayland-scanner)
   if(GDK_WAYLAND_FOUND AND WAYLAND_CLIENT_FOUND AND WAYLAND_SCANNER)
     # color-management-v1 is in wayland-protocols from 1.41 on, newer than
@@ -391,7 +392,7 @@ if(USE_WAYLAND)
     set_property(SOURCE gui/presenter_wayland.c
                  APPEND PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
   else()
-    message(STATUS "Wayland color management disabled: it needs gdk-wayland-3.0, wayland-client >= 1.18 and wayland-scanner")
+    message(STATUS "Wayland color management disabled: it needs gdk-wayland-3.0, wayland-client >= 1.20 and wayland-scanner")
     set(USE_WAYLAND OFF)
   endif()
 endif()
