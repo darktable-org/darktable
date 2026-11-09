@@ -117,6 +117,12 @@ changes (where available).
   manager now drive the same controls in the panel. Existing masks are
   converted when an edit is opened and render as before.
 
+- DNG files carrying an OpcodeList3 GainMap, such as those written
+  by DJI drones, now have it applied during demosaicing. This
+  corrects the lens shading the camera recorded but left in the raw
+  data. Existing edits are left unchanged; new edits get it by
+  default.
+
 ## UI/UX Improvements
 
 - Added back and forward navigation in collections, with user-assignable
