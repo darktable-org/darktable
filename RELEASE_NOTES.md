@@ -535,6 +535,9 @@ changes (where available).
 - The LibRaw loader now supports X-Trans sensors. Previously, RAFs
   routed to LibRaw via the libraw_extensions setting came out red.
 
+- Fixed memory leaks in mask and retouch form creation that could cause
+  slowdowns when these features are used heavily in an image.
+
 ## Bug Fixes
 
 - Fixed faint seams on a 112 pixel grid in images demosaiced with
