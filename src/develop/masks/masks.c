@@ -2876,7 +2876,11 @@ gboolean dt_masks_events_button_released(dt_iop_module_t *module,
     // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
     _events_lock(dev);
     ret = form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
-    form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
+    // button_released can commit or cancel a shape and replace form_visible
+    form = dev->form_visible;
+    gui = dev->form_gui;
+    if(form && form->functions)
+      form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
     _events_unlock(dev);
     // mouse_moved() no longer redraws for hovering, see dt_masks_events_mouse_moved()
     dt_control_queue_redraw_center();
@@ -3006,6 +3010,7 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
       ret = TRUE;
     }
 
+    form = darktable.develop->form_visible;
     _set_hinter_message(gui, form);
   }
 
@@ -3173,7 +3178,7 @@ void dt_masks_clear_form_gui(const dt_develop_t *dev)
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
-  const dt_masks_form_t *old = darktable.develop->form_visible;
+  dt_masks_form_t *old = darktable.develop->form_visible;
 
   // the module whose panel shows a pending row for the shape being created,
   // read before dt_masks_clear_form_gui() clears creation and creation_module
@@ -3190,6 +3195,14 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
      && darktable.view_manager->accels_window.window
      && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+
+  // scratch edit groups and uncommitted creation forms live only on
+  // form_visible, never in dev->forms or dev->allforms, so free the old one
+  // when replaced
+  if(old && old != newform
+     && !g_list_find(darktable.develop->forms, old)
+     && !g_list_find(darktable.develop->allforms, old))
+    dt_masks_free_form(old);
 
   if(newform && newform->type != DT_MASKS_GROUP)
     darktable.develop->form_gui->creation = TRUE;
@@ -3330,7 +3343,7 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
 
   if(value && form)
   {
-    grp = dt_masks_create_ext(DT_MASKS_GROUP);
+    grp = dt_masks_create(DT_MASKS_GROUP);
     grp->formid = NO_MASKID;
     dt_masks_group_ungroup(grp, form);
   }
@@ -3394,7 +3407,7 @@ static gboolean _set_edit_mode_forms(dt_iop_module_t *module,
     return FALSE;
   }
 
-  dt_masks_form_t *grp = dt_masks_create_ext(DT_MASKS_GROUP);
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
   const dt_mask_id_t grid = module->blend_params->mask_id;
   for(GList *l = formids; l; l = g_list_next(l))
   {
@@ -3408,9 +3421,10 @@ static gboolean _set_edit_mode_forms(dt_iop_module_t *module,
     grp->points = g_list_append(grp->points, fpt);
   }
 
-  dt_masks_form_t *grp2 = dt_masks_create_ext(DT_MASKS_GROUP);
+  dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
   grp2->formid = NO_MASKID;
   dt_masks_group_ungroup(grp2, grp);
+  dt_masks_free_form(grp);
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
   return TRUE;

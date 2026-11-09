@@ -704,7 +704,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   }
 
   // else, we create a new from group with the shapes and display it
-  dt_masks_form_t *grp = dt_masks_create_ext(DT_MASKS_GROUP);
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
   for(int i = 0; i < RETOUCH_NO_FORMS; i++)
   {
     if(p->rt_forms[i].scale == scale)
@@ -725,9 +725,10 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
     }
   }
 
-  dt_masks_form_t *grp2 = dt_masks_create_ext(DT_MASKS_GROUP);
+  dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
   grp2->formid = NO_MASKID;
   dt_masks_group_ungroup(grp2, grp);
+  dt_masks_free_form(grp);
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = bd->masks_shown;
 
