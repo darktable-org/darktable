@@ -801,6 +801,13 @@ changes (where available).
 - Fixed raw denoise using pixels of the wrong color near the top
   corners of some X-Trans images.
 
+- Fixed raw denoise on X-Trans images giving different results
+  depending on white balance's "prepare data for color calibration"
+  setting: with highlight reconstruction in inpaint opposed or
+  segmentation mode, clipped highlights were rebuilt with a white
+  balance correction meant for white-balanced data, although raw
+  denoise runs without white balance.
+
 - Fixed possible crashes after removing an image that had snapshots
   from the library, while either a snapshot was shown for comparison
   or all ten snapshot slots were in use.

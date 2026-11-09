@@ -258,7 +258,7 @@ static float *_process_opposed(dt_iop_module_t *self,
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f };
 
   const dt_dev_wb_t *wb = &pipe->wb;
-  const gboolean late = wb->late_correction;
+  const gboolean late = dt_dev_wb_late_correction(wb, dsc);
   dt_aligned_pixel_t correction;
   dt_dev_wb_get_rgb_correction(wb, late, correction);
 
@@ -486,7 +486,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
 
   const dt_dev_wb_t *wb = &pipe->wb;
-  const gboolean late = wb->late_correction;
+  const gboolean late = dt_dev_wb_late_correction(wb, dsc);
   dt_aligned_pixel_t correction;
   dt_dev_wb_get_rgb_correction(wb, late, correction);
 
