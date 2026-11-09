@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-06 08:32+0100\n"
-"PO-Revision-Date: 2026-11-07 20:03+0200\n"
+"PO-Revision-Date: 2026-11-09 14:01+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -10997,8 +10997,23 @@ msgid_plural ""
 "\n"
 "change the blend colorspace and remove them?"
 msgstr[0] ""
+"Ця маска має %d параметричний елемент. Вона містить канали того\n"
+"колірного простору, в якому була створена; оскільки ці канали відсутні\n"
+"в іншому колірному просторі, її неможливо перенести.\n"
+"\n"
+"Змінити колірний простір змішування та видалити параметричні елементи?"
 msgstr[1] ""
+"Ця маска має %d параметричні елементи. Вона містить канали того\n"
+"колірного простору, в якому була створена; оскільки ці канали відсутні\n"
+"в іншому колірному просторі, її неможливо перенести.\n"
+"\n"
+"Змінити колірний простір змішування та видалити параметричні елементи?"
 msgstr[2] ""
+"Ця маска має %d параметричних елементів. Вона містить канали того\n"
+"колірного простору, в якому була створена; оскільки ці канали відсутні\n"
+"в іншому колірному просторі, її неможливо перенести.\n"
+"\n"
+"Змінити колірний простір змішування та видалити параметричні елементи?"
 
 #: ../src/develop/blend_gui.c:2998
 msgid "interface options"
@@ -11490,6 +11505,8 @@ msgid ""
 "discards small, stray outline fragments below this size\n"
 "(in traced pixels)"
 msgstr ""
+"Відкидати малі, поодинокі фрагменти контурів, менші за цей розмір\n"
+"(у пікселях трасування)"
 
 #: ../src/develop/blend_gui.c:5573
 msgid ""
@@ -11508,6 +11525,9 @@ msgid ""
 "snap the mask boundary to nearby image edges on each click, which recovers "
 "notches the model missed and costs a few hundred ms"
 msgstr ""
+"При кожному кліку межа маски \"прив’язується\" до найближчих країв на "
+"зображенні; це дозволяє відновити виїмки, які модель пропустила, і займає "
+"кілька сотень мілісекунд"
 
 #: ../src/develop/blend_gui.c:5580
 msgid "apply as paths"
@@ -11606,6 +11626,8 @@ msgstr "Змішування"
 #: ../src/develop/blend_gui.c:6227
 msgid "double-click to undo the edits made since the controls were shown"
 msgstr ""
+"Подвійний клік скасовує зміни, внесені з моменту відображення елементів "
+"керування"
 
 #: ../src/develop/blend_gui.c:6228
 msgid "double-click to reset to 100%"
@@ -11653,6 +11675,9 @@ msgid ""
 "click to disable\n"
 "shift+click to clear solo"
 msgstr ""
+"Соло: використовується тільки це\n"
+"Клікніть, щоб вимкнути\n"
+"Shift + клік — скасувати соло"
 
 #: ../src/develop/blend_gui.c:7313
 msgid "click to disable: add nothing to the mask"
@@ -11663,6 +11688,8 @@ msgid ""
 "click to disable: add nothing to the mask\n"
 "shift+click to solo: use only this"
 msgstr ""
+"Клікніть, щоб вимкнути: нічого не додавати до маски\n"
+"Shift + клік — соло: використовувати лише це"
 
 #: ../src/develop/blend_gui.c:7461
 msgid "opacity 0%: this module has no effect on the image"
@@ -11893,16 +11920,13 @@ msgstr ""
 "Shift+клік, щоб створити для цього модуля власну копію"
 
 #: ../src/develop/blend_gui.c:9471
-#, fuzzy, c-format
-#| msgid ""
-#| "%s\n"
-#| "ctrl+click to %s"
+#, c-format
 msgid ""
 "%s\n"
 "click to go to it in %s"
 msgstr ""
 "%s\n"
-"Ctrl+клік – %s"
+"Клікніть, щоб перейти до цього в %s"
 
 #: ../src/develop/blend_gui.c:9857
 msgid "wrap in group..."
@@ -11914,13 +11938,15 @@ msgstr "Згрупувати разом..."
 
 #: ../src/develop/blend_gui.c:9858
 msgid "put the selected item in a new group, where it is"
-msgstr ""
+msgstr "Помістити вибраний елемент у нову групу"
 
 #: ../src/develop/blend_gui.c:9859 ../src/develop/blend_gui.c:10435
 msgid ""
 "put the selected items together in a new group, where the topmost of them is. "
 "they must all be in the same group"
 msgstr ""
+"Згрупуйте вибрані елементи в нову групу за розташуванням найвищого з них. Усі "
+"вони повинні бути в одній групі"
 
 #: ../src/develop/blend_gui.c:9880
 #, c-format
@@ -12175,6 +12201,10 @@ msgid ""
 "higher: a looser fit with smoother, more rounded corners.\n"
 "same as scrolling on the canvas while drawing"
 msgstr ""
+"Наскільки точно трасований контур повторює необроблений край ШІ-виділення.\n"
+"Нижче: контур щільніше прилягає до виділення, має більш кутасті форми.\n"
+"Вище: контур прилягає менш щільно, кути стають плавнішими й округлішими.\n"
+"Те саме, що й прокручування на полотні під час малювання"
 
 #: ../src/develop/blend_gui.c:13408
 msgid ""
@@ -12183,6 +12213,12 @@ msgid ""
 "genuinely small parts of the selection.\n"
 "same as shift+scrolling on the canvas while drawing"
 msgstr ""
+"Відкидати малі, поодинокі фрагменти контуру, менші за цей розмір (у пікселях "
+"трасування).\n"
+"Вищі значення видаляють більше малих острівців чи отворів, але створюють "
+"ризик втрати\n"
+"справді дрібних частин вибраної області.\n"
+"Те саме, що й прокручування на полотні з утримуванням Shift під час малювання"
 
 #: ../src/develop/blend_gui.c:13443
 msgid "pressure"
@@ -12377,7 +12413,7 @@ msgstr "Сфокусувати %s і редагувати його маску н
 
 #: ../src/develop/blend_gui.c:15838
 msgid "a group inside this group, shown below this row\n"
-msgstr ""
+msgstr "Група всередині цієї групи, показана під цим рядком\n"
 
 #: ../src/develop/blend_gui.c:15839
 msgid "click to select, click again to deselect\n"
@@ -12480,10 +12516,8 @@ msgstr ""
 "Ctrl+клік, щоб перейменувати"
 
 #: ../src/develop/blend_gui.c:16687
-#, fuzzy
-#| msgid "shift+click to set the tool as default"
 msgid "shift+click to select it with others"
-msgstr "shift+клік - встановити інструмент за замовчуванням"
+msgstr "Shift+клік — щоб вибрати це разом з іншими"
 
 #: ../src/develop/blend_gui.c:16688
 msgid "ctrl+shift+click to delete it and every member in it"
@@ -12680,14 +12714,19 @@ msgid ""
 "group layout presets: apply one within this group, replacing what it holds or "
 "added to it, or save the mask's layout as one"
 msgstr ""
+"Пресети макетів груп: застосуйте один із них у межах цієї групи — замінивши "
+"наявний вміст або додавши до нього — або збережіть поточний макет маски як "
+"пресет"
 
 #: ../src/develop/blend_gui.c:18175
 msgid "group layout presets do not apply to a raster mask"
-msgstr ""
+msgstr "Пресети макетів груп не застосовуються до растрової маски"
 
 #: ../src/develop/blend_gui.c:18176
 msgid "group layout presets apply within a group: select one, or the whole mask"
 msgstr ""
+"Пресети макетів груп застосовуються в межах групи: можна вибрати один або всю "
+"маску"
 
 #: ../src/develop/blend_gui.c:18249
 #, c-format
@@ -13129,6 +13168,10 @@ msgid ""
 "\"show preset help notes (beginners)\"\n"
 "click to expand or collapse"
 msgstr ""
+"Як використовувати вибрану групу, створену на основі пресету макету груп\n"
+"Підказки можна вимкнути в налаштуваннях панелі масок за допомогою опції\n"
+"\"Показати підказки до пресетів (для початківців)\"\n"
+"Натисніть, щоб розгорнути або згорнути"
 
 #: ../src/develop/blend_gui.c:19665
 msgid "toggle help section"
@@ -13146,6 +13189,9 @@ msgid ""
 "mask. click one of them to go to its mask panel\n"
 "click here to expand or collapse"
 msgstr ""
+"Модулі, розташовані далі в конвеєрі, які використовують маску цього модуля\n"
+"як растрову маску. Клікніть один із них, щоб перейти до панелі його маски\n"
+"Клікніть тут, щоб розгорнути або згорнути"
 
 #: ../src/develop/blend_gui.c:19735
 msgid "toggle mask consumers section"
@@ -13601,12 +13647,13 @@ msgstr "Обертання: %3.f°"
 #: ../src/develop/masks/ellipse.c:875
 #, c-format
 msgid "fade-out border: proportional, %3.2f%% of the radius"
-msgstr ""
+msgstr "Закрайок з градієнтом непрозорості: пропорційний, %3.2f%% від радіуса"
 
 #: ../src/develop/masks/ellipse.c:878
 #, c-format
 msgid "fade-out border: fixed width, %3.2f%% of the image"
 msgstr ""
+"Закрайок з градієнтом непрозорості: фіксована ширина, %3.2f%% від зображення"
 
 #: ../src/develop/masks/ellipse.c:1998
 msgid "[ELLIPSE] change size"
@@ -14078,10 +14125,8 @@ msgid "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr "<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks_gui_panel_host.c:94
-#, fuzzy
-#| msgid "no mask used"
 msgid "no mask"
-msgstr "Не використовується"
+msgstr "Немає маски"
 
 #: ../src/develop/masks_gui_panel_host.c:181
 msgid ""
@@ -14250,9 +14295,9 @@ msgstr "Ця група вкладена занадто глибоко, щоб �
 #, c-format
 msgid "%d group of the preset would nest too deep and was left out"
 msgid_plural "%d groups of the preset would nest too deep and were left out"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%d група пресету має занадто глибоку вкладеність і була пропущена"
+msgstr[1] "%d групи пресету мають занадто глибоку вкладеність і були пропущені"
+msgstr[2] "%d груп пресету мають занадто глибоку вкладеність і були пропущені"
 
 #: ../src/develop/masks_gui_presets.c:431
 msgid ""
@@ -14270,12 +14315,16 @@ msgid ""
 "the preset's groups go into the group, next to what it holds; the group keeps "
 "its own operator and opacity"
 msgstr ""
+"Групи пресету потрапляють у групу, розташовану поруч із тим, що вона містить; "
+"при цьому група зберігає власний оператор і непрозорість"
 
 #: ../src/develop/masks_gui_presets.c:438
 msgid ""
 "the preset's groups go into the mask, next to what it holds; the mask keeps "
 "its own operator and opacity"
 msgstr ""
+"Групи пресету потрапляють у маску поруч із тим, що вона містить; при цьому "
+"маска зберігає власний оператор і непрозорість"
 
 #: ../src/develop/masks_gui_presets.c:441
 msgid ""
@@ -20907,6 +20956,17 @@ msgid ""
 "\n"
 "do you want to save the style without them?"
 msgstr ""
+"Маски цих модулів містять об’єкти ШІ, збережені як пікселі цього зображення:\n"
+"\n"
+"    %s\n"
+"\n"
+"Їх неможливо застосувати до інших зображень, тому вони не увійдуть до складу "
+"стилю.\n"
+"\n"
+"Щоб зберегти об’єкт ШІ в пресетах і стилях, створюйте його з увімкненим "
+"параметром \"Застосувати як контури\".\n"
+"\n"
+"Бажаєте зберегти стиль без них?"
 
 #: ../src/gui/presets.c:130
 msgid "save preset without its AI objects?"
@@ -20922,6 +20982,14 @@ msgid ""
 "\n"
 "do you want to save the preset without them?"
 msgstr ""
+"Маска містить об’єкти ШІ, збережені як пікселі цього зображення;\n"
+"Вони не можуть бути застосовані до інших зображень, тому\n"
+"не увійдуть до складу пресету.\n"
+"\n"
+"Щоб зберегти об’єкт ШІ в пресетах і стилях, створюйте його з увімкненим\n"
+"параметром \"Застосувати як контури\".\n"
+"\n"
+"Бажаєте зберегти пресет без них?"
 
 #: ../src/gui/presets.c:212
 #, c-format
@@ -32740,19 +32808,14 @@ msgstr ""
 "Працює самостійно, незалежно від перемикача ефекту ореолу."
 
 #: ../src/iop/spektrafilm.c:6399
-#, fuzzy
-#| msgid ""
-#| "widens or narrows the band of tones the highlight boost acts on.\n"
-#| "lower confines it to the brightest clipped highlights, higher pulls\n"
-#| "more of the upper midtones into the bloom."
 msgid ""
 "shapes how sharply the boost rises above the protect threshold.\n"
 "lower confines it to the brightest highlights, higher spreads it\n"
 "more evenly over everything above the threshold."
 msgstr ""
-"Розширює або звужує смугу тонів, на які діє підсилення світлих ділянок.\n"
-"Нижчі значення обмежують його найяскравішими обрізаними світлими\n"
-"ділянками, вищі втягують більше верхніх середніх тонів до ефекту світіння."
+"Визначає, наскільки різко підсилення зростає над порогом захисту.\n"
+"Нижчі значення обмежують його лише найяскравішими тонами, вищі\n"
+"розподіляють рівномірніше по всьому, що перевищують цей поріг."
 
 #: ../src/iop/spektrafilm.c:6406
 msgid "protect tones below this many stops over mid-grey from the boost"
