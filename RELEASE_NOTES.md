@@ -1116,7 +1116,7 @@ changes (where available).
   core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
   or features/geometry on OpenCV 5)
 
-- libwayland-client 1.18 and wayland-scanner, with GTK's Wayland
+- libwayland-client 1.20 and wayland-scanner, with GTK's Wayland
   backend, for wide gamut and HDR display on Wayland
 
 ## Camera support, compared to 5.6
