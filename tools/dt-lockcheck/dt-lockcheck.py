@@ -114,11 +114,14 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   it.  An edit elsewhere does not, even when the judgement depends on it, such
   as a change to the state machine that makes an access safe.  An entry that matches no finding at all is an
   orphan.  The banner names orphans, so that they can be deleted and the list
-  does not grow.
+  does not grow.  When the field now has a finding under another rule and no
+  entry under it, confirm the field with a new reason instead, which moves the
+  entry to that rule.
 
     --include-false-positives  report the suppressed findings too
     --confirm-false-positive MODULE:FIELD --false-positive-reason TEXT
-                               add one entry, or re-key it
+                               add one entry, re-key it, or move it to the
+                               field's new rule
     --confirm-false-positive MODULE
                                re-key every stale entry in that module
     --fail-on-findings         exit 1 if anything is reported (off by default)
@@ -126,8 +129,10 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
                                and report only the stale entries
 
   A new entry needs --false-positive-reason, because the tool prints that
-  sentence back when the entry goes stale.  A bare module re-confirms entries
-  but never adds them, so silencing a whole module has to name each field.
+  sentence back when the entry goes stale.  So does moving an entry to another
+  rule, because the recorded reason judged the old one.  A bare module
+  re-confirms entries but never adds or moves them, so silencing a whole module
+  has to name each field.
   A confirmation looks at every rule, discipline_gap included, whatever
   --rules says.  "The false-positive list" in README.md explains what the key covers and what
   was measured.
@@ -144,6 +149,10 @@ KNOWN FALSE-POSITIVE CAUSES (check these before you report a finding upstream)
   * A lock passed into a callee.  The script handles the common
     `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` pattern, but not
     the general case.
+  * A lock held by the caller.  Lock depth is tracked within one function, so
+    a helper called inside the caller's critical section looks unlocked.  Such
+    a finding is false only if every call path into the helper holds gui_lock
+    across the access.  Check every caller and every branch.
   * A field that only sits inside a critical section taken for a different
     field.  The script handles part of this.  A function that writes 8 or more
     distinct fields under the lock and never reads them back counts as bulk
@@ -1114,48 +1123,82 @@ def parse_fp_spec(spec, res):
 
 
 def confirm_fps(specs, reason, fs, entries, res, wanted, path):
-    """Re-key stale entries, and add new ones, in place.
+    """Re-key stale entries, move entries whose field changed rule, and add new
+    ones, in place.
 
     A bare module name re-confirms every stale entry in it, which is what an
     audit of one module in one sitting produces.  It cannot create entries, on
     purpose.  Adding one is a judgement about a single field and has to name it,
-    otherwise one word could silence a whole module.
+    otherwise one word could silence a whole module.  Moving an entry to its
+    field's new rule is a new judgement too, so a bare module name only lists
+    those entries.
     """
     found = {fp_ident(f): f for f in fs}
+    # a field is reported under at most one rule
+    by_field = {(f["module"], f["field"]): f for f in fs}
+    recorded = {fp_ident(e) for e in entries}
     today = datetime.date.today().isoformat()
     touched = 0
     for spec in specs:
         module, field = parse_fp_spec(spec, res)
         if field is None:
-            stale = []
+            stale, moved = [], []
             for e in fp_scope(entries, res, wanted):
+                if e["module"] != module:
+                    continue
                 f = found.get(fp_ident(e))
-                if e["module"] == module and f and f["key"] != e["key"]:
+                if f and f["key"] != e["key"]:
                     stale.append((e, f))
-            if not stale:
+                elif not f:
+                    f = by_field.get((module, e["field"]))
+                    # an entry under the finding's own rule wins; this one is
+                    # then a plain orphan
+                    if f and fp_ident(f) not in recorded:
+                        moved.append((e, f))
+            if not (stale or moved):
                 print("%s: no stale entry to re-confirm" % module)
             for e, f in stale:
                 _rekey(e, f, res, reason, today)
                 touched += 1
+            for e, f in moved:
+                print("%s:%s: not moved: the entry is under %s, and the field "
+                      "now has a finding under %s.  Re-read the source, then "
+                      "move it with --confirm-false-positive %s:%s "
+                      "--false-positive-reason TEXT"
+                      % (module, e["field"], e["rule"], f["rule"], module,
+                         e["field"]))
             continue
-        # a field is reported under at most one rule, so module:field names at
-        # most one entry and at most one finding
-        ent = next((e for e in entries
-                    if e["module"] == module and e["field"] == field), None)
-        fnd = next((f for f in fs
-                    if f["module"] == module and f["field"] == field), None)
+        fnd = by_field.get((module, field))
+        ents = [e for e in entries
+                if e["module"] == module and e["field"] == field]
+        ent = next((e for e in ents if fnd and e["rule"] == fnd["rule"]), None)
         if ent is not None:
-            f = found.get(fp_ident(ent))
-            if f is None:
-                print("%s:%s: no finding under %s any more -- the entry is an "
-                      "orphan, delete it rather than re-confirming it"
-                      % (module, field, ent["rule"]))
-            elif f["key"] == ent["key"] and not reason:
+            if fnd["key"] == ent["key"] and not reason:
                 print("%s:%s: already current (key %s), nothing to do"
                       % (module, field, ent["key"]))
             else:
-                _rekey(ent, f, res, reason, today)
+                _rekey(ent, fnd, res, reason, today)
                 touched += 1
+        elif ents and fnd is not None:
+            # the recorded reason judged the field under its old rule, and a
+            # finding under another rule is a new finding ("The three states"
+            # in README.md).  Moving the entry therefore takes a new reason,
+            # like adding one; it replaces the old entry instead of leaving it
+            # behind as an orphan that has to be deleted by hand.
+            old = ents[0]
+            if not reason:
+                die("%s:%s: the entry is under %s, and the field now has a "
+                    "finding under %s.  Moving it needs a new judgement: "
+                    "re-read the source, and if it is still not a defect, say "
+                    "why with --false-positive-reason.  The recorded reason "
+                    "was: %s" % (module, field, old["rule"], fnd["rule"],
+                                 old["reason"]))
+            _rekey(old, fnd, res, reason, today)
+            touched += 1
+        elif ents:
+            print("%s:%s: no finding under %s any more -- the entry is an "
+                  "orphan, delete it rather than re-confirming it"
+                  % (module, field, ents[0]["rule"]))
         elif fnd is not None:
             if not reason:
                 die("a new entry needs --false-positive-reason: say why %s:%s "
@@ -1172,6 +1215,17 @@ def confirm_fps(specs, reason, fs, entries, res, wanted, path):
             die("--confirm-false-positive %s: no finding and no entry for that "
                 "field.  Rules in this run: %s"
                 % (spec, ",".join(r for r in ALL_RULES if r in wanted)))
+        # only a hand edit leaves a second entry for one field, and the code
+        # above acts on one entry at most, so name the rest instead of passing
+        # over them
+        if fnd is not None and ents:
+            kept = ent if ent is not None else ents[0]
+            for e in ents:
+                if e is not kept:
+                    print("%s:%s: the entry under %s is an orphan, because the "
+                          "field's finding is under %s; delete it from the "
+                          "file by hand"
+                          % (module, field, e["rule"], fnd["rule"]))
     if touched:
         save_fp_list(path, entries)
         print("%s: %d entr%s written" % (path, touched,
@@ -1179,8 +1233,9 @@ def confirm_fps(specs, reason, fs, entries, res, wanted, path):
 
 
 def _rekey(e, f, res, reason, today):
-    """Move an entry onto the finding as it stands now."""
-    was = e["key"]
+    """Move an entry onto the finding as it stands now, rule included."""
+    was, was_rule = e["key"], e["rule"]
+    e["rule"] = f["rule"]
     e["key"] = f["key"]
     e["sites"] = finding_sites(f, res)
     e["confirmed"] = today
@@ -1189,11 +1244,17 @@ def _rekey(e, f, res, reason, today):
     replaced = bool(reason) and reason != e["reason"]
     if reason:
         e["reason"] = reason
-    print("%s:%s: %s under %s%s"
-          % (e["module"], e["field"],
-             "re-confirmed, key %s -> %s" % (was, e["key"]) if was != e["key"]
-             else "reason updated, key %s unchanged" % e["key"],
-             e["rule"], " (previous reason replaced)" if replaced else ""))
+    if was_rule != e["rule"]:
+        what = "moved from %s to %s, key %s -> %s" % (was_rule, e["rule"], was,
+                                                      e["key"])
+    elif was != e["key"]:
+        what = "re-confirmed, key %s -> %s under %s" % (was, e["key"],
+                                                         e["rule"])
+    else:
+        what = "reason updated, key %s unchanged under %s" % (e["key"],
+                                                               e["rule"])
+    print("%s:%s: %s%s" % (e["module"], e["field"], what,
+                           " (previous reason replaced)" if replaced else ""))
 
 
 # --- optional proof trees via lemmalog --------------------------------------
@@ -1443,15 +1504,17 @@ def main():
                     help="record that a finding is not a defect, or that a stale "
                          "entry still holds (repeatable).  MODULE:FIELD names "
                          "one finding; a bare MODULE re-confirms every stale "
-                         "entry in it, but cannot add new ones.  It looks at "
-                         "every rule, whatever --rules says.  Rewrites "
+                         "entry in it, but cannot add or move entries.  It "
+                         "looks at every rule, whatever --rules says.  "
+                         "Rewrites "
                          "false-positives.json and exits without reporting, "
                          "so it cannot be combined with another --format, "
                          "--why or a --fail-on-* gate")
     ap.add_argument("--false-positive-reason", metavar="TEXT", dest="reason",
                     help="why the finding is not a defect.  Required for a new "
                          "entry, because the tool prints it back when the entry "
-                         "goes stale.  Optional when re-confirming, where it "
+                         "goes stale, and for moving an entry to its field's "
+                         "new rule.  Optional when re-confirming, where it "
                          "replaces the recorded reason.  One judgement is about "
                          "one module, so every --confirm-false-positive in the "
                          "run has to name the same module")
