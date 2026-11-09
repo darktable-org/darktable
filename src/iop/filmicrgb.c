@@ -64,7 +64,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(6, dt_iop_filmicrgb_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_filmicrgb_params_t)
 
 /**
  * DOCUMENTATION
@@ -196,6 +196,7 @@ typedef struct dt_iop_filmicrgb_params_t
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
   dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
   gboolean enable_highlight_reconstruction; // $DEFAULT: FALSE $DESCRIPTION: "enable highlight reconstruction"
+  gboolean white_target_from_output; // $DEFAULT: TRUE $DESCRIPTION: "follow output peak"
 } dt_iop_filmicrgb_params_t;
 // clang-format on
 
@@ -257,6 +258,7 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   GtkWidget *noise_level, *noise_distribution;
   GtkWidget *compensate_icc_black;
   GtkWidget *enable_highlight_reconstruction;
+  GtkWidget *white_target_from_output;
   GtkNotebook *notebook;
   GtkDrawingArea *area;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
@@ -281,6 +283,20 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   PangoRectangle ink;
   GtkStyleContext *context;
 } dt_iop_filmicrgb_gui_data_t;
+
+// HDR output, as in AgX: see _set_hdr_params() in agx.c. The OpenCL
+// kernels take it by value, so it must match filmic.cl
+typedef struct dt_iop_filmicrgb_hdr_t
+{
+  int enabled;
+  float headroom;
+  float log_min;
+  float pivot_x;
+  float pivot_y;
+  float toe_scale;
+  float shoulder_scale;
+  float white; // display white of the HDR output, for the gamut mapping
+} dt_iop_filmicrgb_hdr_t;
 
 typedef struct dt_iop_filmicrgb_data_t
 {
@@ -307,6 +323,8 @@ typedef struct dt_iop_filmicrgb_data_t
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
   dt_noise_distribution_t noise_distribution;
   gboolean enable_highlight_reconstruction;
+  gboolean white_target_from_output;
+  dt_iop_filmicrgb_hdr_t hdr;
 } dt_iop_filmicrgb_data_t;
 
 
@@ -473,6 +491,19 @@ int legacy_params(dt_iop_module_t *self,
     gboolean enable_highlight_reconstruction;
   } dt_iop_filmicrgb_params_v6_t;
 
+  if(old_version == 6)
+  {
+    dt_iop_filmicrgb_params_t *n = calloc(1, sizeof(dt_iop_filmicrgb_params_t));
+    memcpy(n, old_params, sizeof(dt_iop_filmicrgb_params_v6_t));
+    // existing edits keep their target white and do not follow the
+    // output's peak, so that they render as before
+    n->white_target_from_output = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_t);
+    *new_version = 7;
+    return 0;
+  }
  if(old_version == 1)
   {
     typedef struct dt_iop_filmicrgb_params_v1_t
@@ -1778,6 +1809,94 @@ static int filmic_v4_prepare_matrices(dt_colormatrix_t input_matrix_trans,
   return use_output_profile;
 }
 
+// the HDR stage below is AgX's, see _scale(), _scaled_sigmoid(),
+// _set_hdr_params() and _hdr_darken() in agx.c
+static inline float _hdr_scale(const float limit_x,
+                               const float limit_y,
+                               const float transition_x,
+                               const float transition_y,
+                               const float slope,
+                               const float power)
+{
+  const float projected_rise = slope * fmaxf(1e-6f, limit_x - transition_x);
+  const float actual_rise = fmaxf(1e-6f, limit_y - transition_y);
+  const double base = fmax(1e-6, pow(actual_rise, -power) - pow(projected_rise, -power));
+  return fminf(1e9f, pow(base, -1.0 / power));
+}
+
+static inline float _hdr_scaled_sigmoid(const float x,
+                                        const float scale,
+                                        const float power,
+                                        const float transition_x,
+                                        const float transition_y)
+{
+  const float t = (x - transition_x) / scale;
+  return scale * t / powf(1.f + powf(t, power), 1.f / power) + transition_y;
+}
+
+// x is linear display light, 1.0 is the output's peak. Returns it
+// darkened so that the pivot (middle gray) keeps its SDR brightness, in
+// the output's units again (1.0 = reference white)
+static inline float _hdr_darken(const float x,
+                                const dt_iop_filmicrgb_hdr_t *const hdr)
+{
+  const float log_x = CLIP(1.f - log2f(fmaxf(x, 1e-12f)) / hdr->log_min);
+  const float u = log_x - hdr->pivot_x;
+  const float log_y =
+    u < 0.f
+    ? _hdr_scaled_sigmoid(log_x, hdr->toe_scale, 3.f, hdr->pivot_x, hdr->pivot_y)
+    : hdr->pivot_y + hdr->shoulder_scale * u / (hdr->shoulder_scale + u);
+  return x > 0.f ? hdr->headroom * exp2f(hdr->log_min * (1.f - log_y)) : 0.f;
+}
+
+// 20 EV below the pivot up to 1.0, the peak, map to [0, 1] in log2 space.
+// The pivot moves down by the headroom with slope 1, power 3 below it and
+// a hyperbola above it, as in Blender's AgX HDR
+static void _set_hdr(dt_iop_filmicrgb_hdr_t *hdr,
+                     const float pivot_display,
+                     const float white_display,
+                     const float headroom)
+{
+  const float pivot = CLAMPF(pivot_display, 1e-6f, 0.99f);
+
+  hdr->enabled = TRUE;
+  hdr->headroom = headroom;
+  hdr->log_min = log2f(pivot) - 20.f;
+  hdr->pivot_x = 1.f - log2f(pivot) / hdr->log_min;
+  hdr->pivot_y = 1.f - log2f(pivot / headroom) / hdr->log_min;
+  hdr->toe_scale = -_hdr_scale(1.f, 1.f, 1.f - hdr->pivot_x, 1.f - hdr->pivot_y, 1.f, 3.f);
+  const float dx = 1.f - hdr->pivot_x;
+  const float dy = 1.f - hdr->pivot_y;
+  hdr->shoulder_scale = -dx * dy / (dy - dx);
+  hdr->white = _hdr_darken(white_display, hdr);
+}
+
+// when following the output, filmic's display white is the output's peak,
+// and the curve is darkened so middle gray keeps its SDR brightness. Only
+// color science v6 and v7: older ones clip at 1.0 before the output power.
+// SDR output is unchanged
+static const dt_iop_filmicrgb_data_t *_pipe_data(const dt_dev_pixelpipe_iop_t *piece,
+                                                 dt_iop_filmicrgb_data_t *pipe_d)
+{
+  const dt_iop_filmicrgb_data_t *d = piece->data;
+  const float headroom = piece->pipe->output_headroom;
+  if(!d->white_target_from_output || d->version < DT_FILMIC_COLORSCIENCE_V4 || headroom <= 1.f)
+    return d;
+
+  *pipe_d = *d;
+  _set_hdr(&pipe_d->hdr,
+           powf(d->spline.y[2], d->output_power),
+           powf(d->spline.y[4], d->output_power),
+           headroom);
+  return pipe_d;
+}
+
+static inline float _gamut_white(const dt_iop_filmicrgb_data_t *const data,
+                                 const float display_white)
+{
+  return data->hdr.enabled ? data->hdr.white : display_white;
+}
+
 DT_OMP_DECLARE_SIMD(
   uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type)
   aligned(pix_in, pix_out:16))
@@ -1814,6 +1933,8 @@ static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
                     display_white),
               data->output_power);
 
+  if(data->hdr.enabled) norm = _hdr_darken(norm, &data->hdr);
+
   // Restore RGB
   for_each_channel(c,aligned(pix_out))
     pix_out[c] = ratios[c] * norm;
@@ -1841,6 +1962,10 @@ static inline void RGB_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
     mapped[c] = CLAMP(mapped[c], 0.0f, display_white);
   }
   dt_vector_pow1(mapped, data->output_power, pix_out);
+
+  if(data->hdr.enabled)
+    for_three_channels(c, aligned(pix_out))
+      pix_out[c] = _hdr_darken(pix_out[c], &data->hdr);
 }
 
 static inline void filmic_chroma_v4(const float *const restrict in,
@@ -1890,7 +2015,7 @@ static inline void filmic_chroma_v4(const float *const restrict in,
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
                   export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
-                  display_black, display_white, data->saturation, use_output_profile);
+                  display_black, _gamut_white(data, display_white), data->saturation, use_output_profile);
     copy_pixel_nontemporal(out + k, pix_out);
   }
   dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
@@ -1943,7 +2068,7 @@ static inline void filmic_split_v4(const float *const restrict in,
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
                   export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
-                  display_black, display_white, data->saturation, use_output_profile);
+                  display_black, _gamut_white(data, display_white), data->saturation, use_output_profile);
     copy_pixel_nontemporal(out + k, pix_out);
   }
   dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
@@ -2004,7 +2129,7 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
                   export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
-                  display_black, display_white, 0.0f, use_output_profile);
+                  display_black, _gamut_white(data, display_white), 0.0f, use_output_profile);
     copy_pixel_nontemporal(out + k, pix_out);
   }
   dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
@@ -2098,7 +2223,8 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_filmicrgb_data_t *const data = piece->data;
+  dt_iop_filmicrgb_data_t pipe_d;
+  const dt_iop_filmicrgb_data_t *const data = _pipe_data(piece, &pipe_d);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_order_iccprofile_info_t *const export_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
 
@@ -2379,7 +2505,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_filmicrgb_data_t *const d = piece->data;
+  dt_iop_filmicrgb_data_t pipe_d;
+  const dt_iop_filmicrgb_data_t *const d = _pipe_data(piece, &pipe_d);
   const dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -2560,7 +2687,7 @@ int process_cl(dt_iop_module_t *self,
       CLARG(spline.latitude_min), CLARG(spline.latitude_max), CLARG(d->output_power), CLARG(d->version),
       CLARG(spline.type[0]), CLARG(spline.type[1]), CLARG(input_matrix_cl), CLARG(output_matrix_cl),
       CLARG(black_display), CLARG(white_display), CLARG(use_output_profile), CLARG(export_input_matrix_cl),
-      CLARG(export_output_matrix_cl));
+      CLARG(export_output_matrix_cl), CLARG(d->hdr));
   }
   else
   {
@@ -2572,7 +2699,7 @@ int process_cl(dt_iop_module_t *self,
       CLARG(spline.latitude_min), CLARG(spline.latitude_max), CLARG(d->output_power), CLARG(d->preserve_color),
       CLARG(d->version), CLARG(spline.type[0]), CLARG(spline.type[1]), CLARG(input_matrix_cl), CLARG(output_matrix_cl),
       CLARG(black_display), CLARG(white_display), CLARG(use_output_profile), CLARG(export_input_matrix_cl),
-      CLARG(export_output_matrix_cl), CLARG(norm_min), CLARG(norm_max));
+      CLARG(export_output_matrix_cl), CLARG(norm_min), CLARG(norm_max), CLARG(d->hdr));
   }
 
 error:
@@ -3131,6 +3258,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->reconstruct_grey_vs_color = (p->reconstruct_grey_vs_color / 100.0f + 1.f) / 2.f;
 
   d->enable_highlight_reconstruction = p->enable_highlight_reconstruction;
+  d->white_target_from_output = p->white_target_from_output;
+  d->hdr.enabled = FALSE;
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -4565,6 +4694,14 @@ void gui_init(dt_iop_module_t *self)
                               _("luminance of output pure white, this should be 100%\n"
                                 "except if you want a faded look"));
 
+  g->white_target_from_output = dt_bauhaus_toggle_from_params(self, "white_target_from_output");
+  gtk_widget_set_tooltip_text
+    (g->white_target_from_output,
+     _("this edit predates HDR output and keeps target white as set.\n"
+       "turn on to make target white relative to the peak of an HDR output\n"
+       "(1000 nits for HLG, the PQ peak set in export), with middle gray\n"
+       "kept as in SDR. color science v6 and v7 only. SDR output does not change"));
+
   // Page OPTIONS
   self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
 
@@ -4639,6 +4776,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+
+  // only edits made before HDR output existed have it off, and only
+  // color science v6 and v7 follow the output
+  gtk_widget_set_visible(g->white_target_from_output,
+                         !p->white_target_from_output && p->version >= DT_FILMIC_COLORSCIENCE_V4);
 
   if(!w || w == g->auto_hardness || w == g->security_factor || w == g->grey_point_source
      || w == g->black_point_source || w == g->white_point_source)

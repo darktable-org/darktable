@@ -554,6 +554,41 @@ static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original,
 }
 
 
+// Must match dt_iop_filmicrgb_hdr_t in C code
+typedef struct dt_iop_filmicrgb_hdr_t
+{
+  int enabled;
+  float headroom;
+  float log_min;
+  float pivot_x;
+  float pivot_y;
+  float toe_scale;
+  float shoulder_scale;
+  float white;
+} dt_iop_filmicrgb_hdr_t;
+
+// see _hdr_darken() in filmicrgb.c
+static inline float filmic_hdr_darken(const float x, const dt_iop_filmicrgb_hdr_t *hdr)
+{
+  const float log_x = clamp(1.0f - dtcl_log2(fmax(x, 1e-12f)) / hdr->log_min, 0.0f, 1.0f);
+  const float u = log_x - hdr->pivot_x;
+  float log_y;
+  if(u < 0.0f)
+  {
+    const float t = (log_x - hdr->pivot_x) / hdr->toe_scale;
+    log_y = hdr->toe_scale * t / dtcl_pow(1.0f + t * t * t, 1.0f / 3.0f) + hdr->pivot_y;
+  }
+  else
+    log_y = hdr->pivot_y + hdr->shoulder_scale * u / (hdr->shoulder_scale + u);
+  return x > 0.0f ? hdr->headroom * dtcl_exp2(hdr->log_min * (1.0f - log_y)) : 0.0f;
+}
+
+static inline float4 filmic_hdr_darken4(const float4 x, const dt_iop_filmicrgb_hdr_t *hdr)
+{
+  return (float4)(filmic_hdr_darken(x.x, hdr), filmic_hdr_darken(x.y, hdr),
+                  filmic_hdr_darken(x.z, hdr), x.w);
+}
+
 static inline float4 filmic_chroma_v4(const float4 i,
                                       const float dynamic_range, const float black_exposure, const float grey_value,
                                       constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
@@ -568,7 +603,8 @@ static inline float4 filmic_chroma_v4(const float4 i,
                                       const float display_black, const float display_white,
                                       const int use_output_profile,
                                       constant const float *const export_matrix_in, constant const float *const export_matrix_out,
-                                      const float norm_min, const float norm_max)
+                                      const float norm_min, const float norm_max,
+                                      const dt_iop_filmicrgb_hdr_t *hdr)
 
 {
   // Norm must be clamped early to the valid input range, otherwise it will be clamped
@@ -588,6 +624,7 @@ static inline float4 filmic_chroma_v4(const float4 i,
   norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
                            display_black,
                            display_white), output_power);
+  if(hdr->enabled) norm = filmic_hdr_darken(norm, hdr);
 
   // Restore RGB
   float4 o = norm * ratios;
@@ -600,7 +637,7 @@ static inline float4 filmic_chroma_v4(const float4 i,
 
   return gamut_mapping(Ych_final, Ych_original, matrix_in, matrix_out,
                        export_matrix_in, export_matrix_out,
-                       display_black, display_white, saturation, use_output_profile);
+                       display_black, hdr->enabled ? hdr->white : display_white, saturation, use_output_profile);
 }
 
 static inline float4 filmic_split_v4(const float4 i,
@@ -615,7 +652,8 @@ static inline float4 filmic_split_v4(const float4 i,
                                      constant const float *const matrix_in, constant const float *const matrix_out,
                                      const float display_black, const float display_white,
                                      const int use_output_profile,
-                                     constant const float *const export_matrix_in, constant const float *const export_matrix_out)
+                                     constant const float *const export_matrix_in, constant const float *const export_matrix_out,
+                                     const dt_iop_filmicrgb_hdr_t *hdr)
 {
   float4 o;
 
@@ -634,6 +672,7 @@ static inline float4 filmic_split_v4(const float4 i,
   // as that would limit the max available saturation. Luminance is clipped to display_black later.
   // Apply output power function afterwards.
   o = dtcl_pow(clamp(o, (float4)0.f, (float4)display_white), output_power);
+  if(hdr->enabled) o = filmic_hdr_darken4(o, hdr);
 
   // Save Ych in Kirk/Filmlight Yrg
   float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
@@ -645,7 +684,7 @@ static inline float4 filmic_split_v4(const float4 i,
 
   return gamut_mapping(Ych_final, Ych_original, matrix_in, matrix_out,
                        export_matrix_in, export_matrix_out,
-                       display_black, display_white, saturation, use_output_profile);
+                       display_black, hdr->enabled ? hdr->white : display_white, saturation, use_output_profile);
 }
 
 static inline float4 filmic_chroma_v5(const float4 i,
@@ -661,7 +700,8 @@ static inline float4 filmic_chroma_v5(const float4 i,
                                       const float display_black, const float display_white,
                                       const int use_output_profile,
                                       constant const float *const export_matrix_in, constant const float *const export_matrix_out,
-                                      const float norm_min, const float norm_max)
+                                      const float norm_min, const float norm_max,
+                                      const dt_iop_filmicrgb_hdr_t *hdr)
 
 {
   // Norm must be clamped early to the valid input range, otherwise it will be clamped
@@ -681,6 +721,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
   norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
                            display_black,
                            display_white), output_power);
+  if(hdr->enabled) norm = filmic_hdr_darken(norm, hdr);
 
   // Restore RGB
   float4 max_rgb = norm * ratios;
@@ -701,6 +742,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
   // as that would limit the max available saturation. Luminance is clipped to display_black later.
   // Apply output power function afterwards.
   naive_rgb = dtcl_pow(clamp(naive_rgb, (float4)0.f, (float4)display_white), output_power);
+  if(hdr->enabled) naive_rgb = filmic_hdr_darken4(naive_rgb, hdr);
 
   // Mix max RGB with naive RGB
   float4 o = (0.5f - saturation) * naive_rgb + (0.5f + saturation) * max_rgb;
@@ -715,7 +757,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
 
   return gamut_mapping(Ych_final, Ych_original, matrix_in, matrix_out,
                        export_matrix_in, export_matrix_out,
-                       display_black, display_white, 0.f, use_output_profile);
+                       display_black, hdr->enabled ? hdr->white : display_white, 0.f, use_output_profile);
 }
 
 static inline float4 filmic_split_v1(const float4 i,
@@ -806,7 +848,8 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                  constant const float *const matrix_in, constant const float *const matrix_out,
                  const float display_black, const float display_white,
                  const int use_output_profile,
-                 constant const float *const export_matrix_in, constant const float *const export_matrix_out)
+                 constant const float *const export_matrix_in, constant const float *const export_matrix_out,
+                 const dt_iop_filmicrgb_hdr_t hdr)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -844,7 +887,7 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                           sigma_toe, sigma_shoulder, saturation,
                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
                           color_science, type, matrix_in, matrix_out, display_black, display_white,
-                          use_output_profile, export_matrix_in, export_matrix_out);
+                          use_output_profile, export_matrix_in, export_matrix_out, &hdr);
       break;
     }
     case DT_FILMIC_COLORSCIENCE_V5:
@@ -971,7 +1014,8 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  const float display_black, const float display_white,
                  const int use_output_profile,
                  constant const float *const export_matrix_in, constant const float *const export_matrix_out,
-                 const float norm_min, const float norm_max)
+                 const float norm_min, const float norm_max,
+                 const dt_iop_filmicrgb_hdr_t hdr)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -1011,7 +1055,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                            M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
                            color_science, type, matrix_in, matrix_out, display_black, display_white,
                            use_output_profile, export_matrix_in, export_matrix_out,
-                           norm_min, norm_max);
+                           norm_min, norm_max, &hdr);
       break;
     }
     case DT_FILMIC_COLORSCIENCE_V5:
@@ -1022,7 +1066,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                            M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
                            color_science, type, matrix_in, matrix_out, display_black, display_white,
                            use_output_profile, export_matrix_in, export_matrix_out,
-                           norm_min, norm_max);
+                           norm_min, norm_max, &hdr);
       break;
     }
   }
