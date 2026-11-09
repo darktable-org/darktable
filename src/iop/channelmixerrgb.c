@@ -40,6 +40,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "chart/common.h"
+#include "develop/blend.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "common/chromatic_adaptation.h"
@@ -52,6 +53,7 @@
 #include "common/dttypes.h"
 #include "develop/imageop_math.h"
 #include "develop/openmp_maths.h"
+#include "develop/pixelpipe_hb.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "control/control.h"
@@ -1481,7 +1483,45 @@ static inline void _compute_patches_delta_E(const float *const restrict patches,
 typedef struct {
   float black;
   float exposure;
+  gboolean normalization_known;
 } extraction_result_t;
+
+// compose the uniform transform out = (in - offset) * scale applied by the enabled
+// exposure instances upstream of piece in its pipe, in pipe order. FALSE when one of
+// them is masked or blended, or its correction is not known yet: *offset and *scale
+// then hold a partial composition and the caller must fall back to identity
+// lazy: only exposure pieces are undone. Pieces between them and this module (input color
+// profile, or another module between two exposure instances) are assumed to commute with
+// the undo once the patches are converted back to camera RGB, as before this change.
+// Refusing whenever any other piece is enabled in between would refuse the common case
+static gboolean _upstream_exposure_transform(const dt_dev_pixelpipe_iop_t *piece,
+                                             float *offset, float *scale)
+{
+  *offset = 0.f;
+  *scale = 1.f;
+  for(GList *nodes = piece->pipe->nodes; nodes; nodes = g_list_next(nodes))
+  {
+    const dt_dev_pixelpipe_iop_t *node = nodes->data;
+    if(node == piece) break; // everything before piece is upstream in this pipe
+    if(!node->enabled || !dt_iop_module_is(node->module, "exposure")) continue;
+    const dt_develop_blend_params_t *bp = node->blendop_data;
+    if(!node->linear.valid || (bp && (bp->mask_mode & DEVELOP_MASK_ENABLED))) return FALSE;
+    *offset += node->linear.offset / *scale;
+    *scale *= node->linear.scale;
+  }
+  return TRUE;
+}
+
+// the "Normalization values" tail of the report label: the fitted values, or a note
+// when the upstream exposure transform could not be undone
+static gchar *_normalization_text(const extraction_result_t *r)
+{
+  if(r->normalization_known)
+    return g_strdup_printf(_("exposure compensation: \t%+.2f EV\nblack offset: \t%+.4f"),
+                           log2f(r->exposure), r->black);
+  return g_strdup(_("not available: an exposure instance before this module\n"
+                    "is masked or blended, or its correction is not known yet"));
+}
 
 static const extraction_result_t _extract_patches(const float *const restrict in,
                                                   const dt_iop_roi_t *const roi_in,
@@ -1489,7 +1529,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
                                                   const dt_colormatrix_t RGB_to_XYZ,
                                                   const dt_colormatrix_t XYZ_to_CAM,
                                                   float *const restrict patches,
-                                                  const gboolean normalize_exposure)
+                                                  const gboolean normalize_exposure,
+                                                  const dt_dev_pixelpipe_iop_t *piece)
 {
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
@@ -1617,8 +1658,16 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   // so we convert back the patches to camera RGB space and search the best fit of
   // RGB_ref = exposure * (RGB_test - offset) for offset.
   float black = 0.f;
-  const float user_exposure = exp2f(dt_dev_exposure_get_exposure(darktable.develop));
-  const float user_black = dt_dev_exposure_get_black(darktable.develop);
+  float upstream_offset = 0.f;
+  float upstream_scale = 1.f;
+  const gboolean normalization_known =
+    _upstream_exposure_transform(piece, &upstream_offset, &upstream_scale);
+  if(!normalization_known)
+  {
+    // the fit below still runs, but undoes nothing: the real transform is unknown
+    upstream_offset = 0.f;
+    upstream_scale = 1.f;
+  }
 
   if(XYZ_to_CAM)
   {
@@ -1639,7 +1688,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 
       // Undo exposure module settings
       for_three_channels(c)
-        RGB_test[c] = RGB_test[c] / user_exposure / exposure + user_black;
+        RGB_test[c] = RGB_test[c] / exposure / upstream_scale + upstream_offset;
 
       // From now on, we have all the reference and test data in camera RGB space
       // where exposure and black level are applied
@@ -1670,7 +1719,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
       // Undo exposure module settings
       for_three_channels(c)
       {
-        RGB_test[c] = RGB_test[c] / user_exposure / exposure + user_black;
+        RGB_test[c] = RGB_test[c] / exposure / upstream_scale + upstream_offset;
       }
 
       for_three_channels(c)
@@ -1695,7 +1744,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   // so, rescale offset to adapt our offset to exposure module GUI
   black /= -exposure;
 
-  const extraction_result_t result = { black, exposure };
+  const extraction_result_t result = { black, exposure, normalization_known };
   return result;
 }
 
@@ -1706,7 +1755,8 @@ static void _extract_color_checker(const float *const restrict in,
                                    const dt_colormatrix_t RGB_to_XYZ,
                                    const dt_colormatrix_t XYZ_to_RGB,
                                    const dt_colormatrix_t XYZ_to_CAM,
-                                   const dt_adaptation_t kind)
+                                   const dt_adaptation_t kind,
+                                   const dt_dev_pixelpipe_iop_t *piece)
 {
   float *const restrict patches = dt_alloc_align_float(g->checker->patches * 4);
 
@@ -1714,7 +1764,7 @@ static void _extract_color_checker(const float *const restrict in,
 
   extraction_result_t extraction_result =
     _extract_patches(out, roi_in, g, RGB_to_XYZ, XYZ_to_CAM,
-                     patches, TRUE);
+                     patches, TRUE, piece);
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
@@ -1967,6 +2017,8 @@ static void _extract_color_checker(const float *const restrict in,
 
   g->profile_ready = TRUE;
 
+  gchar *normalization = _normalization_text(&extraction_result);
+
   // Update GUI label
   g_free(g->delta_E_label_text);
   g->delta_E_label_text
@@ -1980,9 +2032,7 @@ static void _extract_color_checker(const float *const restrict in,
                           "<tt>%+.4f \t%+.4f \t%+.4f\n"
                           "%+.4f \t%+.4f \t%+.4f\n"
                           "%+.4f \t%+.4f \t%+.4f</tt>\n\n"
-                          "<b>Normalization values</b>\n"
-                          "exposure compensation: \t%+.2f EV\n"
-                          "black offset: \t%+.4f"
+                          "<b>Normalization values</b>\n%s"
                           ),
                         diagnostic, pre_wb_delta_E, pre_wb_max_delta_E,
                         post_wb_delta_E, post_wb_max_delta_E,
@@ -1991,7 +2041,8 @@ static void _extract_color_checker(const float *const restrict in,
                         g->mix[0][0], g->mix[0][1], g->mix[0][2],
                         g->mix[1][0], g->mix[1][1], g->mix[1][2],
                         g->mix[2][0], g->mix[2][1], g->mix[2][2],
-                        log2f(extraction_result.exposure), extraction_result.black);
+                        normalization);
+  g_free(normalization);
 
   dt_free_align(patches);
 }
@@ -2001,11 +2052,12 @@ static void _validate_color_checker(const float *const restrict in,
                                     dt_iop_channelmixer_rgb_gui_data_t *g,
                                     const dt_colormatrix_t RGB_to_XYZ,
                                     const dt_colormatrix_t XYZ_to_RGB,
-                                    const dt_colormatrix_t XYZ_to_CAM)
+                                    const dt_colormatrix_t XYZ_to_CAM,
+                                    const dt_dev_pixelpipe_iop_t *piece)
 {
   float *const restrict patches = dt_alloc_align_float(4 * g->checker->patches);
   const extraction_result_t extraction_result =
-    _extract_patches(in, roi_in, g, RGB_to_XYZ, XYZ_to_CAM, patches, FALSE);
+    _extract_patches(in, roi_in, g, RGB_to_XYZ, XYZ_to_CAM, patches, FALSE, piece);
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
@@ -2023,17 +2075,17 @@ static void _validate_color_checker(const float *const restrict in,
   else
     diagnostic = _("bad");
 
+  gchar *normalization = _normalization_text(&extraction_result);
+
   // Update GUI label
   g_free(g->delta_E_label_text);
   g->delta_E_label_text =
     g_strdup_printf(_("\n<b>Profile quality report: %s</b>\n"
                       "output ΔE: \tavg. %.2f; \tmax. %.2f\n\n"
-                      "<b>Normalization values</b>\n"
-                      "exposure compensation: \t%+.2f EV\n"
-                      "black offset: \t%+.4f"),
+                      "<b>Normalization values</b>\n%s"),
                     diagnostic, pre_wb_delta_E, pre_wb_max_delta_E,
-                    log2f(extraction_result.exposure),
-                    extraction_result.black);
+                    normalization);
+  g_free(normalization);
 
   dt_free_align(patches);
 }
@@ -2327,7 +2379,7 @@ void process(dt_iop_module_t *self,
     {
       dt_iop_gui_enter_critical_section(self);
       _extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
-                             XYZ_to_RGB, XYZ_to_CAM, data->adaptation);
+                             XYZ_to_RGB, XYZ_to_CAM, data->adaptation, piece);
       g->run_profile = FALSE;
       dt_iop_gui_leave_critical_section(self);
     }
@@ -2423,7 +2475,7 @@ void process(dt_iop_module_t *self,
   if(self->dev->gui_attached && g)
     if(g->run_validation && dt_pipe_is_preview(pipe))
     {
-      _validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM);
+      _validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM, piece);
       g->run_validation = FALSE;
     }
 }
