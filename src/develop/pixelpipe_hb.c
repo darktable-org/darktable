@@ -1361,10 +1361,7 @@ static void _pixelpipe_picker_cl(const int devid,
   box[2] = region[0];
   box[3] = region[1];
 
-  lib_colorpicker_stats pick;
-
   dt_color_picker_helper(module, dsc, pixel, &roi_copy, box,
-  dt_color_picker_helper(dsc, pixel, &roi_copy, box,
                          darktable.lib->proxy.colorpicker.primary_sample->denoise,
                          pick, image_cst,
                          dt_iop_color_picker_get_active_cst(module),
