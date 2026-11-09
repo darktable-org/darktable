@@ -6545,8 +6545,8 @@ static void _tail_show(GtkWidget *w, const gboolean show, const gboolean buildin
   }
 }
 
-// repaint the run nodes, which an overlay draws and so does not follow the list
-// on its own: `w` is the list or anything in it
+// repaint the run nodes, which the list's container draws over the list and so
+// does not follow the list on its own: `w` is the list or anything in it
 static void _marks_redraw(GtkWidget *w)
 {
   for(; w; w = gtk_widget_get_parent(w))
@@ -17127,9 +17127,10 @@ static _walk_t _frames_step(GtkWidget *w, gpointer data)
 
 // a run's node is on the rail at the tick of the first of its folded elements,
 // or of the "more" row that stands in for them while it is folded: a minus
-// while the run is open, which folds it, a plus while it is folded, which opens it. Drawn on an overlay over the
-// list (see _marks_position), as the rail is the list's own left edge and the
-// list clips what it draws. `fn` is called with the centre of each, in `to`
+// while the run is open, which folds it, a plus while it is folded, which opens it. Drawn by the
+// list's container (see _marks_draw), as the rail is the list's own left edge and the
+// list clips what it draws. Not on an overlay: on Linux, GTK3 then never offers
+// a drag to the list's drop site. `fn` is called with the centre of each, in `to`
 // coordinates, until it returns TRUE; that returns the row
 static GtkWidget *_run_markers_each(GtkWidget *w, GtkWidget *to,
                                     gboolean (*fn)(GtkWidget *, int, int, gpointer),
@@ -17220,19 +17221,8 @@ static void _list_allocated(GtkWidget *list, GdkRectangle *alloc, gpointer user_
   _marks_redraw(list);
 }
 
-// the overlay the markers are drawn on: as wide as the list, and the room of a
-// node more to its left, which its rail would otherwise have half of
-static gboolean _marks_position(GtkOverlay *overlay, GtkWidget *marks, GdkRectangle *alloc,
-                                gpointer user_data)
-{
-  const int pad = (int)ceil(DT_MASKS_RUN_MARKER_RADIUS + DT_PIXEL_APPLY_DPI(2));
-  alloc->x = -pad;
-  alloc->y = 0;
-  alloc->width = gtk_widget_get_allocated_width(GTK_WIDGET(overlay)) + pad;
-  alloc->height = gtk_widget_get_allocated_height(GTK_WIDGET(overlay));
-  return TRUE;
-}
-
+// `marks` is the list's container, which has room to the left of the list for
+// half a node (#masks-list-area's padding), and draws this after its children
 static gboolean _marks_draw(GtkWidget *marks, cairo_t *cr, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
@@ -19080,30 +19070,24 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     bd->masks_list_area = dt_gui_vbox(list_hover);
     gtk_widget_set_name(bd->masks_list_area, "masks-list-area");
     gtk_widget_set_no_show_all(bd->masks_list_area, TRUE);
-    // the run markers over it (see _marks_position)
-    GtkWidget *overlay = gtk_overlay_new();
-    gtk_container_add(GTK_CONTAINER(overlay), bd->masks_list_area);
-    // a windowless widget: a drawing area has a window of its own, which takes
-    // the pointer however its overlay is set to pass events through
-    GtkWidget *marks = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    g_object_set_data(G_OBJECT(bd->masks_list_box), "marks", marks);
+    // the run markers are drawn over the list by its container (see _marks_draw)
+    g_object_set_data(G_OBJECT(bd->masks_list_box), "marks", bd->masks_list_area);
     g_signal_connect(G_OBJECT(bd->masks_list_box), "size-allocate", G_CALLBACK(_list_allocated), NULL);
-    g_signal_connect(G_OBJECT(marks), "draw", G_CALLBACK(_marks_draw), module);
-    g_signal_connect(G_OBJECT(overlay), "get-child-position", G_CALLBACK(_marks_position), NULL);
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), marks);
-    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), marks, TRUE);
-    gtk_widget_show(marks);
-    gtk_widget_show(overlay);
-    // the markers' clicks and hover are seen from the overlay, in the capture
-    // phase, whichever of the list and the markers' own window the pointer is
-    // over: a press that is not on a marker is left to the rows
-    gtk_event_controller_set_propagation_phase(
-      GTK_EVENT_CONTROLLER(dt_gui_connect_click(overlay, _run_marker_pressed, NULL, module)),
-      GTK_PHASE_CAPTURE);
-    gtk_event_controller_set_propagation_phase(
-      dt_gui_connect_motion(overlay, _run_marker_motion, NULL, NULL, module), GTK_PHASE_CAPTURE);
-    bd->masks_box = GTK_BOX(dt_gui_vbox(overlay));
+    g_signal_connect_after(G_OBJECT(bd->masks_list_area), "draw", G_CALLBACK(_marks_draw), module);
+    bd->masks_box = GTK_BOX(dt_gui_vbox(bd->masks_list_area));
     _add_wrapped_box(blendw, bd->masks_box, "masks_drawn");
+    // the markers' clicks and hover are seen from the windowed box around the
+    // list, in the capture phase, whether the pointer is over the list or the
+    // room beside it: a press that is not on a marker is left to the rows
+    GtkWidget *wrap = gtk_widget_get_ancestor(GTK_WIDGET(bd->masks_box), GTK_TYPE_EVENT_BOX);
+    if(wrap)
+    {
+      gtk_event_controller_set_propagation_phase(
+        GTK_EVENT_CONTROLLER(dt_gui_connect_click(wrap, _run_marker_pressed, NULL, module)),
+        GTK_PHASE_CAPTURE);
+      gtk_event_controller_set_propagation_phase(
+        dt_gui_connect_motion(wrap, _run_marker_motion, NULL, NULL, module), GTK_PHASE_CAPTURE);
+    }
 
     bd->masks_inited = TRUE;
     _register_masks_action_shortcuts();
