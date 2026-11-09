@@ -195,6 +195,7 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 
 static void _manage_preset_update_list(dt_lib_module_t *self);
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self);
+static gint _basics_item_find(gconstpointer a, gconstpointer b);
 
 static void _buttons_update(dt_lib_module_t *self);
 
@@ -1561,6 +1562,9 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 
       for(int j = 3; j < g_strv_length(gr2); j++)
       {
+        // skip duplicates: older versions could save the same entry several times (#19830)
+        if(g_list_find_custom(edition ? d->edit_basics : d->basics, gr2[j], _basics_item_find))
+          continue;
         dt_lib_modulegroups_basic_item_t *item = g_try_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
         if(!item)
           continue;
