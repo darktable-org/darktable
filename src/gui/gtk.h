@@ -250,6 +250,12 @@ gboolean dt_gui_get_scroll_deltas(const GdkEvent *event, gdouble *delta_x, gdoub
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEvent *event, int *delta_x, int *delta_y);
 
+/* On macOS, a mouse wheel turned with Shift held arrives as a discrete
+ * horizontal scroll. If event is such a scroll, move *delta_x onto *delta_y
+ * (wheel up stays negative) and return TRUE; otherwise leave both untouched
+ * and return FALSE. Always FALSE on other platforms. */
+gboolean dt_gui_scroll_fold_shift_wheel(const GdkEvent *event, gdouble *delta_x, gdouble *delta_y);
+
 /* Note that on macOS Shift+vertical scroll can be reported as Shift+horizontal scroll.
  * So if Shift changes scrolling effect, both scrolls should be handled the same.
  * For this case (or if it's otherwise useful) use the following 2 functions. */

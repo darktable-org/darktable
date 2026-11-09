@@ -533,6 +533,11 @@ static void _popup_scroll_cb(GtkEventControllerScroll *controller,
                               gpointer user_data)
 {
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  // macOS: Shift + mouse wheel arrives as horizontal scroll
+  if(event) dt_gui_scroll_fold_shift_wheel(event, &dx, &dy);
+
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     // match keyboard: right & down -> next
@@ -551,6 +556,9 @@ static void _popup_scroll_cb(GtkEventControllerScroll *controller,
     if(delta != 0)
       _slider_zoom_range(w, delta);
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
 static void _window_moved_to_rect(GdkWindow *window,
@@ -3542,6 +3550,9 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
   else
   {
     gtk_widget_grab_focus(widget);
+
+    // macOS: Shift + mouse wheel arrives as horizontal scroll
+    dt_gui_scroll_fold_shift_wheel(event, &dx, &dy);
 
     int magnitude_x = fabs(dx);
     int magnitude_y = fabs(dy);

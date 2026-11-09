@@ -486,6 +486,10 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_SCROLL)
   {
+    // macOS: Shift + mouse wheel arrives as horizontal scroll
+    gdouble delta_x = dx, delta_y = dy;
+    dt_gui_scroll_fold_shift_wheel(event, &delta_x, &delta_y);
+
     if(dt_modifier_is(dt_gdk_event_get_state(event),
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
@@ -505,7 +509,7 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
       //        the eventbox.
 
       // get the dominant direction, standardize on delta < 0 => up==right
-      const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
+      const gdouble delta = fabs(delta_x) > fabs(delta_y) ? -delta_x : delta_y;
       // for exposure ('highlight') mode: we want up/right: brighten the image
       // -> increase exposure, or decrease black point (exposure handles that);
       // in vectorscope, rgb parade, parts of the visualization moves upwards;
@@ -529,7 +533,7 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                                        (int)dt_gdk_event_get_x(event), (int)dt_gdk_event_get_y(event), &ebx, &eby);
 #endif
       dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, ebx, eby,
-                               dx, dy, dt_gdk_event_get_state(event));
+                               delta_x, delta_y, dt_gdk_event_get_state(event));
     }
   }
 #if !GTK_CHECK_VERSION(4, 0, 0)

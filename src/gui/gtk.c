@@ -775,13 +775,40 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEvent *event,
   return handled;
 }
 
+gboolean dt_gui_scroll_fold_shift_wheel(const GdkEvent *event,
+                                        gdouble *delta_x,
+                                        gdouble *delta_y)
+{
+#ifdef GDK_WINDOWING_QUARTZ
+  // macOS turns a physical (non-precise) wheel turned with Shift held into a
+  // discrete horizontal scroll: wheel up -> LEFT, wheel down -> RIGHT. Fold it
+  // back onto the vertical axis so Shift+wheel moves values the same way as
+  // the wheel alone. Smooth (trackpad) scrolls are left alone.
+  const GdkScrollDirection direction = dt_gdk_event_get_scroll_direction(event);
+  if((direction == GDK_SCROLL_LEFT || direction == GDK_SCROLL_RIGHT)
+     && (dt_gdk_event_get_state(event) & GDK_SHIFT_MASK))
+  {
+    *delta_y += *delta_x;
+    *delta_x = 0.0;
+    return TRUE;
+  }
+#else
+  (void)event;
+  (void)delta_x;
+  (void)delta_y;
+#endif
+  return FALSE;
+}
+
 gboolean dt_gui_get_scroll_delta(const GdkEvent *event,
                                  gdouble *delta)
 {
   gdouble delta_x, delta_y;
   if(dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
   {
-    // treat right like up, left like down
+    dt_gui_scroll_fold_shift_wheel(event, &delta_x, &delta_y);
+    // treat right like up, left like down, except the macOS Shift+wheel
+    // case folded above
     *delta = fabs(delta_x) > fabs(delta_y) ? -delta_x : delta_y;
     return TRUE;
   }
@@ -794,7 +821,14 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEvent *event,
   int delta_x, delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
   {
-    // treat right like up, left like down
+    gdouble fx = delta_x, fy = delta_y;
+    if(dt_gui_scroll_fold_shift_wheel(event, &fx, &fy))
+    {
+      delta_x = (int)fx;
+      delta_y = (int)fy;
+    }
+    // treat right like up, left like down, except the macOS Shift+wheel
+    // case folded above
     *delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
     return TRUE;
   }
