@@ -1835,6 +1835,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_top(thumb->w_bottom, thumb->img_margin->bottom);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
+    // margins set by the other overlay layout must be cleared, see dt_thumbnail_set_overlay()
+    gtk_widget_set_margin_top(thumb->w_bottom_eb, 0);
     gtk_widget_set_margin_start(thumb->w_bottom_eb, 0);
 
     // reject icon
@@ -1845,6 +1847,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // align on the left of the thumb
     gtk_widget_set_margin_start(thumb->w_reject, pos);
     gtk_widget_set_margin_bottom(thumb->w_reject, margin_b_icons);
+    gtk_widget_set_margin_top(thumb->w_reject, 0);
 
     // stars
     for(int i = 0; i < MAX_STARS; i++)
@@ -1852,6 +1855,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       gtk_widget_set_size_request(thumb->w_stars[i], icon_size, icon_size);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_margin_bottom(thumb->w_stars[i], margin_b_icons);
+      gtk_widget_set_margin_top(thumb->w_stars[i], 0);
       gtk_widget_set_margin_start(
           thumb->w_stars[i],
           thumb->img_margin->left
@@ -1865,6 +1869,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(thumb->w_color, margin_b_icons);
+    gtk_widget_set_margin_top(thumb->w_color, 0);
     pos = width - thumb->img_margin->right - icon_size + icon_size * 0.125;
     // align on the right
     gtk_widget_set_margin_start(thumb->w_color, pos);
@@ -1873,30 +1878,36 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     _set_flag(thumb->w_local_copy, GTK_STATE_FLAG_ACTIVE, FALSE);
     gtk_widget_set_size_request(thumb->w_local_copy, 1.618 * r1, 1.618 * r1);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_local_copy, 0);
+    gtk_widget_set_margin_start(thumb->w_local_copy, 0);
 
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_altered, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_altered, thumb->img_margin->right);
+    gtk_widget_set_margin_start(thumb->w_altered, 0);
 
     // the tags icon
     gtk_widget_set_size_request(thumb->w_tags, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_tags, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_tags, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_tags, thumb->img_margin->right + 2.5 * r1);
+    gtk_widget_set_margin_start(thumb->w_tags, 0);
 
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_group, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_group, thumb->img_margin->right + 5.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_group, 0);
 
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_audio, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 7.5 * r1);
+    gtk_widget_set_margin_start(thumb->w_audio, 0);
 
     // the filmstrip cursor
     gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 3.0 * r1);
@@ -1975,6 +1986,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_reject,
                                 padding - icon_size / 8.0 + border_l + px);
     gtk_widget_set_margin_top(thumb->w_reject, line2 + py);
+    // margins set by the other overlay layout must be cleared, see dt_thumbnail_set_overlay()
+    gtk_widget_set_margin_bottom(thumb->w_reject, 0);
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
@@ -1984,6 +1997,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       gtk_widget_set_margin_start
         (thumb->w_stars[i],
          padding - icon_size / 8.0 + border_l + r1 + (i + 1) * 3.0 * r1 + px);
+      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0);
     }
     // the color labels
     gtk_widget_set_size_request(thumb->w_color, icon_size, icon_size);
@@ -1993,6 +2007,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start
       (thumb->w_color,
        padding - icon_size / 8.0 + border_l + 2.0 * r1 + (MAX_STARS + 1) * 3.0 * r1 + px);
+    gtk_widget_set_margin_bottom(thumb->w_color, 0);
     // the local copy indicator
     _set_flag(thumb->w_local_copy, GTK_STATE_FLAG_ACTIVE, TRUE);
     gtk_widget_set_size_request(thumb->w_local_copy, icon_size2, icon_size2);
@@ -2004,21 +2019,25 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_altered, line3 + py);
     gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1 + px);
+    gtk_widget_set_margin_end(thumb->w_altered, 0);
     // the tags icon
     gtk_widget_set_size_request(thumb->w_tags, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_tags, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_tags, line3 + py);
     gtk_widget_set_margin_start(thumb->w_tags, 7.0 * r1 + px);
+    gtk_widget_set_margin_end(thumb->w_tags, 0);
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_group, line3 + py);
     gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1 + px);
+    gtk_widget_set_margin_end(thumb->w_group, 0);
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_audio, line3 + py);
     gtk_widget_set_margin_start(thumb->w_audio, r1 + px);
+    gtk_widget_set_margin_end(thumb->w_audio, 0);
     // the zoomming indicator
     gtk_widget_set_margin_top(thumb->w_zoom_eb, line3 + py);
     gtk_widget_set_margin_start(thumb->w_zoom_eb, 18.0 * r1 + px);
