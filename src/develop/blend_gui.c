@@ -2448,7 +2448,9 @@ static void _blendop_mask_enable(dt_iop_module_t *module)
   _mask_lock_sync(module);
 
   // no unfolding here: _blendop_masks_mode_callback above clears the fold
-  // preference and relocates the panel, which unfolds it in any position
+  // preference and relocates the panel, which applies it only on a focus
+  // change in the embedded and utility positions. A caller that wants the
+  // panel on screen asks for it (dt_iop_gui_blend_masks_panel_show)
 
   // the indicator just added starts unset
   _mask_display_buttons_sync(module);
@@ -2629,6 +2631,10 @@ static void _blendop_masks_add_shape(GtkGestureSingle *gesture,
 
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
+  // a shortcut reaches the button with the panel folded away (or the mask
+  // just switched on in a folded one): show it before arming the shape, as
+  // folding it disarms the shape tools (dt_iop_gui_blend_masks_panel_collapsed)
+  if(dt_dev_gui_module() == self) dt_iop_gui_blend_masks_panel_show();
   dt_iop_color_picker_reset(self, FALSE);
   bd->masks_shown = DT_MASKS_EDIT_FULL;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
@@ -17967,6 +17973,8 @@ static void _add_parametric_channel(dt_iop_module_t *self, const int channel_idx
   if(!(self->blend_params->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_FLEXI)))
     _blendop_mask_enable(self);
   dt_iop_request_focus(self);
+  // as for the shape tools: a shortcut adds it with the panel folded away
+  if(dt_dev_gui_module() == self) dt_iop_gui_blend_masks_panel_show();
 
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_PARAMETRIC);
   dt_masks_point_parametric_t *p = calloc(1, sizeof(dt_masks_point_parametric_t));
