@@ -505,7 +505,7 @@ most of them to be real defects of the same kind. Nobody has measured a
 false-positive rate, and `discipline_gap` is much worse than the four default
 rules. Confirm a finding by reading the code before you open an issue.
 
-Six causes of false positives come up often:
+Seven causes of false positives come up often:
 
 - **Exclusion by protocol instead of by lock.** `rgblevels` hands work to the
   pipe through a state machine (`0` idle, `1` requested, `-1` running, `2`
@@ -518,6 +518,10 @@ Six causes of false positives come up often:
 - **A lock passed into a callee.** The tool handles the common
   `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` pattern, but not
   the general case.
+- **A lock held by the caller.** The tool tracks lock depth within one
+  function, so a helper called inside the caller's critical section looks
+  unlocked. Such a finding is false only if every call path into the helper
+  holds `gui_lock` across the access. Check every caller and every branch.
 - **A field that only sits inside a critical section taken for a different
   field.** The tool handles part of this with the `bulk_init` lock state, which
   the [json](#json) section describes.
@@ -605,7 +609,7 @@ separately, so an entry is in one of three states:
 | --- | --- | --- |
 | current | the entry matches a finding, and the keys are equal | suppress the finding |
 | stale | the entry matches a finding, and the keys differ | report the finding, with the recorded reason and the command to re-confirm it |
-| orphan | the entry matches no finding | name it in the banner. The code has moved past it, and the entry should be deleted |
+| orphan | the entry matches no finding | name it in the banner. The code has moved past it, and the entry should be deleted. If the field now has a finding under another rule, and no entry under that rule, confirm the field with a new reason to move the entry there |
 
 The rule is part of the identity on purpose. A field that moves from one rule
 to another is a new finding and shows up as one, instead of inheriting a
@@ -663,11 +667,22 @@ computes the key:
 
 `MODULE:FIELD` names one finding. A bare `MODULE` re-confirms every stale entry
 in that module, which is what an audit of one module in one sitting produces.
-It cannot add entries, on purpose. Adding one is a judgement about a single
-field and has to name it, otherwise one word could silence a whole module.
+It cannot add or move entries, on purpose. Adding one is a judgement about a
+single field and has to name it, otherwise one word could silence a whole
+module.
 A confirmation looks at every rule, whatever `--rules` says, so it also finds
 the `discipline_gap` entries that the default rules leave out.
 The tool never deletes entries. Delete an orphan from the file by hand.
+
+When a field moves to another rule, its entry becomes an orphan, and the
+finding under the new rule has no entry. If it is still not a defect, confirm it
+with `MODULE:FIELD` and a new reason. The tool then moves the entry to the new
+rule, with the new key, sites and reason, instead of adding a second entry. It
+refuses without a reason, because the recorded one judged the old rule, and it
+prints that reason so that you can start from it. A bare `MODULE` names such
+entries but does not move them. If the field already has an entry under the
+new rule, which only a hand edit produces, the tool keeps that entry and names
+the old one for you to delete.
 
 A new entry requires `--false-positive-reason`, because the tool prints that
 sentence back when the entry goes stale. An entry without one would be a
@@ -803,7 +818,9 @@ describes. Then:
   ```
 
   The head then matches the entry, the comparison stops counting the finding,
-  and the entry shows in the change's diff for the reviewer to check.
+  and the entry shows in the change's diff for the reviewer to check. When the
+  report shows a `rule:` line and a false-positive entry on the base, the same
+  command moves that entry to the new rule.
 
 For a stale entry, read the reason recorded for it first:
 `./dt-lockcheck.py --module MODULE` prints it beside the finding. If the
