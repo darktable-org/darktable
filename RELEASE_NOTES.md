@@ -1054,6 +1054,10 @@ changes (where available).
   mean over an area of reds, whose hues sit on both sides of the hue
   wrap-around, could be off by several percent.
 
+- Fixed the local copy indicator, and other thumbnail overlay icons, being
+  misplaced after switching away from the "overlays block on mouse hover"
+  mode, and the local copy indicator showing in "no overlays" mode.
+
 ## Lua
 
 ### API Version
