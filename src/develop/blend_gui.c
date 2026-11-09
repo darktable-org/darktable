@@ -10668,14 +10668,16 @@ static void _row_click_press(GtkGestureSingle *gesture,
 
 // dragging a row or a group of the list leaves the list as it is:
 // what is open stays open and what is folded stays folded, and nothing is
-// selected, so nothing the drag aims at moves when it starts. A folded group or
-// group the drag rests on for MASKS_SPRING_DELAY_MS opens (see _drop_motion),
+// selected, so nothing the drag aims at moves when it starts. A folded group, or
+// the "more" row of a folded run (see _pack_group_members), the drag rests on for MASKS_SPRING_DELAY_MS opens (see _drop_motion),
 // a delay so that a drag sweeping past folded groups does not open them all,
 // and it shows its members' headers alone: its opacity slider and the
 // editors (tagged "drag-hide" where they are built) stay hidden. What a drag
 // opened stays open while it lasts, so passing over it again moves nothing,
 // and folds again once it ends, but for where the member landed (see
-// _masks_drag_restore)
+// _masks_drag_restore). A run is the user's to open for good, so it is not
+// remembered (see _tail_remember) and the list rebuild the drop causes
+// folds it again unless it holds the member that landed
 #define MASKS_SPRING_DELAY_MS 600
 
 static struct
@@ -10684,9 +10686,9 @@ static struct
   gboolean dropped;      // and it landed, see _drop_received
   dt_mask_id_t formid;   // the member row it drags, or INVALID_MASKID
   gdouble start_x, start_y; // the pointer, in root coordinates, when it began
-  GtkWidget *candidate;  // the folded group it rests on (weak)
+  GtkWidget *candidate;  // the folded group or run's "more" row it rests on (weak)
   guint timer;           // opens the candidate once the rest is long enough
-  GPtrArray *opened;     // the groups it opened
+  GPtrArray *opened;     // the groups and "more" rows it opened
 } _masks_drag = { FALSE, FALSE, INVALID_MASKID, 0.0, 0.0, NULL, 0, NULL };
 
 static void _pointer_root_position(gdouble *x, gdouble *y)
@@ -12899,6 +12901,18 @@ static void _drag_spring_set_open(GtkWidget *w, const gboolean open)
   _set_chevron(g_object_get_data(G_OBJECT(w), "group-expand-toggle"), open, TRUE);
 }
 
+// the "more" row standing in for a folded run, which a drag resting on it opens
+static gboolean _drag_springs_more(GtkWidget *w)
+{
+  return g_object_get_data(G_OBJECT(w), "tail-more") != NULL;
+}
+
+// the run, as its "more" row is on show while it is folded
+static void _drag_spring_more_set_open(GtkWidget *more, const gboolean open)
+{
+  _tail_set_open(gtk_widget_get_parent(more), open, FALSE, _widget_id(more, "tail-key"));
+}
+
 static void _drag_hide_tagged(GtkWidget *w, gpointer data)
 {
   if(!gtk_widget_get_visible(w)) return;
@@ -12919,24 +12933,37 @@ static gboolean _masks_drag_spring(gpointer user_data)
 {
   _masks_drag.timer = 0;
   GtkWidget *w = _masks_drag.candidate;
-  if(!_masks_drag.active || !w || !_drag_spring_folded(w)) return G_SOURCE_REMOVE;
+  if(!_masks_drag.active || !w) return G_SOURCE_REMOVE;
+  if(_drag_springs_more(w))
+  {
+    if(!gtk_widget_get_visible(w)) return G_SOURCE_REMOVE;
+    _drag_spring_more_set_open(w, TRUE);
+    g_ptr_array_add(_masks_drag.opened, w);
+    return G_SOURCE_REMOVE;
+  }
+  if(!_drag_spring_folded(w)) return G_SOURCE_REMOVE;
   _foreach_tagged(w, "drag-hide", _drag_hide_tagged, NULL);
   _drag_spring_set_open(w, TRUE);
   g_ptr_array_add(_masks_drag.opened, w);
   return G_SOURCE_REMOVE;
 }
 
-// the folded group under drop target `t` the drag rests on: the innermost
-// group holding it, when that one is folded
-static void _masks_drag_rest_on(dt_iop_module_t *module, GtkWidget *list, GtkWidget *t)
+// what the drag rests on that it opens: the "more" row of a folded run under
+// the pointer, `more`, else the innermost group holding drop target `t`, when
+// that one is folded
+static void _masks_drag_rest_on(dt_iop_module_t *module, GtkWidget *list, GtkWidget *t,
+                                GtkWidget *more)
 {
   GtkWidget *spring = NULL;
-  for(GtkWidget *g = t; g && g != list; g = gtk_widget_get_parent(g))
-    if(_drag_springs(g))
-    {
-      if(_drag_spring_folded(g)) spring = g;
-      break;
-    }
+  if(more)
+    spring = more;
+  else
+    for(GtkWidget *g = t; g && g != list; g = gtk_widget_get_parent(g))
+      if(_drag_springs(g))
+      {
+        if(_drag_spring_folded(g)) spring = g;
+        break;
+      }
   if(spring == _masks_drag.candidate) return;
   _masks_drag_set_candidate(spring);
   if(spring) _masks_drag.timer = g_timeout_add(MASKS_SPRING_DELAY_MS, _masks_drag_spring, module);
@@ -12954,6 +12981,11 @@ static void _masks_drag_restore(dt_iop_module_t *module, GtkWidget *landed)
   for(guint i = 0; _masks_drag.opened && i < _masks_drag.opened->len; i++)
   {
     GtkWidget *w = g_ptr_array_index(_masks_drag.opened, i);
+    if(_drag_springs_more(w))
+    {
+      _drag_spring_more_set_open(w, FALSE);
+      continue;
+    }
     const gboolean keep = landed && (w == landed || gtk_widget_is_ancestor(landed, w));
     if(!keep) _drag_spring_set_open(w, FALSE);
   }
@@ -13028,6 +13060,30 @@ static GtkWidget *_drop_target_at(GtkWidget *w, const int x, const int y, int *t
   return found;
 }
 
+// the "more" row of a folded run under (x, y) in `w`, if there is one. Like
+// _drop_target_at, the one holding the point is the only one: siblings do not
+// overlap
+static GtkWidget *_drop_more_at(GtkWidget *w, const int x, const int y)
+{
+  if(_drag_springs_more(w)) return w;
+  if(!GTK_IS_CONTAINER(w)) return NULL;
+  GtkWidget *found = NULL;
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
+  for(GList *k = kids; k; k = g_list_next(k))
+  {
+    GtkWidget *c = k->data;
+    gint cx = 0, cy = 0;
+    if(!gtk_widget_get_mapped(c) || !gtk_widget_translate_coordinates(w, c, x, y, &cx, &cy)
+       || cx < 0 || cy < 0 || cx >= gtk_widget_get_allocated_width(c)
+       || cy >= gtk_widget_get_allocated_height(c))
+      continue;
+    found = _drop_more_at(c, cx, cy);
+    break;
+  }
+  g_list_free(kids);
+  return found;
+}
+
 // where a drop at (x, y) on the list lands; no frame when it lands nowhere.
 //
 // The band along the bottom edge of a group that is last in its list (see
@@ -13086,7 +13142,8 @@ static gboolean _drop_motion(
   if(_masks_drag.active)
   {
     int ty = 0;
-    _masks_drag_rest_on(user_data, w, d.frame ? _drop_target_at(w, x, y, &ty) : NULL);
+    _masks_drag_rest_on(user_data, w, d.frame ? _drop_target_at(w, x, y, &ty) : NULL,
+                        d.frame ? _drop_more_at(w, x, y) : NULL);
   }
   if(!d.frame)
     _drop_indicator_set(NULL, NULL, NULL);
