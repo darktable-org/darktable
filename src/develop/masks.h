@@ -1047,8 +1047,6 @@ void dt_masks_normalize_flexi_groups(dt_develop_t *dev);
 
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
-/** we create a completely new form and add it to darktable.develop->allforms. */
-dt_masks_form_t *dt_masks_create_ext(dt_masks_type_t type);
 /** replace dev->forms with forms */
 void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 /** returns a form with formid == id from a list of forms */

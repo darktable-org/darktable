@@ -2272,18 +2272,6 @@ dt_masks_form_t *dt_masks_create(const dt_masks_type_t type)
   return form;
 }
 
-dt_masks_form_t *dt_masks_create_ext(const dt_masks_type_t type)
-{
-  dt_masks_form_t *form = dt_masks_create(type);
-
-  // all forms created here are registered in
-  // darktable.develop->allforms for later cleanup
-  if(form)
-    darktable.develop->allforms = g_list_append(darktable.develop->allforms, form);
-
-  return form;
-}
-
 void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms)
 {
   GList *forms_tmp = dt_masks_dup_forms_deep(forms, NULL);
