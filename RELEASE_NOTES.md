@@ -1054,6 +1054,11 @@ changes (where available).
   mean over an area of reds, whose hues sit on both sides of the hue
   wrap-around, could be off by several percent.
 
+- Fixed Quick Access panel entries being duplicated each time the
+  module layout manager was reopened, for layouts with no module
+  groups other than the Quick Access panel. Entries already
+  duplicated by this bug are merged when the layout is loaded.
+
 ## Lua
 
 ### API Version
