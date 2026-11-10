@@ -940,6 +940,10 @@ changes (where available).
 - Fixed memory leaks of libgphoto2 event data, CameraFile objects, and
   strdup'd filenames during tether polling and download.
 
+- Fixed tether mode treating non-fatal PTP errors as a lost camera
+  connection; only clear I/O / claim / missing-device failures now force
+  remount and leave tethering.
+
 - Fixed diffuse or sharpen giving a different result on the CPU than
   with OpenCL whenever an anisotropy was set: the CPU path computed the
   diffusion weights with a coarse approximation of the exponential.
