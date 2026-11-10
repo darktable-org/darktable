@@ -207,14 +207,17 @@ typedef struct dt_color_encoding_t
   float headroom;
 } dt_color_encoding_t;
 
-/* the two encodings name the same profile content. the type counts as
- * well: PQ and HLG encode with a transfer function their profile does not
- * describe */
+/* the two encodings name the same content. a profile is its content under
+ * any type: DISPLAY and DISPLAY2 are windows, which may show one profile.
+ * the type adds only PQ's and HLG's transfer function, which their profile
+ * does not describe. without a profile, type and file name are all there is */
 static inline gboolean dt_color_encoding_same_content(const dt_color_encoding_t *a,
                                                       const dt_color_encoding_t *b)
 {
+  if(a->profile || b->profile)
+    return a->profile == b->profile
+      && dt_colorspaces_hdr_transfer(a->type) == dt_colorspaces_hdr_transfer(b->type);
   return a->type == b->type
-    && a->profile == b->profile
     && !strcmp(a->filename, b->filename);
 }
 
@@ -315,9 +318,10 @@ typedef struct dt_colorspaces_t
   // shows it; the registry's DISPLAY and DISPLAY2 entries hold the
   // window's device encoding, which is this profile only then
   cmsHPROFILE system_display[2];
-  // the sRGB each window's system display profile starts with, and goes
-  // back to when the platform reports no usable profile for it
-  cmsHPROFILE system_display_srgb[2];
+  // the sRGB a window's system display profile starts with, and goes back
+  // to when the platform reports no usable profile for it. one for both
+  // windows: two windows without a profile show the same content
+  cmsHPROFILE system_display_srgb;
   // counts each window's queries, so that colord's answer to an older one,
   // which arrives later, is dropped
   uint32_t system_display_query[2];

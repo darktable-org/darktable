@@ -1235,11 +1235,15 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
 }
 
 
+// the rule of dt_color_encoding_same_content(). an info without a
+// profile, such as a camera matrix, is named by type and file name only
 static inline gboolean _same_content(const dt_iop_order_iccprofile_info_t *const a,
                                      const dt_iop_order_iccprofile_info_t *const b)
 {
+  if(a->profile || b->profile)
+    return a->profile == b->profile
+      && dt_colorspaces_hdr_transfer(a->type) == dt_colorspaces_hdr_transfer(b->type);
   return a->type == b->type
-    && a->profile == b->profile
     && !strcmp(a->filename, b->filename);
 }
 

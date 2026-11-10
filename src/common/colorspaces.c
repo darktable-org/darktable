@@ -1428,7 +1428,7 @@ void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t 
 
 typedef struct _system_profile_t
 {
-  uint8_t *data; // NULL for the sRGB placeholders of dt_colorspaces_init()
+  uint8_t *data; // NULL for the sRGB placeholder of dt_colorspaces_init()
   size_t size;
   cmsHPROFILE profile;
 } _system_profile_t;
@@ -1521,7 +1521,7 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
              " settings (see darktable-cmstest)", w ? "second" : "main");
     self->system_display_hinted[w] = TRUE;
   }
-  if(!profile) profile = self->system_display_srgb[w];
+  if(!profile) profile = self->system_display_srgb;
   if(self->system_display[w] == profile) return FALSE;
   self->system_display[w] = profile;
   _system_display_changed(self, w);
@@ -1774,11 +1774,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   // before the real profile could be fetched has something to work
   // with
   cmsHPROFILE display = dt_colorspaces_create_srgb_profile();
-  cmsHPROFILE display2 = dt_colorspaces_create_srgb_profile();
   _system_profile_add(res, NULL, 0, display);
-  _system_profile_add(res, NULL, 0, display2);
-  res->system_display[0] = res->system_display_srgb[0] = display;
-  res->system_display[1] = res->system_display_srgb[1] = display2;
+  res->system_display[0] = res->system_display[1] = res->system_display_srgb = display;
   // no histogram choice: darktable cannot say what reaches the screen
   // where the platform converts, so a histogram cannot claim to be the
   // display's. Krita names no monitor profile where the OS manages color
@@ -1790,7 +1787,7 @@ dt_colorspaces_t *dt_colorspaces_init()
                      TRUE, -1, -1, FALSE));
   res->profiles = g_list_append
     (res->profiles,
-     _create_profile(DT_COLORSPACE_DISPLAY2, display2,
+     _create_profile(DT_COLORSPACE_DISPLAY2, display,
                      _("system display profile (second window)"), -1, -1, FALSE,
                      -1, -1, TRUE));
   // we want a v4 with parametric curve for input and a v2 with point trc for output

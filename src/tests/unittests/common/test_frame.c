@@ -18,7 +18,8 @@
 /*
  * cmocka unit tests for develop/frame.c: a frame lives as long as its
  * references, its rendition in its own format and profile is its pixels,
- * an RGB24 frame packs what dt_display_to_8bit() gives, a rendition is made
+ * whichever window's type names the profile, an RGB24 frame packs what
+ * dt_display_to_8bit() gives, a rendition is made
  * from the frame's pixels, whatever was asked for before, and profile
  * infos are made once per key, a failed one included. frame.c is included
  * for its static helpers
@@ -160,6 +161,33 @@ static void test_identity_is_own_pixels(void **state)
   assert_ptr_equal(dt_frame_float(flt, &other), dt_frame_pixels(flt));
   assert_memory_equal(dt_frame_pixels(flt), f->pixels, sizeof(f->pixels));
   dt_frame_unref(flt);
+}
+
+static void test_windows_share_profile_content(void **state)
+{
+  const _fixture_t *f = *state;
+  // the main window's frame shown in the second window on the same screen
+  // profile: DISPLAY and DISPLAY2 name windows, not contents
+  const dt_color_encoding_t first = _encoding(DT_COLORSPACE_DISPLAY, f->srgb);
+  const dt_color_encoding_t second = _encoding(DT_COLORSPACE_DISPLAY2, f->srgb);
+  const dt_frame_geometry_t geometry = { .width = W, .height = H, .scale = 1.0f };
+
+  dt_frame_t *rgb24 = dt_frame_new(f->pixels, &geometry, DT_FRAME_RGB24, &first, 1);
+  assert_ptr_equal(dt_frame_surface(rgb24, &second), dt_frame_surface(rgb24, NULL));
+  assert_null(rgb24->renditions);
+
+  // a float frame packed for the other window: the values are not converted
+  dt_frame_t *flt = dt_frame_new(f->pixels, &geometry, DT_FRAME_FLOAT, &first, 1);
+  assert_ptr_equal(dt_frame_float(flt, &second), dt_frame_pixels(flt));
+  assert_memory_equal(cairo_image_surface_get_data(dt_frame_surface(flt, &second)),
+                      dt_frame_pixels(rgb24), (size_t)4 * W * H);
+  dt_frame_unref(flt);
+
+  // the same profile with PQ's transfer function is other content
+  const dt_color_encoding_t pq = _encoding(DT_COLORSPACE_PQ_REC2020, f->srgb);
+  assert_ptr_not_equal(dt_frame_surface(rgb24, &pq), dt_frame_surface(rgb24, NULL));
+  assert_non_null(rgb24->renditions);
+  dt_frame_unref(rgb24);
 }
 
 static void test_rgb24_packs_as_display_to_8bit(void **state)
@@ -332,6 +360,7 @@ int main(int argc, char *argv[])
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_refcount),
     cmocka_unit_test(test_identity_is_own_pixels),
+    cmocka_unit_test(test_windows_share_profile_content),
     cmocka_unit_test(test_rgb24_packs_as_display_to_8bit),
     cmocka_unit_test(test_rendition_from_frame_pixels),
     cmocka_unit_test(test_rendition_keeps_what_8_bits_cannot),

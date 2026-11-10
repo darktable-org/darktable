@@ -20,7 +20,8 @@
  * a replaced profile stays valid until dt_colorspaces_cleanup(), the same
  * bytes always give the same profile, so switching back and forth between
  * two profiles does not grow the list, and a report with no usable profile,
- * one that is not RGB included, gives the window sRGB again. the registry
+ * one that is not RGB included, gives the window sRGB again, the one both
+ * windows start with. the registry
  * entry of a window is its device encoding: the system display profile on
  * a cairo window, the backend's device on a platform-owned one, and the
  * signals say when it changes; it is no histogram or soft proof choice, so a
@@ -51,7 +52,7 @@ static int _raised[DT_SIGNAL_COUNT];
 
 typedef struct _fixture_t
 {
-  cmsHPROFILE placeholder, placeholder2;
+  cmsHPROFILE placeholder;
   uint8_t *a, *b;
   size_t a_size, b_size;
 } _fixture_t;
@@ -80,16 +81,14 @@ static int _setup(void **state)
   pthread_rwlock_init(&self->xprofile_lock, NULL);
 
   f->placeholder = dt_colorspaces_create_srgb_profile();
-  f->placeholder2 = dt_colorspaces_create_srgb_profile();
   _system_profile_add(self, NULL, 0, f->placeholder);
-  _system_profile_add(self, NULL, 0, f->placeholder2);
-  self->system_display[0] = self->system_display_srgb[0] = f->placeholder;
-  self->system_display[1] = self->system_display_srgb[1] = f->placeholder2;
+  self->system_display[0] = self->system_display[1] = self->system_display_srgb
+    = f->placeholder;
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY, f->placeholder,
                                                  "display", -1, -1, TRUE, -1, -1, FALSE));
   self->profiles = g_list_append(self->profiles,
-                                 _create_profile(DT_COLORSPACE_DISPLAY2, f->placeholder2,
+                                 _create_profile(DT_COLORSPACE_DISPLAY2, f->placeholder,
                                                  "display2", -1, -1, FALSE, -1, -1, TRUE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_SRGB,
@@ -217,7 +216,7 @@ static void test_switching_reuses_profiles(void **state)
   assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
   cmsHPROFILE a = _content(DT_COLORSPACE_DISPLAY);
   assert_ptr_not_equal(a, f->placeholder);
-  assert_int_equal(g_list_length(self->system_display_profiles), 3);
+  assert_int_equal(g_list_length(self->system_display_profiles), 2);
   assert_non_null(self->transform_srgb_to_display);
   // the same bytes again change nothing
   assert_false(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
@@ -226,7 +225,7 @@ static void test_switching_reuses_profiles(void **state)
   assert_true(_replace(DT_COLORSPACE_DISPLAY, f->b, f->b_size));
   cmsHPROFILE b = _content(DT_COLORSPACE_DISPLAY);
   assert_ptr_not_equal(b, a);
-  assert_int_equal(g_list_length(self->system_display_profiles), 4);
+  assert_int_equal(g_list_length(self->system_display_profiles), 3);
 
   for(int k = 0; k < 4; k++)
   {
@@ -235,7 +234,7 @@ static void test_switching_reuses_profiles(void **state)
     assert_true(_replace(DT_COLORSPACE_DISPLAY, f->b, f->b_size));
     assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), b);
   }
-  assert_int_equal(g_list_length(self->system_display_profiles), 4);
+  assert_int_equal(g_list_length(self->system_display_profiles), 3);
 
   // what frames made before still name
   _assert_valid(f->placeholder);
@@ -251,14 +250,14 @@ static void test_windows_share_profiles(void **state)
   assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
   assert_true(_replace(DT_COLORSPACE_DISPLAY2, f->a, f->a_size));
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), _content(DT_COLORSPACE_DISPLAY));
-  assert_int_equal(g_list_length(self->system_display_profiles), 3);
+  assert_int_equal(g_list_length(self->system_display_profiles), 2);
 
   // the second window moves on, the main window keeps the shared profile
   assert_true(_replace(DT_COLORSPACE_DISPLAY2, f->b, f->b_size));
   assert_ptr_not_equal(_content(DT_COLORSPACE_DISPLAY2), _content(DT_COLORSPACE_DISPLAY));
-  assert_int_equal(g_list_length(self->system_display_profiles), 4);
+  assert_int_equal(g_list_length(self->system_display_profiles), 3);
   _assert_valid(_content(DT_COLORSPACE_DISPLAY));
-  _assert_valid(f->placeholder2);
+  _assert_valid(f->placeholder);
 }
 
 static void test_no_profile_means_srgb(void **state)
@@ -274,16 +273,18 @@ static void test_no_profile_means_srgb(void **state)
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
   assert_false(_replace(DT_COLORSPACE_DISPLAY, NULL, 0));
   // the other window keeps its own
-  assert_ptr_not_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+  assert_ptr_not_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder);
+  // and without one shows the same sRGB, one profile in the list
   assert_true(_replace(DT_COLORSPACE_DISPLAY2, NULL, 0));
-  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder);
+  assert_int_equal(g_list_length(self->system_display_profiles), 3);
 
   // bytes lcms cannot read are no usable profile either
   assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
   const uint8_t junk[128] = { 1, 2, 3 };
   assert_true(_replace(DT_COLORSPACE_DISPLAY, junk, sizeof(junk)));
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
-  assert_int_equal(g_list_length(self->system_display_profiles), 4);
+  assert_int_equal(g_list_length(self->system_display_profiles), 3);
   _assert_valid(_content(DT_COLORSPACE_DISPLAY));
 }
 
@@ -310,7 +311,7 @@ static void test_non_rgb_profile_means_srgb(void **state)
   assert_false(_replace(DT_COLORSPACE_DISPLAY, gray_bytes, gray_size));
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
   // neither is kept
-  assert_int_equal(g_list_length(self->system_display_profiles), 3);
+  assert_int_equal(g_list_length(self->system_display_profiles), 2);
   g_free(lab_bytes);
   g_free(gray_bytes);
 }
@@ -330,7 +331,7 @@ static void test_cairo_window_entry_is_system_profile(void **state)
   assert_int_equal(self->outputs[0].image.intent, DT_INTENT_RELATIVE_COLORIMETRIC);
   // a new device encoding, and with it a new entry, each said once
   _assert_raised(1, 1);
-  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder);
 }
 
 static void test_platform_owned_entry_is_device(void **state)
@@ -364,7 +365,7 @@ static void test_platform_owned_entry_is_device(void **state)
   assert_int_equal(self->outputs[0].serial, serial);
   _assert_raised(2, 2);
   // the other window keeps its own
-  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder);
 
   // given back: the entry is the system display profile again, the one
   // reported last
