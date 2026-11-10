@@ -4085,14 +4085,14 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>convert to the display profile in darktable</shortdescription>
-    <longdescription>convert images to the display profile in darktable instead of handing them to the system's color management, which on Wayland shows them in wide gamut and HDR. a workaround for compositor or driver bugs</longdescription>
+    <longdescription>convert images to the display profile in darktable, and do not give them to the color management of the system. use this setting only as a workaround for compositor or driver bugs</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_file</name>
     <type>string</type>
     <default></default>
     <shortdescription>display profile file</shortdescription>
-    <longdescription>the absolute path of an ICC profile used as the display profile instead of the one the system reports, for both windows. leave empty to use the system's, which is also used while the file cannot be read or is not an RGB profile.\nit applies only to windows darktable color-manages itself, as it is, and is ignored where the system manages a window's colors, as a Wayland compositor with color management does. on macOS, and on Windows with automatic color management or HDR, the system converts the image again, so the colors are converted twice</longdescription>
+    <longdescription>the absolute path of an ICC profile. darktable uses this profile as the display profile for both windows, instead of the profile from the system. if the field is empty, or the file is not a readable RGB profile, darktable uses the system profile.\nthis setting has no effect on a window that darktable gives to the color management of the system. where the system converts the colors of all applications itself, as macOS does, the colors are then converted twice</longdescription>
   </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>

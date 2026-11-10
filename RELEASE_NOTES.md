@@ -87,12 +87,13 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
-- Wide gamut and HDR display on compatible Wayland compositors, in the
-  darkroom, snapshots, second window and slideshow. With "follow output
-  peak" enabled, sigmoid and AgX adapt to the display's HDR brightness.
-  Edits made before that option existed keep it off. Thumbnails, culling
-  and full preview remain SDR. Unsupported compositors and GNOME's
-  default color mode continue to use the system display profile.
+- Wide gamut and HDR display on Wayland compositors that support color
+  management, in the darkroom, with its snapshots and second window,
+  and in the slideshow. With "follow output peak" on, AgX and sigmoid
+  render for the brightness the screen offers. Thumbnails, culling and
+  full preview are not shown in wide gamut or HDR. Where the compositor
+  does not manage the colors of the window, darktable converts to the
+  display profile as before.
 
 - New module saturation curve: remaps saturation and brilliance via
   two independent curves plotted against each pixel's own perceptually
@@ -346,10 +347,10 @@ changes (where available).
 - Softproofing, gamut check and LUT-based ICC profiles in input and
   output color profile can now run on the OpenCL device, LUT profiles
   through a 3D LUT sampled from LittleCMS, instead of sending the image
-  back to the CPU. The gamut check of a softproof profile with lookup
-  tables, and a soft proof to a CMYK profile, still run on the CPU, and
-  the "always use LittleCMS 2" export preference still applies the
-  exact transform on the CPU.
+  back to the CPU. Some soft proofs and gamut checks, such as a proof
+  to a CMYK profile, still run on the CPU, and the "always use
+  LittleCMS 2" export preference still applies the exact transform on
+  the CPU.
 
 - The LMMSE demosaicer can now run on the OpenCL device instead of
   sending the image back to the CPU for the demosaic.
@@ -433,32 +434,30 @@ changes (where available).
   If one of these new input profiles is selected, the pipe gets its
   data corrected according to DNG specs matching the intended look.
 
-- Display profiles now come from the system's color settings. The
-  darkroom display-profile selectors and lighttable's "set display
-  profile" button have been removed, and previous selections are no
-  longer used. Install monitor profiles in the operating system and use
-  soft proof to preview another display or print profile. A new "display
-  profile file" preference provides an override where needed. It is
-  ignored by native color-managed backends and can cause double color
-  conversion on macOS or Windows with system color management.
+- darktable now takes the display profile from the system. The
+  darkroom's display profile selectors and lighttable's "set display
+  profile" button have been removed, and earlier selections are no
+  longer used. Install monitor profiles in the operating system, and
+  use soft proof to preview another display or a print. A new "display
+  profile file" preference names a profile file to use instead.
 
-- On Windows, darktable uses the monitor's system profile, or sRGB when
-  Advanced Color handles the display conversion. On macOS, darktable
-  supplies sRGB for the system to convert to the screen.
+- On Windows, darktable uses the profile that Windows assigns to the
+  monitor, or sRGB when Windows reports none. On macOS, darktable
+  renders to sRGB and macOS converts to the screen.
 
-- A new "convert to the display profile in darktable" preference works
-  around compositor or driver bugs by disabling native presentation.
-  This turns off wide gamut and HDR display on Wayland.
+- A new "convert to the display profile in darktable" preference is a
+  workaround for compositor or driver bugs. With it, darktable does not
+  give its images to the color management of the system.
 
 - The histogram profile no longer offers the system display profile.
   Previous selections of that profile now use sRGB.
 
 - Soft proof now has its own rendering intent and a "black point
-  compensation" switch. Turn compensation off to match export behavior.
+  compensation" switch.
 
-- The display rendering intent setting has been removed. Display uses
-  relative colorimetric intent, or perceptual when it is the only intent
-  the compositor supports.
+- The display rendering intent setting has been removed. The display
+  uses the relative colorimetric intent, and a stored setting becomes
+  the soft proof intent.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
@@ -759,8 +758,8 @@ changes (where available).
   colors and highlights as an integer export, such as JPEG or 16-bit
   TIFF, would.
 
-- With soft proof enabled, the histogram, waveform, vectorscope, color
-  picker and navigation thumbnail now show the proof.
+- With soft proof enabled, the scopes, the color picker and the
+  navigation thumbnail now show the proof.
 
 - Gamut check now correctly marks colors clipped by integer exports to
   profiles such as sRGB, Adobe RGB and Rec. 2020, independently of the
@@ -1108,7 +1107,7 @@ changes (where available).
 - libarchive, previously only needed for AI model downloads, is now
   required for the `.dtdata` sidecar
 
-- GTK 3.24.37 or later on macOS. Other platforms still need GTK 3.24.15
+- macOS requires at least GTK 3.24.37
 
 ### Optional
 

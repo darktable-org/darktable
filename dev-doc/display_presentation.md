@@ -1,7 +1,7 @@
 # Display Presentation
 
 How a rendered image reaches the screen: what the darkroom pipes render to,
-the frames they hand over, and the presenter that shows those frames in a
+the frames they publish, and the presenter that shows those frames in a
 window.
 
 See also:
@@ -14,362 +14,375 @@ See also:
 
 ## The Rules, in Short
 
-- [A presented pipe renders to its output description](#output-description),
-  taken from its window when the run starts, or in proof mode to an RGB
-  proof profile, whose frames are converted like any other. Workers read `pipe->output`;
-  the display profile preferences can change under a running pipe.
-- [A screen pipe publishes frames](#frames): immutable, refcounted copies
-  of its output, in the format its window asks for. The pipe does not
-  quantize; the publish step packs RGB24 for cairo windows, with
-  `dt_display_to_8bit()`. Any other format or encoding of a frame is a
-  rendition of it.
+- [A screen pipe renders to its output description](#output-description).
+  The pipe copies the description from its window when a run starts.
+  Workers read `pipe->output` and never the preferences or GUI state.
+- [A screen pipe publishes frames](#frames). A frame is an immutable,
+  refcounted copy of the pipe's output, in the format its window asks for.
+  Each other format or encoding of a frame is a rendition of it.
 - [A presenting widget submits its frames with
-  `dt_presenter_image()`](#presenter-api) and draws everything else with
-  cairo as before. GTK-side drawing takes the frame's rendition in the
-  window's device encoding.
-- [GTK-side colors are in the window's device
-  encoding](#output-description): module GUIs convert with
-  `dt_ioppr_get_gui_profile_info()`. The pipe's output profile describes the
-  image layer, which on a native backend is not what GTK draws in.
+  `dt_presenter_image()`](#presenter-api). It draws everything else with
+  cairo.
+- [GTK-side colors are in the device encoding of the
+  window](#gtk-side-colors). Module GUIs convert with
+  `dt_ioppr_get_gui_profile_info()`, not with the pipe's output profile.
 - [Platform and GTK3 code stays in the presenter files](#workarounds). The
-  pipeline, modules and views only see an output description.
+  pipeline, the modules and the views only see an output description.
+
+## Terms
+
+| Term | Meaning |
+|---|---|
+| window | the main window (`DISPLAY`) or the second darkroom window (`DISPLAY2`) |
+| system display profile | the profile the platform publishes for the monitor of a window, or the display profile file |
+| output | the output description of a window, a `dt_display_output_t` |
+| image encoding | what the screen pipes of a window render to |
+| device encoding | what untagged 8-bit values mean in a window: everything GTK draws |
+| screen pipe | a pipe that has an output: the darkroom's full, preview and second window pipes, and the pipes of `dt_dev_image()` |
+| frame | the image a screen pipe publishes |
+| rendition | a frame in another format or encoding |
+| presenting widget | a widget that shows frames through the presenter |
+| backend | how a window shows frames: cairo or layered |
+| cairo window, native window | a window with the cairo backend, with the layered backend |
+| platform, transport | the platform-specific parts of a native window: the platform watches the window, the transport shows the layers |
+| producer | code that requests the frames for a window |
+| soft proof, proof profile | the darkroom's soft proof and its profile; an ink proof is a soft proof to a profile that is not RGB, such as CMYK |
 
 ## Output Description
 
-`dt_display_output_t` (`src/common/colorspaces.h`) is what a window wants.
-`image` is the encoding its pipes render to, unless they soft proof to an
-RGB profile: display-referred RGB in a
-profile (type, file, intent), 1.0 at reference white and up to `headroom`
-above it. `device`, the device encoding, is what GTK's 8-bit values mean
-as the platform shows them, everything GTK draws in the window: untagged
-pixels on X11, Windows and Wayland, pixels GTK tags sRGB on macOS.
-`platform_owned` says a backend reported it,
-so a new system display profile does not replace it. Where image and device are the same
-encoding, as on every cairo window, the values reach the screen as device
-values. The mask and channel views and the clipping indicators are UI
-tones, authored as device values and converted from the device encoding
-to the pipe's `output_encoding`, which a run resolves after every commit
-(`dt_ioppr_device_to_output()`). The gamut check's mark, device
-(0, 1, 1), is one too: colorout renders it once per commit as it renders
-pixels, so a proof narrower than the device clips it, and an ink proof's
-goes straight to the window's output.
+`dt_display_output_t` (`src/common/colorspaces.h`) says what a window
+wants.
 
-- Both windows have an output at all times, from `dt_colorspaces_init()` on:
-  develop and its pipes exist before the GUI, and headless runs never
-  realize a window. It is stored in `darktable.color_profiles`, indexed by
-  window and written under `xprofile_lock`, and its `serial` changes
-  whenever anything else in it does.
-- A cairo window ([Backends](#backends)) renders to the screen profile the
-  platform publishes to applications: the X atom on X11, colord on X11
-  and, when built with GDK X11 support, on Wayland, the monitor's default
-  profile from WCS on Windows (none, as under Advanced Color, means sRGB),
-  and sRGB where nothing is published, as on macOS, where GTK tags its
-  backing store sRGB. Cairo never decides
-  whether the platform converts. The one exception is the preference
-  `ui_last/display_profile_file`: an ICC file that replaces what the
-  platform publishes, for both windows, read in its place by
-  `dt_colorspaces_set_display_profile()`. A file that is unreadable or not
-  an RGB profile counts as none, with a message once per file. A native
-  window ignores it, as it ignores colord's profile, and so does its
-  registry entry (below).
-  There is no other user selection; previewing
-  another display, print or sRGB is a soft proof. Unless the platform owns
-  it, a window's output is its system display profile (`DISPLAY` or
-  `DISPLAY2`) as image and device encoding, relative colorimetric, with
-  headroom 1 (`_describe_system_display()` in `colorspaces.c`). A new
-  system display profile republishes it. Limits:
-  - darktable on XWayland is an X11 client and cannot see the compositor's
-    description. It renders to the X atom or colord as on X11: where the
-    compositor converts untagged pixels to the profile also published
-    there, as with xiccd, the image is converted twice, and mutter outside
-    its default color mode (before mutter !5177) reads them as sRGB.
-  - A profile reassigned in the system settings while the window stays on
-    its monitor is picked up, as in master, at the next configure event
-    that queries again: a move of the main window, any configure on
-    Wayland or of the second window. A persistent `CdWindow` per window,
-    listening to its changed signal, and a listener on the X atom would
-    remove that.
-  - The display profile file is applied as is. On macOS, and on Windows
-    with automatic color management or HDR, the system converts the image
-    again, from sRGB, so its colors are converted twice.
-- The registry's entries "system display profile" (`DISPLAY`) and "system
-  display profile (second window)" (`DISPLAY2`) are what their window shows
-  8-bit values as, its device encoding: the system display profile on a
-  cairo window, the device the backend declared on a platform-owned one,
-  sRGB on Wayland, whatever the platform or the file reports. What names
-  the entry by type therefore renders for what the window shows:
-  thumbnails with `cache_color_managed` off, the style preview. No menu
-  offers the entries, not the histogram's, the soft proof's or export's:
-  darktable cannot say what reaches the screen where the platform
-  converts, so nothing it computes can claim to be the display's, as
-  Krita names no monitor profile where the OS manages color. A stored
-  histogram or soft proof profile no menu offers becomes sRGB
-  (`_drop_unoffered_choices()`).
-  The window's system display profile, the platform's report or the file,
-  is kept per window (`system_display` in `dt_colorspaces_t`) and describes
-  the window only when cairo shows it; in an output, `DISPLAY` and
-  `DISPLAY2` name that profile. The entry follows every published change
-  of the device profile (`_entry_follow_device()`), the platform taking
-  the window over or giving it back included. Krita does the same: its UI
-  profile is its surface's where the OS manages color, and the monitor
-  profile only where it does not.
-- What GTK draws converts to the device encoding: the thumbnail transforms
-  follow the main window's, picker swatches convert from what the preview
-  pipe produced to its window's, frames drawn by GTK take their device
-  rendition ([frames](#frames)), and module GUIs take
-  `dt_ioppr_get_gui_profile_info()`, the main window's device profile, or
-  sRGB for a profile without matrices. On a cairo window device and image
-  are the same encoding, so these conversions are the identity there,
-  except for a frame tagged with an RGB proof profile, which converts like
-  any other frame.
-- The presenter takes a window's output over for the platform, and gives
-  it back when the window goes away (`dt_colorspaces_set_window_output()`).
-- A change is announced by what changed (`dt_display_output_diff()`), the
-  same way for the presenter and a new system display profile
-  (`_output_changed()` in `colorspaces.c`). Any change moves
-  the serial and queues a redraw of the window, where its producers find
-  it. A new device encoding or owner also rebuilds the thumbnail
-  transforms and raises `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with
-  `DISPLAY` or `DISPLAY2`, for what GTK draws there: thumbnails (main
-  window only) and module GUI colors. A new image encoding alone, such as
-  a new [headroom target](#headroom-target) published when its description
-  is ready, reruns that window's producers and nothing else.
-  A new device profile is also a new registry entry, announced with
-  `DT_SIGNAL_CONTROL_PROFILE_CHANGED` for what names the entry by type.
-  It is raised exactly when the entry changes: for a new
-  system display profile on a cairo window, and when the platform takes a
-  window or gives it back; a new system display profile on a native window
-  changes neither the output nor the entry and announces nothing. A new
-  intent or headroom never touches the registry.
-- Producers pull. Each compares the serial its image was made for with
-  its window's where it already decides to render: the darkroom's full,
-  preview and second window pipes, a pinned image's too, compare the serial
-  their last finished run took (`pipe->output.serial`, published or not, so
-  a failed run is not retried on every redraw) in their request
-  (`_pipe_outdated()` in `darkroom.c`); snapshots and the duplicate manager's preview through
-  `dt_view_get_context_hash()`, which holds the main window's serial; the
-  slideshow on every expose, over all its slots. An image made for an
-  earlier serial is not taken as current: the slideshow drops it on
-  arrival and keeps showing the slot's previous image until the new one
-  arrives, and a pipe whose run took an earlier serial is requested again.
-- A pipe records the window it renders for where it is created
-  (`pipe->window`): full and preview the main window, the second window's
-  pipe and every pipe of the pinned image the second one. They take their
-  window's output at the start of every run, in
-  `dt_dev_process_image_job()`, so workers never read GUI state while
-  processing. A new serial resynchronizes the pipe, a new screen profile
-  for the system display profile included.
-- `dt_dev_image()` takes its sink's output description, which its pipe
-  renders to, and returns the frame the pipe published. An image encoding
-  of type `DT_COLORSPACE_NONE` is no display encoding: with colorout
-  filtered out, as overlay does, the frame stays in the pipe's working RGB,
-  float for the high quality overlay and RGB24 for the legacy one.
-- colorout renders to `pipe->output` (an RGB soft proof to its proof
-  profile instead), with the profile the run took
-  (`profile`), not one it looks up again by type. The pipe's `output_headroom`, which
-  sigmoid and agx tone map to, honors `output.headroom`: on a native
-  window the [headroom target](#headroom-target) as its transport encodes
-  it, so with follow output on
-  what the darkroom shows depends on the screen's current headroom, once
-  it settled, and not on the export's PQ peak. A soft proof sets
-  it to the proof profile's headroom, as an export to that profile does,
-  above or below the screen's, and the output encoding says so. The
-  presenter clips what the screen cannot show: the Wayland transport to the
-  range of its image description, cairo the encoded values to 8 bits.
-- `pipe->output_encoding` (`dt_color_encoding_t`) is what the pipe's output
-  values are: the profile, intent and headroom of the transform colorout
-  built, after it replaced a missing or unsupported profile by sRGB, or the
-  final working profile when colorout does not run. colorout records its
-  transform in `commit_params()`, and nothing (type `DT_COLORSPACE_NONE`)
-  when building it fails or no profile describes what it writes; the pipe
-  resolves the encoding when a run starts, after synchronization, since
-  history replay can commit colorin after colorout. The scopes and the
-  global color picker interpret the preview pipe's pixels with it, and it
-  is each frame's encoding. `output_profile_info`
-  stays the matrix stand-in for code that needs matrices: sRGB for a LUT
-  profile.
-- An encoding and an output name the registry's profile (`profile`) as
-  well as its type. A new screen profile replaces the system display
-  profile under the same type and file name, and a new device profile the
-  registry entry's. A replaced profile stays valid for the session, in
-  `system_display_profiles` in `dt_colorspaces_t` or as another registry
-  entry's (sRGB), so pixels made for the old screen keep converting
-  with the profile they were made with: conversions take their profile
-  info with `dt_ioppr_add_profile_info_for_content()`. Encodings and
-  profile infos are the same content when profile, type and file name
-  match; the type counts for PQ's and HLG's transfer functions. A query
-  that yields no usable profile (no X atom and none from colord, an empty
-  Windows query, bytes lcms rejects) makes the window's system display
-  profile sRGB again, the profile it starts with, rather than leaving the
-  previous screen's. A
-  new system display profile that changes a window's output changes its
-  device encoding, so thumbnails drawn before it arrived, as colord's
-  asynchronous answer at startup, are redone.
-- A soft proof is an export to the proof profile. In proof mode colorout
-  renders the full and the preview pipe (not the second window, the
-  thumbnail pipe or exports) as an export to that profile, through the same
-  matrix and curves or littlecms, PQ and HLG through `dt_hdr_encode()`,
-  with the proof's own intent and black point compensation
-  (`softproof_intent`, `softproof_bpc`, set next to the proof profile in
-  the darkroom). The matrix path serves a proof only where it gives what
-  littlecms gives for that intent and compensation (`_matrix_like_lcms()`).
-  A proof equals a darktable export with the same settings wherever that
-  export honors them. An export asks for no compensation, which littlecms
-  still applies for perceptual and saturation into a v4 profile, and its
-  matrix path ignores the intent unless "always use LittleCMS 2" is on: a
-  proof the matrix path cannot serve (absolute colorimetric, compensation
-  with a nonzero black) matches the export made with that preference on.
-  The GPU's 3D LUT covers Lab L 0..100, so PQ and HLG outputs off the
-  matrix path run on the CPU. The proof clips where an integer export clips
-  (a float export does not), and the gamut check marks what that clip
-  changes: from the linear values on the matrix path and for PQ and HLG,
-  by littlecms' gamut check otherwise. The output encoding is the proof
-  profile, so the frame is tagged with it, and the presenter shows it as
-  any other frame and clips what the screen cannot show. The preview's
-  proof has no gamut marks: the scopes, the color pickers, navigation and
-  the filmstrip's thumbnail of the edited image read it. In proof mode
-  the scopes and pickers show values in what the preview recorded for its
-  output, whatever the histogram setting
-  (`dt_ioppr_get_scope_profile_info()`): the proof profile, or sRGB where
-  colorout replaced it. An ink proof, as
-  for a CMYK printer, goes on from the proof's values to the output
-  relative colorimetric, since a frame holds RGB, and its output encoding
-  is the window's, which the scopes then show, with no second proof.
-  darktable does not export ink: an export to a CMYK
-  profile writes sRGB pixels but embeds the CMYK profile. Limit: while
-  the second window pans or zooms, its pipe can show the main preview's
-  frame, proofed while the second window is not. Comparing the frames'
-  encodings would not tell: a second window on another screen has another
-  output for the same content, and the gamut marks change no encoding. The hidden Lab
-  and XYZ outputs store other units than the proof and are left out.
-- Export, thumbnail and AI pipes have no output description (`type` is
+| Field | Meaning |
+|---|---|
+| `image` | the image encoding: display-referred RGB in a profile, with 1.0 at reference white and values up to `headroom` above it |
+| `device` | the device encoding |
+| `format` | the format of the frames: RGB24 where cairo paints them, float where a native backend composes them |
+| `serial` | a counter that changes when one of the other fields changes |
+
+An encoding (`dt_color_encoding_t`) has a profile type, a file name, the
+registry's `cmsHPROFILE`, an intent and a headroom. Type
+`DT_COLORSPACE_NONE` means that no profile describes the values.
+
+The outputs are in `darktable.color_profiles`, one for each window, written
+under `xprofile_lock`. Read them with `dt_colorspaces_get_display_output()`
+and `dt_colorspaces_get_display_serial()`. Both windows have an output from
+`dt_colorspaces_init()` on, because the develop and its pipes exist before
+the GUI, and a headless run never realizes a window.
+
+### Who sets the output
+
+- By default the output is the system display profile of the window
+  (`_describe_system_display()`). Image and device are the same encoding:
+  profile `DISPLAY` or `DISPLAY2`, relative colorimetric, headroom 1,
+  format RGB24. A new system display profile publishes a new output.
+- The presenter takes the output over for a native window and gives it
+  back when the window is no longer native
+  (`dt_colorspaces_set_window_output()`). The transport then declares the
+  image and device encodings. While the presenter owns the output
+  (`platform_owned`), a new system display profile is stored but not
+  published.
+
+### The system display profile
+
+| Platform | Source |
+|---|---|
+| X11 | the X atom or colord |
+| Wayland | colord, when darktable is built with GDK X11 support |
+| Windows | the default profile of the monitor, from WCS |
+| macOS | none: GTK tags its backing store as sRGB |
+
+If the platform gives no usable profile, the system display profile is
+sRGB. Examples are macOS, Windows with Advanced Color, and bytes that
+littlecms rejects.
+
+The preference `ui_last/display_profile_file` names an ICC file that
+replaces the published profile for both windows
+(`dt_colorspaces_set_display_profile()`). If the file cannot be read or is
+not an RGB profile, darktable ignores it and shows one message for each
+file. A native window ignores the file.
+
+There is no other user selection. To preview another display, a print or
+sRGB, use a soft proof. A cairo window always renders to its system display
+profile: no code asks whether the platform converts the pixels again
+([Known limitations](#known-limitations)).
+
+### The registry entries DISPLAY and DISPLAY2
+
+The registry entries "system display profile" (`DISPLAY`) and "system
+display profile (second window)" (`DISPLAY2`) hold the device profile of
+their window (`_entry_follow_device()`):
+
+- on a cairo window, the system display profile;
+- on a native window, the device profile the transport declares, which is
+  sRGB on Wayland.
+
+Code that names an entry by type therefore renders for what the window
+shows. Examples are thumbnails with `cache_color_managed` off and the style
+preview.
+
+No menu offers the two entries. Where the platform converts, darktable
+cannot tell what reaches the screen, so no result can claim to be in the
+display's profile. At startup, `_drop_unoffered_choices()` replaces a
+stored histogram or soft proof profile that no menu offers by sRGB.
+
+A replaced profile stays valid for the session (`system_display_profiles`
+in `dt_colorspaces_t`). Pixels made for the old screen then still convert
+with the profile they were made with. For this reason an encoding names the
+`cmsHPROFILE` as well as the type, and conversions take their profile info
+with `dt_ioppr_add_profile_info_for_content()`. Two encodings have the same
+content when their profiles are the same and their types have the same HDR
+transfer function (`dt_color_encoding_same_content()`).
+
+### What a change triggers
+
+`_publish()` and `_output_changed()` in `colorspaces.c` announce a change
+by what changed (`dt_display_output_diff()`). The rules are the same for
+the presenter and for a new system display profile.
+
+| Change | Effect |
+|---|---|
+| any field | the serial moves, and a redraw of the window is queued |
+| image encoding or format only | nothing more: the producers of the window render again |
+| device encoding (profile, intent or headroom) | the registry entry follows; the thumbnail transforms are rebuilt (main window); `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with `DISPLAY` or `DISPLAY2` |
+| device profile | also `DT_SIGNAL_CONTROL_PROFILE_CHANGED` |
+| new system display profile on a native window | none: the output and the entry do not change |
+
+A new [headroom target](#headroom-target) is a change of the image encoding
+only.
+
+### Producers compare the serial
+
+Producers pull. Each producer compares the serial its image was made for
+with the serial of its window, at the point where it decides to render.
+
+| Producer | Compares | On a mismatch |
+|---|---|---|
+| full, preview and second window pipes, and the pinned image | `pipe->output.serial` of the last finished run, in `_pipe_outdated()` (`darkroom.c`) | requests the pipe again |
+| snapshots, the duplicate manager's preview | `dt_view_get_context_hash()`, which includes the serial of the main window | render again |
+| slideshow | the serial of each slot's frame, on every expose | queues a job; the slot shows its previous image until the new one arrives |
+
+The pipe keeps the serial of a failed run too, so that a failed run is not
+requested again on every redraw. The slideshow drops an image that arrives
+for an earlier serial.
+
+### What a pipe does with the output
+
+- A pipe records its window when it is created (`pipe->window`). The full
+  and preview pipes have the main window. The second window's pipe and
+  every pipe of the pinned image have the second window.
+- At the start of every run, `dt_dev_process_image_job()` copies the output
+  of the window to `pipe->output`. A new serial also synchronizes the pipe
+  again.
+- colorout renders to `pipe->output.image`. It uses the profile the
+  encoding names and does not look the type up again.
+- `pipe->output_headroom` is the peak that sigmoid and agx tone map to. It
+  follows `output.image.headroom`. With "follow output peak" on, the
+  darkroom on a native window therefore depends on the headroom of the
+  screen and not on the PQ peak of an export.
+- `pipe->output_encoding` says what the output values of the pipe are. See
+  below.
+- `dt_dev_image()` takes the output of its sink and returns the frame its
+  pipe published. An image encoding of type `DT_COLORSPACE_NONE` asks for
+  no display encoding: the overlay filters colorout out, and its frame
+  stays in the working RGB profile.
+- Export, thumbnail and AI pipes have no output (`type` is
   `DT_COLORSPACE_NONE`).
 
-### Headroom target
+`pipe->output` is the request. `pipe->output_encoding`
+(`dt_color_encoding_t`) is the result:
 
-A native window's image headroom follows a target the presenter core
-settles, not what the platform reports. The window's platform reports whenever it
-says something about the screen (`dt_presenter_window_report_headroom()`,
-`dt_presenter_headroom_t` in `gui/presenter_target.h`): the peak over
-reference white now, or NAN when the platform has no value (the display
-sleeps), the most the screen can show in the window if the platform says,
-and a generation, which changes when earlier reports say nothing about
-this one: another screen or mode, a display woken up. The policy was
-designed with a future macOS backend in mind, which would report no value
-before EDR is engaged and its potential EDR headroom as the ceiling. A
-report never reaches pipes, and settling is never a platform's or a
-backend's job. The policy is one pure function on a clock passed in
-(`gui/presenter_target.c`, tested by `test_presenter_target`):
+- when colorout runs, the profile, intent and headroom of the transform it
+  built, after it replaced a missing or unsupported profile by sRGB;
+- when colorout does not run, or cannot build its transform on a screen
+  pipe, the final working profile;
+- type `DT_COLORSPACE_NONE` when no profile describes the values.
 
-- The level is log2 of the value, clipped to the ceiling, rounded down to
-  1/8 EV and at least 0 EV, so the target never declares more than the
-  platform offers; an epsilon of 1e-4 step keeps an exact step from
-  losing it to float error. A 1-nit sweep from 203 to 1600 nits gives 24
-  targets.
-- Hysteresis: a level above the target counts once the value clears it
-  by half a step; any level below it counts, since the screen then shows
-  less than the pipes render for. A value on a step boundary flips once.
-- Settling: a new level is taken 1 s after the reported value stopped
-  changing, longer than the gaps between brightness steps a person makes,
-  and at the latest 3 s after its first report. A value back in the
-  target's band before then costs nothing.
-- A report without a value keeps the target and drops a level waiting to
-  settle.
-- A new generation (and a window's first report) forgets the target's
-  band: its first value is taken at once, clipped to the ceiling, and
-  until one comes the target is 1.0. The ceiling never stands in for a
-  value: it is what the screen could show, not what it shows now. On a
-  macOS cold start the first value is EDR's idle one, a change only above
-  1.0; the ramp of up to 2 s after it changes the target once, where it
-  ends.
+The pipe resolves the encoding at the start of every run, after
+synchronization, because a history replay can commit colorin after
+colorout (`_resolve_output_encoding()` in `pixelpipe_hb.c`). The scopes and
+the global color picker interpret the pixels of the preview pipe with it,
+and each frame carries it. `output_profile_info` is only the matrix
+stand-in for code that needs matrices: it is sRGB for a profile without
+matrices.
 
-A settled change goes to the backend's `target()`, which prepares showing
-frames rendered for it and then publishes the window's output with the
-headroom it can show, through `dt_presenter_window_set_output()`: a new
-image encoding alone ([output description](#output-description)). The
-Wayland transport describes its image layer for the target and publishes
-when that description is ready ([Wayland](#wayland)); until then, and if
-it fails, pipes and transport stay on the description in use. Until a
-window's producers deliver, its frames keep the tone mapping they were
-rendered with: the transport clips them to the range of the image
-description in use, and the compositor clips or fits that range to the
-screen (KWin clamps under relative intent).
-A cairo window has headroom 1 and publishes no target; the target goes
-on settling from the platform's reports, so a window that becomes native
-again ([Backends](#backends)) starts at the screen's. The target goes
-with the platform: when the core frees it (forced or failed), the settle
-timer stops and the target is 1.0 again, so the next platform's first
-report is taken at once, whatever generation it starts at.
+### GTK-side colors
 
-Why settle: every published image-headroom change reruns the window's
-pipes from the start, since `output_headroom` is in every cache line's hash
-(`pixelpipe_cache.c:126`), while KWin sends a preferred description per
-frame of its brightness animation and macOS about 230 notifications per EDR
-ramp. No surveyed editor follows the screen at all (Lightroom, Resolve and
-Krita fix their target); viewers re-fit every frame on the GPU, and even
-Chromium throttles headroom-only changes on macOS to 12 Hz.
+Everything GTK draws converts to the device encoding:
 
-The constants are hypotheses. `-d control -d verbose` logs every report
-with its time and every settled target: the gaps between the reports of
-one gesture bound the quiet time, the longest platform ramp the maximum
-latency, and the noise of a screen left alone the hysteresis.
+- module GUIs take `dt_ioppr_get_gui_profile_info()`, the device profile
+  of the main window, or sRGB for a profile without matrices;
+- frames drawn by GTK take their device rendition ([Frames](#frames));
+- the thumbnail transforms follow the main window;
+- picker swatches convert from the encoding of the preview pipe to the
+  device encoding of its window.
+
+On a cairo window, image and device are the same encoding, so these
+conversions are the identity. The exception is a frame tagged with an RGB
+proof profile.
+
+The mask and channel views, the clipping indicators and the gamut check
+mark are UI tones. They are authored as device values and converted to the
+`output_encoding` of the pipe (`dt_ioppr_device_to_output()`). colorout
+renders the gamut check mark, device (0, 1, 1), once per commit in the
+same way as a pixel. A proof narrower than the device therefore clips it.
+
+## Soft Proof
+
+A soft proof is an export to the proof profile. In proof mode colorout
+renders the full and the preview pipe as an export to that profile. It does
+not change the second window, the thumbnail pipe or exports.
+
+- The proof has its own intent and black point compensation
+  (`softproof_intent`, `softproof_bpc`), set next to the proof profile in
+  the darkroom.
+- The output encoding is the proof profile, and the frame is tagged with
+  it. The presenter converts the frame in the same way as each other frame
+  and clips what the screen cannot show.
+- `output_headroom` is the headroom of the proof profile, as in an export
+  to that profile. It can be above or below the headroom of the screen.
+- The proof clips where an integer export clips. A float export does not
+  clip. The gamut check marks what that clip changes.
+- The proof of the preview pipe has no gamut marks, because the scopes, the
+  color pickers, navigation and the filmstrip thumbnail read it.
+- In proof mode the scopes and pickers show values in the output encoding
+  of the preview, whatever the histogram setting
+  (`dt_ioppr_get_scope_profile_info()`).
+
+A proof equals a darktable export with the same settings where the export
+honors them. An export differs in two points:
+
+- An export asks for no compensation. littlecms still applies compensation
+  for the perceptual and saturation intents into a v4 profile.
+- The matrix path of an export ignores the intent, unless "always use
+  LittleCMS 2" is on. The matrix path cannot serve a proof with the
+  absolute colorimetric intent, or with compensation and a black that is
+  not zero. Such a proof matches the export made with that preference on.
+
+An ink proof converts in two steps, on the CPU. First colorout converts to
+ink values with the intent and compensation of the proof, and clips them.
+Then it converts the ink values to the output of the window, relative
+colorimetric. A frame holds RGB, so the output encoding has the profile of
+the window. The scopes then show the values in that profile.
+
+## Headroom Target
+
+The image headroom of a native window follows a target that the presenter
+core settles. It does not follow the raw value from the platform. Each
+published change of the image headroom reruns the pipes of the window from
+the start, because `output_headroom` is in the hash of every cache line.
+Platforms send many values during one brightness change: KWin sends one
+description per frame of its animation.
+
+The platform reports with `dt_presenter_window_report_headroom()`
+(`dt_presenter_headroom_t` in `gui/presenter_target.h`):
+
+| Field | Meaning |
+|---|---|
+| `value` | the peak of the screen over reference white now, or NAN when the platform has no value |
+| `ceiling` | the most the screen can show in the window, or 0 when the platform does not say |
+| `generation` | changes when earlier reports say nothing about this one: another screen or mode, a display that wakes up |
+
+A report never reaches the pipes. The policy is one pure function on a
+clock that the caller passes in (`gui/presenter_target.c`, tested by
+`test_presenter_target`):
+
+| Rule | Value |
+|---|---|
+| level | log2 of the value, clipped to the ceiling, rounded down to 1/8 EV, at least 0 EV |
+| a higher level counts | when the value is half a step above it |
+| a lower level counts | always, because the screen then shows less than the pipes render for |
+| quiet time | 1 s since the reported value last changed |
+| maximum latency | 3 s after the first report outside the band of the target |
+
+- The core takes a new level at the earlier of the two times.
+- If the value returns into the band of the target before that, the core
+  drops the waiting level. Nothing is published and no pipe reruns.
+- A report without a value keeps the target and drops the waiting level.
+- A new generation, and the first report of a window, forget the band. The
+  target is 1.0 until the first value arrives, and the core takes that
+  value at once. The ceiling never replaces a value.
+
+A settled change goes to the backend's `target()`. The backend prepares to
+show frames rendered for the new target. Then it publishes the output of
+the window with the headroom it can show, through
+`dt_presenter_window_set_output()`. On Wayland, see [Wayland](#wayland).
+
+- Until the producers of the window deliver, its frames keep the tone
+  mapping they were rendered with. The transport clips them to the range
+  of the image description in use.
+- A cairo window has headroom 1 and publishes no target. The target
+  continues to settle from the reports, so a window that becomes native
+  again starts at the headroom of the screen.
+- When the core frees the platform, the settle timer stops and the target
+  is 1.0 again.
+
+The constants are hypotheses. To measure them, run with
+`-d control -d verbose`, which logs every report with its time and every
+settled target. The intervals between the reports of one gesture give the
+quiet time. The longest ramp of the platform gives the maximum latency.
+The noise of a screen that nobody touches gives the hysteresis.
 
 ## Frames
 
-`src/develop/frame.h`. gamma is the terminal module of every pipe and
-writes float RGBA: the pixel as colorout encoded it, with alpha 1 (channel 3
-carries mask data inside the pipe), or its mask and channel views as display
-values. A screen pipe publishes that as a frame, `pipe->frame`, written
-under `backbuf_mutex`; `dt_dev_pixelpipe_frame()` takes a reference. A frame
-is a copy, as master's backbuf was, since the cache line it comes from is not
-pinned, and it never changes once it is made. It holds:
+`src/develop/frame.h`. gamma is the last module of every pipe and writes
+float RGBA: the pixel as colorout encoded it, with alpha 1, or the mask and
+channel views as display values. A screen pipe publishes that buffer as a
+frame, `pipe->frame`, written under `backbuf_mutex`. Take a reference with
+`dt_dev_pixelpipe_frame()`.
 
-- the pixels, in the format of the pipe's output (`format` in
-  `dt_display_output_t`): RGB24, packed on the worker with
-  `dt_display_to_8bit()` into cairo's BGRX with X 255, or float RGBA;
-- its encoding, the pipe's `output_encoding`: what colorout produced, not
-  what the pipe was asked for (`dt_frame_encoding()`);
+A frame is a copy, because the cache line it comes from is not pinned. It
+never changes after it is made. It holds:
+
+- the pixels, in the format of the pipe's output: float RGBA, or RGB24
+  packed on the worker with `dt_display_to_8bit()` into cairo's BGRX;
+- its encoding, the `output_encoding` of the pipe: what colorout produced,
+  not what the pipe was asked for (`dt_frame_encoding()`);
 - the serial of the output it was made for (`dt_frame_made_for()`), and an
-  id, a 32-bit count of the frames made, so unique for the session in
-  practice;
-- its geometry (`dt_frame_geometry()`): size, scale and zoom position, as
-  master's `backbuf_scale` and `backbuf_zoom_pos` were. The pipe keeps
-  `backbuf_width` and `backbuf_height`, which many read.
+  id, a 32-bit count of the frames made;
+- its geometry (`dt_frame_geometry()`): size, scale and zoom position.
 
-Exports, thumbnails, AI restore and pixel masks do not run screen pipes:
-their pipes keep `pipe->backbuf`, the last module's output.
+The format belongs to the frame, not to the pipe cache. gamma and every
+cache line stay float, no hash includes the format, and only the publish
+step packs. A new format is a new image (`dt_display_output_diff()`), so
+the producers of the window render again.
 
-A window's output names the format its frames are made in: RGB24 where cairo
-paints them, float where a native backend composes them. A new format is a
-new image (`dt_display_output_diff()`), so the window's producers render
-again. The format belongs to the frame, not to the pipe cache: gamma and
-every cache line stay float, no hash includes it, and only the publish step
-packs.
+Exports, thumbnails, AI restore and pixel masks do not run screen pipes.
+Their pipes keep `pipe->backbuf`, the output of the last module.
 
-Any other format or encoding of a frame is a rendition: `dt_frame_surface()`
-(RGB24) and `dt_frame_float()`. A rendition is made from the frame's own
-pixels when it is first asked for, never from another rendition, and is kept
-with the frame; any thread may ask. In the frame's own format and profile it
-is the frame's pixels, whatever the headroom. Conversions are built from the
-profiles the encodings name, which live for the session, so a frame outlives
-the develop that made it, such as `dt_dev_image()`'s temporary one, with
-the intent of the encoding converted to (`dt_presenter_image()`); matrix
-profiles go through darktable's matrix and curves, the matrix on unclipped
-values and an RGB24 rendition clipped after it, others through lcms.
+### Renditions
 
-GTK-side drawing (navigation, the filmstrip thumbnail of the edited image,
-the correction cursor, focus peaking) takes a reference on the frame and
-draws `dt_frame_device_surface()`, its RGB24 rendition in the window's device
-encoding. On a cairo window that is the frame's own pixels, unless the frame
-is in another profile, as an RGB proof's is: the GUI thread does what master
-did with its 8-bit backbuf. Elsewhere the worker makes,
-when it publishes a frame, the device renditions GTK usually asks for: the
-preview's, for navigation and the filmstrip, whether they are shown or not,
-and, while focus peaking is on, those of the full and second window pipes.
-A draw still converts where the worker did not: snapshot and duplicate
-frames under focus peaking, frames published before focus peaking was
-turned on, and frames whose window's device encoding changed while their
-pipe ran.
+`dt_frame_surface()` (RGB24) and `dt_frame_float()` return a rendition.
+
+- A rendition is made from the frame's own pixels when it is first asked
+  for, never from another rendition. It is kept with the frame.
+- Any thread can ask.
+- In the frame's own format and profile, the rendition is the frame's
+  pixels, whatever the headroom.
+- A conversion is built from the profiles that the two encodings name.
+  Those profiles live for the session, so a frame can outlive the develop
+  that made it.
+- A conversion uses the intent of the encoding it converts to.
+- Matrix profiles go through darktable's matrix and curves, others through
+  littlecms. An RGB24 rendition is clipped after the matrix.
+
+GTK-side drawing takes a reference on the frame and draws
+`dt_frame_device_surface()`, the RGB24 rendition in the device encoding of
+the window. Its users are navigation, the filmstrip thumbnail of the edited
+image, the correction cursor and focus peaking.
+
+The worker makes the device rendition when it publishes a frame, so that
+the GUI thread does not convert:
+
+- always for the preview pipe;
+- for every darkroom screen pipe while focus peaking is on.
+
+On a cairo window the device rendition is the frame's own pixels, unless
+the frame is in another profile, such as an RGB proof.
+
+A draw converts on the GUI thread where the worker did not. Examples are
+snapshot frames under focus peaking, and frames whose window changed its
+device encoding while their pipe ran.
 
 ## Presenter API
 
@@ -381,150 +394,126 @@ cairo_t *pcr = dt_presenter_begin(widget, cr);
 dt_presenter_end(widget, pcr);
 ```
 
-Inside, `dt_presenter_image(pcr, x, y, frame, filter)` takes the place of
-`cairo_set_source_surface()` + `cairo_paint()` for an opaque image: it uses
-the context's current transformation and clip, of any shape, and paint
-order is kept, so whatever is drawn afterwards is on top. The presenter
-holds a reference on the frame for as long as it shows or keeps it, so the
-caller may drop its own when the call returns. The window shows the frame
-in its output's image encoding: cairo paints the frame's RGB24 rendition, a
-native backend composes its float one. A frame made for that output is its
-own pixels; one in another profile or format, made before the output
-changed, is shown converted, never refused, as GTK4's renderers and Chromium
-convert at draw. It stays until its producer renders it again: an output
-change moves the window's serial and redraws it, and the producers compare
-the serial there ([output description](#output-description)).
+Inside, `dt_presenter_image(pcr, x, y, frame, filter)` replaces
+`cairo_set_source_surface()` and `cairo_paint()` for an opaque image.
 
-- `dt_presenter_retain()` keeps the draw in progress: everything it shows,
-  its images and all that is drawn around and above them, is the widget's
-  kept presentation from then on. `dt_presenter_keep()` paints the kept
-  presentation where it was, over the widget's area as it was then,
-  replacing what the draw has drawn so far there, and the rest of the draw
-  goes on top; it returns FALSE when there is none.
-  The darkroom retains its full image draws while the loading screen
-  preference (`darkroom/ui/loading_screen`) is off, as master cached its
-  drawing then, and shows them while the next image loads, over its
-  background, which shows where the view has grown since: the color
-  assessment surround, focus peaking and guides of the image it switches
-  away from stay, under the loading toast. A draw GTK restricted to a
-  damaged area neither replaces nor drops the kept presentation; a draw is
-  full when its clip is one rectangle over the whole widget, and a full
-  draw that neither retains itself nor shows the kept one drops it. On the
-  layered backend kept images are shown in the window's output as it is
-  now, converted as any other; the cairo backend keeps the pixels it
-  painted.
-- `dt_presenter_clear()` drops a widget's images and kept presentation
-  (darkroom `leave()`); unmapping a widget does too.
-- `dt_view_paint_surface()` is the darkroom's user: background, then the
-  preview fallback and the main image through the presenter. Pickers, masks,
-  module overlays, guides and focus peaking follow on the same context.
+- It uses the current transformation and clip of the context. The clip can
+  have any shape.
+- Paint order holds: what the widget draws afterwards is on top.
+- The presenter holds a reference on the frame while it shows or keeps it.
+  The caller can drop its own reference when the call returns.
+- The window shows the frame in the image encoding of its output. cairo
+  paints the RGB24 rendition, and a native backend composes the float
+  rendition.
+- A frame in another profile or format, made before the output changed, is
+  shown converted and never refused. It stays until its producer renders
+  it again ([Producers compare the
+  serial](#producers-compare-the-serial)).
 
-Presenting widgets: the center view and the side-by-side snapshot area
-(`gui/gtk.c`, `_draw()`), and the second darkroom window. Images submitted
-there: the darkroom main image and preview fallback, snapshots, the
-duplicate manager's preview, and the slideshow.
+A widget can keep what it showed, to show it again while the next image
+loads:
+
+- `dt_presenter_retain()` marks the draw in progress. If the draw is full,
+  everything it shows becomes the kept presentation of the widget: its
+  images and all that is drawn around and above them.
+- `dt_presenter_keep()` paints the kept presentation where it was, over
+  the area the widget had then. It replaces what the draw has drawn there
+  so far, and the rest of the draw goes on top. It returns FALSE when
+  there is no kept presentation.
+- `dt_presenter_clear()` drops the images and the kept presentation of a
+  widget (darkroom `leave()`). Unmapping the widget does the same.
+
+A draw is full when its clip is one rectangle over the whole widget. A draw
+that GTK clipped to a damaged area does not replace or drop the kept
+presentation. A full draw that does not retain itself and does not show the
+kept presentation drops it.
+
+The darkroom retains its full image draws while the loading screen
+preference (`darkroom/ui/loading_screen`) is off. It shows the kept
+presentation, under the loading toast, while the next image loads.
+
+`dt_view_paint_surface()` is the darkroom's user: it draws the background,
+then the preview fallback and the main image through the presenter.
+Pickers, masks, module overlays, guides and focus peaking follow on the
+same context.
+
+The presenting widgets are the center view and the side-by-side snapshot
+area (`gui/gtk.c`, `_draw()`), and the second darkroom window. The images
+submitted there are the darkroom main image and its preview fallback,
+snapshots, the duplicate manager's preview, and the slideshow.
 
 ## Backends
 
-A window's backend is layered while its platform color-manages the
-window's tagged content to the panel and the transport sets up, otherwise
-cairo. With the preference `ui_last/display_force_cairo` set
-(preferences > miscellaneous), every window is a cairo window
-([output description](#output-description)): an escape hatch for
-compositor or driver bugs in a native backend.
+A window has the layered backend while its platform color-manages the
+tagged content of the window and the transport can be set up. Otherwise it
+has the cairo backend. With the preference `ui_last/display_force_cairo`
+set (preferences > miscellaneous), every window is a cairo window. That
+preference is an escape hatch for compositor or driver bugs.
 
 The platform (`dt_presenter_platform_t` in `gui/presenter_backend.h`)
-watches the window whatever its backend, and its verdict can change while
-the window exists: a Wayland output switches color mode, or the window
-moves to a monitor described otherwise; on Windows, Advanced Color is set
-per monitor and toggled by the user. A platform reports a new verdict with
-`dt_presenter_window_choose()`, as Chromium picks the output color space
-again for the display a window is on.
+watches the window whatever its backend. Its verdict can change while the
+window exists. For example, a Wayland output switches its color mode, or
+the window moves to a monitor in another mode. The platform reports a new
+verdict with `dt_presenter_window_choose()`.
 
-One function in `gui/presenter.c`, `_choose()`, decides the backend and
-the platform. It runs at once when the window's first presenting widget
-draws, which needs a backend then, and otherwise from an idle at
-`G_PRIORITY_HIGH_IDLE`, one per window, that `dt_presenter_window_choose()`
-queues. The request may come from a platform's event handler or its own
-setup, which a switch must not free or nest a blocking setup in. The idle
-runs before the next separately dispatched paint (`GDK_PRIORITY_REDRAW` is
-lower), but cannot preempt a frame already running, so the old backend
-stays callable until then. In order, a choice:
+One function decides the backend and the platform: `_choose()` in
+`gui/presenter.c`. It runs at once when the first presenting widget of the
+window draws. Later requests run it from an idle, one per window, that
+`dt_presenter_window_choose()` queues. The old backend stays callable
+until that idle runs. In order, a choice:
 
-1. reads the force key and remembers it;
-2. makes the platform if there is none and the window is neither forced
-   nor failed;
-3. wants native only if not forced, not failed, a platform exists and its
-   verdict says so;
-4. replaces the backend only if there is none yet or it is the other kind:
-   every presenting widget's backend data goes, kept presentations
-   included, the old backend is freed, and the new one reports the
-   window's output if it is native, or the core gives the output back to
-   the system display profile;
-5. frees the platform if the window is forced or failed, whether or not
-   the backend changed, and resets the
-   [headroom target](#headroom-target). A native backend, whose transport
-   uses the platform, is already gone by then (step 4); a cairo backend
-   stays and outlives the platform;
-6. has the window draw again if the backend changed.
+1. reads the force preference and remembers it;
+2. makes the platform, if there is none and the window is not forced and
+   not failed. If that setup fails, the window is failed;
+3. wants native only if the window is not forced, not failed, has a
+   platform, and the verdict of the platform says so;
+4. replaces the backend only if there is none yet or it is of the other
+   kind. The backend data of every presenting widget is dropped, kept
+   presentations included, and the old backend is freed. If the layered
+   backend cannot be set up, the window is failed and gets the cairo
+   backend. A cairo backend gives the output back to the system display
+   profile. A layered backend's transport reports the output during its
+   setup;
+5. frees the platform if the window is forced or failed, and resets the
+   [headroom target](#headroom-target);
+6. draws the window again if it replaced an existing backend.
 
-So after every choice the platform exists only while the window may be
-native, and a window may have several platforms in turn. A forced window
-makes no color-management requests, and a failed one has no watcher left
-to promote it. Setup failing, the platform's or the transport's, marks the
-window failed: native is not tried again by later verdicts or preference
-changes, only when the force key changes, which closing the preferences
-dialog (`DT_SIGNAL_PREFERENCES_CHANGE`) compares with the key the window
-follows. The constructors return the reason for a failure, and the core
-writes one line per backend change and per failed native attempt, a
-failed promotion of a cairo window included (`-d control`): `native`, or
-`cairo:` with the cause. Where no transport exists, as on X11, macOS and
-Windows today, a window has no platform and is a cairo window for as long
-as it exists.
+After every choice, the platform exists only while the window can be
+native. A forced window makes no color-management requests.
 
-The core, `gui/presenter.c`, keeps the widget records, the references on the frames
-of each widget's last draw, the test for a draw GTK clipped to a damaged
-area, and the matrix of each image; it has no branch on the backend. A
-backend (`dt_presenter_backend_t` in `gui/presenter_backend.h`) begins a
-widget's draw and returns the context to draw on, shows an image, paints
-the kept presentation, ends the draw and clears the widget, and with
-`target()` prepares showing frames rendered for a new headroom target. Each keeps
-the presentation its own way, with the same meaning: what the widget's
-retained draw showed.
+A failed window does not try native again on later verdicts. It tries again
+only when the force preference changes. Closing the preferences dialog
+(`DT_SIGNAL_PREFERENCES_CHANGE`) compares the preference with the value
+the window follows.
+
+With `-d control`, the core writes one line for each backend change and
+each failed native attempt: `native`, or `cairo:` with the cause. Where no
+transport exists, as on X11, macOS and Windows today, a window has no
+platform and is always a cairo window.
+
+The core, `gui/presenter.c`, has no branch on the backend. It keeps the
+widget records, the references on the frames of each widget's last draw,
+the test for a clipped draw, and the matrix of each image. A backend
+(`dt_presenter_backend_t` in `gui/presenter_backend.h`) begins and ends a
+draw, shows an image, paints the kept presentation, clears a widget, and
+prepares for a new headroom target with `target()`.
 
 ### cairo
 
-`gui/presenter_cairo.c`. The widget draws on GTK's own context, and each
-frame's RGB24 pixels are painted there: frames for a cairo window are made
-in RGB24, so a frame in the window's encoding is neither converted nor
-copied on the GUI thread; one made for an earlier output is converted
-there once.
+`gui/presenter_cairo.c`. The widget draws on GTK's own context, and the
+backend paints the RGB24 pixels of each frame there. Frames for a cairo
+window are made in RGB24. A frame in the encoding of the window is
+therefore not converted and not copied on the GUI thread. A frame made for
+an earlier output is converted there once.
 
-The kept presentation is what GTK's target holds at the end of the
-retained draw. On X11, GDK draws each frame into a surface of its own, and
-a reference on it keeps it, as master kept the darkroom's: it holds what
-GTK drew above the widget in that frame as well, a toast among it, and the
-widgets around it, so keeping paints only the widget's area of then. On
-Wayland and Quartz the target is the window's buffer, which the next frame
-overwrites, and on Windows holding it stops GTK from invalidating the
-widget (#20831), so there the widget's part is copied into a surface of
-the widget's size, 4 bytes per device pixel, at the end of every retained
-draw.
+The kept presentation is what GTK's target holds at the end of the retained
+draw. On X11 the backend holds a reference on that target. On the other
+platforms it copies the widget's part into a surface of its own.
 
 ### Layered
 
-The layered backend, the native one, shows a window's images on surfaces of
-its own above GTK's surface, from bottom to top (above, not below: on
-Windows DirectComposition always composes above a window's GDI content, so
-an underlay would not port):
-
-1. GTK's surface: everything GTK draws, untagged.
-2. The image layer: premultiplied FP16 or UNORM16, in the window's output,
-   alpha 0 off the images.
-3. The foreground layer: premultiplied 8-bit, untagged like GTK's surface,
-   with everything the presenting widget draws. Where an image is, its
-   pixels are cut out by the image's coverage, so paint order holds across
-   the two layers.
+`gui/presenter_layers.c`. The layered backend shows the images of a window
+on surfaces of its own, above GTK's surface:
 
 ```
   foreground layer   8-bit, untagged    pickers, masks, guides, overlays
@@ -532,281 +521,263 @@ an underlay would not port):
   GTK's surface      8-bit, untagged    panels, thumbnails, everything else
 ```
 
-Both layers take no input, so GTK below keeps getting all of it. A presenting
-widget that draws no image puts its drawing on GTK's surface as cairo would,
-and its layers are unmapped (lighttable, map, a darkroom loading its first
-image).
+- The image layer is premultiplied FP16 or UNORM16, in the image encoding
+  of the window. Its alpha is 0 where there is no image.
+- The foreground layer is premultiplied 8-bit and untagged. It holds
+  everything the presenting widget draws.
+- The layers are above GTK's surface and not below it, because
+  DirectComposition on Windows always composes above the GDI content of a
+  window.
+- The two layers take no input, so GTK receives all of it.
+- A presenting widget that draws no image draws on GTK's surface, and its
+  layers are unmapped. Examples are lighttable, map, and a darkroom that
+  loads its first image.
 
-The kept presentation is the retained draw's foreground, with its images
-cut out and all it drew above them, and that draw's images. Keeping it
-paints that foreground over what the draw has drawn so far and places its
-images again, below anything the draw places later. A presentation kept
-at another device scale is dropped when it would be shown: its cuts and
-coverages are of that scale, and the clips they came from are gone. While a widget's
-draws are retained, they alternate between two foreground surfaces, so
-keeping costs one more foreground-size surface per retaining widget, 4
-bytes per device pixel, and no copy. What is replayed above the widget at
-present (GtkOverlay children such as toasts) is not part of its
-presentation: on a kept foreground the replay saves what it covers and
-puts it back after the transport has taken the layers.
+#### The two-layer rule
 
-The two layers show what cairo would paint on GTK's surface, in paint
-order. With the foreground `F` above the image layer `N`, keeping
-`R = F + L` for the painted result `R` and the images' share `L`, the
-layer shows `N = L / (1 - alpha_F)`, and `F over (N over G)` is
-`R + (1 - alpha_R) G` over GTK's surface `G`:
+The two layers together show what cairo would paint on GTK's surface, in
+paint order. Let `F` be the foreground layer, `N` the image layer, `G`
+GTK's surface, `R` the result cairo would paint, and `L` the share of the
+images in `R`. The backend keeps `R = F + L` and `N = L / (1 - alpha_F)`.
+Then `F over (N over G)` is `R + (1 - alpha_R) G`.
 
-- a paint that is not an image changes `F` only;
-- an image paint of coverage `a`, over a foreground of alpha `b` before
-  it, cuts the foreground, `F <- (1 - a) F`, and moves the layer towards
-  the image, `N <- N + w (I - N)` with `w = a / (a + (1 - a)(1 - b))`, on
-  all four channels with the image's alpha 1. `w` comes from the `a` and
-  `b` the cut applied and is in [0, 1], so `N`'s alpha stays in [0, 1]
-  and its color in the clip range of the encoding. Over an opaque backdrop
-  `N` is opaque wherever an image covers anything; a translucent or
-  missing backdrop takes the same rule, nothing assumes it away.
+- A paint that is not an image changes `F` only.
+- An image paint of coverage `a`, over a foreground of alpha `b`, cuts the
+  foreground: `F <- (1 - a) F`.
+- The same paint moves the image layer towards the image `I`:
+  `N <- N + w (I - N)` with `w = a / (a + (1 - a)(1 - b))`, on all four
+  channels, with alpha 1 for the image.
 
-The coverage is cairo's: the alpha cairo paints with a source of the
-frame's size and alpha 1 and the image's matrix and filter through the
-image's clip, including the filter's reach past the frame's edge. It is
-made when an image is placed, one byte per device pixel over the image's
-box. First cairo paints alpha 1 through the image's own context into a
-group of alpha content (`cairo_push_group_with_content()`), which takes
-the caller's clip as it is, any shape, nested, with fractional edges
-(the preview fallback and the main image share one clip with edges on
-half pixels), and is read rather than painted back, which would apply
-the clip twice: the clip's coverage. That is the coverage wherever the
-frame covers whole; in the 64-pixel tiles near the frame's edge cairo
-paints the frame unclipped and the clip's coverage multiplies it, as a
-paint through a clip does. Images placed alike in this draw, the last one
-and the kept one share a coverage: same frame size, matrix, filter and
-scale, and the same clip coverage, compared as runs of equal bytes.
-`test_presenter_compose` compares the coverage with cairo's paint of the
-whole widget: equal where the frame covers whole; in the edge tiles pixman
-steps sample positions in fixed point from where each composite starts,
-so a tile differs from the whole paint by a few code values at fractional
-pixels (at most 5 in 40 seeds of the test, which allows 8) or, with a
-nearest filter, by a pixel whose sample lies on the frame's edge. Through
-a clip that is not a rectangle, cairo itself antialiases the clip's edge
-differently with the compositing route it takes, and the test allows 32
-code values there (at most 14 measured). No caller clips images to
-anything but rectangles. When the image is placed, the foreground's alpha
-is kept at each pixel of fractional coverage and the foreground is cut. Images are sampled from each frame's
-float pixels, nearest or bilinear, padded at the edges (cairo's
-`EXTEND_NONE` without its alpha, which the coverage carries), in double
-precision positions but not bit-identical to pixman's.
+`w` is in [0, 1], so the alpha of `N` stays in [0, 1] and its color stays
+in the clip range of the encoding. The rule makes no assumption about the
+backdrop, which can be translucent or missing.
 
-The image layer is composed only when what it shows changes: frames,
-placements, the foreground's alpha under fractional coverage, size,
-scale, and the encoding the transport gives. It is composed straight into
-the transport's buffer, with the images accumulated in float per row; the
-encoding's matrix applies before the one quantization, so overlapping
-images round once. A texel that is not finite counts as its limit: an
-infinite one where it weighs clips to the range, and where its bilinear
-weight is 0 it does not count; NaN where it weighs gives the range's
-bottom. Limits of
-the two surfaces: at pixels of fractional coverage the compositor blends
-the layers in its own blending space, not in cairo's encoded values, as
-GTK4's offloaded subsurfaces and Chromium's underlays do; the 8-bit
-foreground's rounding perturbs `N`'s invariance under later paints by up
-to a code value.
+The coverage `a` is the alpha cairo itself paints for the image, through
+the caller's clip and with the image's matrix and filter. The backend makes
+it when an image is placed, one byte per device pixel over the box of the
+image. `test_presenter_compose` compares it with cairo's paint of the whole
+widget; the comment there gives the tolerances.
+
+The image layer is composed only when what it shows changes. It is
+composed straight into the transport's buffer. The matrix of the encoding
+applies before the one quantization, so overlapping images round once.
+
+The kept presentation is the foreground of the retained draw, with its
+images cut out, and the images of that draw. A presentation kept at
+another device scale is dropped. While a widget retains its draws, they
+alternate between two foreground surfaces, so keeping needs no copy.
+
+#### Replay
 
 What GTK3 draws above a presenting widget is in GTK's surface, under the
-layers, so the backend replays it into the foreground when it presents:
-the children that each GtkOverlay on the way to the toplevel stacks above
-the widget, bottom to top, and the toplevel's popovers unless the
-transport shows them above its layers (`popovers_above`), as on Wayland.
-GtkWindow draws its popovers above its content, in the order
-`gtk_container_forall()` lists them. A popover is no part of any
-presenting widget, so the backend watches each one it replays: when one
-is shown, hidden, moved or animated, or its content changes, the
-window's presenting widgets are drawn again.
+layers. The backend therefore draws it again into the foreground when it
+presents (`_replay_above()`):
 
-The transport reports the window's output, its image encoding and, as
-device, the profile GTK's own surface is shown in, through
-`dt_presenter_window_set_output()`, at setup and whenever it changes, and
-the platform the screen's headroom through
-`dt_presenter_window_report_headroom()`; the image headroom of the
-window's output is what the transport encodes for, which follows the
-core's [headroom target](#headroom-target). The
-pipes of that window then render to that output, and everything GTK draws
-there converts to the device profile
-([output description](#output-description)).
+- the children that each GtkOverlay between the widget and the toplevel
+  stacks above the widget, such as toasts;
+- the popovers of the toplevel, unless the transport shows them above its
+  layers (`popovers_above`), as on Wayland.
 
-Code is split by what it works around:
+A popover is not part of a presenting widget, so the backend watches each
+popover it replays. When a popover is shown, hidden, moved or animated, or
+its content changes, the presenting widgets of the window draw again.
 
-- `gui/presenter_layers.c`: the layered backend, the GTK3 part every
-  native platform shares. It composes the image layer and the foreground,
-  keeps the presentation, and computes the layers' size, scale and
-  position in the toplevel. A GTK4 port, where widgets draw textures with
-  color states, deletes it.
-- `gui/presenter_<platform>.c`: the platform, which tells whether the
-  window is native and reports the screen's headroom, and the transport and
-  its timing: output description, buffers, and `reserve()`,
-  `commit()`, `clear()`, `release()`, `free()` and `target()`, which
-  describes the image for a new headroom target (`dt_presenter_transport_t` in
-  `gui/presenter_layers.h`). A present is one transaction: `reserve()`
-  gives the storage of both layers (`dt_presenter_reservation_t`), each
-  with its row stride, and the image's encoding
-  (`dt_presenter_encoding_t`): a clip range for straight color in the
-  window's output, then a 3x3 linear map, stored as signed half floats or
-  UNORM16 (saturated to [0, 1]), which covers a transport that encodes in
-  other primaries or with another white level, and the layered backend
-  writes them and commits.
-  The transport may refuse a reservation while the compositor holds its
-  buffers; a reservation without an image buffer is refused too when the
-  image changed. Nothing of the present is then shown, and the widget
-  draws again next frame. The transport decides when to call
-  `dt_presenter_window_present()`: where the layers become visible
-  together with GTK's surface for that frame, or later, never earlier.
-  That point is verified on Wayland only: before GDK's commit in
-  `after-paint` ([Wayland](#wayland)). On macOS it is expected at the end
-  of the presenting widget's draw, inside `GdkQuartzView`'s
-  `updateLayer`, and on Windows after GTK's paint; both are open, to be
-  verified by their backends.
+#### Platform and transport
 
-The costs over a cairo window, per presenting widget: two foreground
-surfaces of 4 bytes per device pixel (one while nothing is retained), the
-transport's buffers (on Wayland two of each layer, 8 and 4 bytes per
-device pixel), a coverage of one byte per device pixel over each placed
-image's box, and an alpha-1 source of one byte per pixel of the largest
-frame shown. Per present the foreground is copied into the transport's
-buffer and the replay drawn into it; the image layer is composed only
-when it changes, at about one sample per device pixel of each image's
-box.
+`gui/presenter_<platform>.c` holds the platform and the transport
+(`dt_presenter_transport_t` in `gui/presenter_layers.h`).
+
+- The platform says whether the window is native, and reports the headroom
+  of the screen.
+- The transport reports the output of the window with
+  `dt_presenter_window_set_output()`, at setup and at every change. The
+  output has the image encoding and, as device encoding, the profile that
+  GTK's own surface is shown in.
+- A present is one transaction. `reserve()` gives the storage of the two
+  layers and the encoding of the image layer. The layered backend writes
+  the layers, and `commit()` shows them.
+- The encoding of the image layer (`dt_presenter_encoding_t`) is a clip
+  range for straight color in the output of the window, then a 3x3 linear
+  map. A transport can thus encode in other primaries or with another
+  white level.
+- The transport can refuse a reservation while the compositor holds its
+  buffers. Nothing of that present is shown, and the widget draws again
+  on the next frame.
+- The transport decides when to call `dt_presenter_window_present()`: at
+  the point where the layers become visible together with GTK's surface
+  for that frame, or later, and never earlier.
+
+That point is verified on Wayland only. On macOS and Windows a future
+backend must find and verify it.
+
+#### Costs and limits
+
+For each presenting widget, a native window needs more memory than a cairo
+window:
+
+- two foreground surfaces of 4 bytes per device pixel, or one while
+  nothing is retained;
+- the buffers of the transport: on Wayland two for each layer, of 8 and 4
+  bytes per device pixel;
+- one byte per device pixel for the coverage of each placed image, and one
+  byte per pixel of the largest frame shown.
+
+Each present copies the foreground into the transport's buffer and draws
+the replay into it. Composing the image layer takes about one sample per
+device pixel of each image's box.
+
+Two properties differ from a single cairo surface:
+
+- At pixels of fractional coverage, the compositor blends the layers in
+  its own blending space and not in cairo's encoded values. GTK4's
+  offloaded subsurfaces and Chromium's underlays have the same property.
+- The rounding of the 8-bit foreground can change `N` by one code value
+  under later paints.
 
 ### Wayland
 
-`gui/presenter_wayland.c`, built with `USE_WAYLAND`. It needs `wl_compositor`
-4 and `wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
-primaries and `ABGR16161616F` or `ABGR16161616` shm buffers; `set_luminances`
-is optional (without it the output is SDR). Without the rest the window
-is on cairo.
+`gui/presenter_wayland.c`, built with `USE_WAYLAND`. A native window needs:
 
-FP16 is preferred for its precision near black. Otherwise UNORM16 stores
-the same linear values.
+- `wl_compositor` version 4;
+- `wp_color_manager_v1` with parametric descriptions, `ext_linear` and
+  BT.2020 primaries;
+- `ABGR16161616F` or `ABGR16161616` shm buffers. FP16 is preferred for its
+  precision near black;
+- `set_luminances`, optional: without it the output is SDR.
 
-The platform keeps the globals, GDK's surface, its feedback and the
-preferred description; the transport the layers, their buffers and its
-image descriptions, made when the window becomes native and destroyed when
-it stops.
+Without these the window is a cairo window.
 
-The platform also leaves mutter's default color mode to cairo
-(`_mutter_default_color_mode()`, [Workarounds](#workarounds)): the registry
-announces `gtk_shell1`, GTK's private protocol, which mutter implements,
-`XDG_CURRENT_DESKTOP` lists `GNOME` (Wayfire's gtk-shell plugin announces
-`gtk_shell1` too), and the surface's preferred description is plain SDR
-sRGB: sRGB primaries and D65 white within 1e-3,
-transfer function srgb, gamma22 or compound_power_2_4, no ICC file, and a
-target max luminance at most the reference, or no luminances. mutter then
-passes untagged pixels to the panel unchanged and only programs the gamma
-ramp with the profile assigned in Settings > Color (mutter#4597), so the
-window is a cairo window on its system display profile, which on GNOME is
-that profile, from colord, as on X11. Any other compositor describing plain
-SDR sRGB stays native. The test is made on every preferred description,
-so a window follows a switch of the color mode or a move to a monitor in
-another one ([Backends](#backends)). Limit: sway with a `color_profile`
-set only in sway describes its output as sRGB while converting
-everything to that profile. A native window leaves that conversion to
-sway, which converts from sRGB, so its image is limited to sRGB there; a
-cairo window on that output, forced or darktable on XWayland, converts
-to the profile a second time when a tool such as xiccd also publishes it
-to colord or the X atom.
+The platform reports the headroom from the preferred description of the
+surface: target max luminance (else max luminance) over reference
+luminance. This value is a hint, not a measurement.
 
-The backend reports target max (else max) over reference luminance of the
-surface's preferred description as a hint, not a measurement, re-read
-whenever the preference changes: no value (NAN) without a reference luminance,
-with a ceiling of 1 without `set_luminances`. A preferred description that
-differs in more than its luminances (primaries, white, transfer function,
-an ICC file) starts a new generation; KWin's HDR brightness moves only the
-reference luminance. The image description is made for the core's
+- Without a reference luminance there is no value (NAN).
+- Without `set_luminances` the ceiling is 1.
+- A preferred description that differs in more than its luminances starts
+  a new generation. KWin's HDR brightness moves only the reference
+  luminance.
+
+The transport describes its image layer for the
 [headroom target](#headroom-target), never for the raw preference:
-ext_linear, BT.2020, luminances (0, ceil(headroom x 203), 203), so a value
-v is sent as v x 203 / max, clipped to [0, max / 203]: the reservation's
-clip range and matrix diag(203 / max). Max is rounded up to whole nits, so
-that range holds the target. The output is
-linear BT.2020 with the headroom of the description in use, max / 203 (1
-without `set_luminances`), the range the transport clips to rather than
-the target it was made for. A new description is set on the image layer
-and published when it is ready, and applies with that layer's next
-commit, which is the first buffer encoded for it: the window draws again
-and the image is composed again for the new headroom, whether or not its
-frames change. A failed one is dropped, the one in use stays, and the next
-target is described again. Setup waits for the events that end it, the
-preferred description's information and the transport's first
-description, however many round trips they take; a failed first
-description leaves the window on cairo, failed ([Backends](#backends)). Preference changes during setup
-do not drop the description it waits for: the latest preference is read
-once setup is over. Layers are synchronized subsurfaces
-of GDK's surface, placed directly above it and below GTK's own subsurfaces
-such as popovers, which therefore need no replay. They are presented at the
-end of the frame clock's `paint`, so they apply with GDK's commit in
-`after-paint`. With `DT_PRESENTER_REPLAY_POPOVERS` set in the environment,
-the transport places the layers above the popovers shown, as Quartz and
-Win32 draw popovers into the toplevel, and declares so: the layered
-backend's popover replay can then be tested on Wayland.
+`ext_linear`, BT.2020, luminances (0, max, 203) with
+max = ceil(headroom x 203).
 
-A presenting toplevel cannot be shown again after hiding. GDK destroys its
-`wl_surface` when a window is hidden, and the backend presents nothing once
-its toplevel unmaps. darktable has no such path: the main window is hidden
-only at quit, and the second window is destroyed after hiding. With GTK4,
-where the image is a texture on GTK's own surface, the limit goes away.
+- A value v is sent as v x 203 / max, clipped to [0, max / 203].
+- The output of the window is linear BT.2020 with headroom max / 203, the
+  range the transport clips to.
+- A new description is published when it is ready. It applies with the
+  next commit of the image layer, and the window draws again.
+- If a new description fails, the description in use stays.
+- If the first description fails, the window is failed and stays on cairo.
+
+The layers are synchronized subsurfaces of GDK's surface. They are directly
+above it and below GTK's own subsurfaces such as popovers, which therefore
+need no replay. The transport presents at the end of the frame clock's
+`paint`, so the layers apply with GDK's commit in `after-paint`.
+
+With `DT_PRESENTER_REPLAY_POPOVERS` set in the environment, the transport
+places the layers above the popovers. The popover replay of the layered
+backend can then be tested on Wayland.
+
+mutter's default color mode is left to cairo
+(`_mutter_default_color_mode()`). In that mode mutter passes untagged
+pixels to the panel unchanged, and applies the profile assigned in
+Settings > Color only as a gamma ramp (mutter#4597). The window is then a
+cairo window on its system display profile, which colord gives, as on X11.
+The platform recognizes the mode by three conditions:
+
+- the registry announces `gtk_shell1`;
+- `XDG_CURRENT_DESKTOP` lists `GNOME`;
+- the preferred description of the surface is plain SDR sRGB.
+
+The test runs on every preferred description, so a window follows a switch
+of the color mode or a move to another monitor.
+
+## Known Limitations
+
+- **XWayland.** darktable on XWayland is an X11 client and cannot see the
+  description of the compositor. It renders to the X atom or to colord's
+  profile. If the compositor also converts untagged pixels to that
+  profile, as with xiccd, the image is converted twice. mutter outside its
+  default color mode, before mutter !5177, reads untagged pixels as sRGB.
+- **Profile reassigned in the system settings.** While the window stays on
+  its monitor, darktable finds a new profile only at the next configure
+  event that queries again: a move of the main window, or any configure on
+  Wayland or of the second window. A persistent `CdWindow` per window that
+  listens to its changed signal, and a listener on the X atom, would
+  remove this limit.
+- **Display profile file.** The file is applied as it is. On macOS, and on
+  Windows with automatic color management or HDR, the system converts the
+  image again from sRGB, so the colors are converted twice.
+- **sway with `color_profile`.** sway describes its output as sRGB and
+  converts everything to the profile. A native window leaves that
+  conversion to sway, so its image is limited to sRGB. A cairo window on
+  that output converts a second time when a tool such as xiccd also
+  publishes the profile.
+- **Second window in proof mode.** While the second window pans or zooms,
+  it can show the frame of the main preview as a fallback. That frame is
+  proofed and the second window's own frame is not.
+- **Hidden toplevel.** A presenting toplevel on Wayland cannot be shown
+  again after it is hidden, because GDK destroys its `wl_surface`.
+  darktable has no such path: the main window is hidden only at quit, and
+  the second window is destroyed after it is hidden.
 
 ## Workarounds
 
-Each lives in one file and goes away with the limitation it works around.
-GTK4 removes the layers and their companions only on Wayland: it has no
-output color states on Windows and macOS, so a native backend there would
-keep its layers under GTK4 as well.
+Each workaround is in one file and goes away with the limitation it works
+around. GTK4 removes the layers only on Wayland. It has no output color
+states on Windows and macOS, so a native backend there keeps its layers
+under GTK4.
 
 | Workaround | Where | Works around | Removed when |
 |---|---|---|---|
 | image and foreground layers above GTK's surface | `presenter_layers.c` | GTK3 cannot give a widget a surface with a color state | GTK4: the image is a texture with a color state |
-| `gtk_widget_draw()` replay into the foreground of what GTK stacks above a presenting widget: GtkOverlay children, and the toplevel's popovers where the transport's layers cover them; saved and put back on a kept foreground; a popover's changes draw the presenting widgets again | `presenter_layers.c`, `_replay_above()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons), and on Quartz and Win32 of popovers, which GTK3 draws into the toplevel there | same |
-| composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
-| GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
-| mutter's default color mode (`gtk_shell1`, a GNOME session and a plain SDR sRGB preferred description) left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | mutter describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
-| no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
-| surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
-| a draw GTK clipped to a damaged area does not replace or drop the presentation `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because both backends need it | GTK4: a widget's snapshot is always whole |
-| a cairo window's kept presentation is a reference on GTK's target on X11 and a copy of the widget's part elsewhere | `presenter_cairo.c`, `dt_presenter_cairo_new()` | GTK3 keeps no rendering of a widget: what it drew is only in GDK's target, the window's buffer on Wayland and Quartz, which the next frame overwrites, and a surface that cannot be held on Win32 (#20831) | GTK4: a widget's render nodes are kept between frames |
+| replay into the foreground of what GTK stacks above a presenting widget: GtkOverlay children, and popovers where the layers cover them | `presenter_layers.c`, `_replay_above()` | the layers cover GTK's drawing of those widgets | same |
+| compose and present in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint`, and GDK commits its surface in `after-paint` | same |
+| GTK's surface taken as sRGB, the device encoding of the window | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface. The compositor reads an untagged surface as sRGB, with a transfer function of its choice | GTK tags its surfaces |
+| mutter's default color mode left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | that mode composites as sRGB and does not apply the profile of the screen (mutter#4597) | mutter describes its real output (mutter !5177). The test then no longer matches |
+| no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor can stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
+| surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden. A request on the feedback is then a protocol error | GTK4 |
+| a clipped draw does not replace or drop the kept presentation | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images | GTK4: the snapshot of a widget is always whole |
+| the kept presentation of a cairo window is a reference on GTK's target on X11, and a copy elsewhere | `presenter_cairo.c`, `dt_presenter_cairo_new()` | GTK3 keeps no rendering of a widget. The next frame overwrites the target on Wayland and Quartz, and the target cannot be held on Win32 (#20831) | GTK4: the render nodes of a widget are kept between frames |
 
 ## Scope
 
-Through the presenter: the darkroom (main image, preview fallback, snapshots
-split and side by side, the duplicate manager's preview over the canvas, the
-second window and its pinned image) and the slideshow.
+The presenter shows the darkroom and the slideshow. In the darkroom that is
+the main image, the preview fallback, snapshots, the duplicate manager's
+preview, and the second window with its pinned image.
 
-Everything else GTK draws stays on GTK's 8-bit surface: lighttable,
-filmstrip, culling and full preview, navigation, the duplicate manager's
-thumbnails, all thumbnails. With a native backend they are shown as the
-compositor shows untagged content, without wide gamut or HDR. GTK3 cannot
-tag its surface, and the protocol leaves the transfer function of untagged
-surfaces to the compositor: where it decodes them with gamma 2.2, as KWin
-does, their shadows are darker than the image's. In GTK4 each thumbnail can
-be a texture with a color state, and GTK tags its surfaces. They stay on
-GTK's surface because thumbnails carry GTK widgets on top (stars, labels,
-badges, buttons), which on the layers would mean replaying most of the
-lighttable on every scroll, and because the mipmap cache is 8-bit sRGB or
-AdobeRGB, so wide gamut and HDR need a float thumbnail cache anyway. See
+Everything else stays on GTK's 8-bit surface: lighttable, filmstrip,
+culling and full preview, navigation, and all thumbnails. On a native
+window the compositor shows them as untagged content, without wide gamut
+or HDR. The protocol leaves the transfer function of untagged surfaces to
+the compositor. Where the compositor decodes them with gamma 2.2, as KWin
+does, their shadows are darker than those of the image.
+
+Thumbnails stay on GTK's surface for two reasons:
+
+- Thumbnails have GTK widgets on top (stars, labels, badges, buttons). On
+  the layers, most of the lighttable would be replayed on every scroll.
+- The mipmap cache is 8-bit sRGB or AdobeRGB. Wide gamut and HDR
+  thumbnails need a float thumbnail cache first.
+
+In GTK4 each thumbnail can be a texture with a color state. See
 darktable-org/darktable#20477.
 
-With `cache_color_managed` off the mipmap cache holds display-encoded
-thumbnails, encoded for the main window's registry entry, its device
-encoding, so they are shown as the rest of GTK's surface is. Thumbnails
-already in the cache keep the profile they were encoded for when that
-changes, as in master; the option's description warns of it.
-They follow the window's output once thumbnails go through the presenter.
+With `cache_color_managed` off, the mipmap cache holds thumbnails encoded
+for the `DISPLAY` registry entry, the device encoding of the main window.
+Thumbnails already in the cache keep the profile they were encoded for
+when that entry changes; the description of the option warns of it.
 
 ## Common Mistakes
 
 | Mistake | Instead |
 |---|---|
 | painting a frame with cairo in a presenting widget | `dt_presenter_image()` with the frame |
-| reading `pipe->backbuf` of a screen pipe | `dt_dev_pixelpipe_frame()`; only non-screen pipes keep a backbuf |
-| keeping a frame's pixels or renditions after dropping its reference | hold a reference (`dt_frame_ref()`) for as long as you may draw it |
-| reading `darktable.color_profiles` for a presented pipe's display profile, or `pipe->output` for what its pixels are | `pipe->output_encoding` or the frame's encoding; `pipe->output` is the request |
-| converting a module GUI's colors with the pipe's output profile | `dt_ioppr_get_gui_profile_info()` |
+| reading `pipe->backbuf` of a screen pipe | `dt_dev_pixelpipe_frame()`; only the other pipes keep a backbuf |
+| keeping the pixels or renditions of a frame after dropping its reference | hold a reference (`dt_frame_ref()`) for as long as you can draw it |
+| reading `darktable.color_profiles` or `pipe->output` to learn what a pipe's pixels are | `pipe->output_encoding` or the encoding of the frame; `pipe->output` is the request |
+| converting the colors of a module GUI with the pipe's output profile | `dt_ioppr_get_gui_profile_info()` |
 | converting a frame for GTK-side drawing yourself | `dt_frame_device_surface()`, made once and kept with the frame |
-| converting with a develop's profile infos outside that develop | build them from the encoding's profile, as `frame.c` does: a temporary develop frees its list |
-| checking for a platform in the pipeline, a module or a view | put it in `presenter_layers.c` or the platform's transport, with a row in [Workarounds](#workarounds) |
+| converting with the profile infos of a develop outside that develop | build them from the profile of the encoding, as `frame.c` does: a temporary develop frees its list |
+| testing for a platform in the pipeline, a module or a view | put the code in `presenter_layers.c` or in the transport of the platform, with a row in [Workarounds](#workarounds) |
