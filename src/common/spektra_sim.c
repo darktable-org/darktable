@@ -64,6 +64,11 @@
 #include <string.h>
 
 #define SF_LOG_EPS 1e-10
+/* float twin, for the per-pixel float paths. spektrafilm.cl adds 1e-10f in
+   float; adding the double constant here instead promotes the sum to double
+   and rounds it back, which lands one ULP away from the kernel on roughly one
+   deep-shadow value in a thousand -- upstream of the grain sampler. */
+#define SF_LOG_EPS_F 1e-10f
 
 /* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
    exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
@@ -1310,9 +1315,13 @@ bool sf_pack_film_langmuir(const sf_pack_t *pack,
   if(!film || !json_object_has_member(film, "dir_couplers")) return false;
   JsonObject *dc = json_object_get_object_member(film, "dir_couplers");
   if(!dc || !json_object_has_member(dc, "langmuir_donor_k_rgb")) return false;
-  json_read_darray(dc, "langmuir_donor_k_rgb", donor_k, 3);
-  json_read_darray(dc, "langmuir_receiver_k_rgb", receiver_k, 3);
-  return true;
+  /* Either array can be absent, null or the wrong length, and
+     json_read_darray() then leaves its output untouched. Mark both as unread
+     first so the caller sees NaN, not whatever was on its stack. */
+  for(int c = 0; c < 3; c++) donor_k[c] = receiver_k[c] = NAN;
+  const gboolean have_donor = json_read_darray(dc, "langmuir_donor_k_rgb", donor_k, 3);
+  const gboolean have_recv = json_read_darray(dc, "langmuir_receiver_k_rgb", receiver_k, 3);
+  return have_donor || have_recv;
 }
 
 bool sf_pack_film_defaults(const sf_pack_t *pack,
@@ -3596,6 +3605,17 @@ void sf_sim_free(sf_sim_t *s)
   g_free(s);
 }
 
+void sf_sim_set_output_gain(sf_sim_t *sim,
+                            const float out_luminance_boost,
+                            const float out_scale)
+{
+  if(!sim) return;
+  /* widened from float exactly as sf_sim_build() receives them, so a sim
+     updated here is the sim a rebuild with these values would produce */
+  sim->out_luminance_boost = sim->p.out_luminance_boost = (double)out_luminance_boost;
+  sim->out_scale = sim->p.out_scale = (double)out_scale;
+}
+
 double sf_sim_film_dmax(const sf_sim_t *sim,
                         int ch)
 {
@@ -3686,11 +3706,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   }
 
   /* ----- filming: input matrix and tc_lut ------------------------------- */
-  const double *illu_ref = g_hash_table_lookup(pack->illuminants, film->reference_illuminant);
+  /* a profile that names no illuminant must not reach the lookup: the table
+     hashes its key with g_str_hash(), which dereferences it */
+  const double *illu_ref = film->reference_illuminant
+      ? g_hash_table_lookup(pack->illuminants, film->reference_illuminant) : NULL;
   if(!illu_ref)
   {
     set_error(errmsg, "spektra_sim: pack misses reference illuminant '%s'",
-              film->reference_illuminant);
+              film->reference_illuminant ? film->reference_illuminant : "(none declared)");
     sf_sim_free(s);
     return NULL;
   }
@@ -3936,9 +3959,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        once at the end of the build, together with raw_scale. */
     for(int c = 0; c < 9; c++) s->m_in_f[c] = (float)s->m_in[c];
     s->tc_lut_f = malloc((size_t)n * n * 3 * sizeof(float));
-    if(s->tc_lut_f)
-      for(size_t i = 0; i < (size_t)n * n * 3; i++)
-        s->tc_lut_f[i] = (float)s->tc_lut[i];
+    if(!s->tc_lut_f)
+    {
+      /* sf_sim_expose() reads this table unconditionally */
+      set_error(errmsg, "spektra_sim: out of memory for the spectral exposure table");
+      sf_sim_free(s);
+      return NULL;
+    }
+    for(size_t i = 0; i < (size_t)n * n * 3; i++)
+      s->tc_lut_f[i] = (float)s->tc_lut[i];
   }
 
   /* ----- film develop ---------------------------------------------------- */
@@ -4130,10 +4159,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       s->coupler_tail_um = 0.0;
       s->coupler_tail_w = 0.0;
     }
-    double lm_donor[3], lm_recv[3];
+    double lm_donor[3] = { NAN, NAN, NAN }, lm_recv[3] = { NAN, NAN, NAN };
     if(sf_pack_film_langmuir(pack, film->stock, lm_donor, lm_recv))
     {
-      if(s->film_positive)
+      /* a factor that did not parse (absent, null, wrong length) is NaN; the
+         side it belongs to then stays on the linear model */
+      const gboolean donor_ok = isfinite(lm_donor[0]) && isfinite(lm_donor[1])
+                                && isfinite(lm_donor[2]);
+      const gboolean recv_ok = isfinite(lm_recv[0]) && isfinite(lm_recv[1])
+                               && isfinite(lm_recv[2]);
+      if(s->film_positive && recv_ok)
       {
         s->couplers_recv_lm = 1;
         for(int m = 0; m < 3; m++)
@@ -4154,7 +4189,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
           s->couplers_recv_Kr[m] = Kr > 0.0 ? Kr : 1.0e30;
         }
       }
-      else
+      else if(!s->film_positive && donor_ok)
       {
         s->couplers_donor_lm = 1;
         for(int c = 0; c < 3; c++)
@@ -4282,12 +4317,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         sf_sim_free(s);
         return NULL;
       }
-    const double *illu_src = g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant);
-    const double *filters = g_hash_table_lookup(pack->dichroics, p->dichroic_brand);
+    const double *illu_src = p->enlarger_illuminant
+        ? g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant) : NULL;
+    const double *filters = p->dichroic_brand
+        ? g_hash_table_lookup(pack->dichroics, p->dichroic_brand) : NULL;
     if(!illu_src || !filters)
     {
       set_error(errmsg, "spektra_sim: pack misses enlarger illuminant '%s' or dichroic '%s'",
-                p->enlarger_illuminant, p->dichroic_brand);
+                p->enlarger_illuminant ? p->enlarger_illuminant : "(none)",
+                p->dichroic_brand ? p->dichroic_brand : "(none)");
       sf_sim_free(s);
       return NULL;
     }
@@ -4362,11 +4400,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     const sf_profile_t *sp = s->has_print ? print : film;
     memcpy(s->scan_chan_density, sp->channel_density, sizeof(s->scan_chan_density));
     memcpy(s->scan_base_density, sp->base_density, sizeof(s->scan_base_density));
-    const double *illu_view = g_hash_table_lookup(pack->illuminants, sp->viewing_illuminant);
+    const double *illu_view = sp->viewing_illuminant
+        ? g_hash_table_lookup(pack->illuminants, sp->viewing_illuminant) : NULL;
     if(!illu_view)
     {
       set_error(errmsg, "spektra_sim: pack misses viewing illuminant '%s'",
-                sp->viewing_illuminant);
+                sp->viewing_illuminant ? sp->viewing_illuminant : "(none declared)");
       sf_sim_free(s);
       return NULL;
     }
@@ -4777,7 +4816,7 @@ void sf_sim_lograw(const sf_sim_t *sim,
   {
     float *v = raw + px * nch;
     for(int c = 0; c < 3; c++)
-      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS);
+      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS_F);
   }
 }
 

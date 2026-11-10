@@ -572,6 +572,10 @@ typedef struct dt_iop_spektrafilm_data_t
   sf_sim_t *sim;
   sf_sim_gpu_t *gpu; /* float tables for process_cl */
   uint64_t sim_key;  /* hash of everything the sim build depends on */
+  /* the build for sim_key got as far as a loaded pack. With sim NULL it then
+     failed on a profile or in the engine, which the same key will fail on
+     again, so it is not retried until the key changes. */
+  gboolean sim_tried;
   char sim_error[256];
   char sim_warning[256];
   /* Set by commit_params() for the preview pipe only, NULL everywhere else, so
@@ -637,6 +641,23 @@ static char _pack_path[SF_PATH_LEN] = { 0 };
 static guint _pack_gen = 0;
 static char _pack_error[256] = { 0 };
 static dt_pthread_mutex_t _pack_lock;
+
+/* The last profile scan, kept so that resolving a stock hash does not cost a
+   parse of every profile in the pack. _ensure_sim() scans on every rebuild,
+   once per pipe, and the scan loads each profile in full to read its header:
+   about 67 ms for the 31 profiles of the 0.3.3 pack against roughly 130 ms
+   for the build it precedes.
+
+   Valid for one profiles directory at one modification time and one fetch
+   generation. The generation covers a download, which can replace a pack in
+   place; the directory's mtime covers a hand-installed pack whose files are
+   added or removed underneath a running darktable. Callers get their own
+   copy of the list and free it as before. */
+static GMutex _prof_cache_lock;
+static GList *_prof_cache = NULL;
+static char _prof_cache_dir[SF_PATH_LEN + 16] = { 0 };
+static gint64 _prof_cache_mtime = -1;
+static guint _prof_cache_gen = 0;
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -746,6 +767,12 @@ void cleanup_global(dt_iop_module_so_t *self)
   _pack_error[0] = 0;
   dt_pthread_mutex_unlock(&_pack_lock);
   dt_pthread_mutex_destroy(&_pack_lock);
+  g_mutex_lock(&_prof_cache_lock);
+  g_list_free_full(_prof_cache, g_free);
+  _prof_cache = NULL;
+  _prof_cache_dir[0] = 0;
+  _prof_cache_mtime = -1;
+  g_mutex_unlock(&_prof_cache_lock);
 }
 
 const char *name(void)
@@ -1263,6 +1290,18 @@ static const sf_table_entry_t *_table_at(const dt_iop_spektrafilm_gui_data_t *g,
   return g ? g_list_nth_data(g->tables, pos) : NULL;
 }
 
+static GList *_entries_copy(GList *src)
+{
+  GList *out = NULL;
+  for(GList *l = src; l; l = l->next)
+  {
+    sf_prof_entry_t *e = g_malloc(sizeof(sf_prof_entry_t));
+    memcpy(e, l->data, sizeof(sf_prof_entry_t));
+    out = g_list_prepend(out, e);
+  }
+  return g_list_reverse(out);
+}
+
 static GList *_scan_profiles(const char *packdir)
 {
   char dir[SF_PATH_LEN];
@@ -1280,6 +1319,19 @@ static GList *_scan_profiles(const char *packdir)
   }
   char profdir[SF_PATH_LEN + 16];
   snprintf(profdir, sizeof profdir, "%s/profiles", dir);
+
+  GStatBuf pst;
+  const gint64 prof_mtime = (g_stat(profdir, &pst) == 0) ? (gint64)pst.st_mtime : -1;
+  const guint prof_gen = sf_fetch_generation();
+  g_mutex_lock(&_prof_cache_lock);
+  if(_prof_cache && prof_mtime >= 0 && _prof_cache_mtime == prof_mtime
+     && _prof_cache_gen == prof_gen && strcmp(_prof_cache_dir, profdir) == 0)
+  {
+    GList *copy = _entries_copy(_prof_cache);
+    g_mutex_unlock(&_prof_cache_lock);
+    return copy;
+  }
+  g_mutex_unlock(&_prof_cache_lock);
 
   GDir *gd = g_dir_open(profdir, 0, NULL);
   if(!gd) return NULL;
@@ -1320,7 +1372,21 @@ static GList *_scan_profiles(const char *packdir)
   g_dir_close(gd);
   /* natural order by display name (numbers compared numerically,
      so "50D" < "200T" instead of lexicographic "200T" < "50D") */
-  return g_list_sort(list, _entry_name_cmp);
+  list = g_list_sort(list, _entry_name_cmp);
+
+  /* an empty result is not kept: it is what a download in progress or a
+     half-deleted pack looks like, and the next call should look again */
+  if(list && prof_mtime >= 0)
+  {
+    g_mutex_lock(&_prof_cache_lock);
+    g_list_free_full(_prof_cache, g_free);
+    _prof_cache = _entries_copy(list);
+    g_strlcpy(_prof_cache_dir, profdir, sizeof _prof_cache_dir);
+    _prof_cache_mtime = prof_mtime;
+    _prof_cache_gen = prof_gen;
+    g_mutex_unlock(&_prof_cache_lock);
+  }
+  return list;
 }
 
 /* resolve a profile hash to its stock name. hash 0 -> default:
@@ -1391,7 +1457,9 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = calloc(1, sizeof(dt_iop_spektrafilm_data_t));
-  dt_pthread_mutex_init(&d->lock);
+  /* NULL on failure: every consumer of piece->data tests for it and passes
+     the image through */
+  if(d) dt_pthread_mutex_init(&d->lock);
   piece->data = d;
 }
 
@@ -1423,6 +1491,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = (dt_iop_spektrafilm_data_t *)piece->data;
+  if(!d) return;
   d->p = *(dt_iop_spektrafilm_params_t *)p1;
   /* Only the preview pipe reports status to the module banner; see the field's
      declaration. Re-set on every commit because a pipe can be rebuilt. */
@@ -1489,6 +1558,21 @@ static void _publish_status(const dt_iop_spektrafilm_data_t *d)
   dt_iop_gui_leave_critical_section(self);
 }
 
+/* Bring the cached sim's two output gains, and their float mirrors in the GPU
+   export, up to the current params. They are not part of the sim key. Call
+   with d->lock held; the piece's own pipe is the only thing rendering with
+   d->sim, and it is the caller. */
+static void _apply_output_gain(dt_iop_spektrafilm_data_t *d)
+{
+  if(!d->sim) return;
+  sf_sim_set_output_gain(d->sim, d->p.output_luminance_boost, d->p.output_scale);
+  if(d->gpu)
+  {
+    d->gpu->out_luminance_boost = d->p.output_luminance_boost;
+    d->gpu->out_scale = d->p.output_scale;
+  }
+}
+
 static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
                              const dt_iop_order_iccprofile_info_t *work_profile)
 {
@@ -1545,14 +1629,16 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* both change the tc LUT, which is built once per sim */
   key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
-  key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
+  /* output_luminance_boost and output_scale are deliberately absent: both are
+     plain multipliers applied at scan time and enter no table, so they are
+     written into the cached sim by _apply_output_gain() instead of costing a
+     rebuild on every slider step */
   /* the endpoint fit is solved at build time, not per pixel */
   key = _mix64(key, &p->scan_black_correction, sizeof p->scan_black_correction);
   key = _mix64(key, &p->scan_white_correction, sizeof p->scan_white_correction);
   key = _mix64(key, &p->scan_black_level, sizeof p->scan_black_level);
   key = _mix64(key, &p->scan_white_level, sizeof p->scan_white_level);
   key = _mix64(key, &p->gamut_compress, sizeof p->gamut_compress);
-  key = _mix64(key, &p->output_scale, sizeof p->output_scale);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
   key = _mix64(key, &p->film_gamma_factor_fast, sizeof p->film_gamma_factor_fast);
   key = _mix64(key, &p->film_gamma_factor_slow, sizeof p->film_gamma_factor_slow);
@@ -1569,9 +1655,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &fetch_gen, sizeof fetch_gen);
 
   dt_pthread_mutex_lock(&d->lock);
-  if(d->sim && d->sim_key == key)
+  /* a hit, or a build this key already failed: sim_error still holds why */
+  if(d->sim_key == key && (d->sim || d->sim_tried))
   {
     sf_sim_t *s = d->sim;
+    _apply_output_gain(d);
     _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return s;
@@ -1600,6 +1688,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     d->sim = NULL;
   }
   d->sim_key = key;
+  d->sim_tried = FALSE;
   d->sim_error[0] = 0;
   d->sim_warning[0] = 0;
 
@@ -1696,6 +1785,13 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
+
+  /* From here on a failure belongs to this key: the pack is loaded, so what
+     can still go wrong is a profile or the build, and neither changes until a
+     parameter or the installed data does -- both of which change the key. A
+     missing pack above is left retrying on purpose: one copied in by hand
+     bumps no generation, and that path returns before anything expensive. */
+  d->sim_tried = TRUE;
 
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
@@ -2173,7 +2269,7 @@ void process(dt_iop_module_t *self,
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  sf_sim_t *sim = work_profile ? _ensure_sim(d, work_profile) : NULL;
+  sf_sim_t *sim = (d && work_profile) ? _ensure_sim(d, work_profile) : NULL;
   if(!sim)
   {
     _passthrough(in, out, w, oh, ow, ox, oy);
@@ -2714,6 +2810,11 @@ int process_cl(dt_iop_module_t *self,
       goto cleanup;                                                                                \
     }                                                                                              \
   } while(0)
+
+  /* no kernels (init_global() could not allocate) or no piece data
+     (init_pipe() could not): hand the tile to the CPU path, which passes it
+     through */
+  if(!gd || !d) return DT_OPENCL_DEFAULT_ERROR;
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -3632,9 +3733,14 @@ static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gu
 static void _stamp_lut_hash(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  /* nothing left to record, which is every edit after its first stamp; the
-     lookup below only runs for one that still has something unstamped */
-  if(p->lut_hash && p->pack_hash) return;
+  /* Nothing left to record once a table is recorded, which is every edit
+     after its first stamp. Both writes below are then no-ops: the table is
+     only ever set when it is 0 or already equal, and the pack only onto an
+     edit that names neither. Testing pack_hash here as well kept this from
+     ever returning early on a pack that declares no identity -- every
+     pack_format 2 pack -- so each slider step resolved the pack again,
+     several parses of pack.json on the GUI thread. */
+  if(p->lut_hash) return;
   /* _pack is whichever pack a pipe loaded last, which can belong to another
      image entirely. Only stamp it when it is the pack this edit resolves to */
   char want_dir[SF_PATH_LEN];
@@ -3886,10 +3992,10 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
    shows both at once and keeps the link intact -- the selection does not move,
    only its text changes, so paper_hash stays 0.
 
-   With scan_film there is no print stage at all, and the widget is insensitive:
-   the entry goes blank; naming a paper nothing will be printed on would mislead.
-   Called from _update_print_sensitivity() as well as on a film change, so it
-   follows that toggle. */
+   With scan_film there is no print stage, but the entry keeps its name: on a
+   negative the combobox stays live while scanning and "auto" is one of the ways
+   back to printing, so it has to remain readable in the list. Only the tooltip
+   says that no paper is in use. */
 static void _update_paper_auto_entry(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -3897,17 +4003,19 @@ static void _update_paper_auto_entry(dt_iop_module_t *self)
   if(!g || !g->paper) return;
   char label[SF_NAME_LEN + 32];
   char tip[SF_NAME_LEN + 256];
-  const sf_prof_entry_t *re
-      = p->scan_film ? NULL : _auto_paper_entry(g, _current_film_entry(g, p));
+  const sf_prof_entry_t *re = _auto_paper_entry(g, _current_film_entry(g, p));
+  /* the label names what selecting the entry would print on, scanning or not */
+  if(re)
+    snprintf(label, sizeof label, _("auto (%s)"), re->name);
+  else
+    g_strlcpy(label, _("auto"), sizeof label);
   if(p->scan_film)
   {
-    label[0] = '\0';
     g_strlcpy(tip, _("print paper. not used: the film is being scanned directly."),
               sizeof tip);
   }
   else if(re)
   {
-    snprintf(label, sizeof label, _("auto (%s)"), re->name);
     snprintf(tip, sizeof tip,
              _("print paper. \"auto\" follows the film stock's own target print,\n"
                "currently %s. picking a paper pins it until you select auto again."),
@@ -3916,7 +4024,6 @@ static void _update_paper_auto_entry(dt_iop_module_t *self)
   else
   {
     /* no print stock in the pack at all -- the list below reads "(none)" */
-    g_strlcpy(label, _("auto"), sizeof label);
     g_strlcpy(tip, _("print paper. \"auto\" follows the film stock's own target print."),
               sizeof tip);
   }

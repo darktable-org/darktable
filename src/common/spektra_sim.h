@@ -642,6 +642,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
                        char **errmsg);
 void sf_sim_free(sf_sim_t *sim);
 
+/* Replace the two output gains of a built simulation: the pre-compression XYZ
+ * multiplier and the post-compression scale (params out_luminance_boost and
+ * out_scale). Neither enters any table, so a caller can move them without
+ * rebuilding. Not synchronised: call it while nothing is rendering with sim. */
+void sf_sim_set_output_gain(sf_sim_t *sim,
+                            float out_luminance_boost,
+                            float out_scale);
+
 /* info for the caller's spatial effects */
 double sf_sim_film_dmax(const sf_sim_t *sim,
                         int ch); /* normalized curve max */
