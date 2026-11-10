@@ -3720,9 +3720,14 @@ static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gu
 static void _stamp_lut_hash(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  /* nothing left to record, which is every edit after its first stamp; the
-     lookup below only runs for one that still has something unstamped */
-  if(p->lut_hash && p->pack_hash) return;
+  /* Nothing left to record once a table is recorded, which is every edit
+     after its first stamp. Both writes below are then no-ops: the table is
+     only ever set when it is 0 or already equal, and the pack only onto an
+     edit that names neither. Testing pack_hash here as well kept this from
+     ever returning early on a pack that declares no identity -- every
+     pack_format 2 pack -- so each slider step resolved the pack again,
+     several parses of pack.json on the GUI thread. */
+  if(p->lut_hash) return;
   /* _pack is whichever pack a pipe loaded last, which can belong to another
      image entirely. Only stamp it when it is the pack this edit resolves to */
   char want_dir[SF_PATH_LEN];
