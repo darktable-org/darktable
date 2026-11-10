@@ -20,11 +20,12 @@
 
 // amaze_demosaic() on the OpenCL device, see data/kernels/demosaic_amaze.cl.
 // Every CPU tile of 160 pixels, 128 apart, has its own 160x160 part of the
-// buffers, zeroed because the passes read the margins they don't write, as
-// the CPU does in its tiles. Twelve of them are live at the peak; later
-// passes reuse the ones whose contents are no longer read, as the CPU code
-// does with its tile buffers. The passes that update in place on the CPU
-// run one 16x16 work group per tile.
+// buffers. The passes write zeros where they compute nothing, because later
+// passes read those margins as the CPU does in its tiles; that is much
+// cheaper than clearing the buffers first. Twelve buffers are live at the
+// peak; later passes reuse the ones whose contents are no longer read, as
+// the CPU code does with its tile buffers. The passes that update in place
+// on the CPU run one 16x16 work group per tile.
 static int process_amaze_cl(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *piece,
                             cl_mem dev_in,
@@ -53,8 +54,7 @@ static int process_amaze_cl(dt_iop_module_t *self,
   for(int k = 0; k < NBUF && err == CL_SUCCESS; k++)
   {
     b[k] = dt_opencl_alloc_device_buffer(devid, bsize);
-    err = b[k] ? dt_opencl_fill_buffer(devid, b[k], (size_t)gw * gh, 1, 0.0f)
-               : CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    if(!b[k]) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   }
   if(err != CL_SUCCESS) goto error;
 

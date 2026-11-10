@@ -75,6 +75,7 @@ typedef struct
   int c, r;       // position in the tile
   int cc1, rr1;   // tile width and height
   int col, row;   // position in the padded image
+  bool slot;      // false beyond the last tile, where the work size is rounded up
 } AmazePix;
 
 AmazePix _pix(const int pw, const int ph)
@@ -91,6 +92,7 @@ AmazePix _pix(const int pw, const int ph)
   p.rr1 = tx < ntx && ty < nty ? min(TS, ph - ty * 128) : 0;
   p.col = tx * 128 + p.c;
   p.row = ty * 128 + p.r;
+  p.slot = tx < ntx && ty < nty;
   p.i = (ty * ntx + tx) * TS * TS + p.r * TS + p.c;
   return p;
 }
@@ -152,7 +154,11 @@ kernel void amaze_init(
                 const int width, const int height, const int pw, const int ph)
 {
   const AmazePix px = _pix(pw, ph);
-  if(px.c >= px.cc1 || px.r >= px.rr1) return;
+  if(px.c >= px.cc1 || px.r >= px.rr1)
+  {
+    if(px.slot) cfa[px.i] = 0.0f;
+    return;
+  }
   const int x = px.col - 16, y = px.row - 16;
   const bool xout = x < 0 || x >= width, yout = y < 0 || y >= height;
   // the CPU fills the top left, top right and bottom left corners of the
@@ -167,7 +173,11 @@ kernel void amaze_grad(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 2)) return;
+  if(!_in(px, 2))
+  {
+    if(px.slot) { delhvsqsum[px.i] = 0.0f; }
+    return;
+  }
   const int i = px.i;
   delhvsqsum[i] = fsquare(fabs(cfa[i + 1] - cfa[i - 1])) + fsquare(fabs(cfa[i + TS] - cfa[i - TS]));
 }
@@ -180,7 +190,11 @@ kernel void amaze_cd(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 4)) return;
+  if(!_in(px, 4))
+  {
+    if(px.slot) { vcd[px.i] = 0.0f; hcd[px.i] = 0.0f; vcdalt[px.i] = 0.0f; hcdalt[px.i] = 0.0f; dgintv[px.i] = 0.0f; dginth[px.i] = 0.0f; }
+    return;
+  }
   const int v1 = TS, v2 = 2 * TS;
   const int i = px.i;
   const float c0 = cfa[i];
@@ -331,6 +345,17 @@ kernel void amaze_cd_bound(
   const int nh = 2 * (t.rr1 - 8); // hcd chains: rows 4 .. rr1-4, two phases each
   const int nv = 2 * (t.cc1 - 8); // vcd chains
 
+  // the chains cover rows and columns 4 to rr1/cc1 - 5 of the tile
+  for(int k = l; k < TS * TS; k += 256)
+  {
+    const int r = k / TS, c = k - r * TS;
+    if(r < 4 || r >= t.rr1 - 4 || c < 4 || c >= t.cc1 - 4)
+    {
+      hcd2[t.base + k] = 0.0f;
+      vcd2[t.base + k] = 0.0f;
+    }
+  }
+
   for(int job = l; job < nh + nv; job += 256)
   {
     const bool horiz = job < nh;
@@ -393,7 +418,7 @@ kernel void amaze_vote(
       const float alt = 0.25f * (vote_row[c - 1] + vote_row[c + 1] + src[i + TS - 1] + src[i + TS + 1]);
       if(fabs(0.5f - w) < fabs(0.5f - alt)) w = alt;
     }
-    if(rb) dst[i] = w;
+    if(c < TS) dst[i] = w;
     barrier(CLK_LOCAL_MEM_FENCE);
     // the R/B sites of this row are the other phase of the previous one
     if(rb && r >= m - 1) vote_row[c] = w;
@@ -412,7 +437,11 @@ kernel void amaze_hvwt(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 6) || (FC(row, col, filters) & 1) != 0) return;
+  if(!_in(px, 6) || (FC(row, col, filters) & 1) != 0)
+  {
+    if(px.slot) { hvwt[px.i] = 0.0f; nyquist[px.i] = 0.0f; }
+    return;
+  }
   const int ts = TS;
   const int v1 = TS, v2 = 2 * TS, v3 = 3 * TS;
   const int p1 = -ts + 1, p2 = -2 * ts + 2, m1 = ts + 1, m2 = 2 * ts + 2;
@@ -480,11 +509,9 @@ kernel void amaze_nyquist2(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if((FC(row, col, filters) & 1) != 0) return;
-  if(!_in(px, 8))
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0)
   {
-    // the area interpolation reads these too
-    if(px.c < px.cc1 && px.r < px.rr1) nyquist2[px.i] = 0.0f;
+    if(px.slot) nyquist2[px.i] = 0.0f;
     return;
   }
   const int ts = TS;
@@ -541,7 +568,11 @@ kernel void amaze_green(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0) return;
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0)
+  {
+    if(px.slot) { dgrb[px.i] = 0.0f; green[px.i] = 0.0f; dgrb2h[px.i] = 0.0f; dgrb2v[px.i] = 0.0f; }
+    return;
+  }
   const int v1 = TS;
   const int i = px.i;
   const float w = hvwt[i]; // after amaze_vote
@@ -611,7 +642,11 @@ kernel void amaze_diag(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0) return;
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0)
+  {
+    if(px.slot) { rbm[px.i] = 0.0f; rbp[px.i] = 0.0f; pmwt[px.i] = 0.0f; }
+    return;
+  }
   const int ts = TS;
   const int p1 = -ts + 1, p2 = -2 * ts + 2, m1 = ts + 1, m2 = 2 * ts + 2;
   const int i = px.i;
@@ -677,7 +712,11 @@ kernel void amaze_rbint(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 10) || (FC(row, col, filters) & 1) != 0) return;
+  if(!_in(px, 10) || (FC(row, col, filters) & 1) != 0)
+  {
+    if(px.slot) { rbint[px.i] = 0.0f; }
+    return;
+  }
   const int i = px.i;
   const float w = pmwt[i]; // after amaze_vote
   rbint[i] = 0.5f * (cfa[i] + rbm[i] * (1.0f - w) + rbp[i] * w);
@@ -778,9 +817,12 @@ kernel void amaze_chroma(
 {
   const AmazePix px = _pix(pw, ph);
   const int col = px.col, row = px.row;
-  if(!_in(px, 14)) return;
   const int c = FC(row, col, filters);
-  if((c & 1) != 0) return;
+  if(!_in(px, 14) || (c & 1) != 0)
+  {
+    if(px.slot) { dgr[px.i] = 0.0f; dgb[px.i] = 0.0f; }
+    return;
+  }
   const int i = px.i;
   const float own = dgrb[i];
   const float other = _chroma(dgrb, i, TS);
