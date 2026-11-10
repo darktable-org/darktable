@@ -7715,6 +7715,52 @@ void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor)
 #endif
 }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+GdkCursor *dt_gui_cursor_rename(GtkWidget *widget)
+{
+  static GdkCursor *cursor = NULL;
+  if(cursor) return cursor;
+  const int size = 24, scale = gtk_widget_get_scale_factor(widget);
+  cairo_surface_t *surface =
+    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size * scale, size * scale);
+  cairo_surface_set_device_scale(surface, scale, scale);
+  cairo_t *cr = cairo_create(surface);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+  cairo_set_line_width(cr, 1.2);
+  // the arrow
+  cairo_move_to(cr, 1.5, 1.5);
+  cairo_line_to(cr, 1.5, 16.5);
+  cairo_line_to(cr, 5.5, 12.5);
+  cairo_line_to(cr, 8.5, 19.5);
+  cairo_line_to(cr, 11, 18.5);
+  cairo_line_to(cr, 8, 11.5);
+  cairo_line_to(cr, 13.5, 11.5);
+  cairo_close_path(cr);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_stroke(cr);
+  // the pencil, tip down and left
+  cairo_move_to(cr, 12, 22);
+  cairo_line_to(cr, 12.85, 18.61);
+  cairo_line_to(cr, 19.22, 12.24);
+  cairo_line_to(cr, 21.76, 14.78);
+  cairo_line_to(cr, 15.39, 21.15);
+  cairo_close_path(cr);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 12.85, 18.61);
+  cairo_line_to(cr, 15.39, 21.15);
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(widget), surface, 1.5, 1.5);
+  cairo_surface_destroy(surface);
+  return cursor;
+}
+#endif
+
 void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner)
 {
   if(!widget) return;
