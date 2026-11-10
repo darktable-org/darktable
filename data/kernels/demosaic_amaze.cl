@@ -115,7 +115,13 @@ kernel void amaze_init(
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if(col >= pw || row >= ph) return;
-  cfa[row * pw + col] = Areadsingle(in, _mirror(col - 16, width), _mirror(row - 16, height));
+  const int x = col - 16, y = row - 16;
+  const bool xout = x < 0 || x >= width, yout = y < 0 || y >= height;
+  // the CPU fills the top left, top right and bottom left corners of the
+  // border from 16 pixels further in than the edges (amaze.cc:349)
+  const int sx = x < 0 && yout ? 16 - x : _mirror(x, width);
+  const int sy = y < 0 && xout ? 16 - y : _mirror(y, height);
+  cfa[row * pw + col] = Areadsingle(in, sx, sy);
 }
 
 kernel void amaze_grad(
