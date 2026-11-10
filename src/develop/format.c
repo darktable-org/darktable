@@ -75,19 +75,19 @@ void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
     dsc->datatype = TYPE_UINT16;
 }
 
-int default_input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+dt_iop_colorspace_type_t default_input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                      dt_dev_pixelpipe_iop_t *piece)
 {
   return self->default_colorspace(self, pipe, piece);
 }
 
-int default_output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+dt_iop_colorspace_type_t default_output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
   return self->default_colorspace(self, pipe, piece);
 }
 
-int default_blend_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+dt_iop_colorspace_type_t default_blend_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
   return self->default_colorspace(self, pipe, piece);
