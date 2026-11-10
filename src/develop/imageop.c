@@ -2340,12 +2340,12 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
        field->UShort.Default);
     break;
   case DT_INTROSPECTION_TYPE_INT8:
-    all_ok = (*(uint8_t*)p >= field->Int8.Min && *(uint8_t*)p <= field->Int8.Max);
+    all_ok = (*(int8_t*)p >= field->Int8.Min && *(int8_t*)p <= field->Int8.Max);
     values = g_strdup_printf
-      (" (%ud - [%ud..%ud] : default %ud)",
-       *(uint8_t*)p,
+      (" (%d - [%d..%d] : default %d)",
+       *(int8_t*)p,
        field->Int8.Min, field->Int8.Max,
-       field->Int8.Default);
+       (int8_t)field->Int8.Default);
     break;
   case DT_INTROSPECTION_TYPE_CHAR:
     all_ok = (*(char*)p >= field->Char.Min && *(char*)p <= field->Char.Max);
