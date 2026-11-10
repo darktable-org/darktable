@@ -3695,11 +3695,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   }
 
   /* ----- filming: input matrix and tc_lut ------------------------------- */
-  const double *illu_ref = g_hash_table_lookup(pack->illuminants, film->reference_illuminant);
+  /* a profile that names no illuminant must not reach the lookup: the table
+     hashes its key with g_str_hash(), which dereferences it */
+  const double *illu_ref = film->reference_illuminant
+      ? g_hash_table_lookup(pack->illuminants, film->reference_illuminant) : NULL;
   if(!illu_ref)
   {
     set_error(errmsg, "spektra_sim: pack misses reference illuminant '%s'",
-              film->reference_illuminant);
+              film->reference_illuminant ? film->reference_illuminant : "(none declared)");
     sf_sim_free(s);
     return NULL;
   }
@@ -4303,12 +4306,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         sf_sim_free(s);
         return NULL;
       }
-    const double *illu_src = g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant);
-    const double *filters = g_hash_table_lookup(pack->dichroics, p->dichroic_brand);
+    const double *illu_src = p->enlarger_illuminant
+        ? g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant) : NULL;
+    const double *filters = p->dichroic_brand
+        ? g_hash_table_lookup(pack->dichroics, p->dichroic_brand) : NULL;
     if(!illu_src || !filters)
     {
       set_error(errmsg, "spektra_sim: pack misses enlarger illuminant '%s' or dichroic '%s'",
-                p->enlarger_illuminant, p->dichroic_brand);
+                p->enlarger_illuminant ? p->enlarger_illuminant : "(none)",
+                p->dichroic_brand ? p->dichroic_brand : "(none)");
       sf_sim_free(s);
       return NULL;
     }
@@ -4383,11 +4389,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     const sf_profile_t *sp = s->has_print ? print : film;
     memcpy(s->scan_chan_density, sp->channel_density, sizeof(s->scan_chan_density));
     memcpy(s->scan_base_density, sp->base_density, sizeof(s->scan_base_density));
-    const double *illu_view = g_hash_table_lookup(pack->illuminants, sp->viewing_illuminant);
+    const double *illu_view = sp->viewing_illuminant
+        ? g_hash_table_lookup(pack->illuminants, sp->viewing_illuminant) : NULL;
     if(!illu_view)
     {
       set_error(errmsg, "spektra_sim: pack misses viewing illuminant '%s'",
-                sp->viewing_illuminant);
+                sp->viewing_illuminant ? sp->viewing_illuminant : "(none declared)");
       sf_sim_free(s);
       return NULL;
     }
