@@ -1875,6 +1875,16 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// the params blob packs strings between its int32_t fields, so these sit at
+// any byte offset and must not be dereferenced in place
+static int32_t _read_int32(const char **buf)
+{
+  int32_t v;
+  memcpy(&v, *buf, sizeof(v));
+  *buf += sizeof(v);
+  return v;
+}
+
 void init_presets(dt_lib_module_t *self)
 {
   // TODO: store presets in db: dt_lib_presets_add(const char *name,
@@ -1944,14 +1954,10 @@ void init_presets(dt_lib_module_t *self)
       // which is the stuff that might change
       size_t copy_over_part = (void *)buf - (void *)op_params;
 
-      const int fversion = *(const int *)buf;
-      buf += sizeof(int32_t);
-      const int sversion = *(const int *)buf;
-      buf += sizeof(int32_t);
-      const int fsize = *(const int *)buf;
-      buf += sizeof(int32_t);
-      const int ssize = *(const int *)buf;
-      buf += sizeof(int32_t);
+      const int fversion = _read_int32(&buf);
+      const int sversion = _read_int32(&buf);
+      const int fsize = _read_int32(&buf);
+      const int ssize = _read_int32(&buf);
 
       const void *fdata = buf;
       buf += fsize;
@@ -2507,26 +2513,16 @@ int set_params(dt_lib_module_t *self,
 
   //??? WARNING: Any change here must be also done on get_params AND init_presets
   //             if some parameters are added before fname & sname
-  const int max_width = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int max_height = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int upscale = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int high_quality = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int export_masks = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int iccintent = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int icctype = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int dimensions_type = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int print_dpi = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int pq_peak_nits = *(const int *)buf;
-  buf += sizeof(int32_t);
+  const int max_width = _read_int32(&buf);
+  const int max_height = _read_int32(&buf);
+  const int upscale = _read_int32(&buf);
+  const int high_quality = _read_int32(&buf);
+  const int export_masks = _read_int32(&buf);
+  const int iccintent = _read_int32(&buf);
+  const int icctype = _read_int32(&buf);
+  const int dimensions_type = _read_int32(&buf);
+  const int print_dpi = _read_int32(&buf);
+  const int pq_peak_nits = _read_int32(&buf);
   const char *scale = buf;
   buf += strlen(scale) + 1;
   const char *metadata_export = buf;
@@ -2569,15 +2565,11 @@ int set_params(dt_lib_module_t *self,
   dt_imageio_module_storage_t *smod = dt_imageio_get_storage_by_name(sname);
   if(!fmod || !smod) return 1;
 
-  const int32_t fversion = *(const int32_t *)buf;
-  buf += sizeof(int32_t);
-  const int32_t sversion = *(const int32_t *)buf;
-  buf += sizeof(int32_t);
+  const int32_t fversion = _read_int32(&buf);
+  const int32_t sversion = _read_int32(&buf);
 
-  const int fsize = *(const int *)buf;
-  buf += sizeof(int32_t);
-  const int ssize = *(const int *)buf;
-  buf += sizeof(int32_t);
+  const int fsize = _read_int32(&buf);
+  const int ssize = _read_int32(&buf);
 
   if(size
      != strlen(fname) + 1
@@ -2592,13 +2584,27 @@ int set_params(dt_lib_module_t *self,
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 
-  const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
-
-  _update_style_label(d, fdata->style);
-  dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
+  // the format and storage modules read their structs in place, so hand
+  // them aligned copies rather than pointers into the blob
+  dt_imageio_module_data_t *fdata = NULL;
+  if(fsize)
+  {
+    fdata = malloc(fsize);
+    memcpy(fdata, buf, fsize);
+    if(fsize >= (int)sizeof(dt_imageio_module_data_t))
+    {
+      _update_style_label(d, fdata->style);
+      dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
+    }
+  }
 
   buf += fsize;
-  const void *sdata = buf;
+  void *sdata = NULL;
+  if(ssize)
+  {
+    sdata = malloc(ssize);
+    memcpy(sdata, buf, ssize);
+  }
 
   // switch modules
   set_storage_by_name(d, sname);
@@ -2619,6 +2625,8 @@ int set_params(dt_lib_module_t *self,
     res += smod->set_params(smod, sdata, ssize);
   if(fsize)
     res += fmod->set_params(fmod, fdata, fsize);
+  free(fdata);
+  free(sdata);
   return res;
 }
 
