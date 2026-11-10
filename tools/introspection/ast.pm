@@ -170,6 +170,10 @@ sub new
   $reference->{type} = $type;
   $reference->{name} = $name;
 
+  # enum value arrays are shared by type name (%enum_arrays), so an anonymous
+  # enum takes its typedef name; otherwise all of them get the first one's values
+  $type->{name} = $name if((ref $type) eq "ast_type_enum_node" && !defined($type->{name}));
+
   return $reference;
 }
 
