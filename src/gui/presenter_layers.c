@@ -1344,14 +1344,14 @@ static void _present(_widget_t *l)
   dt_presenter_reservation_t r;
   if(!transport->reserve(transport, l->widget, &l->transport_data, &layers, &r))
   {
-    dt_presenter_window_redraw(l->window->window);
+    gtk_widget_queue_draw(l->widget);
     return;
   }
   const gboolean changed = _image_changed(l, width, height, &r);
   // no image buffer, or no memory to compose it
   if(changed && (!r.image || !_compose_widget(l, width, height, &r)))
   {
-    dt_presenter_window_redraw(l->window->window);
+    gtk_widget_queue_draw(l->widget);
     return;
   }
   if(changed) _shown_set(l, width, height, &r);
