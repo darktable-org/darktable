@@ -5047,6 +5047,12 @@ void dt_shortcut_key_release(const dt_input_device_t id,
   {
     _interrupt_delayed_release(TRUE);
 
+    // the pending release just run can complete a shortcut being defined in
+    // the preferences dialog, and _ungrab_grab_widget() then frees every
+    // pressed key, this one included
+    stored_key = g_slist_find_custom(_pressed_keys, &this_key, _cmp_key);
+    if(!stored_key) return;
+
     g_free(stored_key->data);
     _pressed_keys = g_slist_delete_link(_pressed_keys, stored_key);
 
