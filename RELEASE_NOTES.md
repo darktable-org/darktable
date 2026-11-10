@@ -989,6 +989,9 @@ changes (where available).
   when the key was let go, as a long key press if the key had been held
   longer than a double-click.
 
+- Fixed a crash when defining a key + mouse click shortcut in the
+  shortcuts dialog and letting go of the key quickly after the click.
+
 ## Lua
 
 ### API Version
