@@ -984,74 +984,83 @@ static void _leave_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+// what a pipe asks colorout to render to (_request_output())
+typedef struct dt_iop_colorout_request_t
 {
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
-  dt_iop_colorout_data_t *d = piece->data;
-
-  // stored params need not terminate the file name
-  p->filename[sizeof(p->filename) - 1] = '\0';
-
-  d->type = p->type;
-
-  // to be used in pixel-pipe cache
-  dt_ioppr_set_pipe_export_profile_info(self->dev, piece->pipe, p->type, p->filename, p->intent);
-
-  const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-
-  dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
-  gchar *out_filename = NULL;
-  dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
-  gboolean presented = FALSE;
+  dt_colorspaces_color_profile_type_t type;
+  // into p, proof_filename or the window's output; empty for the thumbnail
+  const char *filename;
+  // the window's profile, which its run took with its output
+  cmsHPROFILE profile;
+  // the intent the output's encoding records
+  dt_iop_color_intent_t intent;
+  // the intent and black point compensation the transform uses: a soft
+  // proof's own
+  dt_iop_color_intent_t transform_intent;
+  gboolean bpc;
+  // the preference to always use LittleCMS 2
+  gboolean force_lcms2;
+  // an RGB proof clips where an integer export clips
+  gboolean clip;
+  // the profile of a proof that is not RGB, which goes on to the window
+  cmsHPROFILE ink;
+  // a soft proof, with or without the gamut check, or none
+  dt_colorspaces_color_mode_t mode;
+  // the proof profile's type, which an ink proof does not render to
+  dt_colorspaces_color_profile_type_t proof_type;
+  gboolean presented;
   // the pipe renders to its window's output
-  gboolean window = FALSE;
+  gboolean window;
+  char proof_filename[DT_IOP_COLOR_ICC_LEN];
+} dt_iop_colorout_request_t;
 
-  const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+// what _build_transforms() built
+typedef struct dt_iop_colorout_built_t
+{
+  // the profile the transform converts to, once the fallbacks have
+  // replaced a missing or unsupported one
+  dt_colorspaces_color_profile_type_t type;
+  const char *filename;
+  cmsHPROFILE profile;
+  // the requested profile, NULL where it is missing, which the profile
+  // info records
+  cmsHPROFILE requested;
+  // process() has what it writes the output with: a transform or matrix,
+  // or a Lab output, which it passes on unconverted
+  gboolean built;
+  gboolean cl_ready;
+} dt_iop_colorout_built_t;
 
-  cmsHPROFILE output = NULL;
-  cmsHPROFILE ink = NULL;
-  cmsHPROFILE hdr_linear = NULL;
-  cmsUInt32Number output_format = TYPE_RGBA_FLT;
+// what the pipe asks for: an export its file's profile, the thumbnail
+// pipe the mipmap cache's, a presented pipe its window's output or an RGB
+// soft proof's profile. an export's override goes into p, which the pipe
+// hashes after this commit
+static void _request_output(dt_iop_colorout_request_t *const req,
+                            dt_iop_colorout_params_t *const p,
+                            const dt_dev_pixelpipe_t *const pipe)
+{
+  *req = (dt_iop_colorout_request_t){ .type = DT_COLORSPACE_SRGB,
+                                      .intent = DT_INTENT_PERCEPTUAL };
+
+  req->force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   // the proof settings, read once: the darkroom changes them from the GUI
   // thread, and one commit builds from one set
   const dt_colorspaces_t *const cp = darktable.color_profiles;
   const dt_colorspaces_color_mode_t mode = cp->mode;
   const dt_colorspaces_color_profile_type_t proof_type = cp->softproof_type;
-  char proof_filename[sizeof(cp->softproof_filename)];
-  g_strlcpy(proof_filename, cp->softproof_filename, sizeof(proof_filename));
+  g_strlcpy(req->proof_filename, cp->softproof_filename, sizeof(req->proof_filename));
   const dt_iop_color_intent_t proof_intent = cp->softproof_intent;
   const gboolean proof_bpc = cp->softproof_bpc;
 
   // the full pipe shows the proof. the preview pipe's proof feeds the
   // scopes, the color pickers and navigation, which read the proof's
   // values, so it leaves out the gamut check's marks
-  d->mode = dt_pipe_is_full(pipe) ? mode
-          : dt_pipe_is_preview(pipe) && mode != DT_PROFILE_NORMAL ? DT_PROFILE_SOFTPROOF
-          : DT_PROFILE_NORMAL;
-  const gboolean proof = d->mode != DT_PROFILE_NORMAL;
-  const gboolean gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
-
-  _delete_transforms(d);
-  dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
-  d->lut[0][0] = -1.0f;
-  d->lut[1][0] = -1.0f;
-  d->lut[2][0] = -1.0f;
-  d->clip = FALSE;
-  for(int c = 0; c < 4; c++) d->gamut_scale[c] = 1.0f;
-  d->gamut_tolerance = 0.0f;
-  d->gamut_black = 0.0f;
-  // the output's own cyan where no conversion of the device's can be built
-  d->gamut_mark[0] = 0.0f;
-  d->gamut_mark[1] = d->gamut_mark[2] = 1.0f;
-  d->gamut_mark[3] = 0.0f;
-  piece->process_cl_ready = TRUE;
-
-  // a failure records nothing: no profile describes what process() then writes
-  dt_color_encoding_t *const encoding = &pipe->colorout_encoding;
-  memset(encoding, 0, sizeof(*encoding));
-  encoding->type = DT_COLORSPACE_NONE;
+  req->mode = dt_pipe_is_full(pipe) ? mode
+            : dt_pipe_is_preview(pipe) && mode != DT_PROFILE_NORMAL ? DT_PROFILE_SOFTPROOF
+            : DT_PROFILE_NORMAL;
+  const gboolean proof = req->mode != DT_PROFILE_NORMAL;
+  req->proof_type = proof_type;
 
   /* if we are exporting then check and set usage of override profile */
   if(dt_pipe_is_export(pipe))
@@ -1063,9 +1072,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     }
     if((unsigned int)pipe->icc_intent < DT_INTENT_LAST) p->intent = pipe->icc_intent;
 
-    out_type = p->type;
-    out_filename = p->filename;
-    out_intent = p->intent;
+    req->type = p->type;
+    req->filename = p->filename;
+    req->intent = p->intent;
   }
   else if(dt_pipe_is_thumb(pipe))
   {
@@ -1073,93 +1082,119 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     // registry's DISPLAY entry holds
     dt_display_output_t main_window;
     dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &main_window);
-    out_type = dt_mipmap_cache_get_colorspace();
-    out_filename = "";
-    out_intent = main_window.device.intent;
+    req->type = dt_mipmap_cache_get_colorspace();
+    req->filename = "";
+    req->intent = main_window.device.intent;
   }
   else
   {
     /* we are not exporting, the pipe is presented */
-    presented = TRUE;
+    req->presented = TRUE;
     // a soft proof renders as an export to the proof profile, so its frame
     // is in that profile, and the presenter shows it as any other. a frame
     // holds RGB, so an ink proof goes on to the window's output
     if(proof)
     {
       const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
-        (proof_type, proof_filename,
+        (proof_type, req->proof_filename,
          DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
-      if(prof && cmsGetColorSpace(prof->profile) != cmsSigRgbData) ink = prof->profile;
+      if(prof && cmsGetColorSpace(prof->profile) != cmsSigRgbData) req->ink = prof->profile;
     }
-    if(proof && !ink)
+    if(proof && !req->ink)
     {
-      out_type = proof_type;
-      out_filename = proof_filename;
-      out_intent = proof_intent;
-      d->clip = TRUE;
+      req->type = proof_type;
+      req->filename = req->proof_filename;
+      req->intent = proof_intent;
+      req->clip = TRUE;
     }
     else
     {
-      out_type = pipe->output.image.type;
-      out_filename = pipe->output.image.filename;
-      out_intent = pipe->output.image.intent;
-      window = TRUE;
+      req->type = pipe->output.image.type;
+      req->filename = pipe->output.image.filename;
+      req->profile = pipe->output.image.profile;
+      req->intent = pipe->output.image.intent;
+      req->window = TRUE;
     }
   }
 
-  // a pipe without a display encoding is not presented: a dt_dev_image()
-  // sink of type DT_COLORSPACE_NONE filters colorout out and keeps the
-  // pixels in the working RGB. the run resolves its output from the final
-  // working profile; modules after colorout that read it in commit_params()
-  // get this one
-  if(out_type == DT_COLORSPACE_NONE)
+  // a soft proof has its own intent and black point compensation. an
+  // export asks for none, which littlecms still applies for perceptual and
+  // saturation into a v4 profile
+  req->transform_intent = proof ? proof_intent : req->intent;
+  req->bpc = proof && proof_bpc;
+}
+
+// the transform to what req asks for, into d: sRGB where its profile is
+// missing or unsupported, the matrix path or littlecms, and the gamut
+// check. nothing goes to the pipe, which _publish_output() tells
+static void _build_transforms(dt_iop_colorout_data_t *const d,
+                              const dt_dev_pixelpipe_t *const pipe,
+                              const dt_iop_colorout_request_t *const req,
+                              dt_iop_colorout_built_t *const b)
+{
+  const gboolean proof = req->mode != DT_PROFILE_NORMAL;
+  const gboolean gamutcheck = req->mode == DT_PROFILE_GAMUTCHECK;
+  const cmsHPROFILE ink = req->ink;
+  const dt_iop_color_intent_t intent = req->transform_intent;
+  const gboolean bpc = req->bpc;
+  const gboolean force_lcms2 = req->force_lcms2;
+
+  d->mode = req->mode;
+  _delete_transforms(d);
+  dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
+  d->lut[0][0] = -1.0f;
+  d->lut[1][0] = -1.0f;
+  d->lut[2][0] = -1.0f;
+  d->clip = req->clip;
+  for(int c = 0; c < 4; c++) d->gamut_scale[c] = 1.0f;
+  d->gamut_tolerance = 0.0f;
+  d->gamut_black = 0.0f;
+  // the output's own cyan where no conversion of the device's can be built
+  d->gamut_mark[0] = 0.0f;
+  d->gamut_mark[1] = d->gamut_mark[2] = 1.0f;
+  d->gamut_mark[3] = 0.0f;
+
+  *b = (dt_iop_colorout_built_t){ .type = req->type, .filename = req->filename,
+                                  .cl_ready = TRUE };
+
+  // colorout is left out
+  if(req->type == DT_COLORSPACE_NONE) return;
+
+  const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+
+  // when the output type is Lab then process is a nop, so we can avoid
+  // creating a transform and the subsequent error messages
+  d->type = req->type;
+  d->hdr_transfer = dt_colorspaces_hdr_transfer(req->type);
+  if(req->type == DT_COLORSPACE_LAB)
   {
-    _leave_out(self, piece);
+    b->profile = b->requested = Lab;
+    b->built = TRUE;
     return;
   }
 
-  // the profile the transform converts to, once the fallbacks below have
-  // replaced a missing or unsupported one
-  dt_colorspaces_color_profile_type_t built_type = out_type;
-  const char *built_filename = out_filename;
-
-  // when the output type is Lab then process is a nop, so we can avoid creating a transform
-  // and the subsequent error messages but still have to publish the profile_info
-  d->type = out_type;
-  d->hdr_transfer = dt_colorspaces_hdr_transfer(out_type);
-  if(out_type == DT_COLORSPACE_LAB)
-  {
-    const dt_iop_order_iccprofile_info_t *const info =
-      dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, Lab,
-                                            p->intent);
-    piece->pipe->output_headroom = _output_headroom(piece->pipe, info);
-    encoding->type = DT_COLORSPACE_LAB;
-    g_strlcpy(encoding->filename, out_filename, sizeof(encoding->filename));
-    encoding->profile = Lab;
-    encoding->intent = out_intent;
-    encoding->headroom = pipe->output_headroom;
-    return;
-  }
+  cmsHPROFILE hdr_linear = NULL;
+  cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   /* creating output profile */
   // a presented pipe renders to the profile its run took with its output,
   // which a new screen profile may have replaced in the registry since
-  const gboolean lookup_display = !window
-    && (out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2);
+  const gboolean lookup_display = !req->window
+    && (req->type == DT_COLORSPACE_DISPLAY || req->type == DT_COLORSPACE_DISPLAY2);
   if(lookup_display)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *out_profile
-      = window ? NULL
-               : dt_colorspaces_get_profile(out_type, out_filename,
-                                            DT_PROFILE_DIRECTION_OUT
-                                            | DT_PROFILE_DIRECTION_DISPLAY
-                                            | DT_PROFILE_DIRECTION_DISPLAY2);
-  output = window ? pipe->output.image.profile : out_profile ? out_profile->profile : NULL;
-  const cmsHPROFILE out_content = output;
+      = req->window ? NULL
+                    : dt_colorspaces_get_profile(req->type, req->filename,
+                                                 DT_PROFILE_DIRECTION_OUT
+                                                 | DT_PROFILE_DIRECTION_DISPLAY
+                                                 | DT_PROFILE_DIRECTION_DISPLAY2);
+  cmsHPROFILE output = req->window ? req->profile : out_profile ? out_profile->profile : NULL;
+  b->requested = output;
   if(output)
   {
-    if(out_type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
+    if(req->type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
   }
   else
   {
@@ -1168,23 +1203,23 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                         | DT_PROFILE_DIRECTION_DISPLAY
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
-    built_type = DT_COLORSPACE_SRGB;
-    built_filename = "";
-    if(d->clip)
+    b->type = DT_COLORSPACE_SRGB;
+    b->filename = "";
+    if(req->clip)
     {
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
       dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!",
-               dt_colorspaces_get_name(out_type, out_filename));
+               dt_colorspaces_get_name(req->type, req->filename));
     }
     else
     {
       dt_control_log(_("missing output profile has been replaced by sRGB!"));
       dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
-               dt_colorspaces_get_name(out_type, out_filename));
+               dt_colorspaces_get_name(req->type, req->filename));
     }
   }
 
-  cmsHPROFILE built_profile = output;
+  b->profile = output;
 
   if(d->hdr_transfer)
   {
@@ -1194,11 +1229,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     output = hdr_linear;
   }
 
-  // a soft proof has its own intent and black point compensation. an
-  // export asks for none, which littlecms still applies for perceptual and
-  // saturation into a v4 profile
-  const dt_iop_color_intent_t intent = proof ? proof_intent : out_intent;
-  const gboolean bpc = proof && proof_bpc;
   // the export of a PQ or HLG proof clips in dt_hdr_encode(), past what
   // littlecms' gamut check sees: its linear values tell
   const gboolean alarm = gamutcheck && (ink || !d->hdr_transfer);
@@ -1206,7 +1236,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
-    piece->process_cl_ready = FALSE;
+    b->cl_ready = FALSE;
     _create_transforms(d, Lab, output, output_format, ink, intent, bpc, alarm);
   }
 
@@ -1216,16 +1246,16 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
              "unsupported output profile `%s' has been replaced by sRGB!",
-             out_profile ? out_profile->name : dt_colorspaces_get_name(out_type, out_filename));
+             out_profile ? out_profile->name : dt_colorspaces_get_name(req->type, req->filename));
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
-    built_type = DT_COLORSPACE_SRGB;
-    built_filename = "";
-    built_profile = output;
+    b->type = DT_COLORSPACE_SRGB;
+    b->filename = "";
+    b->profile = output;
 
     if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
     {
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
-      piece->process_cl_ready = FALSE;
+      b->cl_ready = FALSE;
 
       _create_transforms(d, Lab, output, output_format, ink, intent, bpc, alarm);
     }
@@ -1237,7 +1267,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // the exact transform, which only the CPU has, an ink proof clips between
   // two transforms, and the gamut check off the matrix path runs on the CPU
   if(d->xform && !d->proof_xform && !force_lcms2 && !gamutcheck && !d->hdr_transfer)
-    piece->process_cl_ready = TRUE;
+    b->cl_ready = TRUE;
 
   // the gamut check on linear values: a matrix path's, or littlecms' for
   // PQ and HLG. profiles store their primaries as s15Fixed16 numbers,
@@ -1295,16 +1325,46 @@ done:
 
   dt_colorspaces_cleanup_profile(hdr_linear);
 
+  b->built = d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0]);
+}
+
+// the one place that tells the pipe what colorout renders: the profile
+// info and headroom the modules after it read, the encoding of its
+// output, and whether colorout runs, and on the GPU
+static void _publish_output(dt_iop_module_t *self,
+                            dt_dev_pixelpipe_iop_t *piece,
+                            const dt_iop_color_intent_t info_intent,
+                            const dt_iop_colorout_request_t *const req,
+                            const dt_iop_colorout_built_t *const b)
+{
+  dt_dev_pixelpipe_t *const pipe = piece->pipe;
+
+  // a failure records nothing: no profile describes what process() then writes
+  dt_color_encoding_t *const encoding = &pipe->colorout_encoding;
+  memset(encoding, 0, sizeof(*encoding));
+  encoding->type = DT_COLORSPACE_NONE;
+  piece->process_cl_ready = b->cl_ready;
+
+  // a pipe without a display encoding is not presented: a dt_dev_image()
+  // sink of type DT_COLORSPACE_NONE filters colorout out and keeps the
+  // pixels in the working RGB. the run resolves its output from the final
+  // working profile; modules after colorout that read it in commit_params()
+  // get this one
+  if(req->type == DT_COLORSPACE_NONE)
+  {
+    _leave_out(self, piece);
+    return;
+  }
+
   // with no transform process() has nothing to convert with. a presented
   // pipe's frame says what its pixels are; an export's file would claim
   // the requested profile, so process() fails it
-  const gboolean built = d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0]);
-  if(!built)
+  if(!b->built)
   {
     dt_print(DT_DEBUG_ALWAYS, "[colorout] no transform to `%s', %s",
-             dt_colorspaces_get_name(out_type, out_filename),
-             presented ? "output left in the working RGB" : "the export fails");
-    if(presented)
+             dt_colorspaces_get_name(req->type, req->filename),
+             req->presented ? "output left in the working RGB" : "the export fails");
+    if(req->presented)
     {
       _leave_out(self, piece);
       return;
@@ -1313,24 +1373,46 @@ done:
   }
 
   const dt_iop_order_iccprofile_info_t *const info =
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename,
-                                          out_content, p->intent);
+    dt_ioppr_set_pipe_output_profile_info(self->dev, pipe, req->type, req->filename,
+                                          b->requested, info_intent);
   // render the proof for its export's headroom and let the screen clip, as
-  // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10)
-  piece->pipe->output_headroom = proof
-    ? dt_ioppr_profile_headroom(ink ? proof_type : built_type)
-    : _output_headroom(piece->pipe, info);
+  // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10).
+  // a Lab output, which process() passes on, takes the default
+  pipe->output_headroom = req->mode != DT_PROFILE_NORMAL && req->type != DT_COLORSPACE_LAB
+    ? dt_ioppr_profile_headroom(req->ink ? req->proof_type : b->type)
+    : _output_headroom(pipe, info);
 
-  // process() encodes for out_type's HDR transfer function, which no
-  // profile describes once sRGB has replaced out_type's profile
-  if(built && !(d->hdr_transfer && built_type != out_type))
+  // process() encodes for the requested type's HDR transfer function,
+  // which no profile describes once sRGB has replaced its profile
+  if(b->built && !(dt_colorspaces_hdr_transfer(req->type) && b->type != req->type))
   {
-    encoding->type = built_type;
-    g_strlcpy(encoding->filename, built_filename, sizeof(encoding->filename));
-    encoding->profile = built_profile;
-    encoding->intent = out_intent;
+    encoding->type = b->type;
+    g_strlcpy(encoding->filename, b->filename, sizeof(encoding->filename));
+    encoding->profile = b->profile;
+    encoding->intent = req->intent;
     encoding->headroom = pipe->output_headroom;
   }
+}
+
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
+  dt_iop_colorout_data_t *d = piece->data;
+
+  // stored params need not terminate the file name
+  p->filename[sizeof(p->filename) - 1] = '\0';
+
+  d->type = p->type;
+
+  // to be used in pixel-pipe cache
+  dt_ioppr_set_pipe_export_profile_info(self->dev, piece->pipe, p->type, p->filename, p->intent);
+
+  dt_iop_colorout_request_t req;
+  _request_output(&req, p, pipe);
+  dt_iop_colorout_built_t built;
+  _build_transforms(d, pipe, &req, &built);
+  _publish_output(self, piece, p->intent, &req, &built);
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
