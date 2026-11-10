@@ -3992,10 +3992,10 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
    shows both at once and keeps the link intact -- the selection does not move,
    only its text changes, so paper_hash stays 0.
 
-   With scan_film there is no print stage at all, and the widget is insensitive:
-   the entry goes blank; naming a paper nothing will be printed on would mislead.
-   Called from _update_print_sensitivity() as well as on a film change, so it
-   follows that toggle. */
+   With scan_film there is no print stage, but the entry keeps its name: on a
+   negative the combobox stays live while scanning and "auto" is one of the ways
+   back to printing, so it has to remain readable in the list. Only the tooltip
+   says that no paper is in use. */
 static void _update_paper_auto_entry(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -4003,17 +4003,19 @@ static void _update_paper_auto_entry(dt_iop_module_t *self)
   if(!g || !g->paper) return;
   char label[SF_NAME_LEN + 32];
   char tip[SF_NAME_LEN + 256];
-  const sf_prof_entry_t *re
-      = p->scan_film ? NULL : _auto_paper_entry(g, _current_film_entry(g, p));
+  const sf_prof_entry_t *re = _auto_paper_entry(g, _current_film_entry(g, p));
+  /* the label names what selecting the entry would print on, scanning or not */
+  if(re)
+    snprintf(label, sizeof label, _("auto (%s)"), re->name);
+  else
+    g_strlcpy(label, _("auto"), sizeof label);
   if(p->scan_film)
   {
-    label[0] = '\0';
     g_strlcpy(tip, _("print paper. not used: the film is being scanned directly."),
               sizeof tip);
   }
   else if(re)
   {
-    snprintf(label, sizeof label, _("auto (%s)"), re->name);
     snprintf(tip, sizeof tip,
              _("print paper. \"auto\" follows the film stock's own target print,\n"
                "currently %s. picking a paper pins it until you select auto again."),
@@ -4022,7 +4024,6 @@ static void _update_paper_auto_entry(dt_iop_module_t *self)
   else
   {
     /* no print stock in the pack at all -- the list below reads "(none)" */
-    g_strlcpy(label, _("auto"), sizeof label);
     g_strlcpy(tip, _("print paper. \"auto\" follows the film stock's own target print."),
               sizeof tip);
   }
