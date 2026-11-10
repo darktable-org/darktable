@@ -1554,6 +1554,21 @@ static void _publish_status(const dt_iop_spektrafilm_data_t *d)
   dt_iop_gui_leave_critical_section(self);
 }
 
+/* Bring the cached sim's two output gains, and their float mirrors in the GPU
+   export, up to the current params. They are not part of the sim key. Call
+   with d->lock held; the piece's own pipe is the only thing rendering with
+   d->sim, and it is the caller. */
+static void _apply_output_gain(dt_iop_spektrafilm_data_t *d)
+{
+  if(!d->sim) return;
+  sf_sim_set_output_gain(d->sim, d->p.output_luminance_boost, d->p.output_scale);
+  if(d->gpu)
+  {
+    d->gpu->out_luminance_boost = d->p.output_luminance_boost;
+    d->gpu->out_scale = d->p.output_scale;
+  }
+}
+
 static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
                              const dt_iop_order_iccprofile_info_t *work_profile)
 {
@@ -1610,14 +1625,16 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* both change the tc LUT, which is built once per sim */
   key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
-  key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
+  /* output_luminance_boost and output_scale are deliberately absent: both are
+     plain multipliers applied at scan time and enter no table, so they are
+     written into the cached sim by _apply_output_gain() instead of costing a
+     rebuild on every slider step */
   /* the endpoint fit is solved at build time, not per pixel */
   key = _mix64(key, &p->scan_black_correction, sizeof p->scan_black_correction);
   key = _mix64(key, &p->scan_white_correction, sizeof p->scan_white_correction);
   key = _mix64(key, &p->scan_black_level, sizeof p->scan_black_level);
   key = _mix64(key, &p->scan_white_level, sizeof p->scan_white_level);
   key = _mix64(key, &p->gamut_compress, sizeof p->gamut_compress);
-  key = _mix64(key, &p->output_scale, sizeof p->output_scale);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
   key = _mix64(key, &p->film_gamma_factor_fast, sizeof p->film_gamma_factor_fast);
   key = _mix64(key, &p->film_gamma_factor_slow, sizeof p->film_gamma_factor_slow);
@@ -1637,6 +1654,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(d->sim && d->sim_key == key)
   {
     sf_sim_t *s = d->sim;
+    _apply_output_gain(d);
     _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return s;

@@ -3605,6 +3605,17 @@ void sf_sim_free(sf_sim_t *s)
   g_free(s);
 }
 
+void sf_sim_set_output_gain(sf_sim_t *sim,
+                            const float out_luminance_boost,
+                            const float out_scale)
+{
+  if(!sim) return;
+  /* widened from float exactly as sf_sim_build() receives them, so a sim
+     updated here is the sim a rebuild with these values would produce */
+  sim->out_luminance_boost = sim->p.out_luminance_boost = (double)out_luminance_boost;
+  sim->out_scale = sim->p.out_scale = (double)out_scale;
+}
+
 double sf_sim_film_dmax(const sf_sim_t *sim,
                         int ch)
 {
