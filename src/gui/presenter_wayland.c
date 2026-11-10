@@ -726,7 +726,7 @@ static void _toplevel_unmap(GtkWidget *toplevel,
 static void _paint(GdkFrameClock *clock,
                    _transport_t *t)
 {
-  dt_presenter_window_present(t->p->window);
+  dt_presenter_layered_present(t->transport.layered);
 }
 
 /* setup */

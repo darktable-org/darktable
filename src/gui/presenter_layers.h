@@ -84,7 +84,7 @@ typedef struct dt_presenter_reservation_t
  * together with GTK's surface for the frame that drew it, or later, never
  * earlier: early layers show a hole or a stale image where GTK has not
  * drawn yet. the transport decides when to call
- * dt_presenter_window_present() to make that true.
+ * dt_presenter_layered_present() to make that true.
  */
 struct dt_presenter_transport_t
 {
@@ -121,11 +121,14 @@ struct dt_presenter_transport_t
   // Wayland, so they need no replay. where GTK3 draws them into the
   // toplevel's surface (Quartz, Win32), the layers cover them
   gboolean popovers_above;
+  // the layered backend that made the transport, which sets it right
+  // after the platform's transport() returns
+  dt_presenter_backend_t *layered;
 };
 
-/** for transports: present the layers of every widget of window drawn
- * since the last call */
-void dt_presenter_window_present(dt_presenter_window_t *window);
+/** for transports: present the layers of every widget of the layered
+ * backend drawn since the last call */
+void dt_presenter_layered_present(dt_presenter_backend_t *layered);
 
 #ifdef HAVE_WAYLAND
 /** the Wayland platform of toplevel. NULL with *reason NULL if toplevel is

@@ -191,10 +191,9 @@ static void _drop_kept(_widget_t *l)
 
 static void _present(_widget_t *l);
 
-void dt_presenter_window_present(dt_presenter_window_t *window)
+void dt_presenter_layered_present(dt_presenter_backend_t *layered)
 {
-  _window_t *w = (_window_t *)window->backend;
-  if(!w) return;
+  _window_t *w = (_window_t *)layered;
   for(GList *l = w->widgets; l; l = g_list_next(l))
   {
     _widget_t *widget = l->data;
@@ -1506,6 +1505,7 @@ dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window,
   _window_t *w = g_malloc0(sizeof(_window_t));
   w->window = window;
   w->transport = transport;
+  transport->layered = &w->backend;
   w->replay_popovers = !transport->popovers_above;
   w->popovers = g_ptr_array_new();
   w->backend = (dt_presenter_backend_t){ .begin = _begin,
