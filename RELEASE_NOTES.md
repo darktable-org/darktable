@@ -950,6 +950,9 @@ changes (where available).
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
 
+- Fixed tether live view reallocating preview every frame and
+  refreshing the histogram and full camera config on every update.
+
 - Fixed workspace discovery truncating names at the first '.' in the
   database filename (for example library-client.v2.db was shown as
   "client"), which could open or delete the wrong database. Workspace
