@@ -64,6 +64,11 @@
 #include <string.h>
 
 #define SF_LOG_EPS 1e-10
+/* float twin, for the per-pixel float paths. spektrafilm.cl adds 1e-10f in
+   float; adding the double constant here instead promotes the sum to double
+   and rounds it back, which lands one ULP away from the kernel on roughly one
+   deep-shadow value in a thousand -- upstream of the grain sampler. */
+#define SF_LOG_EPS_F 1e-10f
 
 /* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
    exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
@@ -4777,7 +4782,7 @@ void sf_sim_lograw(const sf_sim_t *sim,
   {
     float *v = raw + px * nch;
     for(int c = 0; c < 3; c++)
-      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS);
+      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS_F);
   }
 }
 
