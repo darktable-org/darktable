@@ -66,13 +66,13 @@ static float _get_variance_threshold(const dt_iop_module_t *self)
   if(!img) return threshold;
 
   // > 12bit sensors always provide more room
-  if(img->raw_white_point > 4096) threshold -= 0.07f;
+  if(img->raw_white_point > 4096) threshold -= 0.08f;
 
   // 14bit sensors always provide even more room
-  if(img->raw_white_point > 14000) threshold -= 0.01f;
+  if(img->raw_white_point > 14000) threshold -= 0.02f;
 
   const float iso_factor = (float)(600 - CLAMP(img->exif_iso, 100, 1000)) / 100.0f;
-  threshold -= 0.012f * iso_factor;
+  threshold -= 0.0125f * iso_factor;
   return threshold;
 }
 
@@ -709,6 +709,34 @@ static inline void _blur_div(const float *const in,
   }
 }
 
+static inline float _mask_dilated(const float *in, const size_t w1)
+{
+  const size_t w2 = 2*w1;
+  return (             in[-w2-1] || in[-w2] || in[-w2+1]
+       || in[-w1-2] || in[-w1-1] || in[-w1] || in[-w1+1] || in[-w1+2]
+       || in[-2]    || in[-1]    || in[0]   || in[1]     || in[2]
+       || in[w1-2]  || in[w1-1]  || in[w1]  || in[w1+1]  || in[w1+2]
+       ||              in[w2-1]  || in[w2]  || in[w2+1] )
+      ? 1.0f : 0.0f;
+}
+
+static void _dilate_blend(const float *in,
+                          float *out,
+                          const int width,
+                          const int height)
+{
+  DT_OMP_FOR(collapse(2))
+  for(size_t row = 0; row < height; row++)
+  {
+    for(size_t col = 0; col < width; col++)
+    {
+      const size_t mx = row * width + col;
+      const gboolean safe = col >= 2 && row >= 2 && col < width - 2 && row < height - 2;
+      out[mx] = safe ? _mask_dilated(in + mx, width) : in[mx];
+    }
+  }
+}
+
 static void _prepare_blend(const float *cfa,
                            const float *rgb,
                            const uint32_t filters,
@@ -719,8 +747,6 @@ static void _prepare_blend(const float *cfa,
                            const int w1,
                            const int height)
 {
-  dt_iop_image_fill(mask, 1.0f, w1, height, 1);
-  const int w2 = 2 * w1;
   // Photometric/digital ITU BT.709
   const dt_aligned_pixel_t flum = { 0.212671f, 0.715160f, 0.072169f, 0.0f };
   DT_OMP_FOR(collapse(2))
@@ -731,22 +757,11 @@ static void _prepare_blend(const float *cfa,
       const size_t k = row * w1 + col;
       dt_aligned_pixel_t yw;
       for_each_channel(c) yw[c] = flum[c] * rgb[k*4+c];
-      Yold[k] = MAX(0.0f, yw[0] + yw[1] + yw[2]);
-      if(row > 1 && col > 1 && row < height-2 && col < w1-2)
-      {
-        const int color = fcol(row, col, filters, xtrans);
-        const gboolean heat = filters ? cfa[k] > whites[color] : cfa[4*k] > CAPTURE_CFACLIP;
-        if(heat || Yold[k] < CAPTURE_YMIN)
-        {
-          mask[k-w2-1] = mask[k-w2]   = mask[k-w2+1] =
-          mask[k-w1-2] = mask[k-w1-1] = mask[k-w1]   = mask[k-w1+1] = mask[k-w1+2] =
-          mask[k-2]    = mask[k-1]    = mask[k]      = mask[k+1]    = mask[k+2] =
-          mask[k+w1-2] = mask[k+w1-1] = mask[k+w1]   = mask[k+w1+1] = mask[k+w1+2] =
-          mask[k+w2-1] = mask[k+w2]   = mask[k+w2+1] = 0.0f;
-        }
-      }
-      else
-        mask[k] = 0.0f;
+      Yold[k] = CLIP(yw[0] + yw[1] + yw[2]);
+
+      const int color = fcol(row, col, filters, xtrans);
+      const gboolean heat = filters ? cfa[k] > whites[color] : cfa[4*k] > CAPTURE_CFACLIP;
+      mask[k] = heat || Yold[k] < CAPTURE_YMIN ? 0.0f : 1.0f;
     }
   }
 }
@@ -861,7 +876,8 @@ static void _capture_sharpen(dt_iop_module_t *self,
     goto finalize;
 
   // tmp2 will hold the temporary clipmask, tmp1 holds Y data
-  _prepare_blend(in, out, filters, xtrans, tmp2, tmp1, icoeffs, width, height);
+  _prepare_blend(in, out, filters, xtrans, blendmask, tmp1, icoeffs, width, height);
+  _dilate_blend(blendmask, tmp2, width, height);
   // modify clipmask in tmp2 according to Y variance, also write L to luminance
   _modify_blend(tmp2, tmp1, luminance, d->cs_thrs, width, height);
 
@@ -1084,8 +1100,12 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prepare_blend, width, height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(dev_xtrans), CLARG(tmp2), CLARG(tmp1),
+          CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(dev_xtrans), CLARG(blendmask), CLARG(tmp1),
           CLARG(icoeffs), CLARG(width), CLARG(height));
+  if(err != CL_SUCCESS) goto finish;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->dilate_mask, width, height,
+          CLARG(blendmask), CLARG(tmp2), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->modify_blend, width, height,

@@ -282,6 +282,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int modify_blend;
   int show_blend_mask;
   int capture_result;
+  int dilate_mask;
   int final_blend;
   int capture_radius;
   float *gauss_coeffs;
@@ -728,7 +729,7 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
   if(capture)
   {
     perpix = MAX(perpix, 6);
-    border = MAX(border, 18);
+    border = border + 6;
   }
 
   const int per_row = perpix * sizeof(float) * width;
@@ -1261,7 +1262,8 @@ int process_cl(dt_iop_module_t *self,
   const gboolean direct = roi_out->width == iwidth && roi_out->height == iheight && feqf(roi_in->scale, roi_out->scale, 1e-8f);
   const gboolean no_masking = dt_pipe_no_mask_display(pipe);
   const gboolean demosaic_mask = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-  const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast && !show_sigma && !show_capture && !demosaic_mask;
+  const gboolean want_dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && d->dual_thrs > 0.0f;
+  const gboolean dual = want_dual && !run_fast && !show_sigma && !show_capture && !demosaic_mask;
   const gboolean passthru = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                          || method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru && !run_fast && !show_dual && d->cs_enabled;
@@ -1630,6 +1632,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->modify_blend = dt_opencl_create_kernel(capt, "modify_blend");
   gd->show_blend_mask = dt_opencl_create_kernel(capt, "show_blend_mask");
   gd->capture_result = dt_opencl_create_kernel(capt, "capture_result");
+  gd->dilate_mask = dt_opencl_create_kernel(capt, "capture_dilatemask");
   gd->final_blend = dt_opencl_create_kernel(capt, "final_blend");
   gd->capture_radius = dt_opencl_create_kernel(capt, "capture_radius");
 
@@ -1720,6 +1723,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->modify_blend);
   dt_opencl_free_kernel(gd->show_blend_mask);
   dt_opencl_free_kernel(gd->capture_result);
+  dt_opencl_free_kernel(gd->dilate_mask);
   dt_opencl_free_kernel(gd->final_blend);
   dt_opencl_free_kernel(gd->capture_radius);
   dt_free_align(gd->gauss_coeffs);
