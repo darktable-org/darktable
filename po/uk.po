@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-06 08:32+0100\n"
-"PO-Revision-Date: 2026-11-09 14:01+0200\n"
+"PO-Revision-Date: 2026-11-12 14:28+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -909,6 +909,9 @@ msgid ""
 "product (smooth intersection), combined by product (smooth\n"
 "intersection), as a classic drawn + parametric mask did"
 msgstr ""
+"\"намальована\" група, максимум (об'єднання), та \"параметрична\" група,\n"
+"добуток (плавний перетин), об'єднані добутком (плавний перетин), як це\n"
+"робила класична намальована + параметрична маска"
 
 #: ../build/bin/masks_group_presets_strings.h:8
 msgid ""
@@ -5300,7 +5303,7 @@ msgstr "Баланс: тіні ↔ світлі ділянки"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:315
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:492
 msgid "add noise in highlights"
-msgstr "Додати шум в світлих ділянках"
+msgstr "Додати шум у світлих ділянках"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:321
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:496
@@ -6656,7 +6659,7 @@ msgstr "Black Pro-Mist"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1248
 msgid "glimmerglass"
-msgstr "Глімергласс"
+msgstr "Glimmerglass"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1249
 msgid "pro-mist"
@@ -10895,12 +10898,12 @@ msgstr "На вході"
 #: ../src/develop/blend_gui.c:2152
 #, c-format
 msgid "%s slider: %s scale"
-msgstr ""
+msgstr "%s повзунок: %s шкала"
 
 #: ../src/develop/blend_gui.c:2154
 #, c-format
 msgid "%s slider: linear scale"
-msgstr ""
+msgstr "%s повзунок: лінійна шкала"
 
 #: ../src/develop/blend_gui.c:2173
 msgid "log"
@@ -11392,10 +11395,9 @@ msgstr "Повна маска"
 
 #. as the pending row names it (see _make_pending_shape_row)
 #: ../src/develop/blend_gui.c:5436 ../src/develop/blend_gui.c:13239
-#, fuzzy, c-format
-#| msgid "new sort"
+#, c-format
 msgid "new %s"
-msgstr "Нове сортування"
+msgstr "Новий об'єкт: %s"
 
 #: ../src/develop/blend_gui.c:5437
 msgid "the shape being drawn: the sections below show its creation controls"
@@ -11605,6 +11607,10 @@ msgid ""
 "'smooth' follows the resized outline with few nodes and round curves.\n"
 "'sharp' traces it as a polygon, which takes many more nodes."
 msgstr ""
+"\"Гладко\" повторює змінений у розмірі контур, використовуючи небагато вузлів "
+"і заокруглені криві.\n"
+"\"Різко\" трасує його у вигляді багатокутника, що потребує значно більшої "
+"кількості вузлів."
 
 #: ../src/develop/blend_gui.c:6059
 msgid "sharp"
@@ -11965,10 +11971,8 @@ msgstr ""
 "Недоступно: вибрані елементи не всі належать до однієї групи"
 
 #: ../src/develop/blend_gui.c:10285
-#, fuzzy
-#| msgid "set selection as color images"
 msgid "the selection has nowhere else to go"
-msgstr "Позначити вибрані зображення як кольорові"
+msgstr "Вибраному немає більше куди переміститися"
 
 #: ../src/develop/blend_gui.c:10289
 msgid "move into"
@@ -12599,10 +12603,8 @@ msgstr ""
 "макету груп. Продовжити?"
 
 #: ../src/develop/blend_gui.c:17970
-#, fuzzy
-#| msgid "images in a group"
 msgid "wrap in group"
-msgstr "зображення в групі"
+msgstr "Загорнути в групу"
 
 #: ../src/develop/blend_gui.c:17971
 msgid ""
@@ -12630,10 +12632,8 @@ msgstr ""
 "створюється порожня група, в якій можна малювати"
 
 #: ../src/develop/blend_gui.c:17979
-#, fuzzy
-#| msgid "images in a group"
 msgid "compose in a new group of"
-msgstr "зображення в групі"
+msgstr "Скомпонувати в новій групі"
 
 #: ../src/develop/blend_gui.c:17980
 msgid "simplify"
@@ -13858,7 +13858,7 @@ msgstr "Не вдалося зберегти об'єкт у супровідно
 
 #: ../src/develop/masks/object.c:1614
 msgid "could not store the object in the sidecar, it is saved as paths"
-msgstr ""
+msgstr "Не вдалося зберегти об'єкт у супровідному файлі, він збережений як шлях"
 
 #. the stored mask exists but could not be read yet: refining without it
 #. and committing would replace the pixels still on disk
@@ -13909,62 +13909,39 @@ msgid "[OBJECT] change opacity"
 msgstr "[ОБ'ЄКТ] Змінити непрозорість"
 
 #: ../src/develop/masks/object.c:2218
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-#| "ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
-#| "shift+right-click\n"
-#| "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
 "ctrl+shift+click, <b>apply as paths</b>: right-click\n"
 "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Скинути</b>: "
-"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік, <b>Застосувати+зберегти "
-"растр</b>: shift+правий клік\n"
+"<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Очистити</b>: "
+"Ctrl+Shift+клік, <b>Застосувати як контури</b>: правий клік\n"
 "<b>Згладжування</b>: прокрутка (%3.2f), <b>Очищення</b>: Shift+прокрутка "
 "(%d), <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/object.c:2229
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-#| "ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
-#| "shift+right-click\n"
-#| "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
 "ctrl+shift+click, <b>apply</b>: right-click, <b>cancel</b>: esc\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Скинути</b>: "
-"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік, <b>Застосувати+зберегти "
-"растр</b>: shift+правий клік\n"
-"<b>Згладжування</b>: прокрутка (%3.2f), <b>Очищення</b>: Shift+прокрутка "
-"(%d), <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
+"<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Очистити</b>: "
+"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік, <b>Скасувати</b>: Esc\n"
+"<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/object.c:2237
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-#| "ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
-#| "shift+right-click\n"
-#| "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
 "ctrl+shift+click, <b>apply</b>: right-click\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Скинути</b>: "
-"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік, <b>Застосувати+зберегти "
-"растр</b>: shift+правий клік\n"
-"<b>Згладжування</b>: прокрутка (%3.2f), <b>Очищення</b>: Shift+прокрутка "
-"(%d), <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
+"<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Очистити</b>: "
+"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік\n"
+"<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/object.c:2245
 #, c-format
@@ -13977,6 +13954,8 @@ msgid ""
 "editing a stored object needs XMP files: see preferences > storage > create "
 "XMP files"
 msgstr ""
+"Для редагування збереженого об'єкта потрібні XMP файли:\n"
+"див. Налаштування > Збереження даних > Створювати XMP файли"
 
 #: ../src/develop/masks/object.c:2444
 msgid "[OBJECT] edit shape"
@@ -14253,6 +14232,12 @@ msgid ""
 "when disabled, the handle is invisible, like the main panels',\n"
 "and still resizes the panel by dragging and hides it on a click."
 msgstr ""
+"Якщо увімкнено (це замовчування), на краю панелі масок,\n"
+"що плаває над полотном, відображається маркер зі стрілкою,\n"
+"яка вказує, у який бік згортається панель.\n"
+"Якщо вимкнено, маркер невидимий (як і на основних панелях),\n"
+"проте він, як і раніше, дозволяє змінювати розмір панелі\n"
+"перетягуванням, а також приховувати її одним кліком."
 
 #: ../src/develop/masks_gui_panel_host.c:1574
 msgid "show focused module under header"
@@ -14330,11 +14315,14 @@ msgstr ""
 msgid ""
 "the preset goes into the group whole, as a new group next to what it holds"
 msgstr ""
+"Пресет додається до групи цілком, як нова група поруч із тим, що в ній "
+"міститься"
 
 #: ../src/develop/masks_gui_presets.c:443
 msgid ""
 "the preset goes into the mask whole, as a new group next to what it holds"
 msgstr ""
+"Пресет потрапляє в маску цілком, як нова група поруч із тим, що вона містить"
 
 #: ../src/develop/masks_gui_presets.c:451
 msgid "replace"
@@ -14429,6 +14417,8 @@ msgid ""
 "the group layout preset a module's mask starts with\n"
 "when it is switched on for the first time"
 msgstr ""
+"Пресет макету групи, який визначає початковий вигляд\n"
+"маски модуля при першому ввімкненні"
 
 #: ../src/develop/masks_gui_presets.c:1341
 msgid "default layout for new masks"
@@ -20632,10 +20622,8 @@ msgid "no repository configured"
 msgstr "Репозиторій не налаштовано"
 
 #: ../src/gui/preferences_ai.c:1730
-#, fuzzy
-#| msgid "invalid repository format"
 msgid "set plugins/ai/repository first"
-msgstr "Недійсний формат репозиторію"
+msgstr "Спочатку встановіть значення ключа конфігурації plugins/ai/repository"
 
 #: ../src/gui/preferences_ai.c:1735
 msgid "install models from repository"
@@ -24504,12 +24492,6 @@ msgid "white balance applied twice (<u>details</u>)"
 msgstr "Баланс білого застосовано двічі (<u>докладніше</u>)"
 
 #: ../src/iop/channelmixerrgb.c:2179
-#, fuzzy
-#| msgid ""
-#| "the color calibration module is enabled and already provides\n"
-#| "chromatic adaptation.\n"
-#| "set the white balance here to camera reference (D65)\n"
-#| "or disable chromatic adaptation in color calibration."
 msgid ""
 "the color calibration module is enabled and already provides\n"
 "chromatic adaptation.\n"
@@ -24519,22 +24501,19 @@ msgid ""
 "ignore this if the coefficients were measured on a D65 screen\n"
 "to replace the camera reference"
 msgstr ""
-"Модуль калібрування кольору ввімкнено і він вже\n"
+"Модуль Калібрування кольору ввімкнено і він уже\n"
 "забезпечує хроматичну адаптацію.\n"
-"Встановіть тут баланс білого на референс з камери (D65)\n"
-"або вимкніть хроматичну адаптацію при калібруванні кольорів."
+"Поставте позначку \"Підготувати дані для Калібрування кольору\",\n"
+"встановіть баланс білого відповідно до еталона камери (D65)\n"
+"або вимкніть хроматичну адаптацію в модулі Калібрування кольору.\n"
+"Ігноруйте це, якщо коефіцієнти було виміряно на екрані D65\n"
+"для заміни еталона камери."
 
 #: ../src/iop/channelmixerrgb.c:2189
 msgid "white balance module error (<u>details</u>)"
 msgstr "Помилка модуля балансу білого (<u>докладніше</u>)"
 
 #: ../src/iop/channelmixerrgb.c:2190
-#, fuzzy
-#| msgid ""
-#| "the white balance module is not using the camera\n"
-#| "reference illuminant, which will cause issues here\n"
-#| "with chromatic adaptation. either set it to reference\n"
-#| "or disable chromatic adaptation here."
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -24544,10 +24523,13 @@ msgid ""
 "ignore this if its coefficients were measured on a D65\n"
 "screen to replace the camera reference"
 msgstr ""
-"Модуль 'Баланс білого' не використовує референсне\n"
-"джерело світла камери, що спричинить тут проблеми\n"
-"з хроматичною адаптацією. Або встановіть його в референсе\n"
-"значення або вимкніть тут хроматичну адаптацію."
+"Модуль 'Баланс білого' не використовує еталонний освітлювач\n"
+"камери, що спричинить тут проблеми з хроматичною адаптацією.\n"
+"Увімкніть опцію \"Підготувати дані для Калібрування кольору\"\n"
+"і виберіть \"референсне значення з камери\" або ж вимкніть тут\n"
+"хроматичну адаптацію.\n"
+"Цю вказівку можна ігнорувати, якщо коефіцієнти були виміряні\n"
+"на екрані D65 для заміни еталонних даних камери"
 
 #: ../src/iop/channelmixerrgb.c:2204 ../src/iop/channelmixerrgb.c:2212
 msgid "white balance missing (<u>details</u>)"
@@ -31642,10 +31624,7 @@ msgstr ""
 "конкретного типу фотоплівки."
 
 #: ../src/iop/spektrafilm.c:4026
-#, fuzzy, c-format
-#| msgid ""
-#| "development time, in minutes. snaps to the nearest time %s is\n"
-#| "characterised at: %s min. 0 uses the stock's own default (%.3g min)."
+#, c-format
 msgid ""
 "development time, in minutes. snaps to the nearest time %s is\n"
 "characterized at: %s min. 0 uses the stock's own default (%.3g min)."
@@ -31655,13 +31634,6 @@ msgstr ""
 "використання стандартного часу для цієї плівки (%.3g хв)."
 
 #: ../src/iop/spektrafilm.c:4033
-#, fuzzy
-#| msgid ""
-#| "development time. this stock is characterised at a single\n"
-#| "development, so there is nothing to choose.\n"
-#| "\n"
-#| "single-emulsion B&W stocks are the ones that carry a family:\n"
-#| "Double-X at 4/5/6.5/9/12 min, print film 2302 at 2/3.5/5/7/9 min."
 msgid ""
 "development time. this stock is characterized at a single\n"
 "development, so there is nothing to choose.\n"
@@ -31672,9 +31644,9 @@ msgstr ""
 "Час проявлення. Для цієї плівки передбачено лише один\n"
 "режим проявлення, тому вибору немає.\n"
 "\n"
-"Чорно-білі плівки з одним емульсійним шаром:\n"
-"Double-X (час проявлення: 4, 5, 6.5, 9 або 12 хв);\n"
-"фільмокопіювальна плівка 2302 (час: 2, 3.5, 5, 7 або 9 хв)."
+"До плівок, для яких передбачено цілий ряд значень часу,\n"
+"належать Double-X та фільмокопіювальна плівка 2302:\n"
+"Double-X — 4, 5, 6,5, 9 та 12 хв; 2302 — 2, 3,5, 5, 7 та 9 хв."
 
 #: ../src/iop/spektrafilm.c:4404
 msgid "the data pack this edit was developed with is not installed"
@@ -31904,12 +31876,6 @@ msgid " mm"
 msgstr " мм"
 
 #: ../src/iop/spektrafilm.c:5776
-#, fuzzy
-#| msgid ""
-#| "physical frame size, long edge. sets the scale that grain, scatter,\n"
-#| "halation and diffusion are all computed at, so a smaller format\n"
-#| "shows every one of them proportionally larger for the same\n"
-#| "print size."
 msgid ""
 "physical frame size, long edge. sets the scale that grain, scatter,\n"
 "halation, diffusion and the coupler spread are all computed at, so\n"
@@ -31917,9 +31883,9 @@ msgid ""
 "the same print size."
 msgstr ""
 "Фізичний розмір кадру, довгий край. Встановлює масштаб, за яким\n"
-"обчислюються зернистість, розсіювання, ореоли та дифузія, тому\n"
-"менший формат показує кожен з них пропорційно більшим\n"
-"для того самого розміру друку."
+"обчислюються зернистість, розсіювання, ореоли, дифузія та міграція\n"
+"кольороутворювача, тому менший формат показує кожен з них\n"
+"пропорційно більшим для того самого розміру друку."
 
 #. ---- tab 1: film (exposure + development) ----
 #: ../src/iop/spektrafilm.c:5794
@@ -31932,11 +31898,6 @@ msgid "exposure"
 msgstr "Експозиція"
 
 #: ../src/iop/spektrafilm.c:5806
-#, fuzzy
-#| msgid ""
-#| "film exposure compensation; with auto print exposure enabled, print\n"
-#| "exposure follows automatically so this has no net brightness effect\n"
-#| "(except on positive/reversal film, which has no print stage)."
 msgid ""
 "film exposure compensation; with auto print exposure enabled, print\n"
 "exposure follows automatically so this has no net brightness effect\n"
@@ -31944,22 +31905,14 @@ msgid ""
 msgstr ""
 "Компенсація експозиції плівки; якщо ввімкнено автоматичну експозицію друку,\n"
 "експозиція друку коригується автоматично, тому це не впливає на підсумкову\n"
-"яскравість (за винятком позитивної плівки, для якої етап друку відсутній)."
+"яскравість (крім випадків, коли плівка сканується безпосередньо, без етапу "
+"друку)."
 
 #: ../src/iop/spektrafilm.c:5813
 msgid " stops"
 msgstr " стопів"
 
 #: ../src/iop/spektrafilm.c:5816
-#, fuzzy
-#| msgid ""
-#| "push (positive) or pull (negative) processing: shoot at an effective\n"
-#| "ISO different from box speed, then under- or over-develop to\n"
-#| "compensate. combines an exposure shift with a derived contrast\n"
-#| "increase/decrease (approximate: the exact relationship depends on\n"
-#| "the specific film/developer combination, which isn't modeled here).\n"
-#| "Stacks with the granular gamma controls below for\n"
-#| "further fine-tuning."
 msgid ""
 "push (positive) or pull (negative) processing: shoot at an effective\n"
 "ISO different from box speed, then under- or over-develop to\n"
@@ -31990,10 +31943,6 @@ msgid " min"
 msgstr " хв"
 
 #: ../src/iop/spektrafilm.c:5831
-#, fuzzy
-#| msgid ""
-#| "development time. snaps to the nearest time the stock was\n"
-#| "characterised at; 0 uses the stock's own default."
 msgid ""
 "development time. snaps to the nearest time the stock was\n"
 "characterized at; 0 uses the stock's own default."
@@ -32027,20 +31976,16 @@ msgid "contrast of the mid and slow emulsion sub-layers"
 msgstr "Контраст середньо- та низькочутливого емульсійних субшарів"
 
 #: ../src/iop/spektrafilm.c:5859
-#, fuzzy
-#| msgid ""
-#| "local developer depletion in dense (highly-exposed) areas: blends\n"
-#| "the highlight shoulder toward a self-limiting rolloff without\n"
-#| "shifting midgray (0 = off)."
 msgid ""
 "developer depletion in dense (highly-exposed) areas, modelled as a\n"
 "change to the density curve rather than a spatial effect: blends\n"
 "the highlight shoulder toward a self-limiting rolloff without\n"
 "shifting midgray (0 = off)."
 msgstr ""
-"Локальне виснаження проявника в щільних (високо експонованих) областях:\n"
-"забезпечує плавний перехід світлих тонів до контрольованого спаду яскравості\n"
-"без зміщення середньо-сірого (0 = вимкнено)."
+"Виснаження проявника в щільних (високоекспонованих) областях, що\n"
+"моделюється як зміна кривої щільності, а не як просторовий ефект:\n"
+"забезпечує плавний перехід світлих тонів до контрольованого спаду\n"
+"яскравості без зміщення середньо-сірого (0 = вимкнено)."
 
 #. One mechanism, six controls, and the two spread values read as sharpening
 #. rather than as colour -- enough of a group, and enough of a surprise, to
@@ -32082,16 +32027,6 @@ msgid " µm"
 msgstr " мкм"
 
 #: ../src/iop/spektrafilm.c:5893
-#, fuzzy
-#| msgid ""
-#| "how far the released inhibitor spreads through the emulsion.\n"
-#| "\n"
-#| "this is what turns the couplers into an edge effect: a wide spread\n"
-#| "lets a bright area hold back development well beyond its own edge,\n"
-#| "which reads as added clarity or sharpening. shorten it for a softer,\n"
-#| "more purely tonal coupler response; 5-20 um is the useful range.\n"
-#| "\n"
-#| "re-seeded from the film stock's own value whenever you change film."
 msgid ""
 "how far the released inhibitor spreads through the emulsion.\n"
 "\n"
@@ -32107,10 +32042,9 @@ msgstr ""
 "Саме це зумовлює виникнення крайового ефекту: широке поширення\n"
 "дозволяє яскравій області стримувати проявлення далеко за межами її\n"
 "власного краю, що сприймається як підвищена чіткість або різкість.\n"
-"Зменште цю відстань для м’якшої, більш чистої тональної реакції\n"
-"DIR-компоненти; корисний діапазон — 5–20 мкм.\n"
+"Зменште цю відстань для м’якшої, більш чистої тональної реакції.\n"
 "\n"
-"Оновлюється на основі характеристик самої плівки щоразу, коли ви її змінюєте."
+"Скидання повертає значення до того, що відповідає завантаженій плівці."
 
 #: ../src/iop/spektrafilm.c:5906
 msgid ""
@@ -32157,15 +32091,6 @@ msgstr ""
 "весь кадр із плавним згасанням)."
 
 #: ../src/iop/spektrafilm.c:5946
-#, fuzzy
-#| msgid ""
-#| "how much light is diverted into the diffusion halo (0 = off).\n"
-#| "\n"
-#| "these filters are sold in stops: 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
-#| "then 1 and 2. scrolling and the arrow keys move an eighth at a time.\n"
-#| "\n"
-#| "the halo is added on top of the unfiltered image, so raising this\n"
-#| "lifts shadows and lowers contrast as well as glowing the highlights."
 msgid ""
 "how much light is diverted into the diffusion halo (0 = off).\n"
 "\n"
@@ -32183,9 +32108,9 @@ msgstr ""
 "також 1 і 2. Прокручування та клавіші зі стрілками змінюють значення з кроком "
 "1/8.\n"
 "\n"
-"Ореол додається поверх нефільтрованого зображення, тому збільшення цього\n"
-"параметра піднімає тіні та знижує контраст, а також додає світіння світлим "
-"ділянкам."
+"Відхилене світло забирається з прямого зображення і поширюється в ореол;\n"
+"його збільшення висвітлює тіні, знижує контраст, а також призводить до появи\n"
+"сяйва навколо світлих ділянок."
 
 #: ../src/iop/spektrafilm.c:5958
 msgid ""
@@ -32230,13 +32155,6 @@ msgstr ""
 "є лише один метод, він використовується, і вибирати не потрібно"
 
 #: ../src/iop/spektrafilm.c:5993
-#, fuzzy
-#| msgid ""
-#| "first half of the film's sensitivity adaptation: a spectral bandpass\n"
-#| "applied to the stock's own sensitivities, rolling off the UV and IR\n"
-#| "ends of each channel while preserving white balance. on by default,\n"
-#| "and best left on: it is part of how the stock is characterised. no\n"
-#| "effect on stocks whose profile carries no bandpass."
 msgid ""
 "first half of the film's sensitivity adaptation: a spectral bandpass\n"
 "applied to the stock's own sensitivities, rolling off the UV and IR\n"
@@ -32328,10 +32246,6 @@ msgid "print contrast (morphs the paper's density curves)"
 msgstr "Контрастність друку (змінює криві щільності паперу)"
 
 #: ../src/iop/spektrafilm.c:6095
-#, fuzzy
-#| msgid ""
-#| "print development time. snaps to the nearest time the paper was\n"
-#| "characterised at; 0 uses its own default."
 msgid ""
 "print development time. snaps to the nearest time the paper was\n"
 "characterized at; 0 uses its own default."
@@ -32341,15 +32255,6 @@ msgstr ""
 "параметру за замовчуванням."
 
 #: ../src/iop/spektrafilm.c:6102
-#, fuzzy
-#| msgid ""
-#| "gamma of the paper's red-forming layer alone, on top of the\n"
-#| "overall print gamma.\n"
-#| "\n"
-#| "splitting gamma per channel grades out crossover -- a negative\n"
-#| "whose layers developed to different gammas, which filtration\n"
-#| "cannot fix because it shifts every tone equally while crossover\n"
-#| "shifts shadows one way and highlights the other."
 msgid ""
 "gamma of the paper's red-sensitive (cyan-forming) layer alone, on\n"
 "top of the overall print gamma.\n"
@@ -32359,8 +32264,8 @@ msgid ""
 "cannot fix because it shifts every tone equally while crossover\n"
 "shifts shadows one way and highlights the other."
 msgstr ""
-"Гамма лише червоноутворювального шару паперу на додаток до загальної гамми "
-"друку.\n"
+"Гамма окремо взятого червоночутливого (ціаноутворювального) шару паперу\n"
+"на додаток до загальної гамми друку.\n"
 "\n"
 "Роздільна гамма за каналами дозволяє нівелювати колірне розбалансування, яке\n"
 "характерне для негативів, шари яких проявлені до різних значень гамми.\n"
@@ -32374,16 +32279,16 @@ msgid ""
 "gamma of the paper's green-sensitive (magenta-forming) layer\n"
 "alone, on top of the overall print gamma."
 msgstr ""
-"Гамма лише зеленочутливого (маджентоутворюючого) шару паперу на додаток до "
-"загальної гамми друку"
+"Гамма окремо взятого зеленочутливого (маджентоутворювального)\n"
+"шару паперу на додаток до загальної гамми друку"
 
 #: ../src/iop/spektrafilm.c:6119
 msgid ""
 "gamma of the paper's blue-sensitive (yellow-forming) layer alone,\n"
 "on top of the overall print gamma."
 msgstr ""
-"Гамма лише синьочутливого (жовтоутворюючого) шару паперу на додаток до "
-"загальної гамми друку"
+"Гамма окремо взятого синьочутливого (жовтоутворювального)\n"
+"шару паперу на додаток до загальної гамми друку"
 
 #: ../src/iop/spektrafilm.c:6122
 msgctxt "section"
@@ -32409,11 +32314,6 @@ msgid "preflash"
 msgstr "Попередня засвітка"
 
 #: ../src/iop/spektrafilm.c:6147
-#, fuzzy
-#| msgid ""
-#| "preflash exposure: a brief, uniform pre-exposure of the print\n"
-#| "through the film's base density, before the main print exposure.\n"
-#| "lifts shadows and reduces contrast (0 = off)."
 msgid ""
 "preflash exposure: a brief, uniform pre-exposure of the print\n"
 "through the film's base density, before the main print exposure.\n"
@@ -32422,7 +32322,8 @@ msgid ""
 msgstr ""
 "Експозиція попередньої засвітки: коротке рівномірне попереднє експонування\n"
 "паперу через оптичну щільність підкладки плівки перед основною експозицією.\n"
-"Освітлює тіні та знижує контраст (0 — вимкнено)"
+"Це додає щільності там, де основна експозиція найслабша, таким чином\n"
+"тонуючи світлі ділянки зображення та знижуючи контрастність (0 – вимкнено)."
 
 #: ../src/iop/spektrafilm.c:6155
 msgid ""
@@ -32449,14 +32350,6 @@ msgstr ""
 "роботи з плівкою)"
 
 #: ../src/iop/spektrafilm.c:6187
-#, fuzzy
-#| msgid ""
-#| "how much light is diverted into the print diffusion halo (0 = off).\n"
-#| "\n"
-#| "these filters are sold in stops: 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
-#| "then 1 and 2. scrolling and the arrow keys move an eighth at a time.\n"
-#| "\n"
-#| "acts at the enlarger, so it blooms the printed image."
 msgid ""
 "how much light is diverted into the print diffusion halo (0 = off).\n"
 "\n"
@@ -32473,15 +32366,10 @@ msgstr ""
 "також 1 і 2. Прокручування та клавіші зі стрілками змінюють значення з кроком "
 "1/8.\n"
 "\n"
-"Діє на етапі роботи фотозбільшувача, створюючи ефект м’якого сяйва на\n"
-"надрукованому зображенні."
+"Діє на етапі роботи фотозбільшувача на світло, що проходить крізь негатив,\n"
+"і таким чином поширює темні ділянки відбитка на світліші його ділянки."
 
 #: ../src/iop/spektrafilm.c:6198
-#, fuzzy
-#| msgid ""
-#| "scales the radius of the print diffusion halo. the amount of light\n"
-#| "is unchanged; it is spread further from each highlight. use print\n"
-#| "diffusion strength to change the amount."
 msgid ""
 "scales the radius of the print diffusion halo. the amount of light\n"
 "is unchanged; it is spread further from each bright area of the\n"
@@ -32489,21 +32377,20 @@ msgid ""
 "diffusion strength to change the amount."
 msgstr ""
 "Масштабує радіус дифузійного ореолу відбитка. Кількість світла залишається\n"
-"незмінною; воно поширюється на більшу відстань від кожного відблиску.\n"
+"незмінною; воно поширюється на більшу відстань від кожної яскравої ділянки\n"
+"світла фотозбільшувача, що відповідає темним ділянкам на відбитку.\n"
 "Використовуйте параметр \"Сила дифузії друку\", щоб змінити кількість."
 
 #: ../src/iop/spektrafilm.c:6205
-#, fuzzy
-#| msgid ""
-#| "print diffusion halo warmth: >0 warm outer halo, <0 cool (added on\n"
-#| "top of the selected filter's own warmth bias)."
 msgid ""
 "print diffusion halo warmth, on the enlarger light: >0 adds red to\n"
 "the outer halo, which prints as cyan, <0 adds blue, which prints as\n"
 "yellow (added on top of the selected filter's own warmth bias)."
 msgstr ""
-"Теплота ореолу розсіювання: >0 — теплий зовнішній ореол, <0 — холодний\n"
-"(додається поверх власного зміщення теплоти вибраного фільтра)."
+"Теплота ореолу дифузії друку на світлі фотозбільшувача:\n"
+">0 додає червоний до зовнішнього ореолу (що на відбитку виглядає як ціан),\n"
+"<0 додає синій (що на відбитку виглядає як жовтий); цей ефект накладається\n"
+"на власне зміщення теплоти вибраного фільтра)."
 
 #. Split as the reference groups these, "pixel statistics" and "texture": the
 #. first describes the emulsion and rebuilds the crystals, the second only
@@ -32514,16 +32401,6 @@ msgid "emulsion"
 msgstr "Емульсія"
 
 #: ../src/iop/spektrafilm.c:6227
-#, fuzzy
-#| msgid ""
-#| "how coarse the film's crystals are, relative to this stock's own\n"
-#| "measured granularity. 1.0 is the datasheet figure.\n"
-#| "\n"
-#| "this is the physical size control: the particles grow, there are\n"
-#| "fewer of them, and the grain becomes stronger as well as coarser,\n"
-#| "the same way a faster film differs from a slower one. it rebuilds\n"
-#| "the emulsion, so unlike grain strength it behaves the same on\n"
-#| "negative and slide film."
 msgid ""
 "how coarse the film's crystals are, relative to this stock's own\n"
 "measured granularity. 1.0 is the datasheet figure.\n"
@@ -32533,8 +32410,8 @@ msgid ""
 "the same way a faster film differs from a slower one. it rebuilds\n"
 "the emulsion, where grain strength only scales the drawn result."
 msgstr ""
-"Наскільки великими є кристали плівки порівняно з виміряною зернистістю, для "
-"цього типу плівки.\n"
+"Наскільки великими є кристали плівки порівняно з виміряною зернистістю цього "
+"типу плівки.\n"
 "Значення 1,0 відповідає вказаному в технічних характеристиках плівки "
 "розміру.\n"
 "\n"
@@ -32542,9 +32419,9 @@ msgstr ""
 "кількість зменшується,\n"
 "а зерно стає більш вираженим і грубим — так само, як високочутлива плівка "
 "відрізняється від\n"
-"низькочутливої. Цей процес змінює структуру емульсії, тому, на відміну від "
-"\"Сили зерна\", він\n"
-"однаково впливає як на негативну, так і на слайдову плівку."
+"низькочутливої. Цей процес змінює структуру емульсії, тоді як \"Сила зерна\" "
+"лише масштабує\n"
+"вже сформований результат."
 
 #: ../src/iop/spektrafilm.c:6239
 msgid ""
@@ -32581,12 +32458,6 @@ msgstr ""
 "дозволяє зернистості продовжувати рости аж до найщільніших ділянок."
 
 #: ../src/iop/spektrafilm.c:6259
-#, fuzzy
-#| msgid ""
-#| "a real emulsion layers coarse crystals over finer ones. this scales\n"
-#| "the finer sub-layers against the coarsest, which stays fixed. lower\n"
-#| "makes the fine layers finer still, so the coarse layer dominates; at\n"
-#| "0 only the coarsest layer is left. no effect on single-layer stocks."
 msgid ""
 "a real emulsion layers coarse crystals over finer ones. this scales\n"
 "the finer sub-layers against the coarsest. the stock's overall\n"
@@ -32594,33 +32465,26 @@ msgid ""
 "the coarse layer coarser, letting it dominate; at 0 only the\n"
 "coarsest layer carries grain. no effect on single-layer stocks."
 msgstr ""
-"Справжня емульсія накладає шари з великими кристалами на шари\n"
-"з дрібнішими. Це масштабує дрібніші підшари відносно найбільшого,\n"
-"який залишається незмінним. Зменшення значення робить дрібні шари\n"
-"ще дрібнішими, завдяки чому переважає шар із великими кристалами;\n"
-"за значення \"0\" залишається лише шар із найбільшими кристалами.\n"
-"На одношарові типи плівок це не впливає."
+"Справжня емульсія накладає шари з грубими кристалами на шари\n"
+"з дрібнішими. Цей параметр масштабує дрібніші підшари відносно\n"
+"найгрубішого. Загальна зернистість матеріалу зберігається: менші\n"
+"значення роблять дрібні шари ще дрібнішими, а грубі ще грубішими,\n"
+"дозволяючи останнім домінувати; за значення \"0\" залишається лише\n"
+"шар із найгрубішими кристалами. На одношарові плівки це не впливає."
 
 #: ../src/iop/spektrafilm.c:6271
-#, fuzzy
-#| msgid ""
-#| "the density each crystal sits at even where the film received no\n"
-#| "light, which is why grain does not disappear entirely in clear\n"
-#| "areas. scales the loaded stock's own measured floor, which is per\n"
-#| "channel, so the balance between channels is kept. typical stocks\n"
-#| "measure between 0.03 and 0.06, cine stocks considerably higher."
 msgid ""
 "scales the density each crystal sits at even where the film received\n"
 "no light, which is why grain does not disappear entirely in clear\n"
 "areas. 1.0 is the loaded stock's own measured floor, 2.0 twice it.\n"
 "the floor is per channel, so the balance between channels is kept."
 msgstr ""
-"Рівень щільності, на якому перебуває кожен кристал навіть там,\n"
+"Масштабує щільність, на якій перебуває кожен кристал навіть там,\n"
 "де на плівку не потрапляло світло — саме тому зерно не зникає\n"
-"повністю на прозорих ділянках. Масштабує виміряну мінімальну\n"
-"щільність для завантаженого типу плівки (для кожного каналу),\n"
-"завдяки чому зберігається баланс між каналами. Для реальних\n"
-"типів плівки цей показник становить приблизно від 0,03 до 0,06."
+"повністю на прозорих ділянках. Значення 1,0 відповідає виміряному\n"
+"базовому рівню (\"підлозі\") самої плівки, а 2,0 — його подвоєному\n"
+"значенню. Цей рівень визначається для кожного каналу окремо,\n"
+"завдяки чому зберігається баланс між каналами."
 
 #: ../src/iop/spektrafilm.c:6276
 msgctxt "section"
@@ -32628,14 +32492,6 @@ msgid "texture"
 msgstr "Текстура"
 
 #: ../src/iop/spektrafilm.c:6282
-#, fuzzy
-#| msgid ""
-#| "blur applied to the grain after it is drawn, in pixels. this softens\n"
-#| "the grain. the crystals themselves are unchanged.\n"
-#| "\n"
-#| "raise it at high magnification, where one crystal covers several\n"
-#| "pixels; lower it for small output. use granularity to make grain\n"
-#| "genuinely coarser."
 msgid ""
 "scales the blur applied to the grained density, 1.0 being the\n"
 "reference radius of 0.89 pixels. it softens the grain and the image\n"
@@ -32645,8 +32501,9 @@ msgid ""
 "pixels; lower it for small output. use granularity to make grain\n"
 "genuinely coarser."
 msgstr ""
-"Розмиття, що застосовується до зерна після його візуалізації (у пікселях);\n"
-"це пом’якшує вигляд зерна, тоді як самі кристали залишаються незмінними.\n"
+"Масштабує розмиття, що застосовується до щільності зерна; значення 1,0\n"
+"відповідає еталонному радіусу 0,89 пікселя. Це пом’якшує як саме зерно, так\n"
+"і деталі зображення під ним, тоді як самі кристали залишаються незмінними.\n"
 "\n"
 "Збільшуйте це значення при сильному наближенні, коли один кристал займає\n"
 "кілька пікселів, і зменшуйте для зображень меншого розміру. Використовуйте\n"
@@ -32770,12 +32627,6 @@ msgid "highlight boost"
 msgstr "Підсилення світлих ділянок"
 
 #: ../src/iop/spektrafilm.c:6381
-#, fuzzy
-#| msgid ""
-#| "reconstructs clipped highlights before any light spreads, so they\n"
-#| "bloom through the film diffusion filter, scatter and halation.\n"
-#| "it is not part of halation: the halation toggle does not switch it\n"
-#| "off. set highlight boost to 0 to disable it."
 msgid ""
 "boosts the highlights above the protect threshold before any light\n"
 "spreads, so they bloom through the film diffusion filter, scatter\n"
@@ -32783,27 +32634,22 @@ msgid ""
 "it is not part of halation: the halation toggle does not switch it\n"
 "off. set highlight boost to 0 to disable it."
 msgstr ""
-"Реконструює обрізані світлі ділянки до того, як світло пошириться,\n"
+"Підсилює світлі тони вище порогу захисту до того, як світло пошириться,\n"
 "щоб вони просвічувалися крізь дифузійний фільтр плівки, розсіювалися\n"
 "та утворювали ореоли.\n"
 "Це не є частиною ореолів і не вимикається перемикачем ореолу.\n"
 "Встановіть підсилення світлих ділянок на 0, щоб вимкнути цей ефект."
 
 #: ../src/iop/spektrafilm.c:6390
-#, fuzzy
-#| msgid ""
-#| "highlight boost: reconstructs clipped highlights so they bloom into\n"
-#| "halation/diffusion (0 = off).\n"
-#| "\n"
-#| "runs on its own, independent of the halation toggle."
 msgid ""
 "highlight boost: brightens the highlights above the protect threshold\n"
 "so they bloom into halation/diffusion (0 = off).\n"
 "\n"
 "runs on its own, independent of the halation toggle."
 msgstr ""
-"Підсилення світлих ділянок: відновлює обрізані (засвічені) ділянки,\n"
-"розмиваючи їх в ореоли та дифузію (0 — вимкнено).\n"
+"Підсилення світлих ділянок: робить яскравішими світлі тони\n"
+"вище порогу захисту; вони переходять в ореоли та дифузію\n"
+"(0 — вимкнено).\n"
 "\n"
 "Працює самостійно, незалежно від перемикача ефекту ореолу."
 
