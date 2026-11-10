@@ -1315,9 +1315,13 @@ bool sf_pack_film_langmuir(const sf_pack_t *pack,
   if(!film || !json_object_has_member(film, "dir_couplers")) return false;
   JsonObject *dc = json_object_get_object_member(film, "dir_couplers");
   if(!dc || !json_object_has_member(dc, "langmuir_donor_k_rgb")) return false;
-  json_read_darray(dc, "langmuir_donor_k_rgb", donor_k, 3);
-  json_read_darray(dc, "langmuir_receiver_k_rgb", receiver_k, 3);
-  return true;
+  /* Either array can be absent, null or the wrong length, and
+     json_read_darray() then leaves its output untouched. Mark both as unread
+     first so the caller sees NaN, not whatever was on its stack. */
+  for(int c = 0; c < 3; c++) donor_k[c] = receiver_k[c] = NAN;
+  const gboolean have_donor = json_read_darray(dc, "langmuir_donor_k_rgb", donor_k, 3);
+  const gboolean have_recv = json_read_darray(dc, "langmuir_receiver_k_rgb", receiver_k, 3);
+  return have_donor || have_recv;
 }
 
 bool sf_pack_film_defaults(const sf_pack_t *pack,
@@ -4135,10 +4139,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       s->coupler_tail_um = 0.0;
       s->coupler_tail_w = 0.0;
     }
-    double lm_donor[3], lm_recv[3];
+    double lm_donor[3] = { NAN, NAN, NAN }, lm_recv[3] = { NAN, NAN, NAN };
     if(sf_pack_film_langmuir(pack, film->stock, lm_donor, lm_recv))
     {
-      if(s->film_positive)
+      /* a factor that did not parse (absent, null, wrong length) is NaN; the
+         side it belongs to then stays on the linear model */
+      const gboolean donor_ok = isfinite(lm_donor[0]) && isfinite(lm_donor[1])
+                                && isfinite(lm_donor[2]);
+      const gboolean recv_ok = isfinite(lm_recv[0]) && isfinite(lm_recv[1])
+                               && isfinite(lm_recv[2]);
+      if(s->film_positive && recv_ok)
       {
         s->couplers_recv_lm = 1;
         for(int m = 0; m < 3; m++)
@@ -4159,7 +4169,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
           s->couplers_recv_Kr[m] = Kr > 0.0 ? Kr : 1.0e30;
         }
       }
-      else
+      else if(!s->film_positive && donor_ok)
       {
         s->couplers_donor_lm = 1;
         for(int c = 0; c < 3; c++)
