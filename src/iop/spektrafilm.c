@@ -572,6 +572,10 @@ typedef struct dt_iop_spektrafilm_data_t
   sf_sim_t *sim;
   sf_sim_gpu_t *gpu; /* float tables for process_cl */
   uint64_t sim_key;  /* hash of everything the sim build depends on */
+  /* the build for sim_key got as far as a loaded pack. With sim NULL it then
+     failed on a profile or in the engine, which the same key will fail on
+     again, so it is not retried until the key changes. */
+  gboolean sim_tried;
   char sim_error[256];
   char sim_warning[256];
   /* Set by commit_params() for the preview pipe only, NULL everywhere else, so
@@ -1651,7 +1655,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &fetch_gen, sizeof fetch_gen);
 
   dt_pthread_mutex_lock(&d->lock);
-  if(d->sim && d->sim_key == key)
+  /* a hit, or a build this key already failed: sim_error still holds why */
+  if(d->sim_key == key && (d->sim || d->sim_tried))
   {
     sf_sim_t *s = d->sim;
     _apply_output_gain(d);
@@ -1683,6 +1688,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     d->sim = NULL;
   }
   d->sim_key = key;
+  d->sim_tried = FALSE;
   d->sim_error[0] = 0;
   d->sim_warning[0] = 0;
 
@@ -1779,6 +1785,13 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
+
+  /* From here on a failure belongs to this key: the pack is loaded, so what
+     can still go wrong is a profile or the build, and neither changes until a
+     parameter or the installed data does -- both of which change the key. A
+     missing pack above is left retrying on purpose: one copied in by hand
+     bumps no generation, and that path returns before anything expensive. */
+  d->sim_tried = TRUE;
 
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
