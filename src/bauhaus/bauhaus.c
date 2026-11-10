@@ -1938,7 +1938,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget,
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->combobox;
   if(!data && d->entries->len > 0 && !_combobox_entry(d, 0)->data)
-    data =_combobox_entry(d, d->entries->len - 1)->data + 1;
+    data = GINT_TO_POINTER(GPOINTER_TO_INT(_combobox_entry(d, d->entries->len - 1)->data) + 1);
   dt_bauhaus_combobox_entry_t *entry = _new_combobox_entry(text, align,
                                                            sensitive, data, free_func);
   if(entry)
