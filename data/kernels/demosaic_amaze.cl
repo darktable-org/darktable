@@ -17,13 +17,16 @@
 */
 
 // AMaZE demosaic (src/iop/demosaicing/amaze.cc, RawTherapee code by Emil
-// Martinec and Ingo Weyrich) as whole-image passes.
+// Martinec and Ingo Weyrich).
 //
-// The CPU code works on 160x160 tiles with a 16 pixel border, mirrored at
-// the image edges. Here every buffer covers the image plus that border
-// (pw x ph, the image at an offset of 16), and each pass computes its whole
-// area, so the interior sees the same neighbors as in a tile. Each pass keeps
-// the CPU margin to the padded edge (2, 4, 6, ...), where a tile has no data.
+// The CPU code works on 160x160 tiles, 128 apart, with a 16 pixel border
+// mirrored at the image edges. A tile computes its border pixels itself
+// and its later passes read those, so neighboring tiles see different
+// values where they overlap. To match that, every buffer here stores each
+// tile on its own (TS x TS), and every pass runs per tile with the CPU
+// margin to the tile edge (2, 4, 6, ...). Sharing the overlap between
+// tiles saves about a third of the memory but differs from the CPU by up to
+// 2e-3 near the tile seams.
 //
 // Three CPU loops update a buffer in place while reading neighbors that the
 // same loop already updated (the color difference bounding, the hvwt and pmwt
@@ -36,9 +39,13 @@
 // Here they are full size, at the R/B site of each pair; the one place where
 // the half indexing reaches further than the neighboring site is rbint in
 // the G correction (indx1 -/+ v1 is two rows away), kept as is.
+//
+// Many decisions compare two nearly equal floats, so contracting to fma
+// flips some of them against the CPU, which is built without it for
+// amaze.cc (src/iop/CMakeLists.txt).
 
 #include "common.h"
-#pragma OPENCL FP_CONTRACT ON
+#pragma OPENCL FP_CONTRACT OFF
 
 #define eps 1e-5f
 #define epssq 1e-10f
@@ -58,9 +65,40 @@ constant float gausseven[2] = { 0.13719494435797422f, 0.05640252782101291f };
 constant float gquinc[4] = { 0.169917f, 0.108947f, 0.069855f, 0.0287182f };
 
 
-bool _area(int col, int row, int m, int pw, int ph)
+#define TS 160
+
+// a pixel of one CPU tile: the tile at (tx, ty) covers the padded image from
+// (128 tx, 128 ty), cc1 x rr1 pixels, and is stored on its own, TS x TS
+typedef struct
 {
-  return col >= m && col < pw - m && row >= m && row < ph - m;
+  int i;          // index into the per-tile buffers
+  int c, r;       // position in the tile
+  int cc1, rr1;   // tile width and height
+  int col, row;   // position in the padded image
+} AmazePix;
+
+AmazePix _pix(const int pw, const int ph)
+{
+  AmazePix p;
+  const int tx = get_global_id(0) / TS;
+  const int ty = get_global_id(1) / TS;
+  p.c = get_global_id(0) - tx * TS;
+  p.r = get_global_id(1) - ty * TS;
+  const int ntx = (pw - 16 + 127) / 128;
+  const int nty = (ph - 16 + 127) / 128;
+  // the work size may be rounded up beyond the last tile
+  p.cc1 = tx < ntx && ty < nty ? min(TS, pw - tx * 128) : 0;
+  p.rr1 = tx < ntx && ty < nty ? min(TS, ph - ty * 128) : 0;
+  p.col = tx * 128 + p.c;
+  p.row = ty * 128 + p.r;
+  p.i = (ty * ntx + tx) * TS * TS + p.r * TS + p.c;
+  return p;
+}
+
+// at least m pixels inside the tile edge
+bool _in(const AmazePix p, const int m)
+{
+  return p.c >= m && p.c < p.cc1 - m && p.r >= m && p.r < p.rr1 - m;
 }
 
 // the 16 pixel border mirrors the image without repeating its edge pixel,
@@ -113,26 +151,25 @@ kernel void amaze_init(
                 read_only image2d_t in, global float *cfa,
                 const int width, const int height, const int pw, const int ph)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(col >= pw || row >= ph) return;
-  const int x = col - 16, y = row - 16;
+  const AmazePix px = _pix(pw, ph);
+  if(px.c >= px.cc1 || px.r >= px.rr1) return;
+  const int x = px.col - 16, y = px.row - 16;
   const bool xout = x < 0 || x >= width, yout = y < 0 || y >= height;
   // the CPU fills the top left, top right and bottom left corners of the
   // border from 16 pixels further in than the edges (amaze.cc:349)
   const int sx = x < 0 && yout ? 16 - x : _mirror(x, width);
   const int sy = y < 0 && xout ? 16 - y : _mirror(y, height);
-  cfa[row * pw + col] = Areadsingle(in, sx, sy);
+  cfa[px.i] = Areadsingle(in, sx, sy);
 }
 
 kernel void amaze_grad(
                 global float *cfa, global float *delhvsqsum, const int pw, const int ph)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 2, pw, ph)) return;
-  const int i = row * pw + col;
-  delhvsqsum[i] = fsquare(fabs(cfa[i + 1] - cfa[i - 1])) + fsquare(fabs(cfa[i + pw] - cfa[i - pw]));
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 2)) return;
+  const int i = px.i;
+  delhvsqsum[i] = fsquare(fabs(cfa[i + 1] - cfa[i - 1])) + fsquare(fabs(cfa[i + TS] - cfa[i - TS]));
 }
 
 // interpolate vertical and horizontal color differences
@@ -141,11 +178,11 @@ kernel void amaze_cd(
               global float *dgintv, global float *dginth,
               const int pw, const int ph, const unsigned int filters, const float clip_pt8)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 4, pw, ph)) return;
-  const int v1 = pw, v2 = 2 * pw;
-  const int i = row * pw + col;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 4)) return;
+  const int v1 = TS, v2 = 2 * TS;
+  const int i = px.i;
   const float c0 = cfa[i];
 
   const float d0m2 = _dirwts0(cfa, i - v2, v1), d0 = _dirwts0(cfa, i, v1), d0p2 = _dirwts0(cfa, i + v2, v1);
@@ -213,16 +250,12 @@ kernel void amaze_cd(
   dginth[i] = fmin(fsquare(glha - grha), fsquare(glar - grar));
 }
 
-// the CPU tile of the work group: it starts every 128 pixels (ts - 32) of
-// the padded buffers and is 160 wide, or less at the right and bottom edges.
-// Only the pixels a tile shows in the output are written by it, and the
-// border of the first and last tiles
+// the CPU tile of the work group
 typedef struct
 {
-  int ox, oy;     // origin in the padded buffers
+  int base;       // its first index in the per-tile buffers
+  int ox, oy;     // origin in the padded image
   int rr1, cc1;   // tile height and width
-  int r0, r1;     // rows written, tile relative
-  int c0, c1;     // columns written
 } AmazeTile;
 
 AmazeTile _tile(int pw, int ph)
@@ -230,14 +263,11 @@ AmazeTile _tile(int pw, int ph)
   AmazeTile t;
   const int gx = get_group_id(0);
   const int gy = get_group_id(1);
+  t.base = (gy * ((pw - 16 + 127) / 128) + gx) * TS * TS;
   t.ox = gx * 128;
   t.oy = gy * 128;
-  t.rr1 = min(160, ph - t.oy);
-  t.cc1 = min(160, pw - t.ox);
-  t.r0 = gy == 0 ? 0 : 16;
-  t.r1 = min(144, t.rr1);
-  t.c0 = gx == 0 ? 0 : 16;
-  t.c1 = min(144, t.cc1);
+  t.rr1 = min(TS, ph - t.oy);
+  t.cc1 = min(TS, pw - t.ox);
   return t;
 }
 
@@ -288,7 +318,7 @@ float _var3v(float a, float b, float c)
 // place, so each value sees the one two pixels before it on its axis
 // already done. That makes every row of hcd and every column of vcd two
 // chains (one per CFA phase), run here one per thread from the tile edge as
-// on the CPU. A whole-image pass that reads only the old values differs by
+// on the CPU. A pass that reads only the old values differs by
 // up to 36/255 on fine detail.
 kernel void amaze_cd_bound(
                     global float *cfa, global float *vcd, global float *hcd, global float *vcdalt, global float *hcdalt,
@@ -297,7 +327,7 @@ kernel void amaze_cd_bound(
 {
   const AmazeTile t = _tile(pw, ph);
   const int l = get_local_id(1) * 16 + get_local_id(0);
-  const int v1 = pw, v2 = 2 * pw;
+  const int v1 = TS, v2 = 2 * TS;
   const int nh = 2 * (t.rr1 - 8); // hcd chains: rows 4 .. rr1-4, two phases each
   const int nv = 2 * (t.cc1 - 8); // vcd chains
 
@@ -306,9 +336,6 @@ kernel void amaze_cd_bound(
     const bool horiz = job < nh;
     const int k = horiz ? job : job - nh;
     const int line = 4 + (k >> 1); // tile row (hcd) or column (vcd)
-    const bool own_line = horiz ? (line >= t.r0 && line < t.r1) : (line >= t.c0 && line < t.c1);
-    const int lo = horiz ? t.c0 : t.r0;
-    const int hi = horiz ? t.c1 : t.r1;
     const int len = horiz ? t.cc1 : t.rr1;
     const int step = horiz ? 2 : v2;
     const int nstep = horiz ? 1 : v1;
@@ -317,7 +344,7 @@ kernel void amaze_cd_bound(
     // edge and reads zeros beyond that
     float prev = 0.0f, aprev = 0.0f;
     int p = 4 + (k & 1);
-    int i = horiz ? (t.oy + line) * pw + t.ox + p : (t.oy + p) * pw + t.ox + line;
+    int i = horiz ? t.base + line * TS + p : t.base + p * TS + line;
     float cur = horiz ? hcd[i] : vcd[i];
     float acur = horiz ? hcdalt[i] : vcdalt[i];
     for(; p < len - 4; p += 2, i += step)
@@ -329,11 +356,8 @@ kernel void amaze_cd_bound(
       const int row = horiz ? t.oy + line : t.oy + p;
       const int col = horiz ? t.ox + p : t.ox + line;
       x = _cdbound(x, cfa[i], cfa[i - nstep], cfa[i + nstep], (FC(row, col, filters) & 1) != 0, clip_pt);
-      if(own_line && p >= lo && p < hi)
-      {
-        if(horiz) hcd2[i] = x;
-        else vcd2[i] = x;
-      }
+      if(horiz) hcd2[i] = x;
+      else vcd2[i] = x;
       prev = x;
       aprev = acur;
       cur = next;
@@ -346,7 +370,7 @@ kernel void amaze_cd_bound(
 // diagonal neighbors when that discriminates the direction better. They
 // update in place, so the two neighbors above are already done; here one
 // work group walks the rows of one CPU tile, from row m to rr1 - m. A
-// whole-image pass that reads only the old values differs by up to 42/255.
+// pass that reads only the old values differs by up to 42/255.
 kernel void amaze_vote(
                 global float *src, global float *dst,
                 const int pw, const int ph, const unsigned int filters, const int m)
@@ -355,22 +379,21 @@ kernel void amaze_vote(
   const int c = get_local_id(1) * 16 + get_local_id(0); // tile column
   local float vote_row[160];
   const bool active = c < t.cc1;
-  const bool own_col = c >= t.c0 && c < t.c1;
 
-  if(active) vote_row[c] = src[(t.oy + m - 1) * pw + t.ox + c];
+  if(active) vote_row[c] = src[t.base + (m - 1) * TS + c];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   for(int r = 0; r < t.rr1; r++)
   {
-    const int i = (t.oy + r) * pw + t.ox + c;
+    const int i = t.base + r * TS + c;
     const bool rb = active && (FC(t.oy + r, t.ox + c, filters) & 1) == 0;
     float w = rb ? src[i] : 0.0f;
     if(rb && r >= m && r < t.rr1 - m && c >= m && c < t.cc1 - m)
     {
-      const float alt = 0.25f * (vote_row[c - 1] + vote_row[c + 1] + src[i + pw - 1] + src[i + pw + 1]);
+      const float alt = 0.25f * (vote_row[c - 1] + vote_row[c + 1] + src[i + TS - 1] + src[i + TS + 1]);
       if(fabs(0.5f - w) < fabs(0.5f - alt)) w = alt;
     }
-    if(rb && r >= t.r0 && r < t.r1 && own_col) dst[i] = w;
+    if(rb) dst[i] = w;
     barrier(CLK_LOCAL_MEM_FENCE);
     // the R/B sites of this row are the other phase of the previous one
     if(rb && r >= m - 1) vote_row[c] = w;
@@ -387,13 +410,13 @@ kernel void amaze_hvwt(
                 global float *delhvsqsum, global float *hvwt, global float *nyquist,
                 const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 6, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int ts = pw;
-  const int v1 = pw, v2 = 2 * pw, v3 = 3 * pw;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 6) || (FC(row, col, filters) & 1) != 0) return;
+  const int ts = TS;
+  const int v1 = TS, v2 = 2 * TS, v3 = 3 * TS;
   const int p1 = -ts + 1, p2 = -2 * ts + 2, m1 = ts + 1, m2 = 2 * ts + 2;
-  const int i = row * pw + col;
+  const int i = px.i;
 
   // color difference variances in cardinal directions
   const float uave = vcd[i] + vcd[i - v1] + vcd[i - v2] + vcd[i - v3];
@@ -455,18 +478,18 @@ kernel void amaze_hvwt(
 kernel void amaze_nyquist2(
                     global float *nyquist, global float *nyquist2, const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
   if((FC(row, col, filters) & 1) != 0) return;
-  if(!_area(col, row, 8, pw, ph))
+  if(!_in(px, 8))
   {
     // the area interpolation reads these too
-    if(col < pw && row < ph) nyquist2[row * pw + col] = 0.0f;
+    if(px.c < px.cc1 && px.r < px.rr1) nyquist2[px.i] = 0.0f;
     return;
   }
-  const int ts = pw;
-  const int v2 = 2 * pw, p1 = -ts + 1, m1 = ts + 1;
-  const int i = row * pw + col;
+  const int ts = TS;
+  const int v2 = 2 * TS, p1 = -ts + 1, m1 = ts + 1;
+  const int i = px.i;
   const float n = nyquist[i - v2] + nyquist[i - m1] + nyquist[i + p1] + nyquist[i - 2] + nyquist[i + 2]
                   + nyquist[i - p1] + nyquist[i + m1] + nyquist[i + v2];
   nyquist2[i] = n > 4.0f ? 1.0f : (n < 4.0f ? 0.0f : nyquist[i]);
@@ -477,18 +500,18 @@ kernel void amaze_area(
                 global float *cfa, global float *nyquist2, global float *hvwt,
                 const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 8, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int v1 = pw;
-  const int i = row * pw + col;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0) return;
+  const int v1 = TS;
+  const int i = px.i;
   if(nyquist2[i] == 0.0f) return;
 
   float sumcfa = 0.0f, sumh = 0.0f, sumv = 0.0f, sumsqh = 0.0f, sumsqv = 0.0f, areawt = 0.0f;
   for(int y = -6; y < 7; y += 2)
     for(int x = -6; x < 7; x += 2)
     {
-      const int k = i + y * pw + x;
+      const int k = i + y * TS + x;
       if(nyquist2[k] != 0.0f)
       {
         const float c = cfa[k];
@@ -516,11 +539,11 @@ kernel void amaze_green(
                  global float *dgrb, global float *green, global float *dgrb2h, global float *dgrb2v,
                  const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 8, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int v1 = pw;
-  const int i = row * pw + col;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0) return;
+  const int v1 = TS;
+  const int i = px.i;
   const float w = hvwt[i]; // after amaze_vote
 
   const float d = hcd[i] + w * (vcd[i] - hcd[i]); // evaluate color differences
@@ -550,15 +573,15 @@ kernel void amaze_nyquist_refine(
                           global float *dgrb2h, global float *dgrb2v, global float *dgrb, global float *green,
                           const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 8, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int i = row * pw + col;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0) return;
+  const int i = px.i;
   if(nyquist2[i] == 0.0f) return;
 
   // local averages (over Nyquist pixels only) of G curvature squared
-  const float gvarh = _gvar(dgrb2h, i, pw);
-  const float gvarv = _gvar(dgrb2v, i, pw);
+  const float gvarh = _gvar(dgrb2h, i, TS);
+  const float gvarv = _gvar(dgrb2v, i, TS);
   // use the results as weights for refined G interpolation
   const float d = fp32_div((hcd[i] * gvarv + vcd[i] * gvarh), gvarv + gvarh);
   dgrb[i] = d;
@@ -586,12 +609,12 @@ kernel void amaze_diag(
                 global float *cfa, global float *rbm, global float *rbp, global float *pmwt,
                 const int pw, const int ph, const unsigned int filters, const float clip_pt)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 8, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int ts = pw;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 8) || (FC(row, col, filters) & 1) != 0) return;
+  const int ts = TS;
   const int p1 = -ts + 1, p2 = -2 * ts + 2, m1 = ts + 1, m2 = 2 * ts + 2;
-  const int i = row * pw + col;
+  const int i = px.i;
   const float c0 = cfa[i];
 
   // diagonal color ratios
@@ -652,10 +675,10 @@ kernel void amaze_rbint(
                  global float *cfa, global float *rbm, global float *rbp, global float *pmwt,
                  global float *rbint, const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 10, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int i = row * pw + col;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 10) || (FC(row, col, filters) & 1) != 0) return;
+  const int i = px.i;
   const float w = pmwt[i]; // after amaze_vote
   rbint[i] = 0.5f * (cfa[i] + rbm[i] * (1.0f - w) + rbp[i] * w);
 }
@@ -672,11 +695,11 @@ kernel void amaze_green_diag(
                       global float *dgrb, global float *green,
                       const int pw, const int ph, const unsigned int filters, const float clip_pt)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 12, pw, ph) || (FC(row, col, filters) & 1) != 0) return;
-  const int v1 = pw;
-  const int i = row * pw + col;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 12) || (FC(row, col, filters) & 1) != 0) return;
+  const int v1 = TS;
+  const int i = px.i;
   if(fabs(0.5f - pmwt[i]) < fabs(0.5f - hvwt[i])) return;
 
   // the CPU's rbint[indx1 -/+ v1] is two rows away in its half width
@@ -753,14 +776,14 @@ kernel void amaze_chroma(
                   global float *dgrb, global float *dgr, global float *dgb,
                   const int pw, const int ph, const unsigned int filters)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(!_area(col, row, 14, pw, ph)) return;
+  const AmazePix px = _pix(pw, ph);
+  const int col = px.col, row = px.row;
+  if(!_in(px, 14)) return;
   const int c = FC(row, col, filters);
   if((c & 1) != 0) return;
-  const int i = row * pw + col;
+  const int i = px.i;
   const float own = dgrb[i];
-  const float other = _chroma(dgrb, i, pw);
+  const float other = _chroma(dgrb, i, TS);
   dgr[i] = c == 0 ? own : other;
   dgb[i] = c == 0 ? other : own;
 }
@@ -773,8 +796,11 @@ kernel void amaze_output(
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   const int row = y + 16, col = x + 16;
-  const int v1 = pw;
-  const int i = row * pw + col;
+  // the tile whose output this pixel is: its rows and columns 16 to 143
+  const int ntx = (pw - 16 + 127) / 128;
+  const int tx = x / 128, ty = y / 128;
+  const int v1 = TS;
+  const int i = (ty * ntx + tx) * TS * TS + (row - ty * 128) * TS + col - tx * 128;
 
   float r, g, b;
   if((FC(row, col, filters) & 1) == 0)
@@ -787,7 +813,7 @@ kernel void amaze_output(
   { // G site: the color differences of the four R/B neighbors
     g = cfa[i];
     const float wu = hvwt[i - v1], wd = hvwt[i + v1], wl = 1.0f - hvwt[i - 1], wr = 1.0f - hvwt[i + 1];
-    const float temp = fp32_div(1.0f, wu + wr + wl + wd);
+    const float temp = fp32_div(1.0f, wu + 2.0f - hvwt[i + 1] - hvwt[i - 1] + wd);
     r = g - (wu * dgr[i - v1] + wr * dgr[i + 1] + wl * dgr[i - 1] + wd * dgr[i + v1]) * temp;
     b = g - (wu * dgb[i - v1] + wr * dgb[i + 1] + wl * dgb[i - 1] + wd * dgb[i + v1]) * temp;
   }
