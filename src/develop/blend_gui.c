@@ -2195,7 +2195,7 @@ const char *dt_iop_gui_blend_showmask_tooltip(void)
            "shows the image in gray, tinted yellow where this module applies:\n"
            "the stronger the yellow, the stronger the effect. plain gray means\n"
            "the module does not apply there.\n"
-           "an empty mask shows no overlay at all: the module applies everywhere.\n"
+           "an empty mask shows no overlay, only a message: the module applies everywhere.\n"
            "switches the module and the mask on if they are off");
 }
 
