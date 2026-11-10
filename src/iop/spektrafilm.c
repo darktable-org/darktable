@@ -638,6 +638,23 @@ static guint _pack_gen = 0;
 static char _pack_error[256] = { 0 };
 static dt_pthread_mutex_t _pack_lock;
 
+/* The last profile scan, kept so that resolving a stock hash does not cost a
+   parse of every profile in the pack. _ensure_sim() scans on every rebuild,
+   once per pipe, and the scan loads each profile in full to read its header:
+   about 67 ms for the 31 profiles of the 0.3.3 pack against roughly 130 ms
+   for the build it precedes.
+
+   Valid for one profiles directory at one modification time and one fetch
+   generation. The generation covers a download, which can replace a pack in
+   place; the directory's mtime covers a hand-installed pack whose files are
+   added or removed underneath a running darktable. Callers get their own
+   copy of the list and free it as before. */
+static GMutex _prof_cache_lock;
+static GList *_prof_cache = NULL;
+static char _prof_cache_dir[SF_PATH_LEN + 16] = { 0 };
+static gint64 _prof_cache_mtime = -1;
+static guint _prof_cache_gen = 0;
+
 void init_global(dt_iop_module_so_t *self)
 {
   dt_pthread_mutex_init(&_pack_lock);
@@ -746,6 +763,12 @@ void cleanup_global(dt_iop_module_so_t *self)
   _pack_error[0] = 0;
   dt_pthread_mutex_unlock(&_pack_lock);
   dt_pthread_mutex_destroy(&_pack_lock);
+  g_mutex_lock(&_prof_cache_lock);
+  g_list_free_full(_prof_cache, g_free);
+  _prof_cache = NULL;
+  _prof_cache_dir[0] = 0;
+  _prof_cache_mtime = -1;
+  g_mutex_unlock(&_prof_cache_lock);
 }
 
 const char *name(void)
@@ -1263,6 +1286,18 @@ static const sf_table_entry_t *_table_at(const dt_iop_spektrafilm_gui_data_t *g,
   return g ? g_list_nth_data(g->tables, pos) : NULL;
 }
 
+static GList *_entries_copy(GList *src)
+{
+  GList *out = NULL;
+  for(GList *l = src; l; l = l->next)
+  {
+    sf_prof_entry_t *e = g_malloc(sizeof(sf_prof_entry_t));
+    memcpy(e, l->data, sizeof(sf_prof_entry_t));
+    out = g_list_prepend(out, e);
+  }
+  return g_list_reverse(out);
+}
+
 static GList *_scan_profiles(const char *packdir)
 {
   char dir[SF_PATH_LEN];
@@ -1280,6 +1315,19 @@ static GList *_scan_profiles(const char *packdir)
   }
   char profdir[SF_PATH_LEN + 16];
   snprintf(profdir, sizeof profdir, "%s/profiles", dir);
+
+  GStatBuf pst;
+  const gint64 prof_mtime = (g_stat(profdir, &pst) == 0) ? (gint64)pst.st_mtime : -1;
+  const guint prof_gen = sf_fetch_generation();
+  g_mutex_lock(&_prof_cache_lock);
+  if(_prof_cache && prof_mtime >= 0 && _prof_cache_mtime == prof_mtime
+     && _prof_cache_gen == prof_gen && strcmp(_prof_cache_dir, profdir) == 0)
+  {
+    GList *copy = _entries_copy(_prof_cache);
+    g_mutex_unlock(&_prof_cache_lock);
+    return copy;
+  }
+  g_mutex_unlock(&_prof_cache_lock);
 
   GDir *gd = g_dir_open(profdir, 0, NULL);
   if(!gd) return NULL;
@@ -1320,7 +1368,21 @@ static GList *_scan_profiles(const char *packdir)
   g_dir_close(gd);
   /* natural order by display name (numbers compared numerically,
      so "50D" < "200T" instead of lexicographic "200T" < "50D") */
-  return g_list_sort(list, _entry_name_cmp);
+  list = g_list_sort(list, _entry_name_cmp);
+
+  /* an empty result is not kept: it is what a download in progress or a
+     half-deleted pack looks like, and the next call should look again */
+  if(list && prof_mtime >= 0)
+  {
+    g_mutex_lock(&_prof_cache_lock);
+    g_list_free_full(_prof_cache, g_free);
+    _prof_cache = _entries_copy(list);
+    g_strlcpy(_prof_cache_dir, profdir, sizeof _prof_cache_dir);
+    _prof_cache_mtime = prof_mtime;
+    _prof_cache_gen = prof_gen;
+    g_mutex_unlock(&_prof_cache_lock);
+  }
+  return list;
 }
 
 /* resolve a profile hash to its stock name. hash 0 -> default:
