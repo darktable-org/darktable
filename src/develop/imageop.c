@@ -3632,6 +3632,11 @@ static gboolean _on_drag_motion(GtkWidget *widget,
   GtkWidget *src_header = gtk_drag_get_source_widget(dc);
   if(!src_header) return TRUE;
   GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
+  // only a drag of a module header moves modules: anything else dragged from
+  // inside a module, like a row of the masks list, also has its expander as
+  // ancestor, and would be taken for the module itself
+  if(!src_expander || src_header != dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(src_expander)))
+    return TRUE;
 
   dt_iop_module_t *src = NULL;
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
