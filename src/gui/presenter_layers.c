@@ -1296,6 +1296,10 @@ static void _replay_above(_widget_t *l,
 {
   GPtrArray *above = g_ptr_array_new();
   _above(l->widget, l->window->replay_popovers, above);
+  // not on l->cr: the view may have left a clip or transformation there
+  // (dt_view_manager_expose(), views/view.c), which GTK's own draw of
+  // these widgets does not have
+  cairo_t *cr = cairo_create(l->foreground);
   for(guint k = 0; k < above->len; k++)
   {
     GtkWidget *widget = g_ptr_array_index(above, k);
@@ -1317,11 +1321,12 @@ static void _replay_above(_widget_t *l,
       cairo_surface_t *patch = _save(l, cx, cy, clip.width, clip.height);
       if(patch) *saved = g_slist_prepend(*saved, patch);
     }
-    cairo_save(l->cr);
-    cairo_translate(l->cr, x, y);
-    gtk_widget_draw(widget, l->cr);
-    cairo_restore(l->cr);
+    cairo_save(cr);
+    cairo_translate(cr, x, y);
+    gtk_widget_draw(widget, cr);
+    cairo_restore(cr);
   }
+  cairo_destroy(cr);
   g_ptr_array_free(above, TRUE);
 }
 
