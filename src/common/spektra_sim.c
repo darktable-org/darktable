@@ -3945,9 +3945,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        once at the end of the build, together with raw_scale. */
     for(int c = 0; c < 9; c++) s->m_in_f[c] = (float)s->m_in[c];
     s->tc_lut_f = malloc((size_t)n * n * 3 * sizeof(float));
-    if(s->tc_lut_f)
-      for(size_t i = 0; i < (size_t)n * n * 3; i++)
-        s->tc_lut_f[i] = (float)s->tc_lut[i];
+    if(!s->tc_lut_f)
+    {
+      /* sf_sim_expose() reads this table unconditionally */
+      set_error(errmsg, "spektra_sim: out of memory for the spectral exposure table");
+      sf_sim_free(s);
+      return NULL;
+    }
+    for(size_t i = 0; i < (size_t)n * n * 3; i++)
+      s->tc_lut_f[i] = (float)s->tc_lut[i];
   }
 
   /* ----- film develop ---------------------------------------------------- */

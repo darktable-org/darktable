@@ -1391,7 +1391,9 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = calloc(1, sizeof(dt_iop_spektrafilm_data_t));
-  dt_pthread_mutex_init(&d->lock);
+  /* NULL on failure: every consumer of piece->data tests for it and passes
+     the image through */
+  if(d) dt_pthread_mutex_init(&d->lock);
   piece->data = d;
 }
 
@@ -1423,6 +1425,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = (dt_iop_spektrafilm_data_t *)piece->data;
+  if(!d) return;
   d->p = *(dt_iop_spektrafilm_params_t *)p1;
   /* Only the preview pipe reports status to the module banner; see the field's
      declaration. Re-set on every commit because a pipe can be rebuilt. */
@@ -2173,7 +2176,7 @@ void process(dt_iop_module_t *self,
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  sf_sim_t *sim = work_profile ? _ensure_sim(d, work_profile) : NULL;
+  sf_sim_t *sim = (d && work_profile) ? _ensure_sim(d, work_profile) : NULL;
   if(!sim)
   {
     _passthrough(in, out, w, oh, ow, ox, oy);
@@ -2714,6 +2717,11 @@ int process_cl(dt_iop_module_t *self,
       goto cleanup;                                                                                \
     }                                                                                              \
   } while(0)
+
+  /* no kernels (init_global() could not allocate) or no piece data
+     (init_pipe() could not): hand the tile to the CPU path, which passes it
+     through */
+  if(!gd || !d) return DT_OPENCL_DEFAULT_ERROR;
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
