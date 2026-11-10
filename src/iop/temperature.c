@@ -556,12 +556,30 @@ static inline void _update_pipe_dsc(dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
+// "as shot" and "camera reference" apply the multipliers of the image being
+// processed, not the stored ones: those belong to the image on which the mode
+// was chosen, and a pasted history, a style or a preset can carry them to
+// another image. NULL for the other modes, which apply the stored multipliers
+static const double *_own_coeffs(const int preset,
+                                 const double *const as_shot,
+                                 const double *const D65coeffs)
+{
+  switch(preset)
+  {
+    case DT_IOP_TEMP_AS_SHOT: return as_shot;
+    case DT_IOP_TEMP_D65:     return D65coeffs;
+    default:                  return NULL;
+  }
+}
+
 // the WB that temperature applies with params p, for the modules that
 // complete the correction: pipe->wb at commit time, and color calibration's
-// GUI before any pipe has committed
+// GUI before any pipe has committed. as_shot and D65coeffs are the image's
+// own multipliers, from dev->chroma
 static void _wb_from_params(const dt_iop_temperature_params_t *p,
                             const gboolean enabled,
                             const gboolean true_monochrome,
+                            const double *const as_shot,
                             const double *const D65coeffs,
                             dt_dev_wb_t *wb)
 {
@@ -569,10 +587,11 @@ static void _wb_from_params(const dt_iop_temperature_params_t *p,
   // image; nothing is applied there, whatever enabled says
   const gboolean applied = enabled && !true_monochrome;
   const float *const pcoeffs = (const float *)p;
+  const double *const own = _own_coeffs(p->preset, as_shot, D65coeffs);
 
   for_four_channels(k)
   {
-    wb->coeffs[k] = applied ? pcoeffs[k] : 1.0f;
+    wb->coeffs[k] = !applied ? 1.0f : own ? (float)own[k] : pcoeffs[k];
     wb->D65coeffs[k] = D65coeffs[k];
   }
   wb->camera_reference = applied && p->preset == DT_IOP_TEMP_D65;
@@ -743,8 +762,6 @@ void commit_params(dt_iop_module_t *self,
 {
   const dt_iop_temperature_params_t *const p = p1;
   dt_iop_temperature_data_t *const d = piece->data;
-  // first items in the struct are the coefficients
-  const float *const pcoeffs = (const float *)p;
 
   d->preset = p->preset;
 
@@ -758,12 +775,15 @@ void commit_params(dt_iop_module_t *self,
     piece->enabled = FALSE;
   }
 
-  for_four_channels(k)
-    d->coeffs[k] = true_monochrome ? 1.0f : pcoeffs[k];
+  // as_shot and D65coeffs are the values read from dev->chroma here: only
+  // reload_defaults() writes them, on the GTK thread at image load
+  _wb_from_params(p, piece->enabled, true_monochrome,
+                  chr->as_shot, chr->wb.D65coeffs, &pipe->wb);
 
-  // D65coeffs is the one value read from dev->chroma here: only
-  // reload_defaults() writes it, on the GTK thread at image load
-  _wb_from_params(p, piece->enabled, true_monochrome, chr->wb.D65coeffs, &pipe->wb);
+  // process() applies the multipliers that later modules are told about; they
+  // are 1.0 only for a disabled piece, which doesn't process
+  for_four_channels(k)
+    d->coeffs[k] = pipe->wb.coeffs[k];
 
   // color calibration's reload_defaults() still reads the shared copy
   for_four_channels(k)
@@ -1271,6 +1291,16 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  // "as shot" and "camera reference" show the image's own multipliers, which
+  // processing applies (_own_coeffs()), and a slider edit starts from them.
+  // Only self->params changes: the history keeps the stored multipliers until
+  // the next history item, which renders the same
+  const double *const own = _own_coeffs(p->preset, chr->as_shot, chr->wb.D65coeffs);
+  if(own)
+    _temp_params_from_array(p, own);
+
   float tempK, tint;
   _mul2temp(self, p, &tempK, &tint);
 
@@ -1287,26 +1317,26 @@ void gui_update(dt_iop_module_t *self)
   gboolean show_finetune = FALSE;
 
   gboolean found = FALSE;
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  // a saved "camera reference" stays one, even if its coefficients (pasted,
-  // or from a preset or style) differ from this image's reference: relabeling
-  // it would enable its stored late_correction (_wb_from_params())
-  if(p->preset == DT_IOP_TEMP_D65)
+  // a saved "as shot" or "camera reference" keeps its mode: it applies this
+  // image's own multipliers, whatever is stored. Only legacy params, which have
+  // no saved mode, are matched against those: the other saved modes apply their
+  // stored multipliers, also where these equal the image's own
+  if(p->preset == DT_IOP_TEMP_AS_SHOT || p->preset == DT_IOP_TEMP_D65)
   {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
+    dt_bauhaus_combobox_set(g->presets, p->preset);
     found = TRUE;
   }
 
   // is this a "as shot" white balance?
-  else if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
+  else if(p->preset == DT_IOP_TEMP_UNKNOWN
+          && dt_dev_equal_chroma((const float *)p, chr->as_shot))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     p->preset = DT_IOP_TEMP_AS_SHOT;
     found = TRUE;
   }
 
-  // is this a "D65 white balance"? Only legacy params have no saved mode;
-  // a saved camera preset or user WB that equals the reference stays as it is
+  // is this a "D65 white balance"?
   else if(p->preset == DT_IOP_TEMP_UNKNOWN
           && dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
   {
@@ -1315,7 +1345,10 @@ void gui_update(dt_iop_module_t *self)
     found = TRUE;
   }
 
-  if(!found)
+  // a saved "user modified" keeps its label (p->preset, set below), so a camera
+  // preset matching its multipliers would only show that preset's finetune
+  // slider. They often match one: the as shot of a camera set to a preset
+  if(!found && p->preset != DT_IOP_TEMP_USER)
   {
     // look through all added presets
     for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
@@ -1901,7 +1934,8 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
     case DT_IOP_TEMP_UNKNOWN: // just un-setting.
       return;
     case DT_IOP_TEMP_AS_SHOT: // as shot wb
-      _temp_params_from_array(p, chr->as_shot);
+    case DT_IOP_TEMP_D65:     // camera reference d65
+      _temp_params_from_array(p, _own_coeffs(pos, chr->as_shot, chr->wb.D65coeffs));
       break;
     case DT_IOP_TEMP_SPOT: // from image area wb, expose callback will set p->rgbg2.
       if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->colorpicker)))
@@ -1911,9 +1945,6 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
                            // sliders also changes the mod_coeff so it
                            // can be read here
       _temp_params_from_array(p, g->mod_coeff);
-      break;
-    case DT_IOP_TEMP_D65: // camera reference d65
-      _temp_params_from_array(p, chr->wb.D65coeffs);
       break;
     default: // camera WB presets
     {
@@ -2154,8 +2185,10 @@ static void _gui_wb_proxy(const dt_iop_module_t *self, dt_dev_wb_t *wb)
   }
 
   const dt_iop_temperature_params_t *p = self->params;
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
 
-  _wb_from_params(p, self->enabled, self->hide_enable_button, self->dev->chroma.wb.D65coeffs, wb);
+  _wb_from_params(p, self->enabled, self->hide_enable_button,
+                  chr->as_shot, chr->wb.D65coeffs, wb);
 }
 
 // channelmixerrgb doesn't report changes: every change of its params runs the

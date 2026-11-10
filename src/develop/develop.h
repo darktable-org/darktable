@@ -169,7 +169,7 @@ typedef struct dt_dev_viewport_t
 
 /* white balance and chromatic adaptation state, shared by all pipes of a dev
    - temperature, adaptation: pipe threads set them
-   - as_shot: only temperature's GUI reads it
+   - as_shot: only temperature reads it, in its GUI and in commit_params()
    - wb: what temperature's commit_params() last wrote, in any pipe. processing code reads
      pipe->wb instead. GUI code calls dt_dev_get_gui_wb(). the exceptions are
      temperature.c commit_params() and channelmixerrgb.c reload_defaults(), see their
