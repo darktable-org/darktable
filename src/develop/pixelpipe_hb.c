@@ -3685,8 +3685,11 @@ static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
   else if(work)
   {
     // for the modules after colorout
-    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename, work->profile,
-                                          work->intent);
+    const dt_iop_order_iccprofile_info_t *const info =
+      dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
+                                            work->profile, work->intent);
+    pipe->output_headroom = fmaxf(pipe->output.image.headroom,
+                                  dt_ioppr_profile_headroom(info->type));
     memset(encoding, 0, sizeof(*encoding));
     encoding->type = work->type;
     g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));

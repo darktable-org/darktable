@@ -886,10 +886,6 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
   }
   pipe->output_profile_info = profile_info;
-  // a presented output may report headroom beyond what its transfer
-  // function implies, e.g. linear light on an HDR screen
-  pipe->output_headroom = fmaxf(pipe->output.image.headroom,
-                                dt_ioppr_profile_headroom(profile_info->type));
 
   return profile_info;
 }

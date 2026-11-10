@@ -959,6 +959,15 @@ static void _gamut_mark(dt_iop_colorout_data_t *d,
   for(int c = 0; c < 3; c++) d->gamut_mark[c] = mark[c];
 }
 
+// the headroom of an output in info's profile: a presented output may
+// report headroom beyond what its transfer function implies, e.g. linear
+// light on an HDR screen
+static float _output_headroom(const dt_dev_pixelpipe_t *const pipe,
+                              const dt_iop_order_iccprofile_info_t *const info)
+{
+  return fmaxf(pipe->output.image.headroom, dt_ioppr_profile_headroom(info->type));
+}
+
 // colorout filtered out: the pixels stay in the working RGB, which the run
 // resolves as its output
 static void _leave_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
@@ -967,8 +976,12 @@ static void _leave_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
   const dt_iop_order_iccprofile_info_t *const work =
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   if(work)
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
-                                          work->filename, work->profile, work->intent);
+  {
+    const dt_iop_order_iccprofile_info_t *const info =
+      dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
+                                            work->filename, work->profile, work->intent);
+    piece->pipe->output_headroom = _output_headroom(piece->pipe, info);
+  }
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1116,8 +1129,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->hdr_transfer = dt_colorspaces_hdr_transfer(out_type);
   if(out_type == DT_COLORSPACE_LAB)
   {
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, Lab,
-                                          p->intent);
+    const dt_iop_order_iccprofile_info_t *const info =
+      dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, Lab,
+                                            p->intent);
+    piece->pipe->output_headroom = _output_headroom(piece->pipe, info);
     encoding->type = DT_COLORSPACE_LAB;
     g_strlcpy(encoding->filename, out_filename, sizeof(encoding->filename));
     encoding->profile = Lab;
@@ -1297,13 +1312,14 @@ done:
     piece->process_cl_ready = FALSE;
   }
 
-  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename,
-                                        out_content, p->intent);
+  const dt_iop_order_iccprofile_info_t *const info =
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename,
+                                          out_content, p->intent);
   // render the proof for its export's headroom and let the screen clip, as
   // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10)
-  if(proof)
-    piece->pipe->output_headroom =
-      dt_ioppr_profile_headroom(ink ? proof_type : built_type);
+  piece->pipe->output_headroom = proof
+    ? dt_ioppr_profile_headroom(ink ? proof_type : built_type)
+    : _output_headroom(piece->pipe, info);
 
   // process() encodes for out_type's HDR transfer function, which no
   // profile describes once sRGB has replaced out_type's profile
