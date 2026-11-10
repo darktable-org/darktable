@@ -300,6 +300,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->opencl_error = FALSE;
   pipe->tiling = FALSE;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  pipe->mask_display_empty = FALSE;
   pipe->bypass_blendif = FALSE;
   pipe->average_delay = 1000 * delay;
   pipe->input_timestamp = 0;

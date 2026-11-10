@@ -1374,6 +1374,12 @@ void dt_develop_blend_process(dt_iop_module_t *self,
   const dt_dev_pixelpipe_display_mask_t shown_mask_display =
     mask_is_uniform_fallback ? request_mask_display & ~DT_DEV_PIXELPIPE_DISPLAY_MASK
                              : request_mask_display;
+  // the darkroom draws a hint over the image in place of the missing overlay.
+  // Not reset at run start: a run whose cache lines hit never reaches this
+  // module, and would wrongly report a non-empty mask
+  if(valid_request)
+    piece->pipe->mask_display_empty =
+      mask_is_uniform_fallback && (request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK);
   if(shown_mask_display
      & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
@@ -2126,6 +2132,12 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   const dt_dev_pixelpipe_display_mask_t shown_mask_display =
     mask_is_uniform_fallback ? request_mask_display & ~DT_DEV_PIXELPIPE_DISPLAY_MASK
                              : request_mask_display;
+  // the darkroom draws a hint over the image in place of the missing overlay.
+  // Not reset at run start: a run whose cache lines hit never reaches this
+  // module, and would wrongly report a non-empty mask
+  if(valid_request)
+    piece->pipe->mask_display_empty =
+      mask_is_uniform_fallback && (request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK);
   if(shown_mask_display
      & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {

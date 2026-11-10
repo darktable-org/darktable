@@ -290,6 +290,9 @@ typedef struct dt_dev_pixelpipe_t
   gboolean tiling;
   // should this pixelpipe display a mask in the end?
   dt_dev_pixelpipe_display_mask_t mask_display;
+  // the focused module's requested mask overlay is empty (uniform mask), so
+  // none is drawn; kept from the last run that reached its blend step
+  gboolean mask_display_empty;
   // should this pixelpipe completely suppressed the blendif module?
   gboolean bypass_blendif;
   // input data based on this timestamp:

@@ -721,6 +721,99 @@ static gboolean _darkroom_filmstrip_draw_hint(GtkWidget *widget, cairo_t *cr, gp
   return FALSE;
 }
 
+// an empty mask draws no overlay, so a toast says why: at once when it
+// appears, and again once the blend mode or opacity settles. The redraw that
+// calls this only comes when a pipe run has finished, so the changes are
+// polled instead of waiting for it; a slider drag would otherwise stack a
+// toast per intermediate value
+static gboolean _empty_hint_active = FALSE;
+static int _empty_hint_mode = -1;
+static float _empty_hint_opacity = -1.0f;
+static int _empty_hint_seen_mode = -1;
+static float _empty_hint_seen_opacity = -1.0f;
+static guint _empty_hint_poll = 0;
+
+static void _empty_mask_hint_toast(const dt_develop_blend_params_t *bp)
+{
+  const int mode = bp->blend_mode & DEVELOP_BLEND_MODE_MASK;
+  const char *mode_name = "";
+  for(const dt_introspection_type_enum_tuple_t *t = dt_develop_blend_mode_names;
+      t->name; t++)
+    if(t->value == mode)
+    {
+      mode_name = Q_(t->name);
+      break;
+    }
+  dt_toast_log(_("the mask is empty - blend mode %s - blend opacity %.0f%%"),
+               mode_name, bp->opacity);
+  _empty_hint_mode = _empty_hint_seen_mode = mode;
+  _empty_hint_opacity = _empty_hint_seen_opacity = bp->opacity;
+}
+
+static gboolean _empty_mask_hint_poll_cb(gpointer user_data)
+{
+  dt_iop_module_t *module = darktable.develop ? darktable.develop->gui_module : NULL;
+  if(!_empty_hint_active || !module
+     || !(module->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
+  {
+    _empty_hint_poll = 0;
+    return G_SOURCE_REMOVE;
+  }
+
+  const dt_develop_blend_params_t *bp = module->blend_params;
+  const int mode = bp->blend_mode & DEVELOP_BLEND_MODE_MASK;
+  if(mode == _empty_hint_mode && bp->opacity == _empty_hint_opacity)
+  {
+    _empty_hint_seen_mode = mode;
+    _empty_hint_seen_opacity = bp->opacity;
+  }
+  else if(mode == _empty_hint_seen_mode && bp->opacity == _empty_hint_seen_opacity)
+  {
+    // unchanged since the last poll: settled. Acknowledge what is queued so
+    // the new toast replaces the old one instead of stacking under it
+    dt_control_t *dc = darktable.control;
+    dt_pthread_mutex_lock(&dc->log_mutex);
+    dc->toast_ack = dc->toast_pos;
+    dt_pthread_mutex_unlock(&dc->log_mutex);
+    _empty_mask_hint_toast(bp);
+  }
+  else
+  {
+    _empty_hint_seen_mode = mode;
+    _empty_hint_seen_opacity = bp->opacity;
+  }
+  return G_SOURCE_CONTINUE;
+}
+
+static void _empty_mask_hint_stop(void)
+{
+  if(_empty_hint_poll) g_source_remove(_empty_hint_poll);
+  _empty_hint_poll = 0;
+  _empty_hint_active = FALSE;
+}
+
+// whether the mask is empty is only known from a finished pipe: the flag is
+// not trustworthy mid-run
+static void _empty_mask_hint_update(dt_develop_t *dev,
+                                    const gboolean pipe_valid,
+                                    const gboolean pipe_empty)
+{
+  if(!pipe_valid) return;
+
+  const gboolean empty = dev->gui_module && pipe_empty
+    && (dev->gui_module->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK);
+
+  if(!empty)
+    _empty_mask_hint_stop();
+  else if(!_empty_hint_active)
+  {
+    _empty_hint_active = TRUE;
+    _empty_mask_hint_toast(dev->gui_module->blend_params);
+    if(!_empty_hint_poll)
+      _empty_hint_poll = g_timeout_add(100, _empty_mask_hint_poll_cb, NULL);
+  }
+}
+
 void expose(dt_view_t *self,
             cairo_t *cri,
             const int32_t width,
@@ -815,6 +908,10 @@ void expose(dt_view_t *self,
                         -0.5 + sb_boxh / 2,
                         0.5,
                         sb_boxh / 2);
+
+  _empty_mask_hint_update(dev,
+                          port->pipe->status == DT_DEV_PIXELPIPE_VALID,
+                          port->pipe->mask_display_empty);
 
   const gboolean expose_full =
         port->pipe->backbuf                                // do we have an image?
@@ -4337,6 +4434,7 @@ static inline void _clear_pipecache(dt_dev_pixelpipe_t *pipe)
 
 void leave(dt_view_t *self)
 {
+  _empty_mask_hint_stop();
   // ask a running pipe (a full-resolution reprocess can take seconds on a
   // mask-heavy image) to abort at its next checkpoint. First of all:
   // dt_image_update_final_size, via dt_dev_pixelpipe_get_dimensions, waits
