@@ -346,7 +346,7 @@ static void test_platform_owned_entry_is_device(void **state)
   // the platform takes the window: the entry is the device it declared,
   // and the system display profile is kept for when cairo shows it again
   _own(DT_COLORSPACE_DISPLAY);
-  assert_true(self->outputs[0].platform_owned);
+  assert_true(self->platform_owned[0]);
   assert_ptr_equal(self->outputs[0].device.profile, _srgb());
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), _srgb());
   assert_ptr_equal(self->system_display[0], a);
@@ -370,7 +370,7 @@ static void test_platform_owned_entry_is_device(void **state)
   // given back: the entry is the system display profile again, the one
   // reported last
   dt_colorspaces_set_window_output(DT_COLORSPACE_DISPLAY, NULL);
-  assert_false(self->outputs[0].platform_owned);
+  assert_false(self->platform_owned[0]);
   assert_ptr_equal(self->outputs[0].device.profile, b);
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), b);
   _assert_raised(3, 3);
@@ -381,6 +381,33 @@ static void test_platform_owned_entry_is_device(void **state)
   _own(DT_COLORSPACE_DISPLAY);
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), _srgb());
   _assert_raised(4, 4);
+}
+
+static void test_owner_is_no_output(void **state)
+{
+  _fixture_t *f = *state;
+  dt_colorspaces_t *self = darktable.color_profiles;
+
+  // the platform takes the window with the output it has: the output is
+  // the same, so nothing is announced, but the platform owns it now
+  const dt_display_output_t same = self->outputs[0];
+  dt_colorspaces_set_window_output(DT_COLORSPACE_DISPLAY, &same);
+  assert_true(self->platform_owned[0]);
+  assert_int_equal(self->outputs[0].serial, same.serial);
+  _assert_raised(0, 0);
+
+  // so a new report leaves the window's output alone
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
+  assert_ptr_equal(self->outputs[0].device.profile, f->placeholder);
+  assert_int_equal(self->outputs[0].serial, same.serial);
+  _assert_raised(0, 0);
+
+  // given back, the window shows that report
+  dt_colorspaces_set_window_output(DT_COLORSPACE_DISPLAY, NULL);
+  assert_false(self->platform_owned[0]);
+  assert_ptr_equal(self->outputs[0].device.profile, self->system_display[0]);
+  assert_ptr_not_equal(self->system_display[0], f->placeholder);
+  _assert_raised(1, 1);
 }
 
 static void test_display_is_no_histogram_choice(void **state)
@@ -426,6 +453,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test_setup_teardown(test_cairo_window_entry_is_system_profile, _setup,
                                     _teardown),
     cmocka_unit_test_setup_teardown(test_platform_owned_entry_is_device, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_owner_is_no_output, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_display_is_no_histogram_choice, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_display_lookup_eligibility, _setup, _teardown),
   };

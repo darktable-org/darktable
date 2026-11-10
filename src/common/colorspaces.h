@@ -248,17 +248,14 @@ typedef struct dt_display_output_t
   dt_color_encoding_t image;
   dt_color_encoding_t device;
   dt_frame_format_t format;
-  // the platform owns the window's output: a backend reported it, and a
-  // new system display profile does not replace it
-  gboolean platform_owned;
   // changes whenever anything above changes; continues across owners
   uint32_t serial;
 } dt_display_output_t;
 
 /* what differs between two outputs of a window, whatever the serial. any
  * difference moves the serial, which every producer compares with what it
- * rendered for. a new device encoding or owner also changes what GTK draws
- * there: thumbnails and module colors converted for it */
+ * rendered for. a new device encoding also changes what GTK draws there:
+ * thumbnails and module colors converted for it */
 typedef enum dt_display_output_change_t
 {
   DT_DISPLAY_OUTPUT_UNCHANGED = 0,
@@ -273,8 +270,7 @@ static inline dt_display_output_change_t dt_display_output_diff(const dt_display
   // encoding does
   const gboolean image = !dt_color_encoding_equal(&a->image, &b->image)
                          || a->format != b->format;
-  const gboolean device = !dt_color_encoding_equal(&a->device, &b->device)
-                          || a->platform_owned != b->platform_owned;
+  const gboolean device = !dt_color_encoding_equal(&a->device, &b->device);
   return (dt_display_output_change_t)((image ? DT_DISPLAY_OUTPUT_IMAGE : 0)
                                       | (device ? DT_DISPLAY_OUTPUT_DEVICE : 0));
 }
@@ -347,6 +343,10 @@ typedef struct dt_colorspaces_t
   // what each window wants, index 0 the main window: its system display
   // profile unless the platform owns it. written under xprofile_lock
   dt_display_output_t outputs[2];
+  // the platform owns the window's output: a backend reported it, and a
+  // new system display profile does not replace it. written under
+  // xprofile_lock
+  gboolean platform_owned[2];
 
   // the display profile selection a previous version used and this one
   // no longer does, for the notice at startup; NULL if there was none

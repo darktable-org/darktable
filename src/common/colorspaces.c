@@ -1349,7 +1349,7 @@ static dt_display_output_change_t _publish(dt_colorspaces_t *self,
 static void _system_display_changed(dt_colorspaces_t *self,
                                     const int w)
 {
-  if(self->outputs[w].platform_owned) return;
+  if(self->platform_owned[w]) return;
   dt_display_output_t output;
   _describe_system_display(self, w, &output);
   _publish(self, w, &output);
@@ -1377,7 +1377,7 @@ uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_ty
 // what changed. as in Krita (KisMultiSurfaceStateManager), the output is a
 // value and consumers take the difference: producers compare its serial
 // where they decide to render, on the redraw queued here, and only a new
-// device encoding or owner reaches what GTK draws, such as converted
+// device encoding reaches what GTK draws, such as converted
 // thumbnails. a new device profile is also a new registry entry, for what
 // names it by type (thumbnails with cache_color_managed off, the style
 // preview), announced as master announced a new display profile
@@ -1412,7 +1412,6 @@ void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t 
   if(output)
   {
     resolved = *output;
-    resolved.platform_owned = TRUE;
     resolved.image.profile = _output_profile(self, output->image.type, output->image.filename);
     resolved.device.profile = _output_profile(self, output->device.type,
                                               output->device.filename);
@@ -1420,6 +1419,9 @@ void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t 
   else
     _describe_system_display(self, w, &resolved);
   _publish(self, w, &resolved);
+  // the owner is no part of the output, so it is set whether or not
+  // _publish() replaced the output
+  self->platform_owned[w] = output != NULL;
   const dt_display_output_t after = self->outputs[w];
   pthread_rwlock_unlock(&self->xprofile_lock);
 
@@ -1511,7 +1513,7 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
   // compositor converts or the window is sRGB, nor on macOS, where the
   // window is sRGB, and a window that gets a native backend reports
   // nothing here before the backend takes it
-  if(!profile && !self->system_display_hinted[w] && !self->outputs[w].platform_owned
+  if(!profile && !self->system_display_hinted[w] && !self->platform_owned[w]
      && dt_gui_get_session_type() != DT_GUI_SESSION_WAYLAND
      && dt_gui_get_session_type() != DT_GUI_SESSION_QUARTZ)
   {

@@ -19,8 +19,8 @@
  * cmocka unit tests for dt_display_output_diff(): a change of a window's
  * output is announced by what changed. the image encoding or the frame
  * format alone (a new headroom, a new backend's frames) reruns the
- * window's producers only; the device encoding or the owner also reaches
- * what GTK draws; the serial is not compared.
+ * window's producers only; the device encoding also reaches what GTK
+ * draws; the serial is not compared.
  */
 
 #include <setjmp.h>
@@ -64,7 +64,6 @@ static dt_display_output_t _native(const float headroom)
   o.device.intent = DT_INTENT_PERCEPTUAL;
   o.device.headroom = 1.0f;
   o.format = DT_FRAME_FLOAT;
-  o.platform_owned = TRUE;
   o.serial = 3;
   return o;
 }
@@ -122,15 +121,6 @@ static void test_device_only(void **state)
   assert_int_equal(dt_display_output_diff(&a, &b), DT_DISPLAY_OUTPUT_DEVICE);
 }
 
-static void test_owner_is_device(void **state)
-{
-  // the same encodings, reported by the platform: what GTK draws hears of it
-  const dt_display_output_t a = _cairo();
-  dt_display_output_t b = _cairo();
-  b.platform_owned = TRUE;
-  assert_int_equal(dt_display_output_diff(&a, &b), DT_DISPLAY_OUTPUT_DEVICE);
-}
-
 static void test_taking_and_giving_back(void **state)
 {
   const dt_display_output_t cairo = _cairo();
@@ -149,7 +139,6 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_system_profile_is_both),
     cmocka_unit_test(test_intent_is_both),
     cmocka_unit_test(test_device_only),
-    cmocka_unit_test(test_owner_is_device),
     cmocka_unit_test(test_taking_and_giving_back),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
