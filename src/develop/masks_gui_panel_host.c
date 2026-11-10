@@ -214,14 +214,9 @@ void dt_iop_gui_blend_masks_panel_sync_toolbox(void)
   // four states, on two independent channels, because the button answers two
   // separate questions and the user needs both at a glance:
   //
-  //   does the module have a mask?  -> the icon itself: filled and at full
-  //                                    strength when it does, outline-only and
-  //                                    dimmed when it does not. The fill is the
-  //                                    icon's own designed meaning (see
-  //                                    dtgtk_cairo_paint_masks_panel), carried
-  //                                    on CPF_SPECIAL_FLAG because the toggle
-  //                                    overwrites CPF_ACTIVE with its checked
-  //                                    state
+  //   does the module have a mask?  -> the icon: at full strength when it does,
+  //                                    dimmed when it does not. The icon itself
+  //                                    is always the same filled shape
   //   is the panel showing?         -> the button's box: a highlighted
   //                                    background with a border when it is,
   //                                    nothing at all when it is not
@@ -242,9 +237,6 @@ void dt_iop_gui_blend_masks_panel_sync_toolbox(void)
                                _masks_panel_collapsed_for(module),
                                dt_masks_gui_panel_always_on());
   const gboolean showing = usable && !state.panel_collapsed;
-
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(btn), dtgtk_cairo_paint_masks_panel,
-                               mask_active ? CPF_SPECIAL_FLAG : CPF_NONE, NULL);
 
   if(mask_active) dt_gui_remove_class(btn, "dt_masks_empty");
   else dt_gui_add_class(btn, "dt_masks_empty");

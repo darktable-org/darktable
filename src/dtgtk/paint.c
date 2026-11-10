@@ -1155,6 +1155,39 @@ void dtgtk_cairo_paint_masks_panel(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
+void dtgtk_cairo_paint_masks_panel_toggle(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  // the panel's show/hide button: the domino of dtgtk_cairo_paint_masks_panel
+  // at full size, partly behind an open panel on the right. The panel is a
+  // "C": top, left and bottom edges, open to the right, hiding the part of the
+  // domino it covers. The domino is clipped at the panel's left edge instead
+  // of being painted over, so that no background color is needed. Always
+  // filled: the button's states live in its box and its dimming, not in the
+  // icon (see dt_iop_gui_blend_masks_panel_sync_toolbox)
+  const double cover = 0.25;  // fraction of the domino's width behind the panel
+
+  PREAMBLE(1, 1, 0, 0)
+
+  // the domino spans 0.05 to 0.95 of the unit box and 0.19 to 0.83 vertically,
+  // see dtgtk_cairo_paint_masks_panel
+  const double left = 0.95 - 0.9 * cover;
+  const double gap = 0.06;
+
+  cairo_save(cr);
+  cairo_rectangle(cr, 0.0, 0.0, left - gap, 1.0);
+  cairo_clip(cr);
+  dtgtk_cairo_paint_masks_panel(cr, 0, 0, 1, 1, flags | CPF_SPECIAL_FLAG, data);
+  cairo_restore(cr);
+
+  cairo_move_to(cr, 0.95, 0.09);
+  cairo_line_to(cr, left, 0.09);
+  cairo_line_to(cr, left, 0.93);
+  cairo_line_to(cr, 0.95, 0.93);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_eye(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   dtgtk_cairo_paint_eye_toggle(cr, x, y, w, h, flags & ~CPF_ACTIVE, data);
