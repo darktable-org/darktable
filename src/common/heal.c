@@ -387,6 +387,11 @@ dt_heal_cl_global_t *dt_heal_init_cl_global()
 {
   dt_heal_cl_global_t *g = malloc(sizeof(dt_heal_cl_global_t));
 
+  const int program = 21; // retouch.cl, from programs.conf
+  g->kernel_heal_sub = dt_opencl_create_kernel(program, "retouch_heal_sub");
+  g->kernel_heal_iterate = dt_opencl_create_kernel(program, "retouch_heal_iterate");
+  g->kernel_heal_converged = dt_opencl_create_kernel(program, "retouch_heal_converged");
+  g->kernel_heal_add = dt_opencl_create_kernel(program, "retouch_heal_add");
   return g;
 }
 
@@ -394,6 +399,10 @@ void dt_heal_free_cl_global(dt_heal_cl_global_t *g)
 {
   if(!g) return;
 
+  dt_opencl_free_kernel(g->kernel_heal_sub);
+  dt_opencl_free_kernel(g->kernel_heal_iterate);
+  dt_opencl_free_kernel(g->kernel_heal_converged);
+  dt_opencl_free_kernel(g->kernel_heal_add);
   free(g);
 }
 
@@ -419,39 +428,119 @@ void dt_heal_free_cl(heal_params_cl_t *p)
   free(p);
 }
 
+// how many iterations to enqueue between reading back the convergence flag
+#define HEAL_CL_CHECK_INTERVAL 32
+
 cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const float *const mask_buffer,
-                  const int width, const int height, const int max_iter)
+                  cl_mem dev_mask, const int width, const int height, const int max_iter)
 {
-  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
+  const dt_heal_cl_global_t *gd = p->global;
+  const int devid = p->devid;
+  const int subwidth = (width + 1) / 2;
+  const int red = 1;
+  const int black = 0;
 
-  const int ch = 4;
+  // the relaxation factor and exit threshold of _heal_laplace_loop()
+  size_t nmask = 0;
+  for(size_t k = 0; k < (size_t)width * height; k++)
+    nmask += mask_buffer[k] != 0.0f;
+  const float w = ((2.0f - 1.0f / (0.1575f * sqrtf(nmask) + 0.8f)) * .25f);
+  const float epsilon = (0.1 / 255);
+  const float err_exit = epsilon * epsilon * w * w;
 
-  float *src_buffer = NULL;
-  float *dest_buffer = NULL;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_red = NULL;
+  cl_mem dev_black = NULL;
+  cl_mem dev_partial_red = NULL;
+  cl_mem dev_partial_black = NULL;
+  cl_mem dev_converged = NULL;
 
-  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
-  if(src_buffer == NULL) goto cleanup;
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 4, .sizey = 1 << 4 };
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_heal_iterate, &locopt);
+  if(err != CL_SUCCESS) return err;
 
-  dest_buffer = dt_alloc_align_float((size_t)ch * width * height);
-  if(dest_buffer == NULL) goto cleanup;
+  const size_t local[2] = { locopt.sizex, locopt.sizey };
+  const size_t sizes[2] = { ROUNDUP(subwidth, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+  const int groups = (sizes[0] / local[0]) * (sizes[1] / local[1]);
 
-  err = dt_opencl_read_buffer_from_device(p->devid, (void *)src_buffer, dev_src, 0,
-                                          (size_t)width * height * ch * sizeof(float), TRUE);
+  dt_opencl_local_buffer_t sumopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 8, .sizey = 1 };
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_heal_converged, &sumopt);
+  if(err != CL_SUCCESS) return err;
+  const size_t sumsize[2] = { sumopt.sizex, 1 };
+
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  const size_t splitsize = sizeof(float) * 4 * subwidth * (height + 2);
+  dev_red = dt_opencl_alloc_device_buffer(devid, splitsize);
+  dev_black = dt_opencl_alloc_device_buffer(devid, splitsize);
+  dev_partial_red = dt_opencl_alloc_device_buffer(devid, sizeof(float) * groups);
+  dev_partial_black = dt_opencl_alloc_device_buffer(devid, sizeof(float) * groups);
+  dev_converged = dt_opencl_alloc_device_buffer(devid, sizeof(int));
+  if(!dev_red || !dev_black || !dev_partial_red || !dev_partial_black || !dev_converged)
+    goto cleanup;
+
+  int converged = 0;
+  err = dt_opencl_write_buffer_to_device(devid, &converged, dev_converged, 0, sizeof(int), TRUE);
   if(err != CL_SUCCESS) goto cleanup;
 
-  err = dt_opencl_read_buffer_from_device(p->devid, (void *)dest_buffer, dev_dest, 0,
-                                          (size_t)width * height * ch * sizeof(float), TRUE);
+  // subtract the pattern from the image, split by 'red' and 'black' positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_heal_sub, subwidth, height + 2,
+          CLARG(dev_dest), CLARG(dev_src), CLARG(dev_red),
+          CLARG(width), CLARG(height), CLARG(subwidth), CLARG(red));
+  if(err != CL_SUCCESS) goto cleanup;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_heal_sub, subwidth, height + 2,
+          CLARG(dev_dest), CLARG(dev_src), CLARG(dev_black),
+          CLARG(width), CLARG(height), CLARG(subwidth), CLARG(black));
   if(err != CL_SUCCESS) goto cleanup;
 
-  // I couldn't make it run fast on opencl (the reduction takes forever), so just call the cpu version
-  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch, max_iter);
+  // Gauss-Seidel with successive over-relaxation. The convergence test runs
+  // on the device after each iteration, and once it is met the remaining
+  // enqueued kernels return at once, so the result is that of the CPU loop
+  // although the flag is only read back every few iterations.
+  for(int iter = 0; iter < max_iter; iter++)
+  {
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_heal_iterate, sizes, local,
+            CLARG(dev_black), CLARG(dev_red), CLARG(dev_mask),
+            CLARG(width), CLARG(height), CLARG(subwidth), CLARG(black), CLARG(w),
+            CLARG(dev_converged), CLARG(dev_partial_black),
+            CLLOCAL(sizeof(float) * local[0] * local[1]));
+    if(err != CL_SUCCESS) goto cleanup;
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_heal_iterate, sizes, local,
+            CLARG(dev_red), CLARG(dev_black), CLARG(dev_mask),
+            CLARG(width), CLARG(height), CLARG(subwidth), CLARG(red), CLARG(w),
+            CLARG(dev_converged), CLARG(dev_partial_red),
+            CLLOCAL(sizeof(float) * local[0] * local[1]));
+    if(err != CL_SUCCESS) goto cleanup;
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_heal_converged, sumsize, sumsize,
+            CLARG(dev_partial_black), CLARG(dev_partial_red), CLARG(groups), CLARG(err_exit),
+            CLARG(dev_converged),
+            CLLOCAL(sizeof(float) * sumsize[0]));
+    if(err != CL_SUCCESS) goto cleanup;
 
-  err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch, TRUE);
+    if((iter + 1) % HEAL_CL_CHECK_INTERVAL == 0)
+    {
+      err = dt_opencl_read_buffer_from_device(devid, &converged, dev_converged, 0, sizeof(int), TRUE);
+      if(err != CL_SUCCESS) goto cleanup;
+      if(converged) break;
+    }
+  }
+
+  // add the solution to the original image
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_heal_add, width, height,
+          CLARG(dev_red), CLARG(dev_black), CLARG(dev_src), CLARG(dev_dest),
+          CLARG(width), CLARG(height), CLARG(subwidth));
 
 cleanup:
-  if(src_buffer) dt_free_align(src_buffer);
-  if(dest_buffer) dt_free_align(dest_buffer);
-
+  dt_opencl_release_mem_object(dev_red);
+  dt_opencl_release_mem_object(dev_black);
+  dt_opencl_release_mem_object(dev_partial_red);
+  dt_opencl_release_mem_object(dev_partial_black);
+  dt_opencl_release_mem_object(dev_converged);
   return err;
 }
 

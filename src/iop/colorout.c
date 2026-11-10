@@ -43,6 +43,8 @@
 // must be in synch with dt_colorspaces_color_profile_t
 #define DT_IOP_COLOR_ICC_LEN 512
 #define LUT_SAMPLES 0x10000
+// grid of the LittleCMS transform baked for the GPU, see _bake_clut()
+#define CLUT_LEVEL 65
 
 DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
 
@@ -54,12 +56,16 @@ typedef struct dt_iop_colorout_data_t
   float lut[3][LUT_SAMPLES];
   dt_colormatrix_t cmatrix;
   cmsHTRANSFORM *xform;
+  cmsHTRANSFORM *xform_nogamut; // gamut check only: xform without the gamut marker
+  float *clut;       // xform baked into a CLUT_LEVEL^3 LUT for the GPU, built on first use
+  float *clut_gamut; // gamut check only: 1 in all channels where xform marks a node out of gamut
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
 {
   int kernel_colorout;
+  int kernel_colorout_clut;
 } dt_iop_colorout_global_data_t;
 
 typedef struct dt_iop_colorout_params_t
@@ -235,12 +241,14 @@ void init_global(dt_iop_module_so_t *self)
   dt_iop_colorout_global_data_t *gd = malloc(sizeof(dt_iop_colorout_global_data_t));
   self->data = gd;
   gd->kernel_colorout = dt_opencl_create_kernel(program, "colorout");
+  gd->kernel_colorout_clut = dt_opencl_create_kernel(program, "colorout_clut");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_colorout_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorout);
+  dt_opencl_free_kernel(gd->kernel_colorout_clut);
   free(self->data);
   self->data = NULL;
 }
@@ -312,6 +320,101 @@ static float _lerp_lut(const float *const lut, const float v)
 }
 
 #ifdef HAVE_OPENCL
+// sample xform on a CLUT_LEVEL^3 grid over the Lab range LittleCMS encodes
+// floats in (L 0..100, a and b -128..127), the first channel varying fastest
+// as in the lut3d module. With gamut_marker, store 1 in all channels of a
+// node xform marks out of gamut (or maps to a negative value), else 0.
+static float *_bake_clut(cmsHTRANSFORM xform, const gboolean gamut_marker)
+{
+  const size_t level = CLUT_LEVEL;
+  const size_t nodes = level * level * level;
+  float *const lab = dt_alloc_align_float(4 * nodes);
+  float *const rgb = dt_alloc_align_float(4 * nodes);
+  float *const clut = dt_alloc_align_float(3 * nodes);
+  if(!lab || !rgb || !clut)
+  {
+    dt_free_align(lab);
+    dt_free_align(rgb);
+    dt_free_align(clut);
+    return NULL;
+  }
+
+  DT_OMP_FOR()
+  for(size_t k = 0; k < nodes; k++)
+  {
+    lab[4 * k + 0] = 100.0f * (float)(k % level) / (float)(level - 1);
+    lab[4 * k + 1] = 255.0f * (float)((k / level) % level) / (float)(level - 1) - 128.0f;
+    lab[4 * k + 2] = 255.0f * (float)(k / (level * level)) / (float)(level - 1) - 128.0f;
+    lab[4 * k + 3] = 0.0f;
+  }
+
+  // the same chunking as _transform_lcms()
+  const size_t chunksize = dt_cacheline_chunks(nodes, dt_get_num_threads());
+  DT_OMP_FOR()
+  for(size_t chunkstart = 0; chunkstart < nodes; chunkstart += chunksize)
+    cmsDoTransform(xform, lab + 4 * chunkstart, rgb + 4 * chunkstart,
+                   MIN(chunkstart + chunksize, nodes) - chunkstart);
+
+  DT_OMP_FOR()
+  for(size_t k = 0; k < nodes; k++)
+  {
+    const float *const px = rgb + 4 * k;
+    if(gamut_marker)
+    {
+      const float out = (px[0] < 0.0f || px[1] < 0.0f || px[2] < 0.0f) ? 1.0f : 0.0f;
+      for(int c = 0; c < 3; c++) clut[3 * k + c] = out;
+    }
+    else
+      for(int c = 0; c < 3; c++) clut[3 * k + c] = px[c];
+  }
+
+  dt_free_align(lab);
+  dt_free_align(rgb);
+  return clut;
+}
+#endif
+
+static void _free_clut(dt_iop_colorout_data_t *d)
+{
+  dt_free_align(d->clut);
+  dt_free_align(d->clut_gamut);
+  d->clut = NULL;
+  d->clut_gamut = NULL;
+}
+
+#ifdef HAVE_OPENCL
+// the LittleCMS path as a 3D LUT. Gamut check interpolates the marker in its
+// own LUT: baked into the colors, the out-of-gamut nodes would bleed into
+// their in-gamut neighbors.
+static int _process_cl_clut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                            cl_mem dev_out, const int width, const int height)
+{
+  dt_iop_colorout_data_t *d = piece->data;
+  const dt_iop_colorout_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+  const int gamutcheck = d->xform_nogamut != NULL;
+
+  if(!d->clut) d->clut = _bake_clut(gamutcheck ? d->xform_nogamut : d->xform, FALSE);
+  if(gamutcheck && !d->clut_gamut) d->clut_gamut = _bake_clut(d->xform, TRUE);
+  if(!d->clut || (gamutcheck && !d->clut_gamut)) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  const int level = CLUT_LEVEL;
+  const size_t size = sizeof(float) * 3 * level * level * level;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_clut = dt_opencl_copy_host_to_device_constant(devid, size, d->clut);
+  cl_mem dev_gamut = gamutcheck ? dt_opencl_copy_host_to_device_constant(devid, size, d->clut_gamut) : NULL;
+  // without gamut check the kernel never reads the marker LUT
+  cl_mem dev_marker = gamutcheck ? dev_gamut : dev_clut;
+  if(dev_clut && dev_marker)
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout_clut, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_clut), CLARG(level),
+      CLARG(gamutcheck), CLARG(dev_marker), CLARG(d->hdr_transfer));
+
+  dt_opencl_release_mem_object(dev_clut);
+  dt_opencl_release_mem_object(dev_gamut);
+  return err;
+}
+
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -332,6 +435,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     return CL_SUCCESS;
   }
 
+  if(!dt_is_valid_colormatrix(d->cmatrix[0][0]))
+    return _process_cl_clut(self, piece, dev_in, dev_out, width, height);
 
   float cmatrix[9];
   pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
@@ -588,6 +693,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
+  if(d->xform_nogamut)
+  {
+    cmsDeleteTransform(d->xform_nogamut);
+    d->xform_nogamut = NULL;
+  }
+  _free_clut(d);
   dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
@@ -759,6 +870,20 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     }
   }
 
+  // the GPU runs xform as a 3D LUT, see _process_cl_clut(). "always use
+  // LittleCMS 2" asks for the exact transform, which only the CPU has.
+  if(d->xform && !force_lcms2)
+  {
+    piece->process_cl_ready = TRUE;
+    if(d->mode == DT_PROFILE_GAMUTCHECK)
+    {
+      d->xform_nogamut = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
+                                                    out_intent, INTENT_RELATIVE_COLORIMETRIC,
+                                                    transformFlags & ~cmsFLAGS_GAMUTCHECK);
+      if(!d->xform_nogamut) piece->process_cl_ready = FALSE;
+    }
+  }
+
   if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
@@ -804,6 +929,12 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
+  if(d->xform_nogamut)
+  {
+    cmsDeleteTransform(d->xform_nogamut);
+    d->xform_nogamut = NULL;
+  }
+  _free_clut(d);
 
   free(piece->data);
   piece->data = NULL;

@@ -357,6 +357,12 @@ static inline gboolean dt_masks_point_is_marker(const dt_masks_point_group_t *pt
 
 /** structure used to store pointers to the functions implementing operations on a mask shape */
 /** plus a few per-class descriptive data items */
+/** the part of the roi a shape drew, half open: x0 <= x < x1, y0 <= y < y1 */
+typedef struct dt_masks_extent_t
+{
+  int x0, y0, x1, y1;
+} dt_masks_extent_t;
+
 typedef struct dt_masks_functions_t
 {
   int point_struct_size;   // sizeof(struct dt_masks_point_*_t)
@@ -433,11 +439,17 @@ typedef struct dt_masks_functions_t
                   int *height,
                   int *posx,
                   int *posy);
+  /* extent is NULL, or a group folding only what a circle, ellipse, path,
+     brush or gradient draws (_group_get_mask_roi_flexi). That shape then
+     neither clears nor relies on a cleared buffer: it writes every pixel of
+     a rectangle, zeros included, nothing outside it, and sets *extent to the
+     rectangle before returning 1. Other forms are never passed one */
   int (*get_mask_roi)(const dt_iop_module_t *const fmodule,
                       const dt_dev_pixelpipe_iop_t *const piece,
                       struct dt_masks_form_t *const form,
                       const dt_iop_roi_t *roi,
-                      float *buffer);
+                      float *buffer,
+                      dt_masks_extent_t *extent);
   int (*get_area)(const dt_iop_module_t *const module,
                   const dt_dev_pixelpipe_iop_t *const piece,
                   struct dt_masks_form_t *const form,
@@ -781,7 +793,8 @@ int dt_masks_pixel_get_mask_roi(const dt_iop_module_t *const module,
                                 const dt_dev_pixelpipe_iop_t *const piece,
                                 dt_masks_form_t *const form,
                                 const dt_iop_roi_t *roi,
-                                float *buffer);
+                                float *buffer,
+                                dt_masks_extent_t *extent);
 int dt_masks_pixel_mouse_scrolled(dt_iop_module_t *module,
                                   const float pzx,
                                   const float pzy,
@@ -960,10 +973,11 @@ static inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module,
                                         const dt_dev_pixelpipe_iop_t *const piece,
                                         dt_masks_form_t *const form,
                                         const dt_iop_roi_t *roi,
-                                        float *buffer)
+                                        float *buffer,
+                                        dt_masks_extent_t *extent)
 {
   return (form->functions && form->functions->get_mask_roi)
-    ? form->functions->get_mask_roi(module, piece, form, roi, buffer)
+    ? form->functions->get_mask_roi(module, piece, form, roi, buffer, extent)
     : 0;
 }
 
@@ -1105,6 +1119,15 @@ void *dt_masks_blend_blob_encode(const struct dt_develop_blend_params_t *bp,
                                  size_t *size);
 /** does stored blend params of `size` bytes go on after the struct? */
 gboolean dt_masks_blend_blob_has_tail(const size_t size);
+/** do blend params `bp` and the forms of their mask in `forms` make the
+    mask that stored blend params, `blob` of `size` bytes, carry? Form ids are
+    not compared, only the links between the forms. What
+    dt_masks_blend_blob_encode() leaves out of a blob is left out of the
+    comparison */
+gboolean dt_masks_blend_blob_forms_match(const struct dt_develop_blend_params_t *bp,
+                                         GList *forms,
+                                         const void *blob,
+                                         const size_t size);
 /** the reverse of dt_masks_blend_blob_encode(), for blobs from files too:
     FALSE, with nothing in `*forms`, when the blob is not one it makes. The
     forms keep the ids of the image they came from: see

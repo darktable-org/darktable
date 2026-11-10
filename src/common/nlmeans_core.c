@@ -322,7 +322,7 @@ static int compute_slice_width(const int width)
 }
 
 __DT_CLONE_TARGETS__
-void nlmeans_denoise(
+static void _nlmeans_denoise(
         const float *const inbuf,
         float *const outbuf,
         const dt_iop_roi_t *const roi_in,
@@ -542,6 +542,77 @@ void nlmeans_denoise(
   return;
 }
 
+// reflect i into 0..max without repeating the edge pixel (edcb|abcdefg|fedc), folding
+// again as often as needed for offsets wider than the image
+static inline int _mirror(int i, const int max)
+{
+  if(max <= 0) return 0;
+  const int period = 2 * max;
+  i = abs(i) % period;
+  return i > max ? period - i : i;
+}
+
+// the widest border any patch of any search offset can reach outside the image
+int nlmeans_border(const dt_nlmeans_param_t *const params)
+{
+  int num_patches;
+  int max_shift;
+  struct patch_t *patches = define_patches(params, 0, &num_patches, &max_shift);
+  dt_free_align(patches);
+  return max_shift + params->patch_radius;
+}
+
+void nlmeans_denoise(
+        const float *const inbuf,
+        float *const outbuf,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_nlmeans_param_t *const params)
+{
+  // denoise a copy of the image extended by mirroring, so that pixels near the edges are
+  // compared with as many patches as those in the middle
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int border = nlmeans_border(params);
+  const int pwidth = width + 2 * border;
+  const int pheight = height + 2 * border;
+  float *const restrict padded_in = dt_alloc_align_float((size_t)4 * pwidth * pheight);
+  float *const restrict padded_out = dt_alloc_align_float((size_t)4 * pwidth * pheight);
+  if(!padded_in || !padded_out)
+  {
+    dt_free_align(padded_in);
+    dt_free_align(padded_out);
+    _nlmeans_denoise(inbuf, outbuf, roi_in, roi_out, params);
+    return;
+  }
+
+  DT_OMP_FOR()
+  for(int row = 0; row < pheight; row++)
+  {
+    const float *const src = inbuf + (size_t)4 * width * _mirror(row - border, height - 1);
+    float *const dst = padded_in + (size_t)4 * pwidth * row;
+    for(int col = 0; col < pwidth; col++)
+    {
+      const float *const px = src + 4 * _mirror(col - border, width - 1);
+      for_four_channels(c) dst[4 * col + c] = px[c];
+    }
+  }
+
+  dt_iop_roi_t padded_roi = *roi_in;
+  padded_roi.width = pwidth;
+  padded_roi.height = pheight;
+  _nlmeans_denoise(padded_in, padded_out, &padded_roi, &padded_roi, params);
+
+  DT_OMP_FOR()
+  for(int row = 0; row < roi_out->height; row++)
+    memcpy(outbuf + (size_t)4 * roi_out->width * row,
+           padded_out + (size_t)4 * (pwidth * (row + border) + border),
+           sizeof(float) * 4 * roi_out->width);
+
+  dt_free_align(padded_in);
+  dt_free_align(padded_out);
+}
+
 /**************************************************************/
 /**************************************************************/
 /*      Everything from here to end of file is OpenCL         */
@@ -612,10 +683,12 @@ static inline cl_int nlmeans_cl_accu(
         cl_mem dev_out,
         const int q[2],
         const int height,
-        const int width)
+        const int width,
+        const int border)
 {
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q));
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q),
+    CLARG(border));
 }
 
 int nlmeans_denoise_cl(
@@ -636,13 +709,17 @@ int nlmeans_denoise_cl(
   int num_patches;
   int max_shift;
   struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
+  // the patch distances are computed over the image extended by mirroring, as on the CPU
+  const int border = max_shift + P;
+  const int pwidth = width + 2 * border;
+  const int pheight = height + 2 * border;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem buckets[NUM_BUCKETS] = { NULL };
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * pwidth * pheight);
     if(buckets[k] == NULL) goto error;
   }
 
@@ -654,8 +731,8 @@ int nlmeans_denoise_cl(
   err = dt_opencl_fill_buffer(devid, dev_out, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
-  const size_t bwidth = ROUNDUP(width, hblocksize);
-  const size_t bheight = ROUNDUP(height, vblocksize);
+  const size_t bwidth = ROUNDUP(pwidth, hblocksize);
+  const size_t bheight = ROUNDUP(pheight, vblocksize);
 
   for(int p = 0; p < num_patches; p++)
   {
@@ -664,28 +741,28 @@ int nlmeans_denoise_cl(
 
     // compute channel-normed squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    err = dt_opencl_enqueue_kernel_2d_args(devid, params->kernel_dist, width, height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, params->kernel_dist, pwidth, pheight,
       CLARG(dev_in), CLARG(dev_U4), CLARG(width),
-      CLARG(height), CLARG(q), CLARG(nL2), CLARG(nC2));
+      CLARG(height), CLARG(q), CLARG(nL2), CLARG(nC2), CLARG(border));
     if(err != CL_SUCCESS) break;
 
     // add up individual columns
     cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
-    err = nlmeans_cl_horiz(devid,params->kernel_horiz,dev_U4,dev_U4_t,P,q,height,width,bwidth,hblocksize);
+    err = nlmeans_cl_horiz(devid,params->kernel_horiz,dev_U4,dev_U4_t,P,q,pheight,pwidth,bwidth,hblocksize);
     if(err != CL_SUCCESS) break;
 
     // add together the column sums and compute the weighting of the current patch for each pixel
-    const size_t sizesl[2] = { ROUNDUPDWD(width, devid), bheight };
+    const size_t sizesl[2] = { ROUNDUPDWD(pwidth, devid), bheight };
     const size_t local[2] = { 1, vblocksize };
     const float sharpness = params->sharpness;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, params->kernel_vert, sizesl, local,
-      CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
-      CLARG(height), CLARG(q), CLARG(P), CLARG(sharpness), CLLOCAL((vblocksize + 2 * P) * sizeof(float)));
+      CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(pwidth),
+      CLARG(pheight), CLARG(q), CLARG(P), CLARG(sharpness), CLLOCAL((vblocksize + 2 * P) * sizeof(float)));
     if(err != CL_SUCCESS) break;
 
     // add weighted proportion of patch's center pixel to output pixel
-    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width);
+    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,border);
     if(err != CL_SUCCESS) break;
 
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
@@ -718,13 +795,17 @@ int nlmeans_denoiseprofile_cl(
   int num_patches;
   int max_shift;
   struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
+  // the patch distances are computed over the image extended by mirroring, as on the CPU
+  const int border = max_shift + P;
+  const int pwidth = width + 2 * border;
+  const int pheight = height + 2 * border;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem buckets[NUM_BUCKETS] = { NULL };
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * pwidth * pheight);
     if(buckets[k] == NULL) goto error;
   }
 
@@ -736,8 +817,8 @@ int nlmeans_denoiseprofile_cl(
   err = dt_opencl_fill_buffer(devid, dev_out, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
-  const size_t bwidth = ROUNDUP(width, hblocksize);
-  const size_t bheight = ROUNDUP(height, vblocksize);
+  const size_t bwidth = ROUNDUP(pwidth, hblocksize);
+  const size_t bheight = ROUNDUP(pheight, vblocksize);
 
   for(int p = 0; p < num_patches; p++)
   {
@@ -746,28 +827,28 @@ int nlmeans_denoiseprofile_cl(
 
     // compute squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    err = dt_opencl_enqueue_kernel_2d_args(devid, params->kernel_dist, width, height,
-            CLARG(dev_in), CLARG(dev_U4), CLARG(width), CLARG(height), CLARG(q));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, params->kernel_dist, pwidth, pheight,
+            CLARG(dev_in), CLARG(dev_U4), CLARG(width), CLARG(height), CLARG(q), CLARG(border));
     if(err != CL_SUCCESS) break;
 
     // add up individual columns
     cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
-    err = nlmeans_cl_horiz(devid,params->kernel_horiz,dev_U4,dev_U4_t,P,q,height,width,bwidth,hblocksize);
+    err = nlmeans_cl_horiz(devid,params->kernel_horiz,dev_U4,dev_U4_t,P,q,pheight,pwidth,bwidth,hblocksize);
     if(err != CL_SUCCESS) break;
 
     // add together the column sums and compute the weighting of the current patch for each pixel
-    const size_t sizesl[2] = { ROUNDUPDWD(width, devid), bheight };
+    const size_t sizesl[2] = { ROUNDUPDWD(pwidth, devid), bheight };
     const size_t local[2] = { 1, vblocksize };
     const float central_pixel_weight = params->center_weight;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, params->kernel_vert, sizesl, local,
-      CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
-      CLARG(height), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL((vblocksize + 2 * P) * sizeof(float)),
+      CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(pwidth),
+      CLARG(pheight), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL((vblocksize + 2 * P) * sizeof(float)),
       CLARG(central_pixel_weight), CLARG(dev_U4));
     if(err != CL_SUCCESS) break;
 
     // add weighted proportion of patch's center pixel to output pixel
-    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width);
+    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,border);
     if(err != CL_SUCCESS) break;
 
     dt_opencl_finish_sync_pipe(devid, params->pipetype);

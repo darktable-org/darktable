@@ -597,6 +597,48 @@ static void test_preset_apply_other_image(void **state)
   dt_dev_cleanup(&dev);
 }
 
+// a module is on the preset its mask came from until a shape or a group
+// setting is edited: those live in the forms, not in the blend params
+static void test_match_follows_forms(void **state)
+{
+  _ensure_source();
+  gsize size = 0;
+  const void *blob = g_bytes_get_data(_src_blob, &size);
+
+  const dt_imgid_t dst = dt_image_duplicate(dt_test_catalog_image("bayer4.crw"));
+  dt_develop_t dev;
+  _open(&dev, dst);
+  dt_iop_module_t *module = _module(&dev);
+
+  assert_false(dt_presets_module_blend_match(module, blob, size));
+  dt_gui_presets_apply_blend_params(module, blob, dt_develop_blend_version(), size);
+  assert_true(dt_presets_module_blend_match(module, blob, size));
+
+  dt_masks_form_t *grp = dt_masks_get_from_id(&dev, module->blend_params->mask_id);
+  dt_masks_point_group_t *member = g_list_last(grp->points)->data;
+  const float opacity = member->opacity;
+  member->opacity = 0.5f;
+  assert_false(dt_presets_module_blend_match(module, blob, size));
+  member->opacity = opacity;
+  assert_true(dt_presets_module_blend_match(module, blob, size));
+
+  for(GList *l = dev.forms; l; l = g_list_next(l))
+  {
+    dt_masks_form_t *form = l->data;
+    if(strcmp(form->name, "test circle")) continue;
+    dt_masks_point_circle_t *circle = form->points->data;
+    circle->radius *= 2.0f;
+    assert_false(dt_presets_module_blend_match(module, blob, size));
+    circle->radius /= 2.0f;
+  }
+  assert_true(dt_presets_module_blend_match(module, blob, size));
+
+  // the blend params themselves still count
+  module->blend_params->opacity = 0.5f;
+  assert_false(dt_presets_module_blend_match(module, blob, size));
+  dt_dev_cleanup(&dev);
+}
+
 // auto-apply copies the preset's blob into history, tail and all
 static void test_auto_apply_with_mask(void **state)
 {
@@ -1068,6 +1110,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_style_from_pixel_object),
     cmocka_unit_test(test_pixel_object_save_headless),
     cmocka_unit_test(test_preset_apply_other_image),
+    cmocka_unit_test(test_match_follows_forms),
     cmocka_unit_test(test_auto_apply_with_mask),
     cmocka_unit_test(test_style_with_mask),
     cmocka_unit_test(test_files_roundtrip),

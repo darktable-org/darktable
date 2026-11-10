@@ -21,31 +21,6 @@
 #include "control/control.h"     // needed by dwt.h
 #include "common/dwt.h"          // for dwt_interleave_rows
 
-static inline void weight(const dt_aligned_pixel_t c1,
-                              const dt_aligned_pixel_t c2,
-                              const dt_aligned_pixel_t sharpen,
-                              dt_aligned_pixel_t weight)
-{
-/* Computes the vector
- * (wl, wc, wc, 1)
- *
- * where:
- * wl = exp(-sharpen*SQR(c1[0] - c2[0]))
- * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
- */
-  dt_aligned_pixel_t square;
-  for_each_channel(c) square[c] = c1[c] - c2[c];
-  for_each_channel(c) square[c] = square[c] * square[c];	// { d1, d2, d3, ? }
-  const dt_aligned_pixel_t square2 = { square[0], square[2], square[1], square[3] }; // { d1, d3, d2, ? }
-  dt_aligned_pixel_t added;
-  for_each_channel(c)
-    added[c] = square[c] + square2[c];				// { d1+d1, d2+d3, d2+d3, ? }
-  dt_aligned_pixel_t sharpened;
-  for_each_channel(c)
-    sharpened[c] = sharpen[c] * added[c];			// { -s*d1,  -s*(d2+d3), -s*(d2+d3), 0 }
-  dt_vector_exp(sharpened, weight);				// { wl, wc, wc, 1 }
-}
-
 static inline void accumulate(dt_aligned_pixel_t accum,
                               const dt_aligned_pixel_t detail,
                               const dt_aligned_pixel_t thresh,
@@ -78,19 +53,77 @@ static inline void accumulate(dt_aligned_pixel_t accum,
   }
 }
 
-#define SUM_PIXEL_CONTRIBUTION						\
-  do                                                                    \
-  {                                                                     \
-    dt_aligned_pixel_t wp;                                              \
-    weight(px + 4*i, px2, vsharpen, wp);                                \
-    dt_aligned_pixel_t w;                                               \
-    const float f = filter[filter_idx++];                               \
-    for_four_channels(c,aligned(px2))                                   \
-    {                                                                   \
-      w[c] = f * wp[c];                                                 \
-      wgt[c] += w[c];                                                   \
-      sum[c] += w[c] * px2[c];                                          \
-    }                                                                   \
+// 2^x for -126 <= x <= 0, within 4e-6 relative error and exactly 1 at
+// 0. It works on a whole array so that the loop vectorizes across the taps:
+// computing the weights of one tap at a time leaves half of every
+// vector unused, which made the accurate exponential twice as costly
+static inline void _exp2_nonpositive(float *const restrict x,
+                                     const size_t n)
+{
+  DT_OMP_SIMD(aligned(x:64))
+  for(size_t k = 0; k < n; k++)
+  {
+    const float y = x[k];
+    const float ipart = (float)(int)y; // truncates, so fpart is in ]-1, 0]
+    const float fpart = y - ipart;
+    union { float f; int32_t i; } scale = { .i = ((int)ipart + 127) << 23 };
+    x[k] = scale.f * (1.0f + fpart * (0.69306009f + fpart * (0.23943884f
+                                  + fpart * (0.053195773f + fpart * 0.0068184413f))));
+  }
+}
+
+static inline void _sum_taps(const float *const restrict c1,
+                             const float *const tap[25],
+                             const float filter[25],
+                             const float sharpen,
+                             dt_aligned_pixel_t sum,
+                             dt_aligned_pixel_t wgt)
+{
+  // wl = exp(-sharpen * SQR(c1[0] - c2[0])) in w[k],
+  // wc = exp(-sharpen * (SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))) in w[32 + k]
+  float w[64] DT_ALIGNED_ARRAY;
+  const float s = -sharpen * 1.44269504f; // exp(x) = 2^(x / ln(2))
+  for(size_t k = 0; k < 25; k++)
+  {
+    const float dl = c1[0] - tap[k][0];
+    const float da = c1[1] - tap[k][1];
+    const float db = c1[2] - tap[k][2];
+    // clamped here, not in _exp2_nonpositive(): there it keeps
+    // the loop from vectorizing
+    const float wl = s * dl * dl;
+    const float wc = s * (da * da + db * db);
+    w[k] = wl > -126.0f ? wl : -126.0f;
+    w[32 + k] = wc > -126.0f ? wc : -126.0f;
+  }
+  _exp2_nonpositive(w, 25);
+  _exp2_nonpositive(w + 32, 25);
+  for(size_t k = 0; k < 25; k++)
+  {
+    const float f = filter[k];
+    const dt_aligned_pixel_t wk = { f * w[k], f * w[32 + k], f * w[32 + k], f };
+    for_four_channels(c)
+    {
+      wgt[c] += wk[c];
+      sum[c] += wk[c] * tap[k][c];
+    }
+  }
+}
+
+// without edge sharpness every weight is exp(0) = 1, so accumulate
+// right away instead of collecting the taps for _sum_taps()
+#define SUM_PIXEL_CONTRIBUTION \
+  do \
+  { \
+    if(flat) \
+    { \
+      const float f = filter[filter_idx]; \
+      for_four_channels(c, aligned(px2)) \
+      { \
+        wgt[c] += f; \
+        sum[c] += f * px2[c]; \
+      } \
+    } \
+    tap[filter_idx++] = px2; \
   } while(0)
 
 #define SUM_PIXEL_PROLOGUE                                                                                   \
@@ -98,7 +131,12 @@ static inline void accumulate(dt_aligned_pixel_t accum,
   dt_aligned_pixel_t wgt = { 0.0f, 0.0f, 0.0f, 0.0f };							     \
   size_t filter_idx = 0;
 
+#define SUM_TAPS_PROLOGUE \
+  SUM_PIXEL_PROLOGUE \
+  const float *tap[25];
+
 #define SUM_PIXEL_EPILOGUE                                                                                   \
+  if(!flat) _sum_taps(px + 4*i, tap, filter, sharpen, sum, wgt); \
   dt_aligned_pixel_t det;										     \
   for_each_channel(c)      										     \
   {													     \
@@ -128,7 +166,7 @@ void eaw_decompose_and_synthesize(float *const restrict out,
       1.0f / 256.0f,  4.0f / 256.0f,  6.0f / 256.0f,  4.0f / 256.0f, 1.0f / 256.0f
     };
   const int boundary = 2 * mult;
-  const dt_aligned_pixel_t vsharpen = { -0.5f * sharpen, -sharpen, -sharpen, 0.0f };
+  const gboolean flat = sharpen == 0.0f;
 
   DT_OMP_FOR()
   for(size_t rowid = 0; rowid < height; rowid++)
@@ -148,7 +186,7 @@ void eaw_decompose_and_synthesize(float *const restrict out,
     size_t i;
     for(i = 0; i < lbound; i++)
     {
-      SUM_PIXEL_PROLOGUE;
+      SUM_TAPS_PROLOGUE
       for(ssize_t jj = 0; jj < 5; jj++)
       {
         const ssize_t y = j + mult * (jj-2);
@@ -167,7 +205,7 @@ void eaw_decompose_and_synthesize(float *const restrict out,
     /* For pixels [2*mult, width-2*mult], we don't need to do any boundary checks */
     for( ; i < width - boundary; i++)
     {
-      SUM_PIXEL_PROLOGUE;
+      SUM_TAPS_PROLOGUE
       px2 = ((float *)in) + (size_t)4 * (i - 2 * mult + (size_t)(j - 2 * mult) * width);
       for(ssize_t jj = 0; jj < 5; jj++)
       {
@@ -184,7 +222,7 @@ void eaw_decompose_and_synthesize(float *const restrict out,
     /* Last 2*mult pixels in the row require the boundary check again */
     for( ; i < width; i++)
     {
-      SUM_PIXEL_PROLOGUE;
+      SUM_TAPS_PROLOGUE
       for(ssize_t jj = 0; jj < 5; jj++)
       {
         const ssize_t y = j + mult * (jj-2);

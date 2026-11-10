@@ -58,7 +58,7 @@
     },
     {
       "id": "mask_intersect_subtract",
-      "name": "drawn + parametric, minus an area (advanced)",
+      "name": "drawn + parametric, minus an area",
       "description": "a drawn + parametric mask, with the elements added above it subtracted\nfrom it",
       "mask": {
         "operator": "difference",

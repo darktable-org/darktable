@@ -21,6 +21,7 @@
 #include "libs/collect.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
+#include "common/collection_navigation.h"
 #include "common/darktable.h"
 #include "common/datetime.h"
 #include "common/debug.h"
@@ -103,7 +104,8 @@ typedef struct dt_lib_collect_t
 
   gboolean inited;
 
-  GtkWidget *history_box;
+  GtkWidget *history_box, *history_button;
+  GtkWidget *back, *forward;
 
   GSimpleActionGroup *action_group;
 } dt_lib_collect_t;
@@ -643,6 +645,7 @@ static void _view_popup_menu(GtkWidget *treeview,
     gtk_widget_insert_action_group(treeview, 
                                    "collections",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -2850,7 +2853,7 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 {
   dt_lib_collect_t *d = self->data;
   const gboolean hide = dt_lib_is_visible(darktable.view_manager->proxy.module_recentcollect.module);
-  gtk_widget_set_visible(d->history_box, !hide);
+  gtk_widget_set_visible(d->history_button, !hide);
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -3063,6 +3066,15 @@ static gboolean _fixup_stale_selection(dt_lib_collect_t *d)
            "plugins/lighttable/collect/string%1d", active);
   gchar *text = dt_conf_get_string(confname);
   if(!text || !text[0])
+  {
+    g_free(text);
+    return FALSE;
+  }
+
+  // a restored rule may have changed property before the combobox refreshes
+  char itemname[200];
+  snprintf(itemname, sizeof(itemname), "plugins/lighttable/collect/item%1d", active);
+  if(property != dt_conf_get_int(itemname))
   {
     g_free(text);
     return FALSE;
@@ -3398,9 +3410,8 @@ int position(const dt_lib_module_t *self)
   return 400;
 }
 
-static gboolean entry_focus_in_callback(GtkWidget *w,
-                                        GdkEventFocus *event,
-                                        dt_lib_collect_rule_t *d)
+static void entry_focus_in_callback(GtkEventController *controller,
+                                    dt_lib_collect_rule_t *d)
 {
   dt_lib_collect_t *c = get_collect(d);
   if(c->active_rule != d->num)
@@ -3408,8 +3419,6 @@ static gboolean entry_focus_in_callback(GtkWidget *w,
     c->active_rule = d->num;
     update_view(c->rule + c->active_rule);
   }
-
-  return FALSE;
 }
 
 static gboolean _process_variant_params(GVariant *parameter,
@@ -3492,6 +3501,34 @@ static void _menuitem_mode_change(GSimpleAction *action,
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_NEW_QUERY,
                              DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+static void _navigation_update(dt_lib_collect_t *d)
+{
+  gtk_widget_set_sensitive(d->back, dt_collection_navigation_available(-1));
+  gtk_widget_set_sensitive(d->forward, dt_collection_navigation_available(1));
+}
+
+static void _navigation_changed(gpointer instance,
+                                 const dt_collection_change_t query_change,
+                                 const dt_collection_properties_t changed_property,
+                                 gpointer imgs,
+                                 const int next,
+                                 gpointer self)
+{
+  _navigation_update(((dt_lib_module_t *)self)->data);
+}
+
+static void _navigation_back(GtkWidget *widget, gpointer user_data)
+{
+  dt_collection_navigation_go(-1);
+  _navigation_update(((dt_lib_module_t *)user_data)->data);
+}
+
+static void _navigation_forward(GtkWidget *widget, gpointer user_data)
+{
+  dt_collection_navigation_go(1);
+  _navigation_update(((dt_lib_module_t *)user_data)->data);
 }
 
 static void collection_updated(gpointer instance,
@@ -3928,7 +3965,7 @@ static void _menuitem_preferences(GSimpleAction *action,
      _("_save"), GTK_RESPONSE_ACCEPT, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_prefs_init_dialog_collect(dialog);
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -4131,6 +4168,7 @@ static void _history_show(GtkWidget *widget,
     gtk_widget_insert_action_group(widget, 
                                    "history",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   // we show a popup with all the history entries
@@ -4253,8 +4291,7 @@ void gui_init(dt_lib_module_t *self)
 
     d->rule[i].text = w = dt_ui_entry_new(10);
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "focus-in-event",
-                     G_CALLBACK(entry_focus_in_callback), d->rule + i);
+    dt_gui_connect_focus(w, entry_focus_in_callback, NULL, d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);
@@ -4315,17 +4352,33 @@ void gui_init(dt_lib_module_t *self)
                                            DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
-  // the bottom buttons for the rules
-  GtkWidget *btn = dt_action_button_new(self,
-                                        N_("history"),
-                                        G_CALLBACK(_history_show), self,
-                                        _("revert to a previous set of rules"),
-                                        GDK_KEY_k, GDK_CONTROL_MASK);
-  // dummy widget just to ensure alignment of history button with those in filtering lib
-  d->history_box = dt_gui_hbox(dt_gui_expand(gtk_drawing_area_new()), btn);
+  // the bottom buttons for the rules. the actions keep their names for
+  // shortcuts; the buttons show the symbols, which need no translation
+  d->back = dt_action_button_new(self,
+                                 N_("back"),
+                                 G_CALLBACK(_navigation_back), self,
+                                 _("go back to the previous collection"),
+                                 0, 0);
+  gtk_button_set_label(GTK_BUTTON(d->back), "<");
+  d->forward = dt_action_button_new(self,
+                                    N_("forward"),
+                                    G_CALLBACK(_navigation_forward), self,
+                                    _("go forward to the next collection"),
+                                    0, 0);
+  gtk_button_set_label(GTK_BUTTON(d->forward), ">");
+  dt_collection_navigation_record_current();
+  _navigation_update(d);
+
+  d->history_button = dt_action_button_new(self,
+                                           N_("history"),
+                                           G_CALLBACK(_history_show), self,
+                                           _("revert to a previous set of rules"),
+                                           GDK_KEY_k, GDK_CONTROL_MASK);
+  // homogeneous halves align the history button with those in filtering lib
+  d->history_box = dt_gui_hbox(dt_gui_hbox(d->back, d->forward), d->history_button);
   gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
   gtk_widget_show_all(d->history_box);
-  gtk_widget_set_no_show_all(d->history_box, TRUE);
+  gtk_widget_set_no_show_all(d->history_button, TRUE);
 
   dt_gui_box_add(self->widget, dt_ui_resize_wrap(GTK_WIDGET(view), 200,
                                                  "plugins/lighttable/collect/windowheight"),
@@ -4364,6 +4417,7 @@ void gui_init(dt_lib_module_t *self)
                                DT_COLLECTION_PROP_MODULE, NULL);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, collection_updated);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _navigation_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_CHANGED, filmrolls_updated);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, preferences_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_IMPORTED, filmrolls_imported);

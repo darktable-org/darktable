@@ -299,6 +299,13 @@ pre_median(read_only image2d_t in,
 
   const int c = FC(y, x, filters);
 
+  // as on the CPU, the red and blue pixels and the 3 pixel border stay unfiltered
+  if(!(c & 1) || x < 3 || y < 3 || x >= width - 3 || y >= height - 3)
+  {
+    write_imagef(out, (int2)(x, y), buffer[0]);
+    return;
+  }
+
   float med[9];
 
   int cnt = 0;
@@ -321,7 +328,7 @@ pre_median(read_only image2d_t in,
     for(int ii = i + 1; ii < 9; ii++)
       if(med[i] > med[ii]) SWAP(med[i], med[ii]);
 
-  float color = (c & 1) ? (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]) : buffer[0];
+  const float color = cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2];
 
   write_imagef (out, (int2)(x, y), color);
 }
@@ -764,7 +771,7 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   if(x >= width || y >= height) return;
   if(x >= 3 && x < width-3 && y >= 3 && y < height-3) return;
 
-  float4 o;
+  float4 o = (float4)(0.0f);
   float sum[4] = { 0.0f };
   int count[4] = { 0 };
 
@@ -773,15 +780,15 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
     if(j>=0 && i>=0 && j<height && i<width)
     {
       const int f = FC(j,i,filters);
-      sum[f] += readsingle(in, i, j);
+      sum[f] += Areadsingle(in, i, j);
       count[f]++;
     }
   }
 
-  const float i = fmax(0.0f, readsingle(in, x, y));
-  o.x = count[0] > 0 ? sum[0]/count[0] : i;
-  o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
-  o.z = count[2] > 0 ? sum[2]/count[2] : i;
+  const float i = fmax(0.0f, Areadsingle(in, x, y));
+  o.x = count[0] > 0 ? fp32_div(sum[0], (float)count[0]) : i;
+  o.y = count[1]+count[3] > 0 ? fp32_div(sum[1]+sum[3], (float)(count[1]+count[3])) : i;
+  o.z = count[2] > 0 ? fp32_div(sum[2], (float)count[2]) : i;
 
   const int f = FC(y,x,filters);
 

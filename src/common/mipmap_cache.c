@@ -700,13 +700,6 @@ write_error:
   dt_free_align(entry->data);
 }
 
-static uint32_t _nearest_power_of_two(const uint32_t value)
-{
-  uint32_t rc = 1;
-  while(rc < value) rc <<= 1;
-  return rc;
-}
-
 void dt_mipmap_cache_init()
 {
   dt_mipmap_cache_t *cache = calloc(1, sizeof(dt_mipmap_cache_t));
@@ -777,10 +770,9 @@ void dt_mipmap_cache_init()
   dt_cache_set_cleanup_callback(&cache->mip_thumbs.cache,
                                 _mipmap_cache_deallocate_dynamic, cache);
 
-  // even with one thread you want two buffers. one for dr one for thumbs.
-  // Also have the nr of cache entries larger than worker threads
-  const int full_entries = 2 * dt_worker_threads();
-  const int32_t max_mem_bufs = _nearest_power_of_two(full_entries);
+  // one entry per worker thread plus one for the darkroom pipe. Each
+  // entry holds a whole decoded raw, so the count sets the memory use
+  const int32_t max_mem_bufs = dt_worker_threads() + 1;
 
   // for this buffer, because it can be very busy during import
   dt_cache_init(&cache->mip_full.cache, 0, max_mem_bufs);

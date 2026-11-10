@@ -272,7 +272,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         i->UShort.Default;
       break;
     case DT_INTROSPECTION_TYPE_INT8:
-      *(short*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
+      *(int8_t*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
       break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Enum.Default;
@@ -924,62 +924,44 @@ static gboolean _rename_module_key_pressed(GtkEventControllerKey *controller,
                                            GdkModifierType state,
                                            dt_iop_module_t *module);
 
-static gboolean _rename_module_key_press(GtkWidget *entry,
-                                         GdkEventKey *event,
-                                         dt_iop_module_t *module)
+// enter and escape end the rename themselves (_rename_module_key_pressed),
+// and destroying the entry then takes the focus away from it as well
+static void _rename_module_focus_out(GtkEventController *controller,
+                                     dt_iop_module_t *module)
 {
-  gboolean ended = FALSE;
+  GtkWidget *entry = dt_gui_get_widget(controller);
+  if(g_object_get_data(G_OBJECT(entry), "done")) return;
+  g_object_set_data(G_OBJECT(entry), "done", GINT_TO_POINTER(TRUE));
 
-  if(dt_gdk_event_get_type(event) == GDK_FOCUS_CHANGE
-     || dt_gdk_event_get_keyval(event) == GDK_KEY_Return
-     || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Enter)
+  if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
   {
-    if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
+    // name is not empty, set new multi_name only if changed
+    // ensure we keep the built-in as-is
+
+    const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+    gchar *current_name = dt_util_localize_segmented_name(module->multi_name, FALSE);
+
+    if(g_strcmp0(current_name, name) != 0)
     {
-      // name is not empty, set new multi_name only if changed
-      // ensure we keep the built-in as-is
-
-       const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
-       gchar *current_name = dt_util_localize_segmented_name(module->multi_name, FALSE);
-
-      if(g_strcmp0(current_name, name) != 0)
-      {
-        dt_iop_update_multi_name(module, name, TRUE, TRUE, TRUE);
-      }
-      g_free(current_name);
+      dt_iop_update_multi_name(module, name, TRUE, TRUE, TRUE);
     }
-    else
-    {
-      dt_iop_update_multi_name(module, "", FALSE, FALSE, TRUE);
-    }
-
-    // make sure we write history & xmp to ensure that the new module name
-    // gets recorded into the XMP and won't be lost in case of crash.
-    dt_dev_write_history(darktable.develop);
-    dt_image_synch_xmp(darktable.develop->image_storage.id);
-
-    ended = TRUE;
+    g_free(current_name);
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Escape)
+  else
   {
-    ended = TRUE;
+    dt_iop_update_multi_name(module, "", FALSE, FALSE, TRUE);
   }
 
-  if(ended)
-  {
-    gtk_widget_show(module->instance_name);
+  // make sure we write history & xmp to ensure that the new module name
+  // gets recorded into the XMP and won't be lost in case of crash.
+  dt_dev_write_history(darktable.develop);
+  dt_image_synch_xmp(darktable.develop->image_storage.id);
 
-    g_signal_handlers_disconnect_by_func(entry,
-                                         G_CALLBACK(_rename_module_key_press),
-                                         module);
-    gtk_widget_destroy(entry);
-    dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE); // after removing entry
-    dt_iop_gui_update_header(module);
-    dt_masks_group_update_name(module);
-    return TRUE;
-  }
-
-  return FALSE; /* event not handled */
+  gtk_widget_show(module->instance_name);
+  gtk_widget_destroy(entry);
+  dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE); // after removing entry
+  dt_iop_gui_update_header(module);
+  dt_masks_group_update_name(module);
 }
 
 static void _rename_module_resize(GtkWidget *entry,
@@ -1020,8 +1002,7 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
 
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
   dt_gui_connect_key(entry, _rename_module_key_pressed, module);
-  g_signal_connect(entry, "focus-out-event",
-                   G_CALLBACK(_rename_module_key_press), module);
+  dt_gui_connect_focus(entry, NULL, _rename_module_focus_out, module);
   g_signal_connect(entry, "style-updated",
                    G_CALLBACK(_rename_module_resize), module);
   g_signal_connect(entry, "changed",
@@ -1205,9 +1186,7 @@ static gboolean _rename_module_key_pressed(GtkEventControllerKey *controller,
   if(ended)
   {
     gtk_widget_show(module->instance_name);
-    g_signal_handlers_disconnect_by_func(entry,
-                                         G_CALLBACK(_rename_module_key_press),
-                                         module);
+    g_object_set_data(G_OBJECT(entry), "done", GINT_TO_POINTER(TRUE));
     gtk_widget_destroy(entry);
     dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE);
     dt_iop_gui_update_header(module);
@@ -1589,24 +1568,19 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
   const int32_t module_version = module_so->version();
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT name, op_version, op_params, blendop_version, blendop_params"
-      " FROM data.presets"
-      " WHERE operation = ?1",
-      -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, -1, SQLITE_TRANSIENT);
+  // read before updating them: the loop rewrites the rows it reads
+  GList *presets = dt_presets_list_stored(module_so->op);
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(const GList *l = presets; l; l = g_list_next(l))
   {
-    const char *name = (char *)sqlite3_column_text(stmt, 0);
-    int32_t old_params_version = sqlite3_column_int(stmt, 1);
-    const void *old_params = (void *)sqlite3_column_blob(stmt, 2);
-    const int32_t old_params_size = sqlite3_column_bytes(stmt, 2);
-    const int32_t old_blend_params_version = sqlite3_column_int(stmt, 3);
-    const void *old_blend_params = (void *)sqlite3_column_blob(stmt, 4);
-    const int32_t old_blend_params_size = sqlite3_column_bytes(stmt, 4);
+    const dt_presets_params_t *preset = l->data;
+    const char *name = preset->name;
+    int32_t old_params_version = preset->op_version;
+    const void *old_params = preset->op_params;
+    const int32_t old_params_size = preset->op_params_size;
+    const int32_t old_blend_params_version = preset->blendop_version;
+    const void *old_blend_params = preset->blendop_params;
+    const int32_t old_blend_params_size = preset->blendop_params_size;
 
     if(old_params_version == 0)
     {
@@ -1648,18 +1622,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                "[imageop_init_presets] found version %d for '%s' preset '%s'",
                old_params_version, module_so->op, name);
 
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "UPDATE data.presets"
-         " SET op_version=?1"
-         " WHERE operation=?2 AND name=?3", -1,
-         &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, old_params_version);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, name, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_presets_set_op_version(module_so->op, name, old_params_version);
     }
 
     if(module_version > old_params_version
@@ -1706,26 +1669,11 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                module_so->op, name, old_params_version, module_version,
                dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
-      // and write the new params back to the database
-      sqlite3_stmt *stmt2;
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE data.presets"
-                                  " SET op_version=?1, op_params=?2"
-                                  " WHERE operation=?3 AND name=?4",
-                                  -1, &stmt2, NULL);
-      // clang-format on
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
+      // and write the new params back to the database;
       // legacy_ret == -1 means that this is to convert to an auto-init module
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2,
-                                 auto_init ? NULL : new_params,
-                                 auto_init ?    0 : new_params_size,
-                                 SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_presets_set_op_params(module->op, name, module->version(),
+                               auto_init ? NULL : new_params,
+                               auto_init ?    0 : new_params_size);
 
       free(new_params);
       dt_iop_cleanup_module(module);
@@ -1795,30 +1743,15 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                module_so->op, name, old_blend_params_version, dt_develop_blend_version());
 
       // and write the new blend params back to the database
-      sqlite3_stmt *stmt2;
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE data.presets"
-                                  " SET blendop_version=?1, blendop_params=?2"
-                                  " WHERE operation=?3 AND name=?4",
-                                  -1, &stmt2, NULL);
-      // clang-format on
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dt_develop_blend_version());
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_blend_params,
-                                 sizeof(dt_develop_blend_params_t),
-                                 SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_presets_set_blendop_params(module->op, name, dt_develop_blend_version(),
+                                    new_blend_params, sizeof(dt_develop_blend_params_t));
 
       free(new_blend_params);
       dt_iop_cleanup_module(module);
       free(module);
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(presets, dt_presets_params_free);
 }
 
 static void _iop_preferences_changed(gpointer instance, gpointer self)
@@ -1834,18 +1767,8 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
 
     if(mod->pref_based_presets)
     {
-      sqlite3_stmt *stmt;
       // first delete auto built-in presets for this module
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "DELETE FROM data.presets"
-         " WHERE writeprotect = 1"
-         "   AND operation = ?1",
-         -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, mod->op, -1, SQLITE_TRANSIENT);
-
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      dt_presets_delete_builtin(mod->op);
 
       // and reload whatever new presets are needed for the new workflow
       _init_presets(mod);
@@ -1858,19 +1781,10 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
 static void _init_presets_actions(dt_iop_module_so_t *module)
 {
   /** load shortcuts for presets **/
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name"
-                              " FROM data.presets"
-                              " WHERE operation=?1"
-                              " ORDER BY writeprotect DESC, rowid",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    dt_action_define_preset(&module->actions, (const char *)sqlite3_column_text(stmt, 0));
-  }
-  sqlite3_finalize(stmt);
+  GList *names = dt_presets_names_by_rowid(module->op);
+  for(const GList *l = names; l; l = g_list_next(l))
+    dt_action_define_preset(&module->actions, l->data);
+  g_list_free_full(names, g_free);
 }
 
 static void _init_module_so(void *m)
@@ -2566,7 +2480,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
   {
     phash = dt_hash(DT_INITHASH, &module->so->op, strlen(module->so->op));
     phash = dt_hash(phash, &module->instance, sizeof(int32_t));
-    phash = dt_hash(phash, module->params, module->params_size);
+    phash = dt_hash(phash, params, module->params_size);
 
     if(is_blending)
     {
@@ -2787,9 +2701,6 @@ static gboolean _presets_popup_callback(GtkWidget *button,
 
   dt_gui_presets_popup_menu_show_for_module(button, module);
 
-  // dt_gui_menu_popup(menu,
-  //                   GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
-
   return TRUE;
 }
 
@@ -2803,11 +2714,7 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
   if(disabled) return;
 
   GtkWidget *button = dt_gui_get_widget(gesture);
-  // GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
   dt_gui_presets_popup_menu_show_for_module(button, module);
-
-  // dt_gui_menu_popup(menu,
-  //                   button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 /* per-presets-button hysteresis state: a continuous trackpad gesture is a
@@ -2992,6 +2899,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
   // update guides button state
   dt_guides_update_button_state();
+  // the always-on mask panel, if no module's mask is in it, says why: no relocate
+  // comes for a module without a blending GUI, or for focus leaving one
+  dt_iop_gui_blend_masks_panel_idle_sync();
   dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   dt_control_change_cursor("default");
@@ -3036,6 +2946,9 @@ static void _gui_set_single_expanded(dt_iop_module_t *module, gboolean expanded)
       dt_control_queue_redraw_center();
     }
   }
+
+  // a module folded without being focused loses its header too
+  dt_iop_gui_blend_masks_panel_peek(module);
 
   char var[1024];
   snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
@@ -3085,6 +2998,7 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   const gboolean expanded = module->expanded;
 
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
+  dt_iop_gui_blend_masks_panel_peek(module);
 }
 
 static void _iop_plugin_body_pressed(GtkGestureSingle *gesture,
@@ -3718,6 +3632,11 @@ static gboolean _on_drag_motion(GtkWidget *widget,
   GtkWidget *src_header = gtk_drag_get_source_widget(dc);
   if(!src_header) return TRUE;
   GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
+  // only a drag of a module header moves modules: anything else dragged from
+  // inside a module, like a row of the masks list, also has its expander as
+  // ancestor, and would be taken for the module itself
+  if(!src_expander || src_header != dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(src_expander)))
+    return TRUE;
 
   dt_iop_module_t *src = NULL;
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
@@ -3906,6 +3825,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_insert_action_group(module->multimenu_button,
                                  "instances",
                                  G_ACTION_GROUP(instance_action_group));
+  g_object_unref(instance_action_group);
 
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(module->presets_button,

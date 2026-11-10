@@ -39,6 +39,10 @@ void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop
 /** zoom pixel array for roi buffers. */
 void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out,
                               const struct dt_iop_roi_t *const roi_in);
+
+/** zoom one tile of a larger image, placed by the roi offsets. */
+void dt_iop_clip_and_zoom_tile(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out,
+                               const struct dt_iop_roi_t *const roi_in);
 #ifdef HAVE_OPENCL
 int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in,
                             const struct dt_iop_roi_t *const roi_out,
@@ -47,6 +51,10 @@ int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in,
 int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in,
                                 const struct dt_iop_roi_t *const roi_out,
                                 const struct dt_iop_roi_t *const roi_in);
+
+int dt_iop_clip_and_zoom_tile_cl(int devid, cl_mem dev_out, cl_mem dev_in,
+                                 const struct dt_iop_roi_t *const roi_out,
+                                 const struct dt_iop_roi_t *const roi_in);
 #endif
 
 void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *const in,

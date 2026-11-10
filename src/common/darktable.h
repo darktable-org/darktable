@@ -474,6 +474,7 @@ typedef struct darktable_t
   const struct dt_pwstorage_t *pwstorage;
   struct dt_camctl_t *camctl;
   const struct dt_collection_t *collection;
+  struct dt_collection_navigation_state_t *collection_navigation;
   struct dt_selection_t *selection;
   struct dt_points_t *points;
   struct dt_imageio_t *imageio;
@@ -490,6 +491,8 @@ typedef struct darktable_t
   dt_pthread_mutex_t readFile_mutex;
   dt_pthread_mutex_t metadata_threadsafe;
   char *progname;
+  gboolean restart;     /* relaunch after dt_cleanup */
+  char **restart_argv;  /* NULL-terminated copy of original argv */
   char *datadir;
   char *sharedir;
   char *plugindir;

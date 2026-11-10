@@ -21,6 +21,7 @@
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
 #include "common/bilinear.h"
+#include "common/color_picker.h"
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/dwt.h"
@@ -28,6 +29,8 @@
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/heal.h"
+#include "common/dng_opcode.h"
+#include "common/histogram.h"
 #include "common/interpolation.h"
 #include "common/locallaplaciancl.h"
 #include "common/opencl_drivers_blacklist.h"
@@ -1042,6 +1045,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "guided_filter.cl",
                                                      "grain.h",
                                                      "bilinear.h",
+                                                     "lut3d.h",
                                                      "hdr-transfer.h" };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
@@ -1580,11 +1584,14 @@ finally:
     cl->bilinear = dt_bilinear_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
+    cl->dng_gain_map = dt_dng_gain_map_init_cl_global();
     cl->local_laplacian = dt_local_laplacian_init_cl_global();
     cl->dwt = dt_dwt_init_cl_global();
+    cl->color_picker = dt_color_picker_init_cl_global();
     cl->heal = dt_heal_init_cl_global();
     cl->colorspaces = dt_colorspaces_init_cl_global();
     cl->guided_filter = dt_guided_filter_init_cl_global();
+    cl->histogram = dt_histogram_init_cl_global();
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
@@ -1635,10 +1642,13 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_bilinear_free_cl_global(cl->bilinear);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
+    dt_dng_gain_map_free_cl_global(cl->dng_gain_map);
     dt_dwt_free_cl_global(cl->dwt);
+    dt_color_picker_free_cl_global(cl->color_picker);
     dt_heal_free_cl_global(cl->heal);
     dt_colorspaces_free_cl_global(cl->colorspaces);
     dt_guided_filter_free_cl_global(cl->guided_filter);
+    dt_histogram_free_cl_global(cl->histogram);
     dt_local_laplacian_free_cl_global(cl->local_laplacian);
     for(int i = 0; i < cl->num_devs; i++)
     {
@@ -3285,10 +3295,19 @@ static void *_opencl_copy_host_to_image_rowpitch(const int devid,
   desc.image_type = CL_MEM_OBJECT_IMAGE2D;
   desc.image_width = width;
   desc.image_height = height;
-  desc.image_row_pitch = rowpitch;
 
+  // allocate first and write separately: NVIDIA and Apple drivers upload
+  // with CL_MEM_COPY_HOST_PTR at a half to a quarter of the speed of an
+  // explicit blocking write
   cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
-    (cl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, &desc, host, &err);
+    (cl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
+
+  if(err == CL_SUCCESS && dev != NULL)
+  {
+    const size_t region[2] = { width, height };
+    err = dt_opencl_write_host_to_image_raw(devid, host, dev, CLIMG_ORIGIN, region,
+                                             rowpitch ? rowpitch : width * bpp, TRUE);
+  }
 
   if(err == CL_SUCCESS && dev != NULL && cl->migrate)
     err = _migrate_cl_mem(devid, dev, cl);

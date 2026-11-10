@@ -326,6 +326,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
   pipe->mask_cache_size = 0;
+  dt_dev_wb_set_neutral(&pipe->wb);
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, fraction);
 }
 
@@ -840,6 +841,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   double start = dt_get_debug_wtime();
 
   dev->cropping.exposer = NULL;
+
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all module defaults",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
 
@@ -1121,24 +1123,6 @@ static void _histogram_collect_cl(const int devid,
                                   float *buffer,
                                   const size_t bufsize)
 {
-  float *tmpbuf = NULL;
-  float *pixel = NULL;
-
-  // if buffer is supplied and if size fits let's use it
-  if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
-    pixel = buffer;
-  else
-    pixel = tmpbuf = dt_alloc_align_float((size_t)4 * roi->width * roi->height);
-
-  if(!pixel) return;
-
-  if(_copy_image_to_host_err(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4, "histogramm collect")
-    != CL_SUCCESS)
-  {
-    dt_free_align(tmpbuf);
-    return;
-  }
-
   dt_dev_histogram_collection_params_t histogram_params = piece->histogram_params;
 
   dt_histogram_roi_t histogram_roi;
@@ -1160,12 +1144,39 @@ static void _histogram_collect_cl(const int devid,
 
   const dt_iop_colorspace_type_t cst =
     piece->module->input_colorspace(piece->module, piece->pipe, piece);
+  const dt_iop_order_iccprofile_info_t *const profile_info =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+  // count on the device, so that only the bins are read back
+  if(dt_histogram_helper_cl(devid, &histogram_params, &piece->histogram_stats,
+                            cst, piece->module->histogram_cst,
+                            img, histogram, histogram_max,
+                            piece->module->histogram_middle_grey, profile_info))
+    return;
+
+  float *tmpbuf = NULL;
+  float *pixel = NULL;
+
+  // if buffer is supplied and if size fits let's use it
+  if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
+    pixel = buffer;
+  else
+    pixel = tmpbuf = dt_alloc_align_float((size_t)4 * roi->width * roi->height);
+
+  if(!pixel) return;
+
+  if(_copy_image_to_host_err(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4, "histogramm collect")
+    != CL_SUCCESS)
+  {
+    dt_free_align(tmpbuf);
+    return;
+  }
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats,
                       cst, piece->module->histogram_cst,
                       pixel, histogram, histogram_max,
                       piece->module->histogram_middle_grey,
-                      dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+                      profile_info);
 
   dt_free_align(tmpbuf);
 }
@@ -1263,6 +1274,37 @@ static void _pixelpipe_picker_cl(const int devid,
                          picker_source, box))
     return;
 
+  // reduce on the device, so that only the statistics are read back
+  lib_colorpicker_stats pick;
+  if(dt_color_picker_helper_cl(devid, dsc, img, roi, box,
+                               darktable.lib->proxy.colorpicker.primary_sample->denoise,
+                               pick, image_cst,
+                               dt_iop_color_picker_get_active_cst(module),
+                               dt_ioppr_get_pipe_current_profile_info(module, piece->pipe)))
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
+                  picker_source == PIXELPIPE_PICKER_INPUT
+                    ? "pixelpipe IN picker CL"
+                    : "pixelpipe OUT picker CL",
+                  piece->pipe, module, devid, roi, NULL,
+                  "%s -> %s (%s), %sbox %i/%i -- %i/%i on device",
+                  dt_iop_colorspace_to_name(dsc->cst),
+                  dt_iop_colorspace_to_name(image_cst),
+                  dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
+                  darktable.lib->proxy.colorpicker.primary_sample->denoise
+                    ? "denoised "
+                    : "",
+                  box[0], box[1], box[2], box[3]);
+
+    for_four_channels(k)
+    {
+      picked_color_min[k] = pick[DT_PICK_MIN][k];
+      picked_color_max[k] = pick[DT_PICK_MAX][k];
+      picked_color[k] = pick[DT_PICK_MEAN][k];
+    }
+    return;
+  }
+
   const size_t origin[2] = { box[0], box[1] };
   const size_t region[2] = { box[2] - box[0], box[3] - box[1] };
 
@@ -1318,8 +1360,6 @@ static void _pixelpipe_picker_cl(const int devid,
   box[1] = 0;
   box[2] = region[0];
   box[3] = region[1];
-
-  lib_colorpicker_stats pick;
 
   dt_color_picker_helper(dsc, pixel, &roi_copy, box,
                          darktable.lib->proxy.colorpicker.primary_sample->denoise,
@@ -2659,6 +2699,16 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
         && !_avoid_cl_module(piece);
 
+    /* At 100% zoom and above demosaicscale only cuts the visible window out of the
+       full demosaiced image. If that image comes from the host cache, the device
+       path would upload all of it for a crop, which costs far more than cropping
+       on the host and uploading the small result for the next module. */
+    if(possible_cl
+       && cl_mem_input == NULL
+       && roi_out->scale >= 1.0f
+       && dt_iop_module_is(module, "demosaicscale"))
+      possible_cl = FALSE;
+
     /* A colorspace conversion of the input is done before the module runs, into a second
        image that replaces the original, so one extra full-size buffer is live while it
        happens. Reserve it in the untiled decision only: if the module has to tile, the
@@ -2670,8 +2720,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height,
                                   in_bpp, bpp, untiled_factor_cl, tiling.overhead, tiling.overlap);
 
+    // the fitter only sees roi_in; an upscaled roi_out can exceed the device's
+    // maximum image size although its input fits
+    const gboolean out_fits =
+         roi_out->width <= darktable.opencl->dev[pipe->devid].max_image_width
+      && roi_out->height <= darktable.opencl->dev[pipe->devid].max_image_height;
+
     const gboolean may_tile = _piece_may_tile(piece);
-    const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING;
+    const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING && out_fits;
     const gboolean fast_tiling = fitter == DT_OPENCL_FAST_TILING
         && !memcmp(&roi_in, roi_out, sizeof(roi_in))
         && !(module->flags() & (IOP_FLAGS_WRITE_RASTER | IOP_FLAGS_WRITE_DETAILS))
@@ -2914,7 +2970,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
             if(darktable.dump_diff_pipe || darktable.cldiff_stats)
             {
-              const float visualize = darktable.cldiff_stats
+              const gboolean visualize = darktable.cldiff_stats
                                     && dt_pipe_is_full(pipe)
                                     && dt_iop_has_focus(module);
               float *clout = _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out, visualize);

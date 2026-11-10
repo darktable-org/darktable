@@ -114,3 +114,99 @@ dwt_hat_transform_col(global float4 *lpass, int width, int height, const int sc,
                                       * lpass_mult;
   }
 }
+
+// the Bayer path of src/iop/rawdenoise.c with dwt_denoise() of
+// src/common/dwt.c. Each of the four CFA channels is denoised as a
+// half-size plane: extract, then a vertical and a horizontal pass per
+// wavelet band, then scatter back.
+
+// the sensels of channel c, at rows c & 1 and columns (c & 2) >> 1 modulo 2,
+// with sqrt() as a variance-stabilizing transform
+kernel void
+rawdenoise_extract(read_only image2d_t in,
+                   global float *fimg,
+                   const int c,
+                   const int halfwidth,
+                   const int halfheight)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= halfwidth || y >= halfheight) return;
+
+  const int row = 2 * y + (c & 1);
+  const int col = 2 * x + ((c & 2) >> 1);
+  fimg[mad24(y, halfwidth, x)] = sqrt(fmax(0.0f, Areadsingle(in, col, row)));
+}
+
+kernel void
+rawdenoise_scatter(global const float *fimg,
+                   write_only image2d_t out,
+                   const int c,
+                   const int halfwidth,
+                   const int halfheight)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= halfwidth || y >= halfheight) return;
+
+  const int row = 2 * y + (c & 1);
+  const int col = 2 * x + ((c & 2) >> 1);
+  const float d = fimg[mad24(y, halfwidth, x)];
+  write_imagef(out, (int2)(col, row), d * d);
+}
+
+kernel void
+rawdenoise_clear(global float *buf,
+                 const int width,
+                 const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  buf[mad24(y, width, x)] = 0.0f;
+}
+
+// dwt_denoise_vert_1ch(): rows vscale apart, reflected at the edges
+kernel void
+rawdenoise_dwt_vert(global const float *in,
+                    global float *out,
+                    const int width,
+                    const int height,
+                    const int vscale)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if(col >= width || row >= height) return;
+
+  const int below = row + vscale < height ? row + vscale : 2 * (height - 1) - (row + vscale);
+  const int above = abs(row - vscale);
+  out[mad24(row, width, col)] = 2.0f * in[mad24(row, width, col)] + in[mad24(above, width, col)]
+                                + in[mad24(below, width, col)];
+}
+
+// dwt_denoise_horiz_1ch(): leaves the coarse scale in img and adds the
+// thresholded details to accum, which goes back into img after the last band
+kernel void
+rawdenoise_dwt_horiz(global const float *coarse,
+                     global float *img,
+                     global float *accum,
+                     const int width,
+                     const int height,
+                     const int hscale,
+                     const float thold,
+                     const int last)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if(col >= width || row >= height) return;
+
+  const int k = mul24(row, width);
+  const int left = abs(col - hscale);
+  const int right = col + hscale < width ? col + hscale : 2 * (width - 1) - (col + hscale);
+  const float hat = (2.0f * coarse[k + col] + coarse[k + left] + coarse[k + right]) / 16.0f;
+  const float diff = img[k + col] - hat;
+  const float sum = accum[k + col] + (fmax(diff - thold, 0.0f) + fmin(diff + thold, 0.0f));
+  accum[k + col] = sum;
+  img[k + col] = last ? hat + sum : hat;
+}

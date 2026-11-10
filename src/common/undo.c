@@ -203,12 +203,15 @@ static void _undo_do_undo_redo(dt_undo_t *self,
            g_list_length(*from),
            g_list_length(*to));
 
+  gboolean found = FALSE;
+
   for(GList *l = *from; l; l = g_list_next(l))
   {
     dt_undo_item_t *item = l->data;
 
-    if(item->type & filter)
-    {
+    if (item->type & filter) {
+      found = TRUE;
+
       if(item->is_group)
       {
         gboolean is_group = FALSE;
@@ -271,6 +274,11 @@ static void _undo_do_undo_redo(dt_undo_t *self,
     }
   }
   UNLOCK;
+
+  if(!found)
+  {
+    dt_control_log(_("end of the undo/redo list reached"));
+  }
 
   if(imgs)
   {

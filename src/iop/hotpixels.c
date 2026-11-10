@@ -26,6 +26,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/opencl.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -59,6 +60,11 @@ typedef struct dt_iop_hotpixels_data_t
   gboolean monochrome;
   gboolean pure_monochrome;
 } dt_iop_hotpixels_data_t;
+
+typedef struct dt_iop_hotpixels_global_data_t
+{
+  int kernel_hotpixels;
+} dt_iop_hotpixels_global_data_t;
 
 
 const char *name()
@@ -355,6 +361,104 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     g->pixels_fixed = fixed;
     dt_iop_gui_leave_critical_section(self);
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_hotpixels_gui_data_t *g = self->gui_data;
+  const dt_iop_hotpixels_data_t *data = piece->data;
+  const dt_iop_hotpixels_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+
+  // marking the fixed pixels writes the neighbors of each hot pixel, and a
+  // monochrome raw comes as 4 channels: both stay on the CPU
+  if(data->markfixed || data->pure_monochrome) return DT_OPENCL_PROCESS_CL;
+
+  const gboolean xtrans = !data->monochrome && piece->pipe->dsc.filters == 9u;
+  const int mode = data->monochrome ? 1 : xtrans ? 2 : 0;
+
+  // the four nearest like-colored sensels for each cell of the X-Trans
+  // pattern, found as _process_xtrans() does
+  int offsets[6][6][4][2] = { { { { 0 } } } };
+  if(xtrans)
+  {
+    const int search[20][2] = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }, { -1, -1 },
+                                { -1, 1 }, { 1, -1 }, { 1, 1 }, { -2, 0 }, { 2, 0 },
+                                { 0, -2 }, { 0, 2 }, { -2, -1 }, { -2, 1 }, { 2, -1 },
+                                { 2, 1 }, { -1, -2 }, { 1, -2 }, { -1, 2 }, { 1, 2 } };
+    for(int j = 0; j < 6; ++j)
+      for(int i = 0; i < 6; ++i)
+      {
+        const uint8_t c = FCNxtrans(j, i, piece->xtrans);
+        for(int s = 0, found = 0; s < 20 && found < 4; ++s)
+        {
+          if(c == FCNxtrans(j + search[s][1], i + search[s][0], piece->xtrans))
+          {
+            offsets[j][i][found][0] = search[s][0];
+            offsets[j][i][found][1] = search[s][1];
+            ++found;
+          }
+        }
+      }
+  }
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const int min_neighbours = data->permissive ? 3 : 4;
+  const uint32_t zero = 0;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_offsets = dt_opencl_copy_host_to_device_constant(devid, sizeof(offsets), offsets);
+  cl_mem dev_fixed = dt_opencl_alloc_device_buffer(devid, sizeof(uint32_t));
+  if(!dev_offsets || !dev_fixed) goto error;
+
+  err = dt_opencl_write_buffer_to_device(devid, (void *)&zero, dev_fixed, 0, sizeof(uint32_t), TRUE);
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_hotpixels, width, height,
+          CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+          CLARG(data->threshold), CLARG(data->multiplier), CLARG(min_neighbours),
+          CLARG(mode), CLARG(dev_offsets), CLARG(dev_fixed));
+  if(err != CL_SUCCESS) goto error;
+
+  // reading the count waits for the kernel, so only the darkroom does it
+  if(g && self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
+  {
+    uint32_t count = 0;
+    err = dt_opencl_read_buffer_from_device(devid, &count, dev_fixed, 0, sizeof(count), TRUE);
+    if(err != CL_SUCCESS) goto error;
+    dt_iop_gui_enter_critical_section(self);
+    g->pixels_fixed = count;
+    dt_iop_gui_leave_critical_section(self);
+  }
+
+error:
+  dt_opencl_release_mem_object(dev_offsets);
+  dt_opencl_release_mem_object(dev_fixed);
+  return err;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_hotpixels_global_data_t *gd = malloc(sizeof(dt_iop_hotpixels_global_data_t));
+  self->data = gd;
+  gd->kernel_hotpixels = dt_opencl_create_kernel(program, "hotpixels");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_hotpixels_global_data_t *gd = self->data;
+  if(gd) dt_opencl_free_kernel(gd->kernel_hotpixels);
+  free(self->data);
+  self->data = NULL;
 }
 
 void reload_defaults(dt_iop_module_t *self)

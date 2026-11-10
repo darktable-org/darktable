@@ -826,7 +826,11 @@ static int32_t _crawler_bg_job_run(dt_job_t *job)
     g_list_free_full(conflicts, _crawler_free_result_full);
     conflicts = NULL;
   }
-  g_main_context_invoke(NULL, _crawler_bg_finished, conflicts);
+  // not g_main_context_invoke(): while the gtk main loop is not running yet
+  // (a small library can be crawled before dt_gui_gtk_run()) nobody owns the
+  // default context, so glib would run the callback right here on the worker
+  // thread and create the dialog off the main thread
+  g_idle_add(_crawler_bg_finished, conflicts);
 
   return 0;
 }

@@ -110,7 +110,10 @@ const dt_action_def_t dt_action_def_modifiers
 
 void dt_control_init(const gboolean withgui)
 {
-  dt_control_t *s = darktable.control = calloc(1, sizeof(dt_control_t));
+  // dt_init() has already allocated it, before opening the database;
+  // allocating again here dropped that block
+  dt_control_t *s = darktable.control;
+  if(!s) s = darktable.control = calloc(1, sizeof(dt_control_t));
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
 
   if(!withgui) return;
@@ -440,6 +443,12 @@ void dt_control_quit()
   {
     dt_gui_gtk_quit();
   }
+}
+
+void dt_control_restart(void)
+{
+  darktable.restart = TRUE;
+  dt_control_quit();
 }
 
 void dt_control_shutdown()

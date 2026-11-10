@@ -17,6 +17,7 @@
 */
 
 #include "common/collection.h"
+#include "common/collection_navigation.h"
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -105,6 +106,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 
 void dt_collection_free(const dt_collection_t *collection)
 {
+  if(!collection->clone) dt_collection_navigation_cleanup();
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(collection, "collection");
 
   g_free(collection->query);
@@ -2865,6 +2867,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
   /* raise signal of collection change, only if this is an original */
   if(!collection->clone)
   {
+    dt_collection_navigation_record_current();
     dt_collection_memory_update();
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED,
                             query_change, changed_property,

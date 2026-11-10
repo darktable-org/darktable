@@ -23,7 +23,7 @@
 #define DT_OPENCL_MAX_KERNELS 512
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_ERRORS 5
-#define DT_OPENCL_MAX_INCLUDES 10
+#define DT_OPENCL_MAX_INCLUDES 11
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_APPLE 16940800
@@ -79,7 +79,7 @@ G_BEGIN_DECLS
 #define DT_CLDEVICE_HEAD ("cldevice_v7_")
 
 // version for current darktable cl kernels reflected in the kernel directory
-#define DT_OPENCL_KERNELS 7
+#define DT_OPENCL_KERNELS 8
 
 typedef enum dt_opencl_memory_t
 {
@@ -261,11 +261,17 @@ typedef struct dt_opencl_t
   // global kernels for interpolation resampling.
   struct dt_interpolation_cl_global_t *interpolation;
 
+  // global kernel for the DNG OpcodeList3 GainMap, shared by demosaic and rawprepare.
+  struct dt_dng_gain_map_cl_global_t *dng_gain_map;
+
   // global kernels for local laplacian filter.
   struct dt_local_laplacian_cl_global_t *local_laplacian;
 
   // global kernels for dwt filter.
   struct dt_dwt_cl_global_t *dwt;
+
+  // global kernels for the color picker statistics.
+  struct dt_color_picker_cl_global_t *color_picker;
 
   // global kernels for heal filter.
   struct dt_heal_cl_global_t *heal;
@@ -275,6 +281,9 @@ typedef struct dt_opencl_t
 
   // global kernels for guided filter.
   struct dt_guided_filter_cl_global_t *guided_filter;
+
+  // global kernels for module histograms.
+  struct dt_histogram_cl_global_t *histogram;
 
   // saved kernel info for deferred initialisation
   int program_saved[DT_OPENCL_MAX_KERNELS];

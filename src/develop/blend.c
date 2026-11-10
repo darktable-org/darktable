@@ -1404,7 +1404,7 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   if(feqf(level, 0.0f, 1e-6f)) return;
 
   const gboolean detail = (level > 0.0f);
-  const float threshold = _detail_mask_threshold(level, detail);
+  const float threshold = 16.0f / MAX(1e-7f, _detail_mask_threshold(level, detail));
   float *lum = NULL;
   cl_mem tmp = NULL;
   cl_mem blur = NULL;

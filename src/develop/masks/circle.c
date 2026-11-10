@@ -1152,7 +1152,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
                                 const dt_dev_pixelpipe_iop_t *const restrict piece,
                                 dt_masks_form_t *const form,
                                 const dt_iop_roi_t *const roi,
-                                float *const restrict buffer)
+                                float *const restrict buffer,
+                                dt_masks_extent_t *const extent)
 {
   double start1 = dt_get_debug_wtime();
   double start2 = start1;
@@ -1181,8 +1182,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
-  // initialize output buffer with zero
-  memset(buffer, 0, sizeof(float) * w * h);
+  // initialize output buffer with zero, unless a group folds only what we draw
+  if(!extent) memset(buffer, 0, sizeof(float) * w * h);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] circle init took %0.04f sec",
@@ -1279,7 +1280,10 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   // of bounding box is 2 or greater the shape lies inside of roi and
   // requires action
   if(bbw <= 1 || bbh <= 1)
+  {
+    if(extent) *extent = (dt_masks_extent_t){ 0, 0, 0, 0 };
     return 1;
+  }
 
   float *const restrict points = dt_alloc_align_float((size_t)bbw * bbh * 2);
   if(points == NULL) return 0;
@@ -1356,6 +1360,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   }
 
   dt_free_align(points);
+  if(extent) *extent = (dt_masks_extent_t){ bbxm * grid, bbym * grid, endx, endy };
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] circle fill took %0.04f sec",

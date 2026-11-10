@@ -25,7 +25,6 @@
 #define PAD_G_RECALC 6
 
 #define HOMOGENITY_EPS 1e-10f
-#define SOLITARY_EPS 1e-12f
 
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *_hexmap(const int row,
@@ -341,7 +340,7 @@ static void xtrans_markesteijn_interpolate(float *out,
               if((d < 2) || (d & 1))
               { // output for passes 0, 1, 3, 5
                 // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
-                const int d_out = d - ((d > 1) && (diff[d-1] + SOLITARY_EPS < diff[d]));
+                const int d_out = d - ((d > 1) && (diff[d-1] < diff[d]));
                 rfx[0][0] = color[0][d_out] / 2.f;
                 rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
@@ -383,7 +382,12 @@ static void xtrans_markesteijn_interpolate(float *out,
                   {
                     const float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                     for(int c = 0; c < 4; c += 2)
-                      rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                      /** depending on compiler flags `/ 3.0f` is less precise than `*(1.0f / 3.0f)`
+                          and thus different from OpenCL code. These subtle differences ~1ulp
+                          lead to flipping the solitary-green and homogeneity decisions leading to
+                          incorrect output / OpenCL vs CPU differences.
+                      */
+                      rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) * (1.0f / 3.0f);
                   }
                   else
                   {
@@ -426,20 +430,20 @@ static void xtrans_markesteijn_interpolate(float *out,
             yuv[1][row][col] = (rx[2] - y) * 0.56433f;
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
-        // Note that f can offset by a column (-1 or +1) and by a row
-        // (-TS or TS). The row-wise offsets cause the undefined
-        // behavior sanitizer to warn of an out of bounds index, but
-        // as yfx is multi-dimensional and there is sufficient
-        // padding, that is not actually so.
+        // f steps by a column, a row (TS) or a diagonal, so index each
+        // plane through a flat pointer: a row step leaves the inner
+        // float[TS] array, which is out of bounds for array indexing
         const int f = dir[d & 3];
         const int pad_drv = (passes == 1) ? 9 : 14;
         for(int row = pad_drv; row < mrow - pad_drv; row++)
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
-            const float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
-            drv[d][row][col] = sqrf(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
-                               + sqrf(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
-                               + sqrf(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+            const float *const y0 = &yuv[0][row][col];
+            const float *const y1 = &yuv[1][row][col];
+            const float *const y2 = &yuv[2][row][col];
+            drv[d][row][col] = sqrf(2 * y0[0] - y0[f] - y0[-f])
+                               + sqrf(2 * y1[0] - y1[f] - y1[-f])
+                               + sqrf(2 * y2[0] - y2[f] - y2[-f]);
           }
       }
 
@@ -1370,7 +1374,7 @@ static void xtrans_fdc_interpolate(float *out,
                   float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                   for(int c = 0; c < 4; c += 2)
                   {
-                    rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                    rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) * (1.0f / 3.0f);
                     redblue[d][c] = rfx[0][c];
                   }
                 }
@@ -1419,20 +1423,20 @@ static void xtrans_fdc_interpolate(float *out,
             yuv[1][row][col] = (rx[2] - y) * 0.56433f;
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
-        // Note that f can offset by a column (-1 or +1) and by a row
-        // (-TS or TS). The row-wise offsets cause the undefined
-        // behavior sanitizer to warn of an out of bounds index, but
-        // as yfx is multi-dimensional and there is sufficient
-        // padding, that is not actually so.
+        // f steps by a column, a row (TS) or a diagonal, so index each
+        // plane through a flat pointer: a row step leaves the inner
+        // float[TS] array, which is out of bounds for array indexing
         const int f = dir[d & 3];
         const int pad_drv = 9;
         for(int row = pad_drv; row < mrow - pad_drv; row++)
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
-            float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
-            drv[d][row][col] = sqrf(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
-                               + sqrf(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
-                               + sqrf(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+            const float *const y0 = &yuv[0][row][col];
+            const float *const y1 = &yuv[1][row][col];
+            const float *const y2 = &yuv[2][row][col];
+            drv[d][row][col] = sqrf(2 * y0[0] - y0[f] - y0[-f])
+                               + sqrf(2 * y1[0] - y1[f] - y1[-f])
+                               + sqrf(2 * y2[0] - y2[f] - y2[-f]);
           }
       }
 

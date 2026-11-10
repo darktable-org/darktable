@@ -316,3 +316,157 @@ retouch_image_lab2rgb(global float4 *in,
 
   in[idx] = XYZ_to_sRGB(Lab_to_XYZ(in[idx]));
 }
+
+// the heal solver of src/common/heal.c. The image difference is split into
+// 'red' and 'black' checkerboard pixels, each in its own buffer of subwidth
+// pixels per row plus a zero padding row at the top and bottom. A pixel of
+// split row r (1..height) and column j sits at original row r-1 and column
+// 2j + (cs ^ ((r-1) & 1)), with cs 1 for red and 0 for black.
+
+static inline int _heal_col(const int j, const int r, const int cs)
+{
+  return 2 * j + (cs ^ ((r - 1) & 1));
+}
+
+// _heal_sub(): top minus bottom into one color's split buffer
+kernel void
+retouch_heal_sub(global const float4 *top,
+                 global const float4 *bottom,
+                 global float4 *split,
+                 const int width,
+                 const int height,
+                 const int subwidth,
+                 const int cs)
+{
+  const int j = get_global_id(0);
+  const int r = get_global_id(1);
+  if(j >= subwidth || r >= height + 2) return;
+
+  float4 val = (float4)0.0f;
+  if(r > 0 && r <= height)
+  {
+    const int col = _heal_col(j, r, cs);
+    if(col < width)
+    {
+      const int idx = mad24(r - 1, width, col);
+      val = top[idx] - bottom[idx];
+    }
+  }
+  split[mad24(r, subwidth, j)] = val;
+}
+
+// one half of a Gauss-Seidel iteration with over-relaxation, as
+// _heal_laplace_iteration(): updates the masked pixels of one color and
+// writes the work group's sum of squared changes. Does nothing once
+// retouch_heal_converged() has set the flag.
+kernel void
+retouch_heal_iterate(global float4 *active,
+                     global const float4 *neighbor,
+                     global const float *mask,
+                     const int width,
+                     const int height,
+                     const int subwidth,
+                     const int cs,
+                     const float w,
+                     global const int *converged,
+                     global float *partial,
+                     local float *buffer)
+{
+  if(converged[0]) return;
+
+  const int j = get_global_id(0);
+  const int r = get_global_id(1) + 1;
+  const int l = mad24((int)get_local_id(1), (int)get_local_size(0), (int)get_local_id(0));
+
+  float err = 0.0f;
+  if(j < subwidth && r <= height)
+  {
+    const int col = _heal_col(j, r, cs);
+    if(col < width && mask[mad24(r - 1, width, col)] != 0.0f)
+    {
+      const int idx = mad24(r, subwidth, j);
+      const int lro = cs ^ ((r - 1) & 1);
+      float a = 4.0f;
+      if(r == 1) a -= 1.0f;
+      if(r == height) a -= 1.0f;
+      // the first and last pixel of a row have no left or right neighbor
+      float4 left = (float4)0.0f;
+      float4 right = (float4)0.0f;
+      if(j > 0 || lro)
+        left = neighbor[idx - 1 + lro];
+      else
+        a -= 1.0f;
+      if(j + 1 < subwidth || lro == 0)
+        right = neighbor[idx + lro];
+      else
+        a -= 1.0f;
+
+      const float4 act = active[idx];
+      const float4 diff = w * ((a * act) - (neighbor[idx - subwidth] + neighbor[idx + subwidth] + left + right));
+      active[idx] = act - diff;
+      err = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+    }
+  }
+
+  buffer[l] = err;
+  barrier(CLK_LOCAL_MEM_FENCE);
+  const int lsz = mul24((int)get_local_size(0), (int)get_local_size(1));
+  for(int offset = lsz / 2; offset > 0; offset = offset / 2)
+  {
+    if(l < offset) buffer[l] += buffer[l + offset];
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+  if(l == 0)
+    partial[mad24((int)get_group_id(1), (int)get_num_groups(0), (int)get_group_id(0))] = buffer[0];
+}
+
+// adds up the partial sums of both colors in one work group and sets the
+// flag when the iteration has converged
+kernel void
+retouch_heal_converged(global const float *partial_black,
+                       global const float *partial_red,
+                       const int groups,
+                       const float err_exit,
+                       global int *converged,
+                       local float *buffer)
+{
+  if(converged[0]) return;
+
+  const int l = get_local_id(0);
+  const int lsz = get_local_size(0);
+  float sum = 0.0f;
+  for(int k = l; k < groups; k += lsz)
+    sum += partial_black[k] + partial_red[k];
+
+  buffer[l] = sum;
+  barrier(CLK_LOCAL_MEM_FENCE);
+  for(int offset = lsz / 2; offset > 0; offset = offset / 2)
+  {
+    if(l < offset) buffer[l] += buffer[l + offset];
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+  if(l == 0 && buffer[0] < err_exit) converged[0] = 1;
+}
+
+// _heal_add(): the solution plus bottom, back in the original layout
+kernel void
+retouch_heal_add(global const float4 *red,
+                 global const float4 *black,
+                 global const float4 *bottom,
+                 global float4 *dest,
+                 const int width,
+                 const int height,
+                 const int subwidth)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  // the pixel's color: red sits at odd columns of even rows
+  const int r = y + 1;
+  const int j = x / 2;
+  const int is_red = (x & 1) ^ (y & 1);
+  const int idx = mad24(r, subwidth, j);
+  const int pix = mad24(y, width, x);
+  dest[pix] = (is_red ? red[idx] : black[idx]) + bottom[pix];
+}

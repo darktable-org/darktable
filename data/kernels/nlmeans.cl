@@ -40,31 +40,26 @@ kernel void nlmeans_dist(read_only image2d_t in,
                          const int height,
                          const int2 q,
                          const float nL2,
-                         const float nC2)
+                         const float nC2,
+                         const int border)
 {
+  // U4 covers the image plus a border on each side, read from the image by mirroring
+  const int pwidth = width + 2 * border;
+  const int pheight = height + 2 * border;
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int gidx = mad24(y, width, x);
   const float4 norm2 = (float4)(nL2, nC2, nC2, 1.0f);
 
-  if(x >= width || y >= height) return;
+  if(x >= pwidth || y >= pheight) return;
 
-  int xpq = x + q.x;
-  int ypq = y + q.y;
-  // Convert out of bounds indexes to 0
-  // Reminder: q.x and q.y can be negative
-  xpq *= (x+q.x < width && x+q.x >= 0) ? 1 : 0;
-  ypq *= (y+q.y < height && y+q.y >= 0) ? 1 : 0;
-
-  float4 p1 = readpixel(in, x, y);
-  float4 p2 = readpixel(in, xpq, ypq);
+  const int xi = x - border;
+  const int yi = y - border;
+  float4 p1 = readpixel(in, fold_mirror(xi, width - 1), fold_mirror(yi, height - 1));
+  float4 p2 = readpixel(in, fold_mirror(xi + q.x, width - 1), fold_mirror(yi + q.y, height - 1));
   float4 tmp = (p1 - p2)*(p1 - p2)*norm2;
   float dist = tmp.x + tmp.y + tmp.z;
 
-  // make dist equal to 0 in case xpq or ypq is out of bounds
-  dist *= (x+q.x < width && x+q.x >= 0 && y+q.y < height && y+q.y >= 0) ? 1.0f : 0.0f;
-
-  U4[gidx] = dist;
+  U4[mad24(y, pwidth, x)] = dist;
 }
 
 kernel void nlmeans_horiz(global float *U4_in,
@@ -185,7 +180,8 @@ kernel void nlmeans_accu(read_only image2d_t in,
                          global float* U4,
                          const int width,
                          const int height,
-                         const int2 q)
+                         const int2 q,
+                         const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -193,38 +189,20 @@ kernel void nlmeans_accu(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   const int gidx = mad24(y, width, x);
-  // wpq and wmq are weights for the image read of
-  // indexes (int2)(x, y) + q and (int2)(x, y) - q)
-  // respectively
-  // we want wpq and wmq equal to 1 only if
-  // their associated index is in bounds
-  int wpq = 1;
-  int wmq = 1;
 
-  // handle bounds for x
-  // Reminder: q.x can be negative
-  wpq *= (x+q.x < width) ? 1 : 0;
-  wmq *= (x-q.x < width) ? 1 : 0;
-  wpq *= (x+q.x >= 0) ? 1 : 0;
-  wmq *= (x-q.x >= 0) ? 1 : 0;
+  // U4 holds the patch distances for offset q over the mirror-extended image; the
+  // distance for offset -q at (x, y) is the one for offset q at (x, y) - q
+  const int pwidth = width + 2 * border;
+  float4 u1_pq = readpixel(in, fold_mirror(x + q.x, width - 1), fold_mirror(y + q.y, height - 1));
+  float4 u1_mq = readpixel(in, fold_mirror(x - q.x, width - 1), fold_mirror(y - q.y, height - 1));
 
-  // handle bounds for y
-  // Reminder: q.y can be negative
-  wpq *= (y+q.y >= 0) ? 1 : 0;
-  wmq *= (y-q.y >= 0) ? 1 : 0;
-  wpq *= (y+q.y < height) ? 1 : 0;
-  wmq *= (y-q.y < height) ? 1 : 0;
-
-  float4 u1_pq = wpq ? readpixel(in, x+q.x, y+q.y) : (float4)0.0f;
-  float4 u1_mq = wmq ? readpixel(in, x-q.x, y-q.y) : (float4)0.0f;
-
-  float  u4    = U4[gidx];
-  float  u4_mq = U4[mad24(clamp(y-q.y, 0, height-1), width, clamp(x-q.x, 0, width-1))];
+  float  u4    = U4[mad24(y + border, pwidth, x + border)];
+  float  u4_mq = U4[mad24(y + border - q.y, pwidth, x + border - q.x)];
 
   float u4_mq_dd = u4_mq * ddirac(q);
 
   float4 accu = (u4 * u1_pq) + (u4_mq_dd * u1_mq);
-  accu.w = (wpq * u4 + wmq * u4_mq_dd);
+  accu.w = u4 + u4_mq_dd;
 
   U2[gidx] += accu;
 }

@@ -169,6 +169,8 @@ typedef struct dt_camctl_t
 
   /** Camera event thread. */
   pthread_t camera_event_thread;
+  /** TRUE after a successful create until join completes. */
+  gboolean camera_event_thread_running;
   /** List of registered listeners of camera control. \see dt_camctl_register_listener() ,
    * dt_camctl_unregister_listener() */
   GList *listeners;

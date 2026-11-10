@@ -253,9 +253,10 @@ typedef struct dt_masks_point_parametric_t
   uint32_t disabled;                           // bit 0: input range off, bit 1: output range off
 } dt_masks_point_parametric_t;
 
-/** which sliders a parametric row shows (bits 1-2 of in_out). AUTO, what
-    every row held before the choice existed, shows the ranges in use, and
-    the input one when neither is */
+/** which sliders a parametric row shows (the low two bits of in_out): the
+    input one always, and the output one with BOTH. AUTO, what every row held
+    before the choice existed, shows the output one when its range is in use;
+    OUTPUT, once a choice of its own, now shows both */
 typedef enum dt_masks_param_view_t
 {
   DT_MASKS_PARAM_VIEW_AUTO = 0,
@@ -264,29 +265,15 @@ typedef enum dt_masks_param_view_t
   DT_MASKS_PARAM_VIEW_BOTH,
 } dt_masks_param_view_t;
 
-/** bit 0 of in_out: the row shows its extra controls (opacity, boost factor) */
-#define DT_MASKS_PARAM_EXPANDED 1u
-
 static inline dt_masks_param_view_t dt_masks_param_get_view(const dt_masks_point_parametric_t *p)
 {
-  return (dt_masks_param_view_t)((p->in_out >> 1) & 3u);
+  return (dt_masks_param_view_t)(p->in_out & 3u);
 }
 
 static inline void dt_masks_param_set_view(dt_masks_point_parametric_t *p,
                                            const dt_masks_param_view_t view)
 {
-  p->in_out = (p->in_out & DT_MASKS_PARAM_EXPANDED) | ((uint32_t)view << 1);
-}
-
-static inline gboolean dt_masks_param_is_expanded(const dt_masks_point_parametric_t *p)
-{
-  return (p->in_out & DT_MASKS_PARAM_EXPANDED) != 0;
-}
-
-static inline void dt_masks_param_set_expanded(dt_masks_point_parametric_t *p,
-                                               const gboolean expanded)
-{
-  p->in_out = (p->in_out & ~DT_MASKS_PARAM_EXPANDED) | (expanded ? DT_MASKS_PARAM_EXPANDED : 0u);
+  p->in_out = (uint32_t)view;
 }
 
 /** point struct for a DT_MASKS_RASTER form: a reference to another module's
@@ -380,6 +367,15 @@ extern const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[];
 #define DEVELOP_MASKS_NB_SHAPES 5
 #endif
 
+/** the kinds of member that have controls besides their opacity, each keeping
+    its own folded state of the "controls" subpanel */
+typedef enum dt_masks_controls_kind_t
+{
+  DT_MASKS_CONTROLS_SHAPE,
+  DT_MASKS_CONTROLS_PARAMETRIC,
+  DT_MASKS_CONTROLS_COUNT
+} dt_masks_controls_kind_t;
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
@@ -413,9 +409,20 @@ typedef struct dt_iop_gui_blend_data_t
   // utility position, the lib)
   GtkBox *masks_header_home;
   // everything in relocatable_box below the header, folded away in the
-  // embedded position while the header stays as the way back. Only this
-  // wrapper is hidden, so its children keep their own visibility
+  // embedded position while the header stays as the way back. The fold is
+  // masks_panel_reveal, which slides it as a module's expander does; the
+  // children keep their own visibility
   GtkBox *masks_panel_body;
+  GtkWidget *masks_panel_reveal;
+  // the panel's two halves, which the docked position puts in scrollers of
+  // their own, with a divider between (dt_masks_gui_split_dock): above it the
+  // blend settings and the mask layout, below it the selection's controls
+  // and the refinements. Everywhere else they stack in the panel as one.
+  // The paned is made with the first docking
+  GtkWidget *masks_split_top;
+  GtkWidget *masks_split_bottom;
+  GtkWidget *masks_split_paned;
+  gboolean masks_split_on;
   GtkBox *masks_box;
 
   GtkWidget *showmask;
@@ -488,11 +495,10 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_toolbar;
   // the "blend mask" section header. Reading order:
   //
-  //   toggle | <space> | edit run | show_mask_overlay | eye | lock
-  //   | <space> | expander
+  //   toggle | <space> | show_mask_overlay | eye | edit run | lock | expander
   //
-  // (the two sides swap when the canvas panel is docked on the left, see
-  // _masks_header_apply_side)
+  // (the expander moves to the start when the canvas panel is docked on the
+  // left, see _masks_header_apply_side)
   GtkWidget *masks_blend_header;
   // the row under the header naming the module whose mask the panel shows,
   // as the header's extension (dt_masks_gui_focus_row_sync). Shown in the
@@ -500,8 +506,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_focus_row;
   GtkWidget *masks_focus_module_label;
   GtkWidget *masks_focus_instance_label;
-  // edit run + show_mask_overlay + eye + lock, the header's center widget
-  // between the toggle and the expander (_masks_header_cluster_new)
+  // show_mask_overlay + eye + edit run + lock, right-aligned ahead of the
+  // expander (_masks_header_cluster_new)
   GtkWidget *masks_header_cluster;
   // the edit run on the panel header: edit on canvas and solo edit (see
   // _pack_header_edit_run). Whole-mask canvas controls, so on the header
@@ -513,9 +519,6 @@ typedef struct dt_iop_gui_blend_data_t
   // masks_list_box on its ground. Not the list box itself: dt_masks_gui_build_list
   // wipes that
   GtkWidget *masks_list_area;
-  // the list's title, a child of the panel body above masks_box, shown and
-  // hidden with it (see _masks_box_set_visible)
-  GtkWidget *masks_list_caption;
   // formid -> its row (the "mask-row" row_vbox), so that hover sync, selection
   // and row refreshes need no walk of the widget tree on every pointer motion.
   // Filled by _make_shape_row, emptied by dt_masks_gui_build_list; the widget
@@ -582,23 +585,6 @@ typedef struct dt_iop_gui_blend_data_t
   // the press on a group header that is being released picked it: its release
   // does nothing, whatever it finds held by then. Cleared on every press
   gboolean masks_pick_press;
-  // set while _auto_expand_selected_row toggles row expanders itself: toggling
-  // an expander selects its row, which would re-enter it without end. Not
-  // DT_ENTER_GUI_UPDATE, which makes _props_row_toggled skip the update the
-  // toggle still needs
-  gboolean masks_suppress_toggle_select;
-  // "auto-expand selected": the last selected element that has an expander
-  // (dt_masks_model_row_is_expandable), apart from panel_selected_formid, so
-  // that selecting one with nothing to expand leaves the open one open.
-  // NO_MASKID: none yet
-  dt_mask_id_t masks_last_expanded_elem;
-  // the same for groups (_auto_expand_selected_group), which open their
-  // members. Selecting an element selects its group too, so both open
-  dt_mask_id_t masks_last_expanded_group;
-  // a group the user just folded with its own chevron, for the next
-  // _auto_expand_selected_group not to reopen: the same click selects it.
-  // INVALID_MASKID when none
-  dt_mask_id_t masks_group_collapse_click;
   // a press on a row turned into a drag (_row_drag_begin), which selects what
   // it settles on (_masks_drag_end). A release still reaching the row must
   // not run the click's select or toggle, which would deselect it again. On
@@ -608,6 +594,12 @@ typedef struct dt_iop_gui_blend_data_t
   // rebuilds the list for every shape it removes, so a caller removing several
   // sets this around its loop and rebuilds once afterwards
   gboolean masks_rebuild_suppressed;
+  // the suppression is held by dt_iop_gui_blend_masks_hold_rebuild, which the
+  // deferred rebuild lifts
+  gboolean masks_rebuild_held;
+  // a range slider of a parametric row is committing its edit: the list is not
+  // rebuilt under it, which would replace the slider being dragged
+  gboolean masks_param_committing;
   // a deferred rebuild is queued (_queue_masks_list_rebuild), so that the
   // requests of one gesture make one rebuild
   gboolean masks_rebuild_pending;
@@ -616,12 +608,11 @@ typedef struct dt_iop_gui_blend_data_t
   guint masks_rebuild_idle_id;
   // the selection panel under the list: its caption, naming the selection
   // (masks_selection_name_label, see _selection_row_update) with the group
-  // delete and compose on the left, the link and the group layout presets on
-  // the right (see _selection_actions_sync), then the toolbar of add buttons,
-  // then the properties and the refinement, which act on it too
+  // delete and compose on the left, the group layout presets on the right
+  // (see _selection_actions_sync), then the toolbar of add buttons, then the
+  // controls and the refinement, which act on it too
   GtkWidget *masks_selection_area;
   GtkWidget *masks_selection_name_label;
-  GtkWidget *masks_selection_link_btn;
   GtkWidget *masks_selection_compose_btn;
   GtkWidget *masks_selection_delete_btn;
   GtkWidget *masks_selection_presets_btn;
@@ -655,22 +646,42 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_refine_bypass_btn;
   GtkWidget *masks_refine_toggle_btn;
   GtkBox *masks_refine_sliders_box;
-  // "member properties in subpanel": the selected member's
-  // properties, or the creation controls of a shape being drawn, in a
-  // collapsible of their own above the refinements (see _props_panel_sync).
-  // props_panel_box is the wrapped section, props_panel_content the box the
-  // editor goes in, props_panel_formid the member
-  // (props_panel_is_group) it holds the editor of, and pending_props_box the
-  // creation controls a pending row built for it
-  GtkBox *props_panel_box;
-  GtkWidget *props_panel_expander;
-  GtkWidget *props_panel_content;
-  GtkWidget *props_panel_toggle_btn;
-  dt_mask_id_t props_panel_formid;
-  gboolean props_panel_is_group;
-  GtkWidget *pending_props_box;
+  // the controls of the selected member, or the creation controls of a shape
+  // being drawn, when they are not in the list (see _controls_panel_sync): the
+  // opacity (and a parametric element's sliders) in the selection panel
+  // itself, under the add buttons, and the other controls in the "controls"
+  // subpanel, a collapsible below them. controls_plain_box is the wrapped
+  // selection panel part, controls_plain_content the box its editor goes in;
+  // controls_panel_box and controls_panel_content are the same for the subpanel. The
+  // member is controls_panel_formid (controls_panel_is_group) and pending_controls_box
+  // the creation controls a pending row built for it
+  GtkBox *controls_panel_box;
+  GtkWidget *controls_panel_expander;
+  GtkWidget *controls_panel_content;
+  GtkWidget *controls_panel_toggle_btn;
+  GtkBox *controls_plain_box;
+  GtkWidget *controls_plain_content;
+  dt_mask_id_t controls_panel_formid;
+  gboolean controls_panel_is_group;
+  // the selected parametric element's editor, taken out of its row into this
+  // box, in the selection panel (see _controls_param_slot_sync): its opacity.
+  // Its ranges are in controls_param_ctl_slot, in the controls subpanel.
+  // controls_param_formid is the element they hold
+  GtkWidget *controls_param_slot;
+  GtkWidget *controls_param_ctl_slot;
+  dt_mask_id_t controls_param_formid;
+  // the toggle at the left of the controls header, for that element's
+  // channel: its output slider, and its boost factor with the sliders if it
+  // has one. Shown only while the element is there
+  GtkWidget *controls_output_btn;
+  // the kind of member the controls subpanel is for, and whether it has
+  // anything to show: with nothing besides the opacity it stays folded and
+  // insensitive (see _controls_panel_show)
+  dt_masks_controls_kind_t controls_panel_kind;
+  gboolean controls_panel_enabled;
+  GtkWidget *pending_controls_box;
   // the help section: the preset note of the selected group or of the whole
-  // mask, in a collapsible of its own above the properties (see
+  // mask, in a collapsible of its own above the controls (see
   // _help_panel_sync). help_panel_box is the wrapped section,
   // help_panel_content the box the note goes in, and help_panel_cid the group
   // it holds the note of, while help_panel_filled
@@ -694,10 +705,14 @@ typedef struct dt_iop_gui_blend_data_t
   // which commit_params takes to snapshot it (dt_masks_refine_bypass_commit);
   // the renderer reads only the snapshot
   GHashTable *masks_refine_bypassed;
-  // row/group key -> expanded (see _remember_expanded): element rows by form
-  // id, groups by their marker's id, nested group rows by their form id.
+  // group key -> expanded (see _remember_expanded): groups by their marker's
+  // id, nested group rows by their form id. A group missing from it is
+  // expanded. Created on first use
+  GHashTable *masks_groups_expanded;
+  // folded run (the id of its bottom element) -> whether its other
+  // elements are shown (see _tail_set_open). A run missing from it is folded.
   // Created on first use
-  GHashTable *masks_props_expanded;
+  GHashTable *masks_groups_tail;
   // group cid -> the page its preset note shows (see _make_group_note), so a
   // rebuild of the note keeps it. Created on first use
   GHashTable *masks_note_page;
@@ -1050,6 +1065,9 @@ void dt_masks_gui_panel_set_collapsed_pref(const gboolean collapsed);
 void dt_iop_gui_blend_masks_panel_host_expanded(const gboolean expanded);
 // moves the masks panel to its host and updates the header labels and tooltips
 void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module);
+// the module is not focused: in the embedded position, an expanded one shows
+// the header of its masks panel alone; any other does not show the panel
+void dt_iop_gui_blend_masks_panel_peek(dt_iop_module_t *module);
 // show or hide the focused module's masks panel, wherever it is. The panel's
 // arrow, the shortcut and the toolbar button all come here, so they cannot
 // drift apart. Does nothing unless the focused module has a masks panel
@@ -1058,6 +1076,10 @@ void dt_iop_gui_blend_masks_panel_toggle(void);
 void dt_iop_gui_blend_masks_panel_show(void);
 // the canvas panel changed sides: lay its header out for the new one
 void dt_iop_gui_blend_masks_panel_side_changed(void);
+// the always-on canvas panel has no module to show (nothing focused, or no
+// masking in the focused one): keep it on screen as the user left it, saying so.
+// Does nothing while a module is hosted, or when the panel is not always-on
+void dt_iop_gui_blend_masks_panel_idle_sync(void);
 // the tooltip of both buttons that display the mask: the overlay in the mask
 // header and the indicator in the module header
 const char *dt_iop_gui_blend_showmask_tooltip(void);
@@ -1073,6 +1095,8 @@ void dt_iop_gui_blend_mask_reset(dt_iop_module_t *module);
 // fold the panel away for the focused module if it has lost its mask, as when
 // it takes focus without one: the mask coming back (an undo) shows it again
 void dt_iop_gui_blend_masks_panel_fold_unmasked(void);
+// fold the embedded panel of the module, without storing the fold
+void dt_iop_gui_blend_masks_panel_fold_embedded(dt_iop_module_t *module);
 // show the panel's state on the darkroom toolbar button: pressed while the
 // panel shows, insensitive when the focused module has no masks panel
 void dt_iop_gui_blend_masks_panel_sync_toolbox(void);
@@ -1094,10 +1118,21 @@ void dt_iop_gui_blend_delete_element(dt_iop_module_t *module, const dt_mask_id_t
     are named after it */
 void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
 
+// hold back the rebuilds of this module's list until the handler that calls
+// this has returned, then rebuild once, before the next repaint. Committing a
+// shape rebuilds the list at each step it takes, and the panel would show each
+// of them (dt_masks_gui_form_save_creation)
+void dt_iop_gui_blend_masks_hold_rebuild(dt_iop_module_t *module);
+
 // shape creation ended for this module: queues the rebuild that drops the
 // panel's pending row. Called from dt_masks_change_form_gui, which every way
 // of canceling goes through, a click outside the canvas included
 void dt_iop_gui_blend_masks_creation_ended(dt_iop_module_t *module);
+
+// the next shape of a continuous creation is armed for this module: queues the
+// rebuild that shows the panel's pending row for it. Called from
+// dt_masks_change_form_gui, before its caller has set creation_module
+void dt_iop_gui_blend_masks_creation_continued(dt_iop_module_t *module);
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,

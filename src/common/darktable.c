@@ -87,6 +87,7 @@
 #include "lua/init.h"
 #include "views/view.h"
 #include "conf_gen.h"
+#include "whereami.h"
 
 #include <errno.h>
 #include <glib.h>
@@ -1185,6 +1186,16 @@ int dt_init(int argc,
   // make sure that stack/frame limits are good (musl)
   dt_set_rlimits();
 
+  // darktable-cli and darktable-generate-cache call dt_loc_init() before
+  // us to find the locale dir; dt_loc_init() below allocates these again
+  g_free(darktable.datadir);
+  g_free(darktable.sharedir);
+  g_free(darktable.plugindir);
+  g_free(darktable.localedir);
+  g_free(darktable.tmpdir);
+  g_free(darktable.configdir);
+  g_free(darktable.cachedir);
+
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
@@ -1247,7 +1258,47 @@ int dt_init(int argc,
   darktable.unmuted = 0;
   GSList *config_override = NULL;
 
-  // keep a copy of argv array for possibly reporting later
+  /* Keep original argv for possible workspace relaunch (before gtk_init
+   * mutates argv). Always copy argv[0] at least. */
+  darktable.restart = FALSE;
+  darktable.restart_argv = NULL;
+  if(init_gui)
+  {
+    darktable.restart_argv = g_new0(char *, (gsize)argc + 1);
+    for(int i = 0; i < argc; i++)
+      darktable.restart_argv[i] = g_strdup(argv[i] ? argv[i] : "");
+
+    /* Prefer absolute executable path so spawn works from any cwd. */
+    int dirname_length = 0;
+    const int length = wai_getExecutablePath(NULL, 0, &dirname_length);
+    if(length > 0)
+    {
+      char *exe = g_malloc((gsize)length + 1);
+      wai_getExecutablePath(exe, length, &dirname_length);
+      exe[length] = '\0';
+      g_free(darktable.restart_argv[0]);
+      darktable.restart_argv[0] = exe;
+    }
+
+    /* --library would override the workspace DB on relaunch */
+    GPtrArray *args = g_ptr_array_new();
+    for(int i = 0; darktable.restart_argv[i]; i++)
+    {
+      if(!strcmp(darktable.restart_argv[i], "--library"))
+      {
+        g_free(darktable.restart_argv[i]);
+        if(darktable.restart_argv[i + 1])
+          g_free(darktable.restart_argv[++i]);
+        continue;
+      }
+      g_ptr_array_add(args, darktable.restart_argv[i]);
+    }
+    g_free(darktable.restart_argv);
+    g_ptr_array_add(args, NULL);
+    darktable.restart_argv = (char **)g_ptr_array_free(args, FALSE);
+  }
+
+  /* Keep a copy of argv array for possibly reporting later */
   gchar **myoptions = init_gui && argc > 1 ? g_strdupv(argv) : NULL;
 
   for(int k = 1; k < argc; k++)
@@ -2079,8 +2130,8 @@ int dt_init(int argc,
   // now load darktablerc for the given library. Either darktablerc
   // for the default library or darktablerc-<label> for the other
   // libraries.
-  const char *dbname = dt_conf_get_string("database");
-  const char *dblabel = dt_conf_get_string("workspace/label");
+  gchar *dbname = dt_conf_get_string("database");
+  gchar *dblabel = dt_conf_get_string("workspace/label");
   const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
 
   const gboolean default_dbname = strcmp(dblabel, "") == 0;
@@ -2093,7 +2144,7 @@ int dt_init(int argc,
 
   dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
 
-  g_slist_free_full(config_override, g_free);
+  g_slist_free_full(config_override, dt_conf_string_entry_free);
 
   if(has_workspace)
   {
@@ -2106,6 +2157,7 @@ int dt_init(int argc,
     dt_conf_set_string("workspace/label", dblabel);
     dt_conf_set_bool("database/multiple_workspace", multiple_db);
   }
+  g_free(dbname);
 
   if(init_gui)
   {
@@ -2143,6 +2195,7 @@ int dt_init(int argc,
   {
     dt_print(DT_DEBUG_ALWAYS, "ERROR : cannot open database");
     dt_splash_screen_destroy();
+    g_free(dblabel);
     return 1;
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
@@ -2176,10 +2229,12 @@ int dt_init(int argc,
     }
     dt_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
     if(!image_loaded_elsewhere && init_gui) dt_database_show_error(darktable.db, dblabel);
+    g_free(dblabel);
 
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.");
     return 1;
   }
+  g_free(dblabel);
 
   dt_splash_screen_set_progress(_("preparing database"));
   dt_upgrade_maker_model(darktable.db);
@@ -2869,6 +2924,12 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.metadata_threadsafe));
 
   dt_exif_cleanup();
+
+  if(!darktable.restart && darktable.restart_argv)
+  {
+    g_strfreev(darktable.restart_argv);
+    darktable.restart_argv = NULL;
+  }
 }
 
 /* The dt_print variations can be used with a combination of DT_DEBUG_ flags.

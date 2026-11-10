@@ -117,10 +117,19 @@ changes (where available).
   manager now drive the same controls in the panel. Existing masks are
   converted when an edit is opened and render as before.
 
+- DNG files carrying an OpcodeList3 GainMap, such as those written
+  by DJI drones, now have it applied during demosaicing. This
+  corrects the lens shading the camera recorded but left in the raw
+  data. Existing edits are left unchanged; new edits get it by
+  default.
+
 ## UI/UX Improvements
 
 - Added a "copy original file paths" action for selected images, which
   copies each original file path to the clipboard once, one per line.
+- Added back and forward navigation in collections, with user-assignable
+  shortcuts. Navigation remembers collection rules and thumbnail scroll
+  positions for up to 32 visits during the current session.
 
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
@@ -184,6 +193,12 @@ changes (where available).
 - Added a "copy to clipboard" export storage, which places the
   exported images on the system clipboard.
 
+- A workspace button in the top toolbar, between the keyboard shortcuts
+  button and the preferences button, opens a menu to switch workspaces
+  or create a new workspace (blank by default + optional copy). Workspace
+  button only appears when "allow for multiple workspaces" is enabled.
+  Switching or creating relaunches darktable into the chosen workspace.
+
 - The lens correction module now warns when it applies Lensfun
   vignetting correction to a Panasonic RW2 or Olympus ORF file shot
   with the camera's shading compensation on, which can overcorrect the
@@ -212,7 +227,30 @@ changes (where available).
   the preferences dialog to the masks panel's options popover, and the
   masking section of the preferences dialog is gone.
 
+- Color calibration has a new illuminant option, "from the white
+  balance module", which derives the illuminant from the settings of
+  the white balance module. With it, the color picker and the
+  temperature, tint, and channel coefficient sliders in the white
+  balance module set the white balance that color calibration uses.
+  The new option is the default for new scene-referred edits of color
+  raw files. It needs the white balance module's new "prepare data for
+  color calibration" checkbox to be checked, as it is by default in
+  these edits. The checkbox is available in all modes except "camera
+  reference", which does not need it. The old "as shot to reference"
+  mode becomes "as shot" with the checkbox checked. While color
+  calibration adapts with any other illuminant option, such as "as shot
+  in camera" or "custom", the white balance module disables these
+  controls and its camera presets, because the white balance is then
+  controlled in color calibration.
+
+- The recent collections module now handles single or double click
+  according to the preference setting for collections.
+
 ## Performance Improvements
+
+- New edits convert the input color profile directly to the working RGB
+  profile, avoiding an unnecessary round trip through Lab. Existing edits
+  keep their previous color processing.
 
 - The lighttable timeline no longer slows down quadratically with the
   number of collected images: with a 100,000-image collection it took
@@ -239,9 +277,93 @@ changes (where available).
   faster processing times in comparison to CPU code path, depending on
   CPU & GPU.
 
+- Contrast & texture now runs on OpenCL, so it no longer moves the
+  image back to the CPU in the middle of an otherwise GPU pipeline.
+
+- Highlight reconstruction's inpaint opposed method now runs on OpenCL
+  for linear raws, such as sRAW and linear DNG files.
+
+- Enlarge canvas now runs on OpenCL, so it no longer moves the image
+  back to the CPU in the middle of an otherwise GPU pipeline.
+
+- Chromatic aberrations RGB now runs on OpenCL.
+
+- Grain now runs on OpenCL.
+
+- Surface blur now runs on OpenCL. It was by far the slowest module
+  left on the CPU in an OpenCL pipeline, and moved the image back to
+  the CPU for it.
+
+- Rotate pixels, which straightens the sensor layout of Fujifilm
+  SuperCCD raws, now runs on OpenCL.
+
+- Scale pixels, which sets the pixel aspect ratio for non-square-pixel
+  sensors and anamorphic desqueeze, now runs on OpenCL.
+
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
+
+- Drawn masks render faster, most of all masks with nested groups or
+  shapes reused by several modules: each group no longer clears and
+  combines a full-size buffer just to copy in its first shape, and
+  folds each shape only over the part of the image it covers.
+
+- Lens correction with lensfun is faster on the OpenCL path: lensfun
+  is now asked for its corrections on a coarse grid instead of for
+  every pixel, so the CPU no longer computes and uploads hundreds of
+  megabytes on each run. The correction is also more precise on x86,
+  where it could be up to 0.3 px off, or 0.6 px when distorting.
+
+- The raw denoise module can now run on the OpenCL device for Bayer
+  sensors.
+
+- The retouch module's heal tool now runs its solver on the OpenCL
+  device instead of copying the image back to the CPU for each
+  healed shape.
+
+- The hot pixels module can now run on the OpenCL device, so a raw
+  no longer goes back to the CPU and up again around it.
+
+- Module color pickers now compute their statistics on the OpenCL
+  device instead of copying the picked area back to the CPU.
+
+- darktable-cli uses less memory when exporting many images: it no
+  longer keeps the decoded raw of every exported image in memory
+  until its cache is full.
+
+- darktable keeps fewer decoded raws in memory: the full-size image
+  cache now holds one image per worker thread plus one, instead of
+  twice the number of worker threads.
+
+- Modules showing a histogram of their input (levels, rgb levels, rgb
+  curve, tone curve and color zones) now count it on the OpenCL device
+  instead of copying the image back to the CPU.
+
+- The raw chromatic aberrations module can now run on the OpenCL
+  device.
+
+- Haze removal no longer copies the whole image back from the OpenCL
+  device to estimate the ambient light.
+
+- The dither module's random mode can now run on the OpenCL device.
+
+- The AMaZE demosaicer, plain and dual, can now run on the OpenCL
+  device instead of sending the image back to the CPU for the
+  demosaic.
+
+- Copying images to the OpenCL device is up to four times faster on
+  NVIDIA and macOS drivers, which speeds up every step where the
+  pipeline moves the image from the CPU to the GPU.
+
+- Softproofing, gamut check and LUT-based ICC profiles in input and
+  output color profile can now run on the OpenCL device, through a 3D
+  LUT sampled from LittleCMS, instead of sending the image back to the
+  CPU. The "always use LittleCMS 2" export preference still applies the
+  exact transform on the CPU.
+
+- The LMMSE demosaicer can now run on the OpenCL device instead of
+  sending the image back to the CPU for the demosaic.
 
 ## Other Changes
 
@@ -386,6 +508,10 @@ changes (where available).
 - Lightroom import now sets the working profile to linear ProPhoto
   RGB, the space Lightroom works in, instead of linear Rec709 RGB.
 
+- In the darkroom in the left panel the navigation can now be toggled
+  through the panel's right click menu in addition to the strg+shift+n
+  shortcut.
+
 - Lightroom import adds its exposure and blacks adjustments to
   darktable's default exposure instead of replacing it. In the
   scene-referred workflow, images with a Lightroom exposure adjustment
@@ -406,7 +532,26 @@ changes (where available).
 - History items created by the Lightroom import are labeled "lr import"
   instead of having an empty label.
 
+- Raw files that RawSpeed can't decode are now loaded with LibRaw if
+  LibRaw supports their compression mode: Fujifilm lossy compressed
+  RAFs, and with LibRaw 0.23 (snapshot 202611) or newer also Nikon high
+  efficiency (HE/HE*) NEFs from the Z6 III, Z8, Z9 and Z f and Sony
+  ARW 6.0 compressed and compressed (HQ) files. Bayer DNGs RawSpeed can't
+  decode are loaded with LibRaw as well, e.g. lossless JPEG with
+  unsupported predictors or uncompressed files with inconsistent strip
+  sizes as written by some DJI drones. All other files are still loaded with RawSpeed.
+
+- The LibRaw loader now supports X-Trans sensors. Previously, RAFs
+  routed to LibRaw via the libraw_extensions setting came out red.
+
 ## Bug Fixes
+
+- Fixed faint seams on a 112 pixel grid in images demosaiced with
+  LMMSE, where each tile read leftover data from the previous tile.
+
+- Upscaled exports no longer show shifted bands where they were
+  processed in tiles, and the upscale now runs on OpenCL when it fits
+  the device.
 
 - Fixed Lightroom develop import which was not done. Only the tags,
   color labels, stars where imported.
@@ -439,6 +584,14 @@ changes (where available).
 
 - Fixed the feather of paths created by vectorizing a raster mask or an
   AI object, which could not be changed from the mask manager.
+
+- Fixed a dark fringe along the right and bottom edges of images
+  pixelated by the censorize module, whose last column and row were
+  left unpainted.
+
+- Fixed color reconstruction giving different colors with OpenCL than
+  without it: the OpenCL grid only counted one pixel of each run of
+  neighbors, and zooming in past 100% changed its spatial extent.
 
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
@@ -586,6 +739,14 @@ changes (where available).
 
 - Fixed camera mutex locks before the mutexes are initialized.
 
+- Fixed tether mode leaving its event and live-view threads running after
+  leaving the view or tearing down a camera, and used full gphoto teardown
+  when a mounted camera disappeared so the device is released cleanly.
+
+- Fixed tether mode treating transient PTP Device Busy errors as a lost
+  camera connection (common when enabling live view), and stopped
+  echoing camera-driven property updates back to the camera.
+
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
@@ -649,6 +810,13 @@ changes (where available).
 - Fixed raw denoise using pixels of the wrong color near the top
   corners of some X-Trans images.
 
+- Fixed raw denoise on X-Trans images giving different results
+  depending on white balance's "prepare data for color calibration"
+  setting: with highlight reconstruction in inpaint opposed or
+  segmentation mode, clipped highlights were rebuilt with a white
+  balance correction meant for white-balanced data, although raw
+  denoise runs without white balance.
+
 - Fixed possible crashes after removing an image that had snapshots
   from the library, while either a snapshot was shown for comparison
   or all ten snapshot slots were in use.
@@ -668,6 +836,10 @@ changes (where available).
   being missing from the image's XMP sidecar while the library kept
   them.
 
+- Fixed tethered additional properties: user-added entries can be removed
+  or replaced (same label), the O property picker works more than once,
+  and unloadable saved properties show as deletable unavailable stubs.
+
 - Fixed an unexpected image change in AgX when disabling 'keep the pivot
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
@@ -679,6 +851,9 @@ changes (where available).
   back to the CPU when processed with OpenCL, whenever the module
   needs a larger input area than it outputs, for example liquify in a
   zoomed-in darkroom view.
+
+- Fixed the darkroom filmstrip losing the active-image triangle after
+  that thumbnail is scrolled off screen and back.
 
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
@@ -761,6 +936,92 @@ changes (where available).
   instead of the copies bundled in the app. Without Homebrew, the
   modules were not found at all.
 
+- Fixed the wrong raster mask being applied when three or more external
+  raster masks were used in one edit.
+
+- Fixed memory leaks of libgphoto2 event data, CameraFile objects, and
+  strdup'd filenames during tether polling and download.
+
+- Fixed tether mode treating non-fatal PTP errors as a lost camera
+  connection; only clear I/O / claim / missing-device failures now force
+  remount and leave tethering.
+
+- Fixed diffuse or sharpen giving a different result on the CPU than
+  with OpenCL whenever an anisotropy was set: the CPU path computed the
+  diffusion weights with a coarse approximation of the exponential.
+  Edits using anisotropy may now look slightly different when exported
+  without OpenCL.
+
+- Fixed workspace discovery truncating names at the first '.' in the
+  database filename (for example library-client.v2.db was shown as
+  "client"), which could open or delete the wrong database. Workspace
+  names that contain path-unsafe characters are now rejected on create.
+
+- Fixed the non-local means modes of denoise (profiled) and astrophoto
+  denoise giving a different result with OpenCL than on the CPU: the
+  OpenCL path gave the horizontal neighbors twice their weight. Edits
+  using them may look slightly different when exported with OpenCL.
+
+- Fixed tethered bracket capture progress using the wrong image total.
+
+- The non-local means modes of denoise (profiled) and astrophoto
+  denoise now treat the image edges the same way on the CPU and with
+  OpenCL, by mirroring the image. Before, the two gave different
+  results in a band along the edges. Edits using them may look
+  slightly different near the edges.
+
+- Fixed PPG demosaic with an edge threshold giving different pixels
+  along the image edges with OpenCL than on the CPU.
+
+- Fixed the RGB curve and tone curve modules giving brighter or darker
+  tones with OpenCL than on the CPU above a curve's last node, when that
+  node is left of the right edge.
+
+- Fixed occasional magenta pixels on the CPU in red areas blended with
+  the chromaticity, hue, color or HSV blend modes in display RGB, where
+  OpenCL gave the right color.
+
+- Fixed inpaint opposed highlight reconstruction on linear raws, such
+  as sRAW and linear DNG, taking the clipped areas of every channel
+  from the red channel alone.
+
+- Fixed floating-point raw files with embedded DNG gain maps coming out
+  wrong with OpenCL. The gain maps of other raw files are now also
+  applied the same way with OpenCL as on the CPU.
+
+- Fixed the contrast equalizer with an edge sharpness set, and the
+  soft clip of negadoctor, giving a different result on the CPU than
+  with OpenCL: the CPU path used a coarse approximation of the
+  exponential. Edits using them may now look slightly different when
+  exported without OpenCL.
+
+- Fixed rotate pixels, which straightens the sensor layout of Fujifilm
+  SuperCCD raws, using the scaling interpolator instead of the warp
+  interpolator set in the preferences, as the other rotating and
+  distorting modules do.
+
+- Fixed random dither giving a slightly different noise pattern
+  depending on the number of CPU threads. Its noise pattern changed,
+  so exports using it differ in the noise but not in its strength.
+
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
+- Fixed input color profile and highlight reconstruction (opposed and
+  segmentation modes) still applying part of the white balance
+  correction when the white balance module, set to "as shot to
+  reference", was switched off on a raw image. Edits made that way
+  render with different colors.
+
+- Fixed a color cast when white balance in "as shot to reference" mode
+  was pasted from another image, or applied through a style or preset:
+  white balance applied the pasted multipliers, but input color profile
+  completed the correction with the target image's own as-shot
+  multipliers.
+
+- Fixed scale pixels output shifted by a fraction of a pixel in each
+  tile when the image was processed in tiles.
+
 ## Lua
 
 ### API Version
@@ -835,7 +1096,9 @@ changes (where available).
 
 ### Base Support
 
-- N/A
+- Canon EOS R50 V (requires LibRaw 0.23 or newer)
+- Canon EOS R6 Mark III (requires LibRaw 0.23 or newer)
+- Canon PowerShot V1 (requires LibRaw 0.23 or newer)
 
 ### White Balance Presets
 
@@ -850,11 +1113,11 @@ changes (where available).
 - Apple ProRAW DNGs
 - CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
-- Fujifilm lossy RAFs
-- Nikon high efficiency NEFs
+- Nikon high efficiency NEFs, except from the Z6 III, Z8, Z9 and Z f
+  with LibRaw 0.23 or newer
 - Phase One other than IIQ L
 - Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C)
-- Sony ARW 6.0 compressed and compressed (HQ)
+- Sony ARW 6.0 compressed and compressed (HQ) with LibRaw older than 0.23
 
 ### Suspended Support
 

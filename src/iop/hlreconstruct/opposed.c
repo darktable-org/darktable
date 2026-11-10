@@ -42,8 +42,7 @@ static dt_hash_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_highlights_data_t *d = piece->data;
   dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, NULL, FALSE);
-  hash = dt_hash(hash, &d->clip, sizeof(d->clip));
-  return dt_hash(hash, &piece->module->dev->chroma.late_correction, sizeof(int));
+  return dt_hash(hash, &d->clip, sizeof(d->clip));
 }
 
 static inline float _calc_linear_refavg(const float *in, const int color)
@@ -54,9 +53,9 @@ static inline float _calc_linear_refavg(const float *in, const int color)
   return fcube(opp[color]);
 }
 
-static inline size_t _raw_to_cmap(const size_t width, const size_t row, const size_t col)
+static inline size_t _raw_to_cmap(const size_t width, const size_t height, const size_t row, const size_t col)
 {
-  return (row / 3) * width + (col / 3);
+  return CLAMP(row / 3, 0, height - 1) * width + CLAMP(col / 3, 0, width - 1);
 }
 
 static inline char _mask_dilated(const char *in, const size_t w1)
@@ -93,14 +92,15 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[1] : 1.0f,
-                                       wbon ? dsc->temperature.coeffs[2] : 1.0f};
-  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
+                                       wbon ? dsc->temperature.coeffs[2] : 1.0f,
+                                       1.0f };
+  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f };
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
   const size_t mwidth  = width / 3;
   const size_t mheight = height / 3;
-  const size_t msize = dt_round_size((size_t) mwidth+2, 8) * dt_round_size(mheight+2, 8);
+  const size_t msize = mwidth * mheight;
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
   const dt_hash_t opphash = _opposed_hash(piece);
@@ -129,8 +129,9 @@ static void _process_linear_opposed(dt_iop_module_t *self,
 
   if(!is_hashed)
   {
-    char *mask = dt_calloc_aligned(6 * msize);
-    if(mask)
+    char *mask = dt_calloc_aligned(3*msize);
+    char *omask = dt_alloc_aligned(3*msize);
+    if(mask && omask)
     {
       gboolean anyclipped = FALSE;
       DT_OMP_FOR(reduction( | : anyclipped))
@@ -139,10 +140,10 @@ static void _process_linear_opposed(dt_iop_module_t *self,
         for(size_t col = 0; col < width; col++)
         {
           const size_t idx = (row * width + col) * 4;
-          const size_t mdx = _raw_to_cmap(mwidth, row, col);
+          const size_t mdx = _raw_to_cmap(mwidth, mheight, row, col);
           for_three_channels(c)
           {
-            if((input[idx] >= clips[c]) && (mask[c*msize + mdx] == 0))
+            if((input[idx+c] >= clips[c]) && (mask[c*msize + mdx] == 0))
             {
               mask[c * msize + mdx] |= 1;
               anyclipped |= TRUE;
@@ -150,25 +151,26 @@ static void _process_linear_opposed(dt_iop_module_t *self,
           }
         }
       }
+
       /* We want to use the photosites closely around clipped data to be taken into account.
          The mask buffers holds data for each color channel, we dilate the mask buffer slightly
          to get those locations.
       */
-
-      dt_aligned_pixel_t sums = {0.0f, 0.0f, 0.0f, 0.0f};
-      dt_aligned_pixel_t cnts = {0.0f, 0.0f, 0.0f, 0.0f};
+      double sums[3] = { 0.0, 0.0, 0.0 };
+      int cnts[3] = { 0, 0, 0 };
 
       if(anyclipped)
       {
         DT_OMP_FOR(collapse(2))
-        for(size_t row = 3; row < mheight - 3; row++)
+        for(size_t row = 0; row < mheight; row++)
         {
-          for(size_t col = 3; col < mwidth - 3; col++)
+          for(size_t col = 0; col < mwidth; col++)
           {
             const size_t mx = row * mwidth + col;
-            mask[3*msize + mx] = _mask_dilated(mask + mx, mwidth);
-            mask[4*msize + mx] = _mask_dilated(mask + msize + mx, mwidth);
-            mask[5*msize + mx] = _mask_dilated(mask + 2*msize + mx, mwidth);
+            const gboolean safe = col >= 3 && row >= 3 && col < mwidth - 3 && row < mheight - 3;
+            omask[mx] =           safe ? _mask_dilated(mask + mx, mwidth)           : mask[mx];
+            omask[msize + mx] =   safe ? _mask_dilated(mask + msize + mx, mwidth)   : mask[mx + msize];
+            omask[2*msize + mx] = safe ? _mask_dilated(mask + 2*msize + mx, mwidth) : mask[mx + 2*msize];
           }
         }
 
@@ -181,16 +183,16 @@ static void _process_linear_opposed(dt_iop_module_t *self,
             for_three_channels(c)
             {
               const float inval = input[idx+c];
-              if((inval > 0.2f * clips[c]) && (inval < clips[c]) && (mask[(c+3) * msize + _raw_to_cmap(mwidth, row, col)]))
+              if((inval > 0.2f * clips[c]) && (inval < clips[c]) && (omask[c * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
               {
-                sums[c] += inval - _calc_linear_refavg(&input[idx], c);
-                cnts[c] += 1.0f;
+                sums[c] += (double)(inval - _calc_linear_refavg(&input[idx], c));
+                cnts[c] += 1;
               }
             }
           }
         }
         for_three_channels(c)
-          chrominance[c] = (cnts[c] > 30.0f) ? sums[c] / cnts[c] : 0.0f;
+          chrominance[c] = cnts[c] > 30 ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
 
         if(self->dev->gui_attached && g && fullpipe)
         {
@@ -209,6 +211,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
             STR_YESNO(anyclipped));
       }
       dt_free_align(mask);
+      dt_free_align(omask);
     }
     else
       dt_print_pipe(DT_DEBUG_ALWAYS,
@@ -245,26 +248,25 @@ static float *_process_opposed(dt_iop_module_t *self,
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
   const uint32_t filters = piece->filters;
 
-  const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[1] : 1.0f,
-                                       wbon ? dsc->temperature.coeffs[2] : 1.0f};
-  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
+                                       wbon ? dsc->temperature.coeffs[2] : 1.0f,
+                                       1.0f };
+  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f };
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean late = chr->late_correction;
-  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
-                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
-                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
-                                          1.0f };
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean late = dt_dev_wb_late_correction(wb, dsc);
+  dt_aligned_pixel_t correction;
+  dt_dev_wb_get_rgb_correction(wb, late, correction);
 
   const size_t iwidth = roi_in->width;
   const size_t iheight = roi_in->height;
   const size_t mwidth  = iwidth / 3;
   const size_t mheight = iheight / 3;
-  // we have to over-allocate making sure all later tests fit for all width&height combinations
-  const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
+  const size_t msize = mwidth * mheight;
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -297,8 +299,9 @@ static float *_process_opposed(dt_iop_module_t *self,
 
   if(!is_hashed)
   {
-    char *mask = dt_calloc_aligned(6 * msize);
-    if(mask)
+    char *mask = dt_calloc_aligned(3 * msize);
+    char *omask = dt_alloc_aligned(3 * msize);
+    if(mask && omask)
     {
       gboolean anyclipped = FALSE;
       DT_OMP_FOR(reduction( | : anyclipped))
@@ -330,14 +333,14 @@ static float *_process_opposed(dt_iop_module_t *self,
         }
       }
 
-      dt_aligned_pixel_t sums = {0.0f, 0.0f, 0.0f, 0.0f};
-      dt_aligned_pixel_t cnts = {0.0f, 0.0f, 0.0f, 0.0f};
+      double sums[3] = { 0.0, 0.0, 0.0 };
+      int cnts[3] = { 0, 0, 0 };
+
       if(anyclipped)
       {
         /* We want to use the photosites closely around clipped data to be taken into account.
-         The mask buffers holds data for each color channel, we dilate the mask buffer slightly
-         to get those locations.
-         If there are no clipped locations we keep the chrominance correction at 0 but make it valid
+           The mask buffers holds data for each color channel, we dilate the mask buffer slightly
+           to get those locations.
         */
         DT_OMP_FOR(collapse(2))
         for(size_t row = 0; row < mheight; row++)
@@ -346,14 +349,14 @@ static float *_process_opposed(dt_iop_module_t *self,
           {
             const size_t mx = row * mwidth + col;
             const gboolean safe = col >= 3 && row >= 3 && col < mwidth - 3 && row < mheight - 3;
-            mask[3*msize + mx] = safe ? _mask_dilated(mask + mx, mwidth)          : mask[mx];
-            mask[4*msize + mx] = safe ? _mask_dilated(mask + msize + mx, mwidth)  : mask[mx + msize];
-            mask[5*msize + mx] = safe ? _mask_dilated(mask + 2*msize + mx, mwidth): mask[mx + 2*msize];
+            omask[mx] =           safe ? _mask_dilated(mask + mx, mwidth)           : mask[mx];
+            omask[msize + mx] =   safe ? _mask_dilated(mask + msize + mx, mwidth)   : mask[mx + msize];
+            omask[2*msize + mx] = safe ? _mask_dilated(mask + 2*msize + mx, mwidth) : mask[mx + 2*msize];
           }
         }
 
         const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
-        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */
+        // After having the surrounding mask for each color channel we can calculate the chrominance corrections.
         DT_OMP_FOR(reduction(+ : sums, cnts) collapse(2))
         for(size_t row = 0; row < iheight; row++)
         {
@@ -364,16 +367,18 @@ static float *_process_opposed(dt_iop_module_t *self,
             const float inval = input[idx];
 
             /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
-            if((inval < clips[color]) && (inval > lo_clips[color])
-               && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
+            if((inval < clips[color])
+              && (inval > lo_clips[color])
+              && (omask[color * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
             {
-              sums[color] += inval - _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
-              cnts[color] += 1.0f;
+              sums[color] += (double)(inval - _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE));
+              cnts[color] += 1;
             }
           }
         }
+
         for_three_channels(c)
-          chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
+          chrominance[c] = (cnts[c] > 100) ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
       }
 
       if(self->dev->gui_attached && g && fullpipe)
@@ -389,16 +394,17 @@ static float *_process_opposed(dt_iop_module_t *self,
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
           "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
            "%12.7f (%d)%12.7f (%d)%12.7f (%d) clipped=%s",
-          chrominance[0], (int)cnts[0],
-          chrominance[1], (int)cnts[1],
-          chrominance[2], (int)cnts[2],
+          chrominance[0], cnts[0],
+          chrominance[1], cnts[1],
+          chrominance[2], cnts[2],
           STR_YESNO(anyclipped));
-      dt_free_align(mask);
     }
     else
       dt_print_pipe(DT_DEBUG_ALWAYS,
           "invalid opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
           "allocation for mask generation failed");
+    dt_free_align(mask);
+    dt_free_align(omask);
   }
 
   float *tmpout = keep ? dt_alloc_align_float(iwidth * iheight) : NULL;
@@ -465,34 +471,35 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = piece->data;
   const dt_iop_highlights_global_data_t *gd = self->global_data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
-  const int devid = piece->pipe->devid;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const int devid = pipe->devid;
   const uint32_t filters = piece->filters;
 
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
-  const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[1] : 1.0f,
-                                       wbon ? dsc->temperature.coeffs[2] : 1.0f};
+                                       wbon ? dsc->temperature.coeffs[2] : 1.0f,
+                                       1.0f };
 
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean late = chr->late_correction;
-  dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
-                                    late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
-                                    late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
-                                    1.0f };
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean late = dt_dev_wb_late_correction(wb, dsc);
+  dt_aligned_pixel_t correction;
+  dt_dev_wb_get_rgb_correction(wb, late, correction);
 
+  const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_chrominance = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
-  cl_mem dev_accu = NULL;
   cl_mem dev_correction = NULL;
-  float *claccu = NULL;
+  char *mask = NULL;
+  float *indata = NULL;
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -538,8 +545,8 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     const int iheight = roi_in->height;
     const int mwidth  = iwidth / 3;
     const int mheight = iheight / 3;
-    const int msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
-    const size_t mbufsize = sizeof(float) * msize;
+    const int msize = mwidth * mheight;
+    const size_t mbufsize = 3 * msize;
 
     dev_inmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
     if(dev_inmask == NULL) goto error;
@@ -559,45 +566,47 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
             CLARG(msize), CLARG(mwidth), CLARG(mheight));
     if(err != CL_SUCCESS) goto error;
 
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    const size_t accu_floats = 8 * iheight;
-    const size_t accusize = sizeof(float) * accu_floats;
-    dev_accu = dt_opencl_alloc_device_buffer(devid, accusize);
-    if(dev_accu == NULL) goto error;
+    dt_opencl_release_mem_object(dev_inmask);
+    dev_inmask = NULL;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
+    mask = dt_alloc_aligned(mbufsize);
+    indata = dt_alloc_align_float(iwidth * iheight);
+    if(!mask || !indata) goto error;
 
-    claccu = dt_alloc_align_float(accu_floats);
-    if(claccu == NULL)
-    {
-      err = DT_OPENCL_SYSMEM_ALLOCATION;
-      goto error;
-    }
-
-    err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_highlights_chroma, iheight,
-            CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
-            CLARG(iwidth), CLARG(iheight),
-            CLARG(msize), CLARG(mwidth),
-            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_correction));
+    err = dt_opencl_copy_image_to_host(devid, indata, dev_in, iwidth, iheight, sizeof(float));
+    if(err != CL_SUCCESS) goto error;
+    err = dt_opencl_read_buffer_from_device(devid, mask, dev_outmask, 0, mbufsize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, accusize, TRUE);
-    if(err != CL_SUCCESS) goto error;
+    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
 
-    // collect row data and accumulate
-    dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
-    dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
-    float clipped = 0.0f;
+    double sums[3] = { 0.0, 0.0, 0.0 };
+    int cnts[3] = { 0, 0, 0 };
+    gboolean anyclipped = FALSE;
 
-    for(int row = 0; row < iheight; row++)
+    DT_OMP_FOR(reduction(+ : sums, cnts) reduction( | : anyclipped) collapse(2))
+    for(size_t row = 0; row < iheight; row++)
     {
-      for_three_channels(c)
+      for(size_t col = 0; col < iwidth; col++)
       {
-        sums[c] += claccu[8*row + 2*c];
-        cnts[c] += claccu[8*row + 2*c +1];
-        clipped += claccu[8*row + 6];
+        const size_t idx = row * iwidth + col;
+        const int color = fcol(row, col, filters, xtrans);
+        const float inval = indata[idx];
+
+        /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
+        if((inval < clips[color])
+            && (inval > lo_clips[color])
+            && (mask[color * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
+        {
+          sums[color] += (double)(inval - _calc_refavg(indata, xtrans, filters, row, col, roi_in, correction, TRUE));
+          cnts[color] += 1;
+        }
+        anyclipped |= inval >= clips[color];
       }
     }
+
     for_three_channels(c)
-      chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
+      chrominance[c] = cnts[c] > 100 ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
 
     if(self->dev->gui_attached && g && fullpipe)
     {
@@ -605,17 +614,17 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
       for_three_channels(c)
         g->oppchroma[c] = chrominance[c];
       g->opphash = opphash;
-      g->oppclipped = clipped > 0.0f;
+      g->oppclipped = anyclipped;
       g->oppresult = TRUE;
       dt_iop_gui_leave_critical_section(self);
     }
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
         "opposed chroma", piece->pipe, self, piece->pipe->devid, NULL, NULL,
         "%12.7f (%d)%12.7f (%d)%12.7f (%d) clipped=%s",
-        chrominance[0], (int)cnts[0],
-        chrominance[1], (int)cnts[1],
-        chrominance[2], (int)cnts[2],
-        STR_YESNO(clipped > 0.0f));
+        chrominance[0], cnts[0],
+        chrominance[1], cnts[1],
+        chrominance[2], cnts[2],
+        STR_YESNO(anyclipped));
   }
 
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -643,9 +652,165 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_chrominance);
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
-  dt_opencl_release_mem_object(dev_accu);
   dt_opencl_release_mem_object(dev_correction);
-  dt_free_align(claccu);
+  dt_free_align(mask);
+  dt_free_align(indata);
+  return err;
+}
+#endif
+
+#ifdef HAVE_OPENCL
+// _process_linear_opposed() into dev_out, which has the size of roi_in
+static cl_int _process_linear_opposed_cl(dt_iop_module_t *self,
+                                         dt_dev_pixelpipe_iop_t *piece,
+                                         cl_mem dev_in,
+                                         cl_mem dev_out,
+                                         const dt_iop_roi_t *const roi_in)
+{
+  dt_iop_highlights_data_t *d = piece->data;
+  const dt_iop_highlights_global_data_t *gd = self->global_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
+  const int devid = piece->pipe->devid;
+
+  const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
+  const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  const gboolean wbon = dsc->temperature.enabled;
+  const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
+                                       wbon ? dsc->temperature.coeffs[1] : 1.0f,
+                                       wbon ? dsc->temperature.coeffs[2] : 1.0f,
+                                       1.0f };
+  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f };
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int mwidth  = width / 3;
+  const int mheight = height / 3;
+  const int msize = mwidth * mheight;
+
+  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
+  const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+
+  gboolean is_hashed = FALSE;
+  gboolean unclipped = FALSE;
+  if(self->dev->gui_attached && g)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    is_hashed = opphash == g->opphash;
+    unclipped = !g->oppclipped;
+    if(is_hashed)
+    {
+      for_three_channels(c)
+        chrominance[c] = g->oppchroma[c];
+    }
+    dt_iop_gui_leave_critical_section(self);
+  }
+
+  if(is_hashed && unclipped)
+  {
+    const size_t region[2] = { width, height };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+  }
+
+  cl_int err = CL_SUCCESS;
+  cl_mem dev_inmask = NULL;
+  cl_mem dev_outmask = NULL;
+  char *omask = NULL;
+  float *input = NULL;
+
+  if(!is_hashed)
+  {
+    const size_t mbufsize = 3 * (size_t)msize;
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    dev_inmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
+    dev_outmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
+    if(!dev_inmask || !dev_outmask) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask_linear, mwidth, mheight,
+            CLARG(dev_in), CLARG(dev_inmask),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight), CLARG(width), CLARG(height),
+            CLARG(clips));
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_dilatemask, mwidth, mheight,
+            CLARG(dev_inmask), CLARG(dev_outmask),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight));
+    if(err != CL_SUCCESS) goto error;
+
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
+    omask = dt_alloc_aligned(mbufsize);
+    if(!omask) goto error;
+    err = dt_opencl_read_buffer_from_device(devid, omask, dev_outmask, 0, mbufsize, TRUE);
+    if(err != CL_SUCCESS) goto error;
+
+    // the dilation keeps an empty mask empty
+    gboolean anyclipped = FALSE;
+    for(size_t k = 0; k < mbufsize && !anyclipped; k++)
+      anyclipped = omask[k] != 0;
+
+    if(anyclipped)
+    {
+      err = DT_OPENCL_SYSMEM_ALLOCATION;
+      input = dt_alloc_align_float((size_t)width * height * 4);
+      if(!input) goto error;
+      err = dt_opencl_copy_image_to_host(devid, input, dev_in, width, height, 4 * sizeof(float));
+      if(err != CL_SUCCESS) goto error;
+
+      double sums[3] = { 0.0, 0.0, 0.0 };
+      int cnts[3] = { 0, 0, 0 };
+
+      DT_OMP_FOR(reduction(+ : sums, cnts))
+      for(size_t row = 3; row < height - 3; row++)
+      {
+        for(size_t col = 3; col < width - 3; col++)
+        {
+          const size_t idx = (row * width + col) * 4;
+          for_three_channels(c)
+          {
+            const float inval = input[idx+c];
+            if((inval > 0.2f * clips[c]) && (inval < clips[c]) && (omask[c * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
+            {
+              sums[c] += (double)(inval - _calc_linear_refavg(&input[idx], c));
+              cnts[c] += 1;
+            }
+          }
+        }
+      }
+      for_three_channels(c)
+        chrominance[c] = cnts[c] > 30 ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
+
+      if(self->dev->gui_attached && g && fullpipe)
+      {
+        dt_iop_gui_enter_critical_section(self);
+        for_three_channels(c)
+          g->oppchroma[c] = chrominance[c];
+        g->opphash = opphash;
+        g->oppclipped = anyclipped;
+        g->oppresult = TRUE;
+        dt_iop_gui_leave_critical_section(self);
+      }
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+          "opposed chroma", piece->pipe, self, devid, roi_in, NULL,
+          "RGB %3.4f %3.4f %3.4f clipped=%s",
+          chrominance[0], chrominance[1], chrominance[2],
+          STR_YESNO(anyclipped));
+    }
+  }
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed_linear, width, height,
+          CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+          CLARG(clips), CLARG(chrominance));
+
+error:
+  if(err != CL_SUCCESS)
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+          "linear opposed processing failed", piece->pipe, self, devid, NULL, NULL,
+          "error=%s", cl_errstr(err));
+
+  dt_opencl_release_mem_object(dev_inmask);
+  dt_opencl_release_mem_object(dev_outmask);
+  dt_free_align(omask);
+  dt_free_align(input);
   return err;
 }
 #endif

@@ -544,15 +544,6 @@ static void _format_changed(GtkWidget *combo,
   gtk_widget_set_visible(g->film_format_mm_slider, pi < 0 || pi >= FORMAT_PRESETS_N);
 }
 
-static void _format_slider_changed(GtkWidget *slider,
-                                   gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
-  const float mm = dt_bauhaus_slider_get(g->film_format_mm_slider);
-  dt_bauhaus_combobox_set_from_value(g->film_format_combo, _format_mm_to_preset(mm));
-}
-
 static void _populate_format_combo(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -4033,13 +4024,13 @@ static void _development_widget_update(GtkWidget *w,
     char tip[320];
     snprintf(tip, sizeof tip,
              _("development time, in minutes. snaps to the nearest time %s is\n"
-               "characterised at: %s min. 0 uses the stock's own default (%.3g min)."),
+               "characterized at: %s min. 0 uses the stock's own default (%.3g min)."),
              e->name, times, (double)_development_default(e));
     gtk_widget_set_tooltip_text(w, tip);
   }
   else
     gtk_widget_set_tooltip_text(w,
-                                _("development time. this stock is characterised at a "
+                                _("development time. this stock is characterized at a "
                                   "single\n"
                                   "development, so there is nothing to choose.\n"
                                   "\n"
@@ -5789,8 +5780,6 @@ void gui_init(dt_iop_module_t *self)
                                 "a smaller format shows every one of them proportionally "
                                 "larger for\n"
                                 "the same print size."));
-  g_signal_connect(G_OBJECT(g->film_format_mm_slider), "value-changed",
-                   G_CALLBACK(_format_slider_changed), self);
 
   /* restore main widget for the notebook */
   self->widget = sf_main_box;
@@ -5840,7 +5829,7 @@ void gui_init(dt_iop_module_t *self)
      the slider out for stocks characterised at a single development */
   gtk_widget_set_tooltip_text(g->development_min,
                               _("development time. snaps to the nearest time the stock was\n"
-                                "characterised at; 0 uses the stock's own default."));
+                                "characterized at; 0 uses the stock's own default."));
 
   g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
@@ -6004,7 +5993,7 @@ void gui_init(dt_iop_module_t *self)
       _("first half of the film's sensitivity adaptation: a spectral bandpass\n"
         "applied to the stock's own sensitivities, rolling off the UV and IR\n"
         "ends of each channel while preserving white balance. on by default,\n"
-        "and best left on: it is part of how the stock is characterised. no\n"
+        "and best left on: it is part of how the stock is characterized. no\n"
         "effect on stocks whose profile carries no bandpass."));
 
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
@@ -6020,19 +6009,18 @@ void gui_init(dt_iop_module_t *self)
   g->gamut_compress = dt_bauhaus_toggle_from_params(self, "gamut_compress");
   gtk_widget_set_tooltip_text(
       g->gamut_compress,
-      _("pull what the output profile cannot hold back inside it, along\n"
-        "curves that leave everything already inside untouched. this is two\n"
-        "knees: chroma towards the profile's boundary, and lightness from\n"
-        "the upper midtones up, which rolls the highlights off to white.\n"
+      _("compress what the output profile cannot hold, with two knees:\n"
+        "chroma towards the profile's boundary, and lightness from the\n"
+        "upper midtones up, which rolls the highlights off towards white.\n"
+        "both also act on colors inside the profile: saturated colors near\n"
+        "its edge are pulled in a little, and the brightest in-range tones\n"
+        "are compressed.\n"
         "\n"
         "switching it off shows where the film is producing colors the\n"
         "profile has no room for: they leave the range, so darktable's\n"
         "clipping indicator marks them and the raw extent of the overshoot\n"
-        "is visible. the highlights stop rolling off and reach further at\n"
-        "the same time, since the lightness knee goes away with the rest.\n"
-        "to place the highlights without losing the rolloff, use the\n"
-        "pre-compression boost and post-compression scale on the scanner\n"
-        "tab instead.\n"
+        "is visible. the highlights also stop rolling off and keep their\n"
+        "full range, since the lightness knee goes away with the rest.\n"
         "\n"
         "leave it on for an image you intend to keep. off, saturated colors\n"
         "are clipped by whatever comes next in the pipeline, which loses the\n"
@@ -6105,7 +6093,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->print_development_min,
                               _("print development time. snaps to the nearest time the "
                                 "paper was\n"
-                                "characterised at; 0 uses its own default."));
+                                "characterized at; 0 uses its own default."));
 
   g->print_gamma_r = dt_bauhaus_slider_from_params(self, "print_gamma_r");
   gtk_widget_set_tooltip_text(

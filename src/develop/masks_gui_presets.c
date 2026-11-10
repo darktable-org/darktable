@@ -25,6 +25,7 @@
 #include "common/utility.h"
 #include "develop/blend_gui_internal.h"
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
@@ -333,6 +334,20 @@ static void _flexi_preset_list_free(GList *presets)
 static GList *_user_presets = NULL;
 static gboolean _user_presets_read = FALSE;
 
+// the resolved default layout's first node and note key, cached to avoid
+// re-parsing on every signature. _cached_default_head is FALSE when the default
+// names no preset, which leaves a caller's group untouched
+static dt_masks_layout_node_t _cached_default_node;
+static gchar _cached_default_key[64];
+static gboolean _cached_default_head = FALSE;
+static gboolean _cached_default_root_valid = FALSE;
+static gchar *_cached_default_preset = NULL;
+
+static void _default_layout_cache_invalidate(void)
+{
+  _cached_default_root_valid = FALSE;
+}
+
 static GList *_flexi_user_presets(void)
 {
   if(!_user_presets_read)
@@ -345,6 +360,7 @@ static GList *_flexi_user_presets(void)
 
 static void _flexi_user_presets_forget(void)
 {
+  _default_layout_cache_invalidate();
   _flexi_preset_list_free(_user_presets);
   _user_presets = NULL;
   _user_presets_read = FALSE;
@@ -745,6 +761,7 @@ static GPtrArray *_flexi_builtins_get(void)
   if(_builtins.presets) g_ptr_array_free(_builtins.presets, TRUE);
   if(_builtins.notes) g_hash_table_destroy(_builtins.notes);
   g_free(_builtins.path);
+  _default_layout_cache_invalidate();
   _builtins.presets = g_ptr_array_new_with_free_func(_flexi_builtin_free);
   _builtins.notes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
                                           (GDestroyNotify)g_ptr_array_unref);
@@ -1252,76 +1269,102 @@ void dt_masks_gui_default_layout_build(dt_masks_form_t *grp)
 
 void dt_masks_gui_default_layout_root(dt_masks_point_group_t *root)
 {
-  int n;
-  const gchar *const *keys;
-  gboolean is_plain;
-  dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
-  if(nodes && n > 0) _flexi_layout_set_head(root, &nodes[0], keys ? keys[0] : NULL);
-  g_free(nodes);
+  if(!root) return;
+  gchar *def = dt_conf_get_string(FLEXI_DEFAULT_PRESET_CONF);
+  if(!_cached_default_root_valid || g_strcmp0(def, _cached_default_preset) != 0)
+  {
+    g_free(_cached_default_preset);
+    _cached_default_preset = def;
+    int n;
+    const gchar *const *keys;
+    gboolean is_plain;
+    dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
+    _cached_default_head = nodes && n > 0;
+    if(_cached_default_head)
+    {
+      _cached_default_node = nodes[0];
+      dt_strlcpy_to_fixed(_cached_default_key, keys && keys[0] ? keys[0] : "",
+                          sizeof(_cached_default_key));
+    }
+    g_free(nodes);
+    _cached_default_root_valid = TRUE;
+  }
+  else
+  {
+    g_free(def);
+  }
+  // patch the caller's group rather than replacing it: its formid and marker
+  // bit are its own, and so are all its fields when the default names no preset
+  if(_cached_default_head)
+    _flexi_layout_set_head(root, &_cached_default_node, _cached_default_key);
 }
 
-static void _masks_default_preset_toggled(GtkToggleButton *radio, gpointer user_data)
+#define _DEFAULT_PRESET_TIP                                              \
+  _("the group layout preset a module's mask starts with\n"              \
+    "when it is switched on for the first time")
+
+// a built-in's description has no entry of its own to sit on: the combo box
+// tip adds it while that entry is the selected one
+static void _masks_default_preset_tip(GtkWidget *combo, const gchar *id)
+{
+  const _flexi_builtin_t *b = _flexi_builtin_by_id(id);
+  gchar *tip = b && b->description
+                 ? g_strdup_printf("%s\n\n%s", _DEFAULT_PRESET_TIP, _(b->description))
+                 : g_strdup(_DEFAULT_PRESET_TIP);
+  gtk_widget_set_tooltip_text(combo, tip);
+  g_free(tip);
+}
+
+static void _masks_default_preset_changed(GtkWidget *combo, gpointer user_data)
 {
   DT_GUARD_GUI_UPDATE();
-  if(!gtk_toggle_button_get_active(radio)) return;
-  dt_conf_set_string(FLEXI_DEFAULT_PRESET_CONF, g_object_get_data(G_OBJECT(radio), "preset"));
+  const gchar *id = dt_bauhaus_combobox_get_data(combo);
+  if(!id) return;
+  _default_layout_cache_invalidate();
+  dt_conf_set_string(FLEXI_DEFAULT_PRESET_CONF, id);
+  _masks_default_preset_tip(combo, id);
 }
 
-static GtkWidget *_masks_default_preset_radio(GtkWidget *box,
-                                              GtkWidget *group,
-                                              const gchar *label,
-                                              const gchar *tooltip,
-                                              gchar *value,
-                                              const gchar *current)
+static void _masks_default_preset_entry(GtkWidget *combo,
+                                        const gchar *label,
+                                        gchar *value,
+                                        const gchar *current)
 {
-  GtkWidget *radio = gtk_radio_button_new_with_label_from_widget(
-    group ? GTK_RADIO_BUTTON(group) : NULL, label);
-  if(tooltip) gtk_widget_set_tooltip_text(radio, tooltip);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), !g_strcmp0(value, current));
-  g_object_set_data_full(G_OBJECT(radio), "preset", value, g_free);
-  dt_gui_box_add(box, radio);
-  return radio;
+  dt_bauhaus_combobox_add_full(combo, label, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT, value, g_free, TRUE);
+  if(!g_strcmp0(value, current))
+    dt_bauhaus_combobox_set(combo, dt_bauhaus_combobox_length(combo) - 1);
 }
 
 void dt_masks_gui_add_default_preset_box(GtkWidget *box)
 {
-  dt_masks_gui_pref_section(box, _("default group layout"),
-                            _("the group layout preset a module's mask starts with\n"
-                              "when it is switched on for the first time"));
-
   gchar *current = dt_conf_get_string(FLEXI_DEFAULT_PRESET_CONF);
-  GtkWidget *group = NULL;
-  GList *radios = NULL;
+  GtkWidget *combo = dt_masks_gui_pref_combo(box, _("default layout for new masks"),
+                                             _DEFAULT_PRESET_TIP);
 
-  // states first, handlers after, as the panel position radios do
+  // state first, handler after, as the panel position combo box does
   DT_ENTER_GUI_UPDATE();
   GPtrArray *builtins = _flexi_builtins_get();
   for(guint i = 0; i < builtins->len; i++)
   {
     const _flexi_builtin_t *b = g_ptr_array_index(builtins, i);
-    group = _masks_default_preset_radio(box, group, _(b->name),
-                                        b->description ? _(b->description) : NULL,
-                                        g_strdup(b->id), current);
-    radios = g_list_prepend(radios, group);
+    _masks_default_preset_entry(combo, _(b->name), g_strdup(b->id), current);
   }
   GList *user_presets = _flexi_preset_list_load();
   for(GList *p = user_presets; p; p = g_list_next(p))
   {
     const _flexi_preset_t *preset = p->data;
-    group = _masks_default_preset_radio(
-      box, group, preset->name, NULL,
-      g_strconcat(FLEXI_USER_PRESET_PREFIX, preset->name, NULL), current);
-    radios = g_list_prepend(radios, group);
+    _masks_default_preset_entry(
+      combo, preset->name, g_strconcat(FLEXI_USER_PRESET_PREFIX, preset->name, NULL), current);
   }
   _flexi_preset_list_free(user_presets);
   DT_LEAVE_GUI_UPDATE();
 
-  for(GList *r = radios; r; r = g_list_next(r))
-    g_signal_connect(G_OBJECT(r->data), "toggled", G_CALLBACK(_masks_default_preset_toggled),
-                     NULL);
-  g_list_free(radios);
+  _masks_default_preset_tip(combo, current);
+  g_signal_connect(G_OBJECT(combo), "value-changed", G_CALLBACK(_masks_default_preset_changed),
+                   NULL);
   g_free(current);
 }
+#undef _DEFAULT_PRESET_TIP
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

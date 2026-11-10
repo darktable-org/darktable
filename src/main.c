@@ -247,6 +247,30 @@ int main(int argc, char *argv[])
 
   dt_cleanup();
 
+  if(darktable.restart && darktable.restart_argv)
+  {
+    GError *error = NULL;
+    const gboolean abs_exe = darktable.restart_argv[0]
+      && g_path_is_absolute(darktable.restart_argv[0]);
+    const gboolean ok =
+      g_spawn_async(NULL,
+                    darktable.restart_argv,
+                    NULL,
+                    abs_exe ? G_SPAWN_DEFAULT : G_SPAWN_SEARCH_PATH,
+                    NULL,
+                    NULL,
+                    NULL,
+                    &error);
+    if(!ok)
+    {
+      fprintf(stderr, "darktable: failed to restart: %s\n",
+              error ? error->message : "unknown error");
+      if(error) g_error_free(error);
+    }
+    g_strfreev(darktable.restart_argv);
+    darktable.restart_argv = NULL;
+  }
+
   if(dt_gimpmode() && darktable.gimp.error)
     printf("\n<<<gimp\nerror\ngimp>>>\n");
 

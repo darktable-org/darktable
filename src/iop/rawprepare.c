@@ -60,6 +60,7 @@ typedef struct dt_iop_rawprepare_gui_data_t
   GtkWidget *white_point;
   GtkWidget *left, *top, *right, *bottom;
   GtkWidget *flat_field;
+  gboolean white_trouble;
 } dt_iop_rawprepare_gui_data_t;
 
 typedef struct dt_iop_rawprepare_data_t
@@ -80,6 +81,9 @@ typedef struct dt_iop_rawprepare_data_t
   gboolean apply_gainmaps;
   // GainMap for each filter of RGGB Bayer pattern
   dt_dng_gain_map_t *gainmaps[4];
+  /* DNG OpcodeList3 GainMap for linear DNGs, owned by the image cache. NULL
+     unless the image is already demosaiced, in which case demosaic handles it. */
+  const dt_dng_gain_map_t *gainmap_opcode3;
 } dt_iop_rawprepare_data_t;
 
 typedef struct dt_iop_rawprepare_global_data_t
@@ -464,6 +468,22 @@ void process(dt_iop_module_t *self,
     }
   }
 
+  if(d->gainmap_opcode3)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "dng gainmap", piece->pipe, self, DT_DEVICE_CPU, NULL, roi_out,
+                  "OpcodeList3 %ux%u map, %u planes",
+                  d->gainmap_opcode3->map_points_h, d->gainmap_opcode3->map_points_v,
+                  d->gainmap_opcode3->map_planes);
+    /* unlike demosaic, rawprepare does not resample: it reads the input at
+       (csx + i, csy + j), so roi_out maps straight back to raw coordinates and
+       csx/csy already carry the crop. */
+    dt_dng_gain_map_apply(d->gainmap_opcode3, &piece->pipe->image, out, out,
+                          roi_out->width, roi_out->height,
+                          (roi_out->x + csx) / roi_out->scale,
+                          (roi_out->y + csy) / roi_out->scale,
+                          1.0f / roi_out->scale);
+  }
+
   const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
   if(color_sraw && piece->pipe->want_detail_mask)
     dt_dev_write_scharr_mask(piece, out, roi_out, FALSE);
@@ -487,7 +507,9 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_div = NULL;
   cl_mem dev_rdiv = NULL;
   cl_mem dev_gainmap[4] = {NULL};
+  cl_mem dev_scratch = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
 
   int kernel = -1;
   gboolean gainmap_args = FALSE;
@@ -541,8 +563,23 @@ int process_cl(dt_iop_module_t *self,
   const int height = roi_out->height;
 
   const size_t sizes[2] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid) };
+
+  /* The GainMap kernel below reads and writes one pixel per work item, but an
+     image cannot be both read from and written to by the same kernel, so let
+     this one write a scratch image and take dev_out from there. */
+  cl_mem dev_target = dev_out;
+  if(d->gainmap_opcode3)
+  {
+    dev_scratch = dt_opencl_alloc_device(devid,
+                                         dt_opencl_get_image_width(dev_out),
+                                         dt_opencl_get_image_height(dev_out),
+                                         dt_opencl_get_image_element_size(dev_out));
+    if(dev_scratch == NULL) goto finish;
+    dev_target = dev_scratch;
+  }
+
   dt_opencl_set_kernel_args(devid, kernel, 0,
-    CLARG(dev_in), CLARG(dev_out),
+    CLARG(dev_in), CLARG(dev_target),
     CLARG(width), CLARG(height),
     CLARG(csx), CLARG(csy),
     CLARG(dev_sub), CLARG(dev_div),  CLARG(dev_rdiv), CLARG(roi_out->x), CLARG(roi_out->y));
@@ -569,7 +606,22 @@ int process_cl(dt_iop_module_t *self,
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 
+  if(err == CL_SUCCESS && d->gainmap_opcode3)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "dng gainmap", piece->pipe, self, devid, NULL, roi_out,
+                  "OpcodeList3 %ux%u map, %u planes",
+                  d->gainmap_opcode3->map_points_h, d->gainmap_opcode3->map_points_v,
+                  d->gainmap_opcode3->map_planes);
+    err = dt_dng_gain_map_apply_cl(devid, d->gainmap_opcode3, &piece->pipe->image,
+                                   dev_scratch, dev_out,
+                                   roi_out->width, roi_out->height,
+                                   (roi_out->x + csx) / roi_out->scale,
+                                   (roi_out->y + csy) / roi_out->scale,
+                                   1.0f / roi_out->scale);
+  }
+
 finish:
+  dt_opencl_release_mem_object(dev_scratch);
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
   dt_opencl_release_mem_object(dev_rdiv);
@@ -719,9 +771,20 @@ void commit_params(dt_iop_module_t *self,
   d->right = p->right;
   d->bottom = p->bottom;
 
+  dt_iop_rawprepare_gui_data_t *g = self->gui_data;
+
+  uint16_t max_black = 0;
+  for(int i = 0; i < 4; i++)
+    max_black = MAX(max_black, p->raw_black_level_separate[i]);
+
+  // a white point at or below the black level would make div <= 0 and the
+  // image render black or inverted; fall back to the full range instead
+  const gboolean white_invalid = p->raw_white_point <= max_black;
+  const uint16_t raw_white_point = white_invalid ? UINT16_MAX : p->raw_white_point;
+
   if(piece->pipe->dsc.filters)
   {
-    const float white = (float)p->raw_white_point;
+    const float white = (float)raw_white_point;
     for(int i = 0; i < 4; i++)
     {
       d->sub[i] = (float)p->raw_black_level_separate[i];
@@ -736,7 +799,7 @@ void commit_params(dt_iop_module_t *self,
       ? 1.0f
       : 1.0f / (float)UINT16_MAX;
 
-    const float white = (float)p->raw_white_point * normalizer;
+    const float white = (float)raw_white_point * normalizer;
     for(int i = 0; i < 4; i++)
     {
       const float sepi = (float)p->raw_black_level_separate[i] * normalizer;
@@ -752,12 +815,33 @@ void commit_params(dt_iop_module_t *self,
     black += p->raw_black_level_separate[i];
   }
   d->rawprepare.raw_black_level = (uint16_t)(black / 4);
-  d->rawprepare.raw_white_point = p->raw_white_point;
+  d->rawprepare.raw_white_point = raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)
     d->apply_gainmaps = _check_gain_maps(self, d->gainmaps);
   else
     d->apply_gainmaps = FALSE;
+
+  if(self->dev->gui_attached && g && !white_invalid)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    const gboolean had_trouble = g->white_trouble;
+    g->white_trouble = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+    if(had_trouble)
+      dt_iop_clear_module_trouble_message(self);
+  }
+
+  /* OpcodeList3 is defined for demosaiced data, so for a CFA raw it belongs in
+     demosaic and not here. A linear DNG never reaches a demosaicer, and this is
+     the first module that sees it as three colour planes, so it is corrected
+     here instead. Following the OpcodeList2 maps, it is offered under the same
+     "flat field" control. */
+  d->gainmap_opcode3 = (p->flat_field == FLAT_FIELD_EMBEDDED
+                        && !piece->pipe->dsc.filters
+                        && piece->colors == 4)
+    ? dt_dng_gain_map_opcode3(&piece->pipe->image)
+    : NULL;
 
   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
@@ -768,6 +852,22 @@ void commit_params(dt_iop_module_t *self,
 
   if(piece->pipe->want_detail_mask)
     piece->process_tiling_ready = FALSE;
+
+  if(white_invalid && piece->enabled)
+  {
+    dt_iop_set_module_trouble_message
+      (self,
+       _("invalid white point"),
+       _("the white point is not above the black level.\n"
+         "the maximum value is used instead, set a correct white point."),
+       "white point not above black level, using maximum");
+    if(self->dev->gui_attached && g)
+    {
+      dt_iop_gui_enter_critical_section(self);
+      g->white_trouble = TRUE;
+      dt_iop_gui_leave_critical_section(self);
+    }
+  }
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

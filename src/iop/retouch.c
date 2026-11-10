@@ -4459,7 +4459,7 @@ static cl_int _retouch_heal_cl(const int devid,
   heal_params_cl_t *hp = dt_heal_init_cl(devid);
   if(hp)
   {
-    err = dt_heal_cl(hp, dev_src, dev_dest, mask_scaled,
+    err = dt_heal_cl(hp, dev_src, dev_dest, mask_scaled, dev_mask_scaled,
                      roi_mask_scaled->width, roi_mask_scaled->height, max_iter);
     dt_heal_free_cl(hp);
 

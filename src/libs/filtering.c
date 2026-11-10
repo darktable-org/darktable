@@ -913,6 +913,7 @@ static gboolean _rule_show_popup(GtkWidget *widget,
     gtk_widget_insert_action_group(widget, 
                                    "filter",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
 #define ADD_COLLECT_ENTRY(menu, value)                                                                            \
@@ -1630,6 +1631,7 @@ static void _event_history_show(GtkWidget *widget, dt_lib_module_t *self)
     gtk_widget_insert_action_group(widget, 
                                    "event_history",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   // we show a popup with all the history entries
@@ -2173,6 +2175,7 @@ static void _sort_show_add_popup(GtkWidget *widget, dt_lib_module_t *self)
     gtk_widget_insert_action_group(widget, 
                                    "sort",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   GMenu *menu = g_menu_new();
@@ -2266,6 +2269,7 @@ static void _sort_history_show(GtkWidget *widget, dt_lib_module_t *self)
     gtk_widget_insert_action_group(widget, 
                                    "sort_history",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   // we show a popup with all the history entries

@@ -2018,6 +2018,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w,
     gtk_widget_insert_action_group(w, 
                                    "styles",
                                    G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
   }
 
   /* if we got any styles, lets popup menu for selection */
@@ -3836,7 +3837,7 @@ void gui_init(dt_view_t *self)
      edge sliver is quicker to reach from the canvas but is only visible while
      the panel is folded, and says nothing about itself until hovered. */
   {
-    dev->masks_panel_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_masks_panel, 0, NULL,
+    dev->masks_panel_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_masks_panel_toggle, 0, NULL,
         &(dtgtk_button_config_t){
           .tooltip = _("show/hide the blend mask panel of the focused module"),
           .action = sa,
@@ -3846,8 +3847,8 @@ void gui_init(dt_view_t *self)
           .clicked_data = dev,
         });
     // the panel's on-screen state is shown as a highlighted, bordered box round
-    // the icon rather than by the icon itself, which is busy saying whether the
-    // module has a mask at all (see dt_iop_gui_blend_masks_panel_sync_toolbox)
+    // the icon rather than by the icon itself, which is dimmed when the module
+    // has no mask (see dt_iop_gui_blend_masks_panel_sync_toolbox)
     dt_gui_add_class(dev->masks_panel_button, "dt_masks_panel_toggle");
     // and the blending options hang off a right-click here, the way the guides
     // icon two along carries its guide settings: this is where the panel's
@@ -4249,6 +4250,8 @@ void enter(dt_view_t *self)
     }
   }
   _expand_focused_instance(dev);
+  // an always-on mask panel is up from the start, even with no module focused
+  dt_iop_gui_blend_masks_panel_idle_sync();
   dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   // image should be there now.

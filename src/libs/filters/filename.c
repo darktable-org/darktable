@@ -81,12 +81,11 @@ static void _filename_changed(GtkWidget *widget, gpointer user_data)
   g_free(value);
 }
 
-static gboolean _filename_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+static void _filename_focus_out(GtkEventController *controller, gpointer user_data)
 {
   _widgets_filename_t *filename = (_widgets_filename_t *)user_data;
-  if(filename->rule->cleaning) return FALSE;
-  _filename_changed(entry, user_data);
-  return FALSE;
+  if(filename->rule->cleaning) return;
+  _filename_changed(dt_gui_get_widget(controller), user_data);
 }
 
 static void _filename_tree_update(_widgets_filename_t *filename)
@@ -336,7 +335,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                                 "\nright-click to get existing filenames"));
   gtk_box_pack_start(GTK_BOX(hb), filename->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
-  g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
+  dt_gui_connect_focus(filename->name, NULL, _filename_focus_out, filename);
   GtkGestureSingle *g_name = dt_gui_connect_click(filename->name, _filename_press, NULL, filename);
   gtk_gesture_single_set_button(g_name, GDK_BUTTON_SECONDARY);
   gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_name), GTK_PHASE_TARGET);
@@ -350,7 +349,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                                "\nright-click to get existing extensions"));
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
-  g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
+  dt_gui_connect_focus(filename->ext, NULL, _filename_focus_out, filename);
   GtkGestureSingle *g_ext = dt_gui_connect_click(filename->ext, _filename_press, NULL, filename);
   gtk_gesture_single_set_button(g_ext, GDK_BUTTON_SECONDARY);
   gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_ext), GTK_PHASE_TARGET);

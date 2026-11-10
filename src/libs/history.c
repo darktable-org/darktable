@@ -144,7 +144,12 @@ void gui_init(dt_lib_module_t *self)
     (self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
      _("create a minimal history stack which produces the same image\n"
        "ctrl+click to truncate history to the selected item"), 0, 0);
-  dt_gui_connect_click(d->compress_button, _lib_history_compress_pressed_callback, NULL, self);
+  // capture phase, so that the claim in the callback also keeps the button's
+  // own gesture from emitting "clicked" (see the callback)
+  gtk_event_controller_set_propagation_phase
+    (GTK_EVENT_CONTROLLER(dt_gui_connect_click(d->compress_button,
+                                               _lib_history_compress_pressed_callback, NULL, self)),
+     GTK_PHASE_CAPTURE);
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, CPF_NONE, NULL,

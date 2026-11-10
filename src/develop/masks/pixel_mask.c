@@ -579,7 +579,8 @@ int dt_masks_pixel_get_mask_roi(const dt_iop_module_t *const module,
                                 const dt_dev_pixelpipe_iop_t *const piece,
                                 dt_masks_form_t *const form,
                                 const dt_iop_roi_t *roi,
-                                float *buffer)
+                                float *buffer,
+                                dt_masks_extent_t *extent)
 {
   const dt_dtdata_ref_t *ref = dt_masks_pixel_ref(form);
   if(!ref) return 0;

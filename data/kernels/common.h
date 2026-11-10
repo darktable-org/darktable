@@ -266,6 +266,15 @@ static inline int clip_mirror(int i, const int max)
   return i;
 }
 
+// as clip_mirror, but folding again as often as needed for offsets wider than the image
+static inline int fold_mirror(int i, const int max)
+{
+  if(max <= 0) return 0;
+  const int period = 2 * max;
+  i = abs(i) % period;
+  return i > max ? period - i : i;
+}
+
 /* Some inline functions making life easier when reading photosites
    or pixels from cl_mem images.
   The variants with a leading A use the faster samplerA interpolater, only
