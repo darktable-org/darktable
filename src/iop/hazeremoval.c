@@ -392,7 +392,8 @@ static float *_partition(float *first,
     }
     return first;
   }
-  last++;
+  // last holds the pivot: the scan from the end starts below it, so it
+  // is never swapped away before the caller moves it into place
   while(TRUE)
   {
     // scan from start until we find an element which needs to be swapped to the second half
@@ -428,7 +429,9 @@ static void _quick_select(float *first,
   {
     // select pivot by median of three heuristic for better performance
     float *p1 = first;
-    float *p3 = compatibility_mode ? first + (last - first) / 2 : nth;
+    // three distinct positions: with p3 at nth, nth == first left a value
+    // larger than the pivot at first, where the partition never looks
+    float *p3 = first + (last - first) / 2;
     float *pivot = last - 1; // put median in last to avoid additional swap
 
     if(!(*p1 < *pivot))
