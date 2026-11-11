@@ -796,6 +796,9 @@ changes (where available).
 - Copying a whole history stack no longer carries over the module order
   that was selected in an earlier "copy parts of the history" dialog.
 
+- Fixed lens correction with lensfun on the OpenCL path producing
+  different pixels from the CPU path along the image border.
+
 - Fixed the lens correction module reporting distortion correction as
   applied from embedded metadata when the file only carries chromatic
   aberration correction data.
