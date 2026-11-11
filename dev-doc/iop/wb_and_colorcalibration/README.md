@@ -68,10 +68,34 @@ parameters, so the wrong image stays in the cache.
 
 So code that runs in a pipe thread reads `pipe->wb`, never `dev->chroma.wb`. The one exception
 is white balance's `commit_params()`, which copies `dev->chroma.wb.D65coeffs[]` into
-`pipe->wb`. Color calibration's GUI does not read `dev->chroma.wb` either. It calls
-`dt_dev_get_gui_wb()`, as described in [Color calibration asks white balance through a
-proxy](#color-calibration-asks-white-balance-through-a-proxy). The remaining readers are white
-balance's GUI and color calibration's `reload_defaults()`.
+`pipe->wb` and also reads `dev->chroma.as_shot[]`. Color calibration's GUI does not read
+`dev->chroma.wb` either. It calls `dt_dev_get_gui_wb()`, as described in [Color calibration
+asks white balance through a proxy](#color-calibration-asks-white-balance-through-a-proxy). The
+remaining readers are white balance's GUI and color calibration's `reload_defaults()`.
+
+### Two modes apply the image's own coefficients
+
+In "as shot" (`DT_IOP_TEMP_AS_SHOT`) and camera reference (`DT_IOP_TEMP_D65`) mode, white
+balance applies the image's own coefficients, `dev->chroma.as_shot[]` and
+`dev->chroma.wb.D65coeffs[]`, which `temperature.reload_defaults()` computes for each image.
+It ignores the coefficients stored in the params. Those belong to the image on which the mode was
+chosen, and a pasted history, a style or a module preset can bring them to another image.
+
+`_own_coeffs()` (`temperature.c`) holds this rule. Three functions use it:
+
+- `_wb_from_params()`, for `pipe->wb` and for the proxy that color calibration's GUI calls.
+  `commit_params()` copies `pipe->wb.coeffs[]` into the piece data, so `process()` applies the
+  same coefficients.
+- `gui_update()`, which writes the own coefficients into `self->params`. The sliders then show
+  what is applied, and a slider edit starts from those values. The history keeps the stored
+  coefficients until the next white balance history item, which renders the same.
+- `_preset_tune_callback()`, when the user selects one of the two modes.
+
+The other modes apply the stored coefficients. So does `DT_IOP_TEMP_UNKNOWN`, the mode of params
+from before darktable stored one. `gui_update()` infers "as shot" or camera reference by matching
+coefficients only for `DT_IOP_TEMP_UNKNOWN`. No saved mode is relabeled "as shot" or camera
+reference, even when its stored coefficients equal the image's own: relabeled, it would ignore
+them from the next history item on.
 
 ---
 
@@ -81,7 +105,7 @@ balance's GUI and color calibration's `reload_defaults()`.
 
 | Field | Written by | Read by |
 |---|---|---|
-| `as_shot[]` | `temperature.reload_defaults()` | `temperature` only (its "as shot" preset, GUI, and debug output) |
+| `as_shot[]` | `temperature.reload_defaults()` | `temperature` only (GUI, debug output, `commit_params()`, and `_gui_wb_proxy()`, which pass it to `_wb_from_params()`) |
 | `wb.D65coeffs[]` | `temperature.reload_defaults()` | `temperature` (GUI, `commit_params()`, and `_gui_wb_proxy()`, which pass it to `_wb_from_params()`), `channelmixerrgb` (`reload_defaults()`) |
 | `wb.coeffs[]` | `temperature.commit_params()`, copied from `pipe->wb` | `channelmixerrgb` (`reload_defaults()`) |
 | `wb.late_correction` | `temperature.commit_params()`, copied from `pipe->wb` | `channelmixerrgb` (`reload_defaults()`, through `_dev_is_D65_chroma()`) |
@@ -125,7 +149,10 @@ Notes:
 `temperature.commit_params()` writes all three fields through `_wb_from_params()`. White balance
 applies nothing when the piece is disabled or the image is true monochrome:
 
-- `coeffs[]` from the params, or `1.0` when white balance applies nothing.
+- `coeffs[]` from the params, or from `dev->chroma` in "as shot" and camera reference mode
+  ([Two modes apply the image's own
+  coefficients](#two-modes-apply-the-images-own-coefficients)), or `1.0` when white balance
+  applies nothing.
 - `late_correction` from the params. It is `FALSE` in camera reference mode
   (`DT_IOP_TEMP_D65`) and when white balance applies nothing.
 - `D65coeffs[]`, copied from `dev->chroma.wb`.
@@ -214,10 +241,10 @@ rewrite it while the GTK thread reads it.
 So these functions call `dt_dev_get_gui_wb()` (`develop.c`). It looks up the white balance
 instance in `dev->iop` and calls `dev->proxy.gui_wb` for it. White balance's `gui_init()` sets
 that pointer to `_gui_wb_proxy()`, which passes the instance's current params,
-`self->enabled`, `self->hide_enable_button`, and `dev->chroma.wb.D65coeffs[]` to
-`_wb_from_params()`. `commit_params()` uses the same function, so the GUI gets the values that
-the next commit writes into `pipe->wb`. The GTK thread owns the params, so the GUI sees an edit
-before any pipe commits it.
+`self->enabled`, `self->hide_enable_button`, `dev->chroma.as_shot[]`, and
+`dev->chroma.wb.D65coeffs[]` to `_wb_from_params()`. `commit_params()` uses the same
+function, so the GUI gets the values that the next commit writes into `pipe->wb`. The GTK
+thread owns the params, so the GUI sees an edit before any pipe commits it.
 
 This proxy has the same three limits as `cat_source`. Call it from the GTK main thread
 only. Only `darktable.develop` gets the pointer. Nothing clears the pointer, so
@@ -412,6 +439,7 @@ would let later modules read the previous image's `pipe->wb`.
 | `temperature.reload_defaults` | temperature.c | Writes `dev->chroma.as_shot[]` and `dev->chroma.wb.D65coeffs[]` |
 | `temperature.commit_params` | temperature.c | Fills `pipe->wb` through `_wb_from_params()`; copies its `coeffs[]` and `late_correction` into `dev->chroma.wb`; writes `dev->chroma.temperature` |
 | `_wb_from_params` | temperature.c | Computes the `dt_dev_wb_t` that white balance applies with the given params; used by `commit_params()` and `_gui_wb_proxy()` |
+| `_own_coeffs` | temperature.c | The image's own coefficients in "as shot" and camera reference mode, `NULL` in the modes that apply the stored ones; used by `_wb_from_params()`, `gui_update()`, and `_preset_tune_callback()` |
 | `_gui_wb_proxy` | temperature.c | The proxy that white balance's `gui_init()` registers; returns `_wb_from_params()` for the instance's current params |
 | `dt_dev_get_gui_wb` | develop.c | GUI: asks the white balance instance in `dev->iop`, through `dev->proxy.gui_wb`; copies `dev->chroma.wb` if no instance answers |
 | `_update_preset` | temperature.c | GUI: when the user leaves camera reference for "as shot" or a camera preset, sets `p->late_correction` from `dt_dev_cat_is_active()`; calls `_update_controls_lock()` |

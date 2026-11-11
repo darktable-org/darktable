@@ -542,6 +542,18 @@ changes (where available).
 - The LibRaw loader now supports X-Trans sensors. Previously, RAFs
   routed to LibRaw via the libraw_extensions setting came out red.
 
+- White balance set to "as shot" or "camera reference" now uses the
+  edited image's own multipliers when it is pasted from another image,
+  or applied through a style or preset, instead of the multipliers of
+  the image it was copied from. This also changes existing edits that
+  received such a white balance from another image, which mostly
+  removes a color cast. To give several images the same multipliers,
+  for example a series shot under one light, switch the white balance
+  of the image to copy from to "user modified" first. Series that got
+  one white balance by pasting "as shot" in an earlier version now use
+  each image's own as-shot multipliers, and need to be pasted again
+  that way.
+
 ## Bug Fixes
 
 - Fixed bands of slightly wrong colors in images demosaiced with AMaZE
