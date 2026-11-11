@@ -542,6 +542,9 @@ changes (where available).
 - The LibRaw loader now supports X-Trans sensors. Previously, RAFs
   routed to LibRaw via the libraw_extensions setting came out red.
 
+- Darktable no longer strips the time zone offset from the capture data in the
+  XMP sidecars and exports when the date itself is unchanged.
+
 ## Bug Fixes
 
 - Fixed faint seams on a 112 pixel grid in images demosaiced with
