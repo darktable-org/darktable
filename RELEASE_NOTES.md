@@ -1020,6 +1020,9 @@ changes (where available).
 - Fixed scale pixels output shifted by a fraction of a pixel in each
   tile when the image was processed in tiles.
 
+- Fixed a crash when double-clicking while adding gradient masks
+  continuously (ctrl+click on the gradient shape button).
+
 ## Lua
 
 ### API Version
