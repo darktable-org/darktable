@@ -3812,6 +3812,8 @@ static void _film_changed(GtkWidget *w,
   const sf_prof_entry_t *e
       = _entry_at(g, GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->film)));
   if(!e) return;
+  /* the stock being left, read before film_hash moves on */
+  const sf_prof_entry_t *prev = _current_film_entry(g, p);
   p->film_hash = e->hash;
   /* A development time from the previous stock means nothing here -- the times
      differ per stock, and a stale value can sit above the new stock's longest
@@ -3821,13 +3823,15 @@ static void _film_changed(GtkWidget *w,
   DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->development_min, p->development_min);
   DT_LEAVE_GUI_UPDATE();
-  /* scan-film follows the film's natural mode on a film switch: slides and
-     reversal stocks are viewed directly (scan), negatives go through the
-     print stage. The user can still choose freely afterwards -- this only
-     re-baselines when the film itself changes, like the paper auto-follow.
+  /* scan-film follows the film's natural mode when a switch changes the kind
+     of film: slides and reversal stocks are viewed directly (scan), negatives
+     go through the print stage. A positive always scans, having no print stage.
+     Between two negatives the mode is the user's own choice and stays as it
+     is, so "none (scan the film)" picked by hand survives the switch.
      The paper combobox is what expresses this state, so it moves with the
      value: -2 for "none (scan the film)", -1 for "auto". */
-  if(p->scan_film != e->positive)
+  const gboolean rebaseline = e->positive || !prev || prev->positive;
+  if(rebaseline && p->scan_film != e->positive)
   {
     p->scan_film = e->positive;
     /* the black/white point goes with it, as in upstream's scan-for-print
