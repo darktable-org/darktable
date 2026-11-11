@@ -1035,6 +1035,10 @@ changes (where available).
 - Fixed a crash when defining a key + mouse click shortcut in the
   shortcuts dialog and letting go of the key quickly after the click.
 
+- Fixed color picker means drifting over large areas on the CPU. A hue
+  mean over an area of reds, whose hues sit on both sides of the hue
+  wrap-around, could be off by several percent.
+
 ## Lua
 
 ### API Version
