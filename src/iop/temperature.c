@@ -100,7 +100,6 @@ typedef struct dt_iop_temperature_gui_data_t
 typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
-  int preset;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -591,7 +590,8 @@ static void _wb_from_params(const dt_iop_temperature_params_t *p,
 
   for_four_channels(k)
   {
-    wb->coeffs[k] = !applied ? 1.0f : own ? (float)own[k] : pcoeffs[k];
+    const float coeff = own ? (float)own[k] : pcoeffs[k];
+    wb->coeffs[k] = applied ? coeff : 1.0f;
     wb->D65coeffs[k] = D65coeffs[k];
   }
   wb->camera_reference = applied && p->preset == DT_IOP_TEMP_D65;
@@ -762,8 +762,6 @@ void commit_params(dt_iop_module_t *self,
 {
   const dt_iop_temperature_params_t *const p = p1;
   dt_iop_temperature_data_t *const d = piece->data;
-
-  d->preset = p->preset;
 
   dt_dev_chroma_t *const chr = &self->dev->chroma;
 
@@ -1293,6 +1291,18 @@ void gui_update(dt_iop_module_t *self)
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
 
+  // only legacy params, which have no saved mode, are matched against the
+  // image's own multipliers. A saved mode is never relabeled "as shot" or
+  // "camera reference", even where its stored multipliers equal those: it
+  // would then ignore them from the next history item on
+  if(p->preset == DT_IOP_TEMP_UNKNOWN)
+  {
+    if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
+      p->preset = DT_IOP_TEMP_AS_SHOT;
+    else if(dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
+      p->preset = DT_IOP_TEMP_D65;
+  }
+
   // "as shot" and "camera reference" show the image's own multipliers, which
   // processing applies (_own_coeffs()), and a slider edit starts from them.
   // Only self->params changes: the history keeps the stored multipliers until
@@ -1316,39 +1326,15 @@ void gui_update(dt_iop_module_t *self)
 
   gboolean show_finetune = FALSE;
 
-  gboolean found = FALSE;
-  // a saved "as shot" or "camera reference" keeps its mode: it applies this
-  // image's own multipliers, whatever is stored. Only legacy params, which have
-  // no saved mode, are matched against those: the other saved modes apply their
-  // stored multipliers, also where these equal the image's own
-  if(p->preset == DT_IOP_TEMP_AS_SHOT || p->preset == DT_IOP_TEMP_D65)
-  {
-    dt_bauhaus_combobox_set(g->presets, p->preset);
-    found = TRUE;
-  }
+  // "as shot" and "camera reference" are labeled by their mode
+  gboolean found = own != NULL;
 
-  // is this a "as shot" white balance?
-  else if(p->preset == DT_IOP_TEMP_UNKNOWN
-          && dt_dev_equal_chroma((const float *)p, chr->as_shot))
-  {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
-    p->preset = DT_IOP_TEMP_AS_SHOT;
-    found = TRUE;
-  }
-
-  // is this a "D65 white balance"?
-  else if(p->preset == DT_IOP_TEMP_UNKNOWN
-          && dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
-  {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
-    p->preset = DT_IOP_TEMP_D65;
-    found = TRUE;
-  }
-
-  // a saved "user modified" keeps its label (p->preset, set below), so a camera
-  // preset matching its multipliers would only show that preset's finetune
-  // slider. They often match one: the as shot of a camera set to a preset
-  if(!found && p->preset != DT_IOP_TEMP_USER)
+  // only legacy params and saved camera presets are matched against the camera
+  // presets. For another mode a match would only show that preset's finetune
+  // slider under that mode's label: the as shot of a camera set to a preset
+  // often matches one
+  if(p->preset == DT_IOP_TEMP_UNKNOWN
+     || p->preset >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
   {
     // look through all added presets
     for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
@@ -1455,12 +1441,11 @@ void gui_update(dt_iop_module_t *self)
         }
       }
     }
-    if(!found) //since we haven't got a match - it's user-set
-    {
-      dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
-      p->preset = DT_IOP_TEMP_USER;
-    }
   }
+
+  // without a match, the other modes are labeled "user modified"
+  if(!found)
+    p->preset = DT_IOP_TEMP_USER;
 
   if(!found || g->mod_temp != -FLT_MAX) // reset or initialize user-defined
   {

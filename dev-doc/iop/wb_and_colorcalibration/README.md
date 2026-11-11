@@ -68,9 +68,8 @@ parameters, so the wrong image stays in the cache.
 
 So code that runs in a pipe thread reads `pipe->wb`, never `dev->chroma.wb`. The one exception
 is white balance's `commit_params()`, which copies `dev->chroma.wb.D65coeffs[]` into
-`pipe->wb`. It also reads `dev->chroma.as_shot[]`, as described in [Two modes apply the image's
-own coefficients](#two-modes-apply-the-images-own-coefficients). Color calibration's GUI does not
-read `dev->chroma.wb` either. It calls `dt_dev_get_gui_wb()`, as described in [Color calibration
+`pipe->wb` and also reads `dev->chroma.as_shot[]`. Color calibration's GUI does not read
+`dev->chroma.wb` either. It calls `dt_dev_get_gui_wb()`, as described in [Color calibration
 asks white balance through a proxy](#color-calibration-asks-white-balance-through-a-proxy). The
 remaining readers are white balance's GUI and color calibration's `reload_defaults()`.
 
@@ -94,9 +93,9 @@ chosen, and a pasted history, a style or a module preset can bring them to anoth
 
 The other modes apply the stored coefficients. So does `DT_IOP_TEMP_UNKNOWN`, the mode of params
 from before darktable stored one. `gui_update()` infers "as shot" or camera reference by matching
-coefficients only for `DT_IOP_TEMP_UNKNOWN`. A saved mode that applies stored coefficients keeps
-its label, even when they equal the image's own: relabeled, it would ignore them from the next
-history item on.
+coefficients only for `DT_IOP_TEMP_UNKNOWN`. No saved mode is relabeled "as shot" or camera
+reference, even when its stored coefficients equal the image's own: relabeled, it would ignore
+them from the next history item on.
 
 ---
 
@@ -106,7 +105,7 @@ history item on.
 
 | Field | Written by | Read by |
 |---|---|---|
-| `as_shot[]` | `temperature.reload_defaults()` | `temperature` only (`commit_params()` and `_gui_wb_proxy()`, which pass it to `_wb_from_params()`, GUI, and debug output) |
+| `as_shot[]` | `temperature.reload_defaults()` | `temperature` only (GUI, debug output, `commit_params()`, and `_gui_wb_proxy()`, which pass it to `_wb_from_params()`) |
 | `wb.D65coeffs[]` | `temperature.reload_defaults()` | `temperature` (GUI, `commit_params()`, and `_gui_wb_proxy()`, which pass it to `_wb_from_params()`), `channelmixerrgb` (`reload_defaults()`) |
 | `wb.coeffs[]` | `temperature.commit_params()`, copied from `pipe->wb` | `channelmixerrgb` (`reload_defaults()`) |
 | `wb.late_correction` | `temperature.commit_params()`, copied from `pipe->wb` | `channelmixerrgb` (`reload_defaults()`, through `_dev_is_D65_chroma()`) |
@@ -243,9 +242,9 @@ So these functions call `dt_dev_get_gui_wb()` (`develop.c`). It looks up the whi
 instance in `dev->iop` and calls `dev->proxy.gui_wb` for it. White balance's `gui_init()` sets
 that pointer to `_gui_wb_proxy()`, which passes the instance's current params,
 `self->enabled`, `self->hide_enable_button`, `dev->chroma.as_shot[]`, and
-`dev->chroma.wb.D65coeffs[]` to `_wb_from_params()`. `commit_params()` uses the same function, so the GUI gets the values that
-the next commit writes into `pipe->wb`. The GTK thread owns the params, so the GUI sees an edit
-before any pipe commits it.
+`dev->chroma.wb.D65coeffs[]` to `_wb_from_params()`. `commit_params()` uses the same
+function, so the GUI gets the values that the next commit writes into `pipe->wb`. The GTK
+thread owns the params, so the GUI sees an edit before any pipe commits it.
 
 This proxy has the same three limits as `cat_source`. Call it from the GTK main thread
 only. Only `darktable.develop` gets the pointer. Nothing clears the pointer, so
