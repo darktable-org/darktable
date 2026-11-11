@@ -2134,7 +2134,7 @@ static void _diff_statistics(const dt_iop_module_t *self,
   }
 
   int maxpnt = 0;
-  for(int i = 1; i < dt_get_num_threads()*per32; i += per32)
+  for(int i = per32; i < dt_get_num_threads() * per32; i += per32)
     if(errlevel[i] > errlevel[maxpnt]) maxpnt = i;
 
   char position[64] = { 0 };
