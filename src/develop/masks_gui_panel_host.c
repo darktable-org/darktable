@@ -142,6 +142,8 @@ void dt_masks_gui_panel_set_collapsed_pref(const gboolean collapsed)
 }
 
 static void _inline_collapse_toggle(dt_iop_module_t *module, const gboolean locate);
+static void _scroll_into_view_after_transition(GtkWidget *widget);
+static void _anchor_stop(void);
 
 static void _panel_toggle(const gboolean locate)
 {
@@ -160,7 +162,60 @@ void dt_iop_gui_blend_masks_panel_toggle(void)
 
 void dt_iop_gui_blend_masks_panel_show(void)
 {
-  if(_masks_panel_collapsed_pref()) _panel_toggle(FALSE);
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module || !module->blend_data) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->masks_support || !bd->masks_inited) return;
+
+  // asked of what is on screen, not of the stored preference: a module that
+  // took focus with its mask off is folded with the preference saying open
+  // (_no_mask_fold), and a toggle from a stale preference would fold an open
+  // panel
+  gboolean folded = FALSE;
+  gboolean moved = FALSE;
+  switch(dt_masks_gui_panel_position())
+  {
+    case MASKS_PANEL_POS_CANVAS:
+      folded = dt_ui_flexi_panel_is_collapsed(darktable.gui->ui);
+      break;
+    case MASKS_PANEL_POS_UTILITY:
+    {
+      dt_lib_module_t *host = darktable.develop->proxy.masks_flexi_host.module;
+      folded = host && host->expander
+               && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(host->expander));
+      break;
+    }
+    case MASKS_PANEL_POS_EMBEDDED:
+    default: // embedded: the panel is in the module, which may be collapsed
+      // a shortcut reaches the module in a group that is not shown, too:
+      // switch it in, or the expand below shows nothing
+      if(!dt_iop_shown_in_group(module, dt_dev_modulegroups_get(module->dev)))
+      {
+        dt_dev_modulegroups_switch(module->dev, module);
+        moved = TRUE;
+      }
+      if(!module->expanded)
+      {
+        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+        moved = TRUE;
+      }
+      folded = bd->masks_panel_reveal
+               && !gtk_revealer_get_reveal_child(GTK_REVEALER(bd->masks_panel_reveal));
+      break;
+  }
+  // the focus change that brought us here anchored the header where it
+  // was, for a click on it (relocate): the panel is to be found instead
+  if(folded || moved) _anchor_stop();
+  if(folded)
+    _inline_collapse_toggle(module, TRUE);
+  else if(moved && bd->masks_blend_header)
+  {
+    // already open, in a module just brought on screen: find it, as
+    // _inline_collapse_toggle does when it opens the panel
+    g_object_set_data(G_OBJECT(bd->masks_blend_header), "scroll-extra-child",
+                      bd->masks_panel_body);
+    _scroll_into_view_after_transition(bd->masks_blend_header);
+  }
 }
 
 void dt_iop_gui_blend_masks_panel_fold_unmasked(void)

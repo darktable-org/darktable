@@ -1072,7 +1072,9 @@ void dt_iop_gui_blend_masks_panel_peek(dt_iop_module_t *module);
 // arrow, the shortcut and the toolbar button all come here, so they cannot
 // drift apart. Does nothing unless the focused module has a masks panel
 void dt_iop_gui_blend_masks_panel_toggle(void);
-// open the focused module's mask panel where it is hosted, if it is folded
+// open the focused module's mask panel where it is hosted, if it is folded on
+// screen, expanding the module first in the embedded position, and bring it
+// into view. Does nothing if it already shows in place
 void dt_iop_gui_blend_masks_panel_show(void);
 // the canvas panel changed sides: lay its header out for the new one
 void dt_iop_gui_blend_masks_panel_side_changed(void);
