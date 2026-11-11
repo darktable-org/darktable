@@ -508,6 +508,91 @@ static gboolean _pointer_in_module(const dt_iop_module_t *module)
 }
 #endif
 
+// alt or ctrl held over a header arms the rename its click would make (see
+// _iop_plugin_header_released), shown by the pointer. GTK sends nothing when a
+// modifier alone changes, so a timer watches it, but only while the pointer is
+// over the header
+static GtkWidget *_rename_cursor_header = NULL; // weak
+static guint _rename_cursor_timer = 0;
+static gboolean _rename_cursor_inside = FALSE;
+static gboolean _rename_cursor_armed = FALSE;
+
+// the clicks that rename a header: alt, and ctrl as its alias
+static gboolean _header_rename_click(const GdkModifierType state)
+{
+  return dt_modifier_is(state, GDK_MOD1_MASK) || dt_modifier_is(state, GDK_CONTROL_MASK);
+}
+
+static void _rename_cursor_apply(GtkWidget *header_evb, const gboolean on)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  dt_gui_cursor_set(header_evb, on ? "text" : NULL, "iop/rename");
+#else
+  dt_gui_cursor_apply(header_evb, on ? dt_gui_cursor_rename(header_evb) : NULL);
+#endif
+}
+
+static gboolean _rename_cursor_poll(gpointer data)
+{
+  GtkWidget *evb = _rename_cursor_header;
+  const gboolean want = evb && _rename_cursor_inside
+                        && _header_rename_click(dt_key_modifier_state());
+  if(evb && want != _rename_cursor_armed)
+  {
+    _rename_cursor_apply(evb, want);
+    _rename_cursor_armed = want;
+  }
+  if(evb && _rename_cursor_inside) return G_SOURCE_CONTINUE;
+
+  if(evb) g_object_remove_weak_pointer(G_OBJECT(evb), (gpointer *)&_rename_cursor_header);
+  _rename_cursor_header = NULL;
+  _rename_cursor_armed = FALSE;
+  _rename_cursor_timer = 0;
+  return G_SOURCE_REMOVE;
+}
+
+static void _header_rename_cursor_enter(GtkEventControllerMotion *controller,
+                                        gdouble x,
+                                        gdouble y,
+                                        dt_iop_module_t *module)
+{
+  GtkWidget *evb = dt_gui_get_widget(controller);
+  _rename_cursor_inside = TRUE;
+  if(_rename_cursor_header != evb)
+  {
+    // another header: the old one's timer, if it has not ended yet, serves this one
+    if(_rename_cursor_header)
+    {
+      if(_rename_cursor_armed) _rename_cursor_apply(_rename_cursor_header, FALSE);
+      g_object_remove_weak_pointer(G_OBJECT(_rename_cursor_header), (gpointer *)&_rename_cursor_header);
+    }
+    _rename_cursor_armed = FALSE;
+    _rename_cursor_header = evb;
+    g_object_add_weak_pointer(G_OBJECT(evb), (gpointer *)&_rename_cursor_header);
+  }
+  if(!_rename_cursor_timer) _rename_cursor_timer = g_timeout_add(80, _rename_cursor_poll, NULL);
+}
+
+static void _header_rename_cursor_leave(GtkEventControllerMotion *controller,
+                                        dt_iop_module_t *module)
+{
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // a crossing to a child of the header (a button, the label) is not leaving it
+  GtkWidget *evb = dt_gui_get_widget(controller);
+  GdkDevice *const device =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkWindow *const win = gtk_widget_get_realized(evb) ? gtk_widget_get_window(evb) : NULL;
+  gint x, y;
+  if(win)
+  {
+    gdk_window_get_device_position(win, device, &x, &y, NULL);
+    if(x >= 0 && y >= 0 && x < gdk_window_get_width(win) && y < gdk_window_get_height(win))
+      return;
+  }
+#endif
+  _rename_cursor_inside = FALSE;
+}
+
 static void _header_enter_notify_callback(GtkEventControllerMotion *controller,
                                           gdouble x,
                                           gdouble y,
@@ -3049,7 +3134,7 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
   {
     if(dt_modifier_is(dt_key_modifier_state(), GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
-    else if(dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK))
+    else if(_header_rename_click(dt_key_modifier_state()))
     {
       dt_iop_gui_rename_module(module);
       return;
@@ -3749,6 +3834,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_connect_motion(header_evb, NULL,
                         _header_motion_notify_show_callback,
                         _header_motion_notify_hide_callback, module);
+  dt_gui_connect_motion(header_evb, NULL,
+                        _header_rename_cursor_enter,
+                        _header_rename_cursor_leave, module);
 
   /* connect mouse button callbacks for focus and presets */
   dt_gui_connect_click(body_evb, _iop_plugin_body_pressed, NULL, module);
