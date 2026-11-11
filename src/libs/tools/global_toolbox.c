@@ -965,6 +965,9 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
   dt_lib_tool_preferences_t *d = data;
   GtkWidget *event_widget = gtk_get_event_widget(event);
   static guint click_time = 0;
+  // a right-click made while a key is held is part of a shortcut being
+  // defined: its press goes to the shortcut dispatcher, so its release must too
+  static gboolean key_click = FALSE;
 
   switch(dt_gdk_event_get_type(event))
   {
@@ -980,7 +983,11 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     break;
   case GDK_BUTTON_PRESS:
     if(gdk_display_device_is_grabbed(gdk_window_get_display(dt_gdk_event_get_window(event)), dt_gdk_event_get_device(event)))
+    {
+      if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+        key_click = TRUE;
       break;
+    }
 
     GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
     if(gtk_widget_get_toplevel(event_widget) != main_window)
@@ -996,7 +1003,11 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
       break;
 
     if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+    {
       click_time = dt_gdk_event_get_time(event);
+      // drop a key click whose release went to another client
+      key_click = FALSE;
+    }
     else if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
       dt_shortcut_dispatcher(event_widget, event, data);
     else if(dt_gdk_event_get_button(event) > 7)
@@ -1024,6 +1035,13 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
   case GDK_BUTTON_RELEASE:
     if(dt_gdk_event_get_button(event) != GDK_BUTTON_SECONDARY)
       break;
+
+    // the dispatcher gets it even if the key was let go first and the grab is over
+    if(key_click)
+    {
+      key_click = FALSE;
+      break;
+    }
 
     if(dt_gui_long_click(dt_gdk_event_get_time(event), click_time))
       dt_shortcut_copy_lua(NULL, NULL);

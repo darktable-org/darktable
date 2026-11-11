@@ -1023,6 +1023,15 @@ changes (where available).
 - Fixed a crash when double-clicking while adding gradient masks
   continuously (ctrl+click on the gradient shape button).
 
+- Fixed defining a key + right-click shortcut in shortcut mapping mode.
+  The mouse button release was taken as mapping mode's own right-click
+  instead of completing the shortcut, so the shortcut was only assigned
+  when the key was let go, as a long key press if the key had been held
+  longer than a double-click.
+
+- Fixed a crash when defining a key + mouse click shortcut in the
+  shortcuts dialog and letting go of the key quickly after the click.
+
 ## Lua
 
 ### API Version
