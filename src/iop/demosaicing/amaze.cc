@@ -284,6 +284,10 @@ void amaze_demosaic(const float *const in,
         const int ccmin = left < 0 ? 16 : 0;
         const int rrmax = bottom > height ? height - top : rr1;
         const int ccmax = right > width ? width - left : cc1;
+        // the lower and right borders end at the tile edge; a tile that holds
+        // the last 1 to 15 rows or columns has less than 16 left for them
+        const int rrb = MIN(16, rr1 - rrmax);
+        const int ccb = MIN(16, cc1 - ccmax);
 
 // rgb from input CFA data
 // rgb values should be floating point number between 0 and 1
@@ -318,7 +322,7 @@ void amaze_demosaic(const float *const in,
         // fill lower border
         if(rrmax < rr1)
         {
-          for(int rr = 0; rr < 16; rr++)
+          for(int rr = 0; rr < rrb; rr++)
             for(int cc = ccmin; cc < ccmax; cc++)
             {
               cfa[(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + (left + cc)]);
@@ -340,7 +344,7 @@ void amaze_demosaic(const float *const in,
         if(ccmax < cc1)
         {
           for(int rr = rrmin; rr < rrmax; rr++)
-            for(int cc = 0; cc < 16; cc++)
+            for(int cc = 0; cc < ccb; cc++)
             {
               cfa[rr * ts + ccmax + cc] = (in[(top + rr) * width + ((width - cc - 2))]);
               rgbgreen[rr * ts + ccmax + cc] = cfa[rr * ts + ccmax + cc];
@@ -360,8 +364,8 @@ void amaze_demosaic(const float *const in,
 
         if(rrmax < rr1 && ccmax < cc1)
         {
-          for(int rr = 0; rr < 16; rr++)
-            for(int cc = 0; cc < 16; cc++)
+          for(int rr = 0; rr < rrb; rr++)
+            for(int cc = 0; cc < ccb; cc++)
             {
               cfa[(rrmax + rr) * ts + ccmax + cc]
                   = (in[(height - rr - 2) * width + ((width - cc - 2))]);
@@ -372,7 +376,7 @@ void amaze_demosaic(const float *const in,
         if(rrmin > 0 && ccmax < cc1)
         {
           for(int rr = 0; rr < 16; rr++)
-            for(int cc = 0; cc < 16; cc++)
+            for(int cc = 0; cc < ccb; cc++)
             {
               cfa[(rr)*ts + ccmax + cc] = (in[(32 - rr) * width + ((width - cc - 2))]);
               rgbgreen[(rr)*ts + ccmax + cc] = cfa[(rr)*ts + ccmax + cc];
@@ -381,7 +385,7 @@ void amaze_demosaic(const float *const in,
 
         if(rrmax < rr1 && ccmin > 0)
         {
-          for(int rr = 0; rr < 16; rr++)
+          for(int rr = 0; rr < rrb; rr++)
             for(int cc = 0; cc < 16; cc++)
             {
               cfa[(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + ((32 - cc))]);
