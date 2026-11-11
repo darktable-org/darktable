@@ -1739,13 +1739,14 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
                                        gdouble y,
                                        dt_thumbtable_t *table)
 {
-  // we select only in LIGHTTABLE, DARKROOM & MAP mode
+  // we select only in LIGHTTABLE, DARKROOM, MAP, PRINT & TETHERING mode
   const dt_view_type_flags_t cv = dt_view_get_current();
 
   if(cv != DT_VIEW_DARKROOM
      && cv != DT_VIEW_LIGHTTABLE
      && cv != DT_VIEW_MAP
-     && cv != DT_VIEW_PRINT)
+     && cv != DT_VIEW_PRINT
+     && cv != DT_VIEW_TETHERING)
     return;
 
   /* A gesture cancel is relayed to this handler so widgets can clean up
