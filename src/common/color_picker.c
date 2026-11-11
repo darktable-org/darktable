@@ -28,6 +28,11 @@
 
 typedef DT_ALIGNED_PIXEL uint32_t dt_aligned_weights_t[4];
 
+// each row is summed in float and the rows are added up in double: a single
+// float sum over a large box stops taking in small values once it has grown,
+// which pulled the mean of a box of hues near 0 and 1 off by 0.08
+typedef double dt_picker_sum_t[4];
+
 static inline size_t _box_size(const int *const box)
 {
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
@@ -208,7 +213,7 @@ static void _color_picker_work_4ch(const float *const source,
   const size_t off_mul = 4 * width;
   const size_t off_add = 4 * box[0];
 
-  dt_aligned_pixel_t acc = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_picker_sum_t acc = { 0.0, 0.0, 0.0, 0.0 };
   dt_aligned_pixel_t low = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
   dt_aligned_pixel_t high = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -218,14 +223,16 @@ static void _color_picker_work_4ch(const float *const source,
   for(size_t j = box[1]; j < box[3]; j++)
   {
     const size_t offset = j * off_mul + off_add;
-    worker(acc, low, high, source + offset, stride, profile);
+    dt_aligned_pixel_t row = { 0.0f, 0.0f, 0.0f, 0.0f };
+    worker(row, low, high, source + offset, stride, profile);
+    for_four_channels(c) acc[c] += row[c];
   }
 
   // copy all four channels, as four some colorspaces there may be
   // meaningful data in the fourth channel
   for_four_channels(c)
   {
-    pick[DT_PICK_MEAN][c] = acc[c] / (float)size;
+    pick[DT_PICK_MEAN][c] = acc[c] / (double)size;
     pick[DT_PICK_MIN][c] = low[c];
     pick[DT_PICK_MAX][c] = high[c];
   }
@@ -241,7 +248,7 @@ static void _color_picker_nomat(const float *const source,
   cmsHPROFILE *Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   cmsHTRANSFORM *xform = cmsCreateTransform(input, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, profile->intent, 0);
  
-  dt_aligned_pixel_t acc = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_picker_sum_t acc = { 0.0, 0.0, 0.0, 0.0 };
   dt_aligned_pixel_t low = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
   dt_aligned_pixel_t high = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -249,6 +256,7 @@ static void _color_picker_nomat(const float *const source,
   DT_OMP_FOR(if (bsize > 10) reduction(+ : acc[:4]) reduction(min : low[:4]) reduction(max : high[:4]))
   for(size_t y = box[1]; y < box[3]; y++)
   {
+    dt_aligned_pixel_t row = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(size_t x = box[0]; x < box[2]; x++)
     {
       dt_aligned_pixel_t JzAzBz = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -262,14 +270,15 @@ static void _color_picker_nomat(const float *const source,
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
       dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
       dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
-      _update_stats_4ch(acc, low, high, JzCzhz);
+      _update_stats_4ch(row, low, high, JzCzhz);
     }
+    for_four_channels(c) acc[c] += row[c];
   }
 
   cmsDeleteTransform(xform);
   for_four_channels(c)
   {
-    pick[DT_PICK_MEAN][c] = acc[c] / (float)bsize;
+    pick[DT_PICK_MEAN][c] = acc[c] / (double)bsize;
     pick[DT_PICK_MIN][c] = low[c];
     pick[DT_PICK_MAX][c] = high[c];
   }
@@ -284,7 +293,7 @@ static void _color_picker_work_1ch(const float *const pixel,
                                    const size_t min_for_threads)
 {
   const int width = roi->width;
-  dt_aligned_pixel_t acc = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_picker_sum_t acc = { 0.0, 0.0, 0.0, 0.0 };
   dt_aligned_pixel_t low = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
   dt_aligned_pixel_t high = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
   dt_aligned_weights_t weights = { 0u, 0u, 0u, 0u };
@@ -294,7 +303,9 @@ static void _color_picker_work_1ch(const float *const pixel,
   DT_OMP_FOR(if (_box_size(box) > min_for_threads) reduction(+ : acc[:4], weights[:4]) reduction(min : low[:4]) reduction(max : high[:4]))
   for(size_t j = box[1]; j < box[3]; j++)
   {
-    worker(acc, low, high, weights, pixel + width * j, j, roi, box, data);
+    dt_aligned_pixel_t row = { 0.0f, 0.0f, 0.0f, 0.0f };
+    worker(row, low, high, weights, pixel + width * j, j, roi, box, data);
+    for_four_channels(c) acc[c] += row[c];
   }
 
   copy_pixel(pick[DT_PICK_MIN], low);
@@ -302,7 +313,7 @@ static void _color_picker_work_1ch(const float *const pixel,
   // and finally normalize data. For bayer, there is twice as much green.
   // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
   for_each_channel(c)
-    pick[DT_PICK_MEAN][c] = weights[c] ? (acc[c] / (float)weights[c]) : 0.0f;
+    pick[DT_PICK_MEAN][c] = weights[c] ? (acc[c] / (double)weights[c]) : 0.0f;
 }
 
 void dt_color_picker_backtransform_box(dt_develop_t *dev,
