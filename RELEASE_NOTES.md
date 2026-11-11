@@ -244,6 +244,12 @@ changes (where available).
 - The recent collections module now handles single or double click
   according to the preference setting for collections.
 
+- The color checker frame placed in color calibration's "calibrate
+  with a color checker" section is now saved with the edit when
+  calibrating or validating. It is restored when the image is opened
+  again and follows the module through copy/paste of the history
+  stack and styles.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
