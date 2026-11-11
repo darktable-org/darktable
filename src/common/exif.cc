@@ -5642,6 +5642,22 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   if(v->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
 }
 
+static void _exif_xmp_set_datetime_original(Exiv2::XmpData &xmpData,
+                                            const GTimeSpan gts)
+{
+  // the database keeps no time zone, so a value that only differs by its
+  // UTC offset (e.g. written by exiftool) is kept rather than stripped
+  Exiv2::XmpData::iterator pos =
+    xmpData.findKey(Exiv2::XmpKey("Xmp.exif.DateTimeOriginal"));
+  if(pos != xmpData.end()
+     && dt_datetime_exif_to_gtimespan(pos->toString().c_str()) == gts)
+    return;
+
+  gchar exif_datetime[DT_DATETIME_LENGTH];
+  dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
+  xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+}
+
 // Helper to create an xmp data thing. Throws Exiv2 exceptions if
 // stuff goes wrong.
 static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
@@ -5696,9 +5712,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   // Store datetime_taken as DateTimeOriginal to take into account the
   // user's selected date/time.
-  gchar exif_datetime[DT_DATETIME_LENGTH];
-  dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
-  xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+  _exif_xmp_set_datetime_original(xmpData, gts);
 
   // We have to erase the old ratings first as Exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
@@ -5850,11 +5864,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData,
     // Store datetime_taken as DateTimeOriginal to take into account
     // the user's selected date/time.
     if(!(metadata->flags & DT_META_EXIF))
-    {
-      gchar exif_datetime[DT_DATETIME_LENGTH];
-      dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
-      xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
-    }
+      _exif_xmp_set_datetime_original(xmpData, gts);
     // We have to erase the old ratings first as Exiv2 seems to not change it otherwise.
     Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
     if(pos != xmpData.end()) xmpData.erase(pos);
