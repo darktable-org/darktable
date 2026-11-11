@@ -544,6 +544,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed bands of slightly wrong colors in images demosaiced with AMaZE
+  whose height or width is 1 to 15 pixels more than a multiple of 128.
+
 - Fixed faint seams on a 112 pixel grid in images demosaiced with
   LMMSE, where each tile read leftover data from the previous tile.
 
