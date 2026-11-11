@@ -2377,7 +2377,7 @@ filmstrip-thumbnail-boxes as for the canvas background */
 }
 
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
-.dt_overlays_none .dt_thumb_btn,
+.dt_overlays_none #thumb-main .dt_thumb_btn,
 .dt_overlays_none #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_hover #thumb-main .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb-main .dt_thumb_btn,
