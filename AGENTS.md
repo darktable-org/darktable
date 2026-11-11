@@ -254,6 +254,75 @@ Keep both in sync, or explain why not.
 
 `src/iop/useless.c` is the annotated boilerplate for a new module.
 
+## GUI code
+
+Read [`dev-doc/GUI.md`](dev-doc/GUI.md),
+[`dev-doc/imageop_gui.md`](dev-doc/imageop_gui.md) and
+[`dev-doc/GUI_Recipes.md`](dev-doc/GUI_Recipes.md) first, and prefer
+darktable's helpers (`dt_gui_*`, `dt_bauhaus_*`, `dt_ui_*`) over raw GTK: a
+widget built the wrong way looks wrong under the themes.
+
+darktable still builds against GTK3 only, but the GUI is moving to calls that
+GTK4 keeps (#15920, #20433). Write new GUI code that way, so the migration does
+not have to rewrite it. The compiler will not tell you: `GTK_DISABLE_DEPRECATED`
+flags only what GTK3 deprecated, and most of what GTK4 removed never was. The
+helpers in `src/gui/gtk.h` hide the GTK3/GTK4 difference, so only they change
+at the switch.
+
+| Instead of (gone in GTK4) | Use |
+|---|---|
+| `"button-press-event"`, `"button-release-event"` | `dt_gui_connect_click()`; `dt_gui_connect_click_secondary()` for right-click popups |
+| `"motion-notify-event"`, `"enter-notify-event"`, `"leave-notify-event"` | `dt_gui_connect_motion()`, `dt_gui_connect_drag()` |
+| `"scroll-event"` | `dt_gui_connect_scroll()` |
+| `"key-press-event"` | `dt_gui_connect_key()` |
+| `"focus-in-event"`, `"focus-out-event"` | `dt_gui_connect_focus()` |
+| `gtk_get_current_event()`, `GdkEventButton` fields | the controller callback's arguments, `dt_gui_current_button()`, `dt_gui_current_state()` |
+| `GtkMenu`, `"populate-popup"` | a `GMenu` and an action group on the parent, shown with `dt_gui_popover_menu_from_model()` |
+| `gtk_dialog_run()`, `gtk_native_dialog_run()` | `dt_gui_dialog_run()`, `dt_gui_native_dialog_run()` |
+| `gtk_box_pack_start()`, `gtk_box_pack_end()` | `dt_gui_box_add()`, `dt_gui_hbox()`, `dt_gui_vbox()`; set `hexpand`/`halign` on the child |
+| `gtk_container_get_children()`, `gtk_container_foreach()` | `dt_gui_container_*()` |
+| `gtk_widget_get_toplevel()` | `gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW)` |
+| cursors through `gtk_widget_get_window()` | `dt_gui_cursor_set()` with a CSS cursor name |
+| `gtk_widget_set_app_paintable()` | the `dt_transparent_background` CSS class |
+| a `GTK_WINDOW_POPUP` window, `gtk_window_move()` | a `GtkPopover` placed with `gtk_popover_set_pointing_to()` |
+| `gtk_button_set_image()` | an image in a box, as the button's child |
+| widget style properties, `gtk_widget_style_get()` | CSS |
+| the `destroy` and `*_event` vfuncs in a new widget class | `GObject` `dispose`, controllers |
+
+Traps in those helpers:
+
+- `dt_gui_connect_click()` reports every button. Check
+  `dt_gui_current_button()`, which also gives the intended button when a
+  shortcut synthesizes the press. `dt_gui_connect_click_secondary()` listens
+  to the right button only, and routes right-click shortcut effects to the
+  widget
+- on GTK3 a controller on a widget without its own `GdkWindow`, such as a
+  `GtkLabel` or a `GtkBox`, only hears events that reach one of its windowed
+  children
+- a `dt_gui_connect_focus()` callback can be neither disconnected by function
+  nor used to stop the event. An entry that ends itself both on enter or
+  escape and on focus loss needs a "done" flag, as the rename entries in
+  `src/develop/blend_gui.c` have
+- popover menu labels are read with mnemonics: pass any name a user typed
+  through `dt_str_unmnemonic()`, or its underscores disappear
+- `src/gui/gtk.h` redefines `g_signal_connect()` as a statement with a
+  return-type check, so it returns no handler id. Use `g_signal_connect_data()`
+  where you need one, or `g_signal_handlers_disconnect_by_data()`
+
+Nothing GTK4-ready replaces `GtkEventBox`, `gtk_widget_show_all()` and
+`gtk_widget_set_no_show_all()`, `gtk_container_add()` outside boxes, drag and
+drop or `GtkClipboard` yet. Use them where you must, but no more:
+
+- add a `GtkEventBox` only where GTK3 needs a window for the input at all, and
+  attach a controller to it rather than a signal
+- draw custom content only in a `GtkDrawingArea`, or a dtgtk widget built on
+  one, never with a `"draw"` handler on a box or other container: GTK4 draws
+  only through a drawing area's draw function or a widget's `snapshot`
+
+No build compiles the `#if GTK_CHECK_VERSION(4, 0, 0)` branches yet; say so
+when you add or change one. Converting existing GTK3 code is a `gtk4-prep:`
+change of its own, not part of a feature.
+
 ## Pitfalls
 
 - `dt_film_t` must be zeroed with `dt_film_init()` before `dt_film_new()`. It
@@ -282,13 +351,6 @@ Keep both in sync, or explain why not.
   in exports -- and hashed whole for the pipe cache. Leave no byte
   indeterminate, padding included: `legacy_params()` should `calloc()` its
   result, not `malloc()` it
-- GTK4 preparation is in progress. Use event controllers (`dt_gui_connect_key`,
-  `dt_gui_connect_click`) rather than `"key-press-event"` and friends
-- prefer existing darktable helpers (`dt_gui_*`, `dt_bauhaus_*`, `dt_ui_*`)
-  over raw GTK; a widget built the wrong way looks wrong under the themes.
-  [`dev-doc/GUI.md`](dev-doc/GUI.md),
-  [`dev-doc/imageop_gui.md`](dev-doc/imageop_gui.md) and
-  [`dev-doc/GUI_Recipes.md`](dev-doc/GUI_Recipes.md) have the patterns
 - CMake 4.x refuses `file()` writes into the source tree; write to
   `${CMAKE_BINARY_DIR}`
 - data files copied with `FILE(COPY ...)` are only copied at configure time, so

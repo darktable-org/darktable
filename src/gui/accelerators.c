@@ -4175,6 +4175,19 @@ static float _process_action(dt_action_t *action,
 
   gpointer action_target = action->type == DT_ACTION_TYPE_LIB ? action : action->target;
 
+  // the add-shape and add-parametric actions are shared by all modules and
+  // their target is whichever module was focused last (see
+  // dt_accel_connect_instance_iop), so with nothing focused a shortcut would
+  // add to a module the user has left. Clicking the button is not affected
+  if(action->owner
+     && action->owner->owner == &darktable.control->actions_blend
+     && !g_strcmp0(action->owner->id, "shapes")
+     && !dt_dev_gui_module())
+  {
+    dt_toast_log(_("no module is focused"));
+    return return_value;
+  }
+
   if(owner && owner->type == DT_ACTION_TYPE_IOP)
   {
     // find module instance
@@ -5046,6 +5059,12 @@ void dt_shortcut_key_release(const dt_input_device_t id,
   if(stored_key)
   {
     _interrupt_delayed_release(TRUE);
+
+    // the pending release just run can complete a shortcut being defined in
+    // the preferences dialog, and _ungrab_grab_widget() then frees every
+    // pressed key, this one included
+    stored_key = g_slist_find_custom(_pressed_keys, &this_key, _cmp_key);
+    if(!stored_key) return;
 
     g_free(stored_key->data);
     _pressed_keys = g_slist_delete_link(_pressed_keys, stored_key);

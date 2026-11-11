@@ -697,8 +697,9 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
       border = 8;
       break;
     case DT_IOP_DEMOSAIC_AMAZE:
-      // the OpenCL code keeps 12 planes with the 16 pixel border of the CPU tiles
-      perpix = gpu ? 14 : 2;
+      // the OpenCL code keeps 12 planes, each CPU tile stored on its own
+      // (160x160 per 128x128 pixels), plus input and output
+      perpix = gpu ? 21 : 2;
       border = gpu ? 16 : 6;
       break;
     case DT_IOP_DEMOSAIC_VNG4:

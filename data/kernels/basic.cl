@@ -2503,6 +2503,15 @@ static inline void _lens_grid_sample(global const float *grid, const int x, cons
   }
 }
 
+/* lens plugin: a lensfun coordinate relative to the input, held inside it as
+   in the CPU path of src/iop/lens.cc. Coordinates past the edge sample the
+   edge pixel there; mirroring the taps alone would reflect them back into the
+   image. fmin() and fmax() also map NaN to an edge as the CPU path does. */
+static inline float _lens_coord(const float v, const int offset, const int size)
+{
+  return fmax(fmin(v - (float)offset, (float)size - 1.0f), 0.0f);
+}
+
 /* kernels for the lens plugin: bilinear interpolation */
 kernel void
 lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -2534,10 +2543,8 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
     }
   }
 
-  float4 px = (float4)0.0f;
-  rx = ppi[0] - roi_in_x;
-  ry = ppi[1] - roi_in_y;
-  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  rx = _lens_coord(ppi[0], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[1], roi_in_y, iheight);
   {
     const float fx = floor(rx);
     const float fy = floor(ry);
@@ -2549,15 +2556,13 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
     const int y0 = clip_mirror((int)fy,     iheight - 1);
     const int y1 = clip_mirror((int)fy + 1, iheight - 1);
 
-    px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
-                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+    const float4 px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                    + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
     pixel.x = px.x;
   }
 
-  rx = ppi[2] - roi_in_x;
-  ry = ppi[3] - roi_in_y;
-  px = (float4)0.0f;
-  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  rx = _lens_coord(ppi[2], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[3], roi_in_y, iheight);
   {
     const float fx = floor(rx);
     const float fy = floor(ry);
@@ -2569,15 +2574,13 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
     const int y0 = clip_mirror((int)fy,     iheight - 1);
     const int y1 = clip_mirror((int)fy + 1, iheight - 1);
 
-    px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
-                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+    const float4 px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                    + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
     pixel.yw = px.yw;
   }
 
-  rx = ppi[4] - roi_in_x;
-  ry = ppi[5] - roi_in_y;
-  px = (float4)0.0f;
-  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  rx = _lens_coord(ppi[4], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[5], roi_in_y, iheight);
   {
     const float fx = floor(rx);
     const float fy = floor(ry);
@@ -2589,8 +2592,8 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
     const int y0 = clip_mirror((int)fy,     iheight - 1);
     const int y1 = clip_mirror((int)fy + 1, iheight - 1);
 
-    px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
-                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+    const float4 px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                    + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
     pixel.z = px.z;
   }
 
@@ -2644,8 +2647,8 @@ lens_distort_bicubic (read_only image2d_t in,
     }
   }
 
-  rx = ppi[0] - (float)roi_in_x;
-  ry = ppi[1] - (float)roi_in_y;
+  rx = _lens_coord(ppi[0], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[1], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2666,8 +2669,8 @@ lens_distort_bicubic (read_only image2d_t in,
   }
   pixel.x = sum/weight;
 
-  rx = ppi[2] - (float)roi_in_x;
-  ry = ppi[3] - (float)roi_in_y;
+  rx = _lens_coord(ppi[2], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[3], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2688,8 +2691,8 @@ lens_distort_bicubic (read_only image2d_t in,
   }
   pixel.yw = sum2/weight;
 
-  rx = ppi[4] - (float)roi_in_x;
-  ry = ppi[5] - (float)roi_in_y;
+  rx = _lens_coord(ppi[4], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[5], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2698,8 +2701,8 @@ lens_distort_bicubic (read_only image2d_t in,
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_bicubic((float)i - rx);
     float wy = interpolation_func_bicubic((float)j - ry);
@@ -2761,8 +2764,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
   }
 
 
-  rx = ppi[0] - (float)roi_in_x;
-  ry = ppi[1] - (float)roi_in_y;
+  rx = _lens_coord(ppi[0], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[1], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2784,8 +2787,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
   pixel.x = sum/weight;
 
 
-  rx = ppi[2] - (float)roi_in_x;
-  ry = ppi[3] - (float)roi_in_y;
+  rx = _lens_coord(ppi[2], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[3], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2806,8 +2809,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
   }
   pixel.yw = sum2/weight;
 
-  rx = ppi[4] - (float)roi_in_x;
-  ry = ppi[5] - (float)roi_in_y;
+  rx = _lens_coord(ppi[4], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[5], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2869,8 +2872,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     }
   }
 
-  rx = ppi[0] - (float)roi_in_x;
-  ry = ppi[1] - (float)roi_in_y;
+  rx = _lens_coord(ppi[0], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[1], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2891,8 +2894,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   }
   pixel.x = sum/weight;
 
-  rx = ppi[2] - (float)roi_in_x;
-  ry = ppi[3] - (float)roi_in_y;
+  rx = _lens_coord(ppi[2], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[3], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
@@ -2913,8 +2916,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   }
   pixel.yw = sum2/weight;
 
-  rx = ppi[4] - (float)roi_in_x;
-  ry = ppi[5] - (float)roi_in_y;
+  rx = _lens_coord(ppi[4], roi_in_x, iwidth);
+  ry = _lens_coord(ppi[5], roi_in_y, iheight);
   tx = floor(rx);
   ty = floor(ry);
 
