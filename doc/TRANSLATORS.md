@@ -1,46 +1,84 @@
-[wiki](https://github.com/darktable-org/darktable/wiki/Translations)
-# Introduction
+# Translating darktable
 
-darktable's user interface can be translated into many languages. 
+This guide explains how to translate darktable's user interface.
 
-In short, to support a translation, the build process needs a xx.po file with the two-letter language code, e.g. fr.po.
+darktable uses the GNU **gettext** system. Translatable strings live in the `po/` directory:
 
-To make sure your translation makes it into an official build:
-- ensure you keep your translation up to date to avoid large work just before the release
-- entry criteria:
-  - no more than 20 untranslated strings 
-  - no more than 50 fuzzy strings 
+- `po/darktable.pot`: List of all english source strings. This is updated by the maintainers periodically.
+- `po/<lang>.po` the actual **translation files** per language, named with the language code (`fr`, `de`, …) or language + region where needed (`pt_BR`, `zh_CN`, `ko_KR`). This is the file you edit.
 
-## How darktable uses the .po files
+At build time each `<lang>.po` is compiled into a binary `<lang>.mo` that darktable loads at runtime to replace the English text.
 
-The application uses gettext engine for translation, and it works like this, a text based editable PO file contains a number of sequences containing: 
-- a line in English (source language)
-- a line in target language, and 
-- a reference to a line in source code where original text in English comes from. 
+## General setup
 
-The build system then creates a binary version of each PO file with MO file extension and places it in a system directory where a running instance of darktable will pick it up and use it to replace English text with target language text.
+French translations are maintained through [Weblate](https://hosted.weblate.org/) (see below), all other translations are maintained by editing locally on your machine and opening a PR against the repository.
 
-## How to contribute your translation:
-- Submit a pull request with your po file
+## Before you start
 
-# Translate the darktable User Interface for darktable releases
+**Coordinate with the existing translators of your language** before doing large amounts of work, so you don't duplicate effort or clash with work in progress. Also this helps to avoid merge conflicts when pushing updated po-files. 
 
-1. Get the PO file for your language from the repository -> [po](../po)
+When working on the translations take great care to keep the nomenclature consistent within darktable. 
 
-2. To support making release translations easier, the darktable build process automatically creates a PO template (.POT) file, `darktable.pot` to use as base.
+## Updating an existing translation
 
-3. Get the latest [darktable.pot](../po/darktable.pot) file.
+*(French is handled via Weblate. See below. The steps below are for the other languages.)*
 
-4. Put both files on the same directory. Open the po file with a po file editor, e.g. poedit:
-    ```bash
-    $ poedit <your_lang>.po
-    $ poedit darktable.pot
-    ```
-5. Update the PO file using the POT file: go to menu `[Catalog]` ->
-`[Update from POT file...]` and select `darktable.pot` file.
+1. Get the two files from the repository and save them in the same directory: your language's [`po/<lang>.po`](https://github.com/darktable-org/darktable/tree/master/po) and the current [`po/darktable.pot`](https://github.com/darktable-org/darktable/blob/master/po/darktable.pot).
+2. Open `<lang>.po` in Poedit.
+3. Pull in new and changed source strings: **Translation → Update from POT file…** (older Poedit: **Catalog → Update from POT file…**) and select `darktable.pot`.
+4. Translate the untranslated entries and review the **fuzzy** ones (automatic guesses that need checking).
+5. Save. Poedit writes the updated `<lang>.po`.
+6. Open a **pull request** for the updated `<lang>.po`.
 
-6. Start translating. Saving will update `<lang>.po`.
+## Starting a new language
 
-7. When you are done, open a PR for the corresponding `<lang>.po`.
+1. Choose the code: ISO 639-1 two-letter (e.g. `fr`), with a region suffix only where it matters (`pt_BR`, `zh_CN`).
+2. In Poedit, create a new translation from `darktable.pot` and save it as `po/<lang>.po`.
+3. Add your `<lang>` code to [`po/LINGUAS`](https://github.com/darktable-org/darktable/blob/master/po/LINGUAS) so the translations in the `.desktop` and AppData/metainfo files are included as well. (The UI build itself picks up any `po/*.po` automatically.)
+4. Open a pull request with the new `po/<lang>.po` (and the `LINGUAS` change).
 
-8. That's all!
+## Getting your translation into a release
+
+To be shipped in an official build a language must meet these criteria:
+
+- no more than **20 untranslated** strings
+- no more than **50 fuzzy** strings
+
+Keeping your translation up to date throughout the cycle avoids a large chunk of work right before a release.
+
+## Testing your translation locally
+
+1. Save your work in Poedit (**File → Save**); this produces `<lang>.mo` next to `<lang>.po`.
+2. Rename that file to `darktable.mo` and copy it into the `locale` directory of your darktable installation, under `<lang>/LC_MESSAGES/`, for example:
+   - **macOS:** `/Applications/darktable.app/Contents/Resources/share/locale/<lang>/LC_MESSAGES/`
+   - **Linux:** `<install-prefix>/share/locale/<lang>/LC_MESSAGES/` (e.g. `/usr/share/locale/...` or `/opt/darktable/share/locale/...`)
+3. Launch darktable and select your language under **Settings → General → Interface Language**.
+
+## Keeping PO diffs readable (optional)
+
+PO files carry source-line references that change often and make diffs noisy. You can filter them out of `git diff` with a textconv:
+
+```sh
+git config diff.po.textconv "msgcat --no-location --no-wrap --sort-output"
+```
+
+## Using Weblate (French only)
+
+French translations are maintained through [Weblate](https://hosted.weblate.org/projects/darktable/) to facilitate collaborative translations without merge conflicts. You need to register with weblate to translate there. 
+
+The workflow for weblate is: Weblate pulls an updated POT automatically, translations happen on weblate and are pushed via PR roughly every 24 hours. 
+
+## For maintainers: regenerating the template (`po/darktable.pot`)
+
+> **Note.** Translators normally do **not** regenerate the template — you use the `darktable.pot` that is committed in the repository. This section is for maintainers keeping that template up to date.
+
+To regenerate the template:
+
+1. Configure and build darktable, so the generated sources exist under `build/`.
+2. From the `po/` directory, run:
+
+   ```sh
+   intltool-update --gettext-package=darktable --pot
+   ```
+
+   The `--gettext-package=darktable` is required; otherwise the output is written to `untitled.pot` and the real template is left unchanged.
