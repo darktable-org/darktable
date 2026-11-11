@@ -1106,6 +1106,7 @@ changes (where available).
 
 ### Base Support
 
+- Canon EOS C50 (requires LibRaw 0.23 or newer)
 - Canon EOS R50 V (requires LibRaw 0.23 or newer)
 - Canon EOS R6 Mark III (requires LibRaw 0.23 or newer)
 - Canon PowerShot V1 (requires LibRaw 0.23 or newer)
