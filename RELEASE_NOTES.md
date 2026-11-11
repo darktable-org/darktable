@@ -682,6 +682,10 @@ changes (where available).
   each image's own as-shot multipliers, and need to be pasted again
   that way.
 
+- The capture date in XMP sidecars and exports keeps its time zone offset,
+  also after the date is changed in darktable. If the sidecar has none, the
+  offset the camera recorded in the image is used.
+
 ## Bug Fixes
 
 - Fixed bands of slightly wrong colors in images demosaiced with AMaZE
