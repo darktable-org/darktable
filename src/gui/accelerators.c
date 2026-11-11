@@ -4175,6 +4175,19 @@ static float _process_action(dt_action_t *action,
 
   gpointer action_target = action->type == DT_ACTION_TYPE_LIB ? action : action->target;
 
+  // the add-shape and add-parametric actions are shared by all modules and
+  // their target is whichever module was focused last (see
+  // dt_accel_connect_instance_iop), so with nothing focused a shortcut would
+  // add to a module the user has left. Clicking the button is not affected
+  if(action->owner
+     && action->owner->owner == &darktable.control->actions_blend
+     && !g_strcmp0(action->owner->id, "shapes")
+     && !dt_dev_gui_module())
+  {
+    dt_toast_log(_("no module is focused"));
+    return return_value;
+  }
+
   if(owner && owner->type == DT_ACTION_TYPE_IOP)
   {
     // find module instance
