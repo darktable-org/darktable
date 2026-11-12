@@ -127,6 +127,13 @@ add_iop(rotatepixels "rotatepixels.c")
 add_iop(scalepixels "scalepixels.c")
 add_iop(atrous "atrous.c")
 add_iop(cacorrect "cacorrect.c")
+# the correction pass branches on the sign of color differences that are
+# exactly 0 in clipped and dead sensels. Reassociation and fma contraction
+# move them off 0, so the CPU took other branches than its OpenCL twin
+# (data/kernels/cacorrect.cl) and differed by up to 6e-2 on single sensels
+if(HAVE_FFP_CONTRACT_OFF)
+  target_compile_options(cacorrect PRIVATE "-fno-fast-math;-ffp-contract=off")
+endif()
 add_iop(overexposed "overexposed.c")
 add_iop(hotpixels "hotpixels.c")
 add_iop(lowlight "lowlight.c")
