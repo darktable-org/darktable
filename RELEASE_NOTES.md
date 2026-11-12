@@ -424,6 +424,10 @@ changes (where available).
 
 - Added a preference to disable automatic AI model update checks,
   with a manual check button for when it is off.
+  
+- Added css classes for individual processing and utility modules to
+  enable styling of individual modules (e.g. coloring the header of 
+  just the export module to make navigation of the panels easier).
 
 - Added a compression option for the TIFF files written by neural
   restore denoise and upscale, matching the TIFF export module.

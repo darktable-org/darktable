@@ -3723,6 +3723,11 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   GtkWidget *expander = dtgtk_expander_new(header, iopw);
   gtk_widget_set_name(expander, "iop-expander");
 
+  /* per-module CSS class to enable styling of individual processing modules */
+  char css_class[160] = { 0 };
+  snprintf(css_class, sizeof(css_class), "dt_iop_%s", module->op);
+  dt_gui_add_class(expander, css_class);
+
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));

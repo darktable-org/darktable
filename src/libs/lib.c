@@ -1107,6 +1107,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(header), "module-header");
 
   GtkWidget *expander = dtgtk_expander_new(header, module->widget);
+
+  /* per-module CSS class to enable styling of individual utility modules */
+  char css_class[160] = { 0 };
+  snprintf(css_class, sizeof(css_class), "dt_lib_%s", module->plugin_name);
+  dt_gui_add_class(expander, css_class);
+
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
