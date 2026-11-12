@@ -2061,7 +2061,8 @@ static void _diff_statistics(const dt_iop_module_t *self,
                              float *const dat_b,  // output OpenCL
                              const int ch,
                              const int devid,
-                             const gboolean visualize)
+                             const gboolean visualize,
+                             const float scale)
 {
   const int width = roi->width;
   const int height = roi->height;
@@ -2096,12 +2097,13 @@ static void _diff_statistics(const dt_iop_module_t *self,
   int outrange_2 = 0;
   int outrange_4 = 0;
   int outliers = 0;
+  int critical = 0;
 
   const size_t per32 = DT_CACHELINE_BYTES / 4;
   int32_t *errpos = dt_calloc_aligned(dt_get_num_threads() * DT_CACHELINE_BYTES);
   float *errlevel = dt_calloc_aligned(dt_get_num_threads() * DT_CACHELINE_BYTES);
 
-  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4, outliers))
+  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4, outliers, critical))
   for(size_t i = 0; i < npix * ch; i+=ch)
   {
     const float a = ch == 1 ? dat_a[i] : (dat_a[i] + dat_a[i+1] + dat_a[i+2]) / 3.0f;
@@ -2117,12 +2119,13 @@ static void _diff_statistics(const dt_iop_module_t *self,
     outrange_2 += ad > 2.0f * stddev ? 1 : 0;
     outrange_4 += ad > 4.0f * stddev ? 1 : 0;
     outliers += ad > 8.0f * stddev ? 1 : 0;
+    critical += ad > 1e-4f * scale ? 1 : 0;
     if(visualize)
     {
       /** We are interested in locations with an error > 2S having a signal above "black".
           As we bypass the data through the pipe we nomalize the dark background.
       */
-      const gboolean relevant = stddev > 1e-10f && ad > 2.0f * stddev && b > 1e-8f;
+      const gboolean relevant = stddev / scale > 1e-10f && ad > 2.0f * stddev && b > 1e-8f * scale;
       const float sigerror = relevant ? MAX(0.0f, ad / stddev - 2.0f)  : 0.0f;
       const float viserror = relevant ? 0.2f * sqrf(0.5f * sigerror) : 0.0f;
       for(int c = 0; c < MIN(ch, 3); c++)
@@ -2141,14 +2144,19 @@ static void _diff_statistics(const dt_iop_module_t *self,
   if(errlevel[maxpnt] > 1e-8)
     snprintf(position, sizeof(position), "%d/%d", errpos[maxpnt] % width, errpos[maxpnt] / width);
 
+  char criticals[256] = { 0 };
+  if(critical > 0)
+    snprintf(criticals, sizeof(criticals), "  critical: %d %3.1f%%", critical, 100.0f * (float)critical / (float)npix);
+
   dt_free_align(errpos);
   dt_free_align(errlevel);
   dt_print_pipe(DT_DEBUG_ALWAYS, "OpenCL diff stats", NULL, self, devid, NULL, NULL,
-           "(%4dx%4d) max=%.5e %10s  std=%.5e  mean=%+.5e  S2:%7d %4.1f%%   S4:%7d %4.1f%%   S8:%6d %3.1f%%",
-           width, height, max_abs, position, stddev, mean,
+           "(%4dx%4d) max=%.5e %10s  std=%.5e  mean=%+.5e  S2:%7d %4.1f%%   S4:%7d %4.1f%%   S8:%6d %3.1f%%%s",
+           width, height, max_abs / scale, position, stddev / scale, mean / scale,
            outrange_2, 100.0f * (float)outrange_2 / (float)npix,
            outrange_4, 100.0f * (float)outrange_4 / (float)npix,
-           outliers, 100.0f * (float)outliers / (float)npix);
+           outliers, 100.0f * (float)outliers / (float)npix,
+           criticals);
 }
 
 static float *_opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
@@ -2200,7 +2208,7 @@ static float *_opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
             }
           }
           if(do_diffstat)
-            _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid, visualize);
+            _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid, visualize, dt_iop_get_processed_maximum(piece));
           if(do_dumpfile)
             dt_dump_pipe_diff_pfm(module->op, clout, cpudata, ow, oh, cho,
                                             dt_dev_pixelpipe_type_to_str(pipe->type));
@@ -2905,6 +2913,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
 
           cl_int err = CL_SUCCESS;
+
+          // keep track of status before processing OpenCL code as it might have to be reverted
+          // if we process also on CPU for debugging
+          const dt_iop_buffer_dsc_t was_dsc = pipe->dsc;
           if(bcaching)
           {
             *cl_mem_output = dt_opencl_copy_host_to_image(pipe->devid, pipe->bcache_data, roi_out->width, roi_out->height, out_bpp);
@@ -2974,6 +2986,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               const gboolean visualize = darktable.cldiff_stats
                                     && dt_pipe_is_full(pipe)
                                     && dt_iop_has_focus(module);
+              // process() called within _opencl_dump_diff_pipe_pfm() must have same input as OpenCL code
+              pipe->dsc = was_dsc;
               float *clout = _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out, visualize);
               if(visualize)
               {
