@@ -1332,7 +1332,9 @@ void gui_update(dt_iop_module_t *self)
   // only legacy params and saved camera presets are matched against the camera
   // presets. For another mode a match would only show that preset's finetune
   // slider under that mode's label: the as shot of a camera set to a preset
-  // often matches one
+  // often matches one. Only legacy params take the match as their mode: some
+  // cameras have presets with equal multipliers, and the search, which stops
+  // at the first, would relabel a saved one
   if(p->preset == DT_IOP_TEMP_UNKNOWN
      || p->preset >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
   {
@@ -1353,6 +1355,8 @@ void gui_update(dt_iop_module_t *self)
         {
           // got exact match!
           dt_bauhaus_combobox_set(g->presets, j);
+          if(p->preset == DT_IOP_TEMP_UNKNOWN)
+            p->preset = j;
           dt_iop_temperature_preset_data_t *preset =
             dt_bauhaus_combobox_get_data(g->presets);
           if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
@@ -1416,6 +1420,8 @@ void gui_update(dt_iop_module_t *self)
               // got exact match!
 
               dt_bauhaus_combobox_set(g->presets, j);
+              if(p->preset == DT_IOP_TEMP_UNKNOWN)
+                p->preset = j;
               dt_iop_temperature_preset_data_t *preset =
                 dt_bauhaus_combobox_get_data(g->presets);
               if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
