@@ -986,6 +986,35 @@ __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4
   }
 }
 
+/* spektrafilm_yvv_col_4c with spektrafilm_diffusion_accum folded into its
+   backward sweep: the blurred value goes into `acc` with the weights
+   (wr, wg, wb) and is not stored. `dst` is scratch for the forward sweep. */
+__kernel void spektrafilm_yvv_col_4c_accum(__global const float4 *src, __global float4 *dst,
+                                           __global float4 *acc, const int w, const int h,
+                                           const float4 B, const float4 B2, const float4 B3,
+                                           const float wr, const float wg, const float wb,
+                                           const int reset)
+{
+  const int col = get_global_id(0);
+  if(col >= w || get_global_id(1) != 0) return;
+  float4 w1 = src[col], w2 = w1, w3 = w1;
+  for(int i = 0; i < h; i++)
+  {
+    const size_t k = (size_t)i * w + col;
+    const float4 v = w1 + fma(B, src[k] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
+    dst[k] = v; w3 = w2; w2 = w1; w1 = v;
+  }
+  float4 v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
+  for(int i = h - 1; i >= 0; i--)
+  {
+    const size_t k = (size_t)i * w + col;
+    const float4 v = v1 + fma(B, dst[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
+    const float4 a = reset ? (float4)(0.f, 0.f, 0.f, 0.f) : acc[k];
+    acc[k] = (float4)(fma(wr, v.x, a.x), fma(wg, v.y, a.y), fma(wb, v.z, a.z), v.w);
+    v3 = v2; v2 = v1; v1 = v;
+  }
+}
+
 /* Decimated wide blur, the device half of sf_blur_plane3_wide() in
    spektra_core.c; the two must agree operation for operation. Block averages
    over a k x k grid anchored at absolute multiples of k (ox, oy are the
@@ -1085,6 +1114,28 @@ __kernel void spektrafilm_gauss_col_4c(__global const float4 *src, __global floa
     acc = fma(weights[k + radius], src[(size_t)yy * w + x], acc);
   }
   dst[(size_t)y * w + x] = acc;
+}
+
+/* spektrafilm_gauss_col_4c followed by spektrafilm_diffusion_accum, without
+   storing the blurred value in between */
+__kernel void spektrafilm_gauss_col_4c_accum(__global const float4 *src, __global float4 *acc,
+                                             const int w, const int h,
+                                             __global const float4 *weights, const int radius,
+                                             const float wr, const float wg, const float wb,
+                                             const int reset)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  float4 b = (float4)(0.0f);
+  for(int k = -radius; k <= radius; k++)
+  {
+    int yy = y + k;
+    yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
+    b = fma(weights[k + radius], src[(size_t)yy * w + x], b);
+  }
+  const size_t i = (size_t)y * w + x;
+  const float4 a = reset ? (float4)(0.f, 0.f, 0.f, 0.f) : acc[i];
+  acc[i] = (float4)(fma(wr, b.x, a.x), fma(wg, b.y, a.y), fma(wb, b.z, a.z), b.w);
 }
 
 __kernel void spektrafilm_gauss_row_1c(__global const float *src, __global float *dst,
