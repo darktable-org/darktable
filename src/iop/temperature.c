@@ -1338,8 +1338,9 @@ void gui_update(dt_iop_module_t *self)
   if(p->preset == DT_IOP_TEMP_UNKNOWN
      || p->preset >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
   {
-    // look through all added presets
-    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
+    // look through all added presets. They follow the section header with the
+    // camera's name, which has no preset_num[] and no preset data
+    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS + 1; !found && (j < g->preset_cnt); j++)
     {
       // look through all variants of this preset, with different tuning
       for(int i = g->preset_num[j];
@@ -1385,8 +1386,8 @@ void gui_update(dt_iop_module_t *self)
     {
       // ok, we haven't found exact match, maybe this was interpolated?
 
-      // look through all added presets
-      for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
+      // look through all added presets, after the section header
+      for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS + 1; !found && (j < g->preset_cnt); j++)
       {
         // look through all variants of this preset, with different tuning
         int i = g->preset_num[j] + 1;
