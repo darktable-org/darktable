@@ -422,9 +422,6 @@ static void sycc422_to_rgb(opj_image_t *img)
   const size_t max = maxw * maxh;
 
   const int *y = img->comps[0].data;
-  const int *cb = img->comps[1].data;
-  const int *cr = img->comps[2].data;
-
   int *const r = (int *)calloc(max, sizeof(int));
   int *const g = (int *)calloc(max, sizeof(int));
   int *const b = (int *)calloc(max, sizeof(int));
@@ -440,13 +437,21 @@ static void sycc422_to_rgb(opj_image_t *img)
   DT_OMP_FOR()
   for(size_t i = 0; i < maxh; ++i)
   {
-    size_t rowstart = i * maxw;
-    for(size_t j = 0; j < maxw; j += 2)
+    const size_t rowstart = i * maxw;
+    const size_t chroma_offset = img->x0 % 2;
+    for(size_t j = 0; j < maxw; ++j)
     {
-      const int curr_cb = cb[rowstart + j/2];
-      const int curr_cr = cr[rowstart + j/2];
+      int curr_cb = offset;
+      int curr_cr = offset;
+      if(j >= chroma_offset)
+      {
+        const size_t x = (j - chroma_offset) / 2;
+        if(i < img->comps[1].h && x < img->comps[1].w)
+          curr_cb = img->comps[1].data[i * img->comps[1].w + x];
+        if(i < img->comps[2].h && x < img->comps[2].w)
+          curr_cr = img->comps[2].data[i * img->comps[2].w + x];
+      }
       sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
-      sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
     }
   }
   free(img->comps[0].data);
@@ -476,9 +481,6 @@ static void sycc420_to_rgb(opj_image_t *img)
   size_t max = maxw * maxh;
 
   const int *y = img->comps[0].data;
-  const int *cb = img->comps[1].data;
-  const int *cr = img->comps[2].data;
-
   int *const r = (int *)calloc(max, sizeof(int));
   int *const g = (int *)calloc(max, sizeof(int));
   int *const b = (int *)calloc(max, sizeof(int));
@@ -492,20 +494,25 @@ static void sycc420_to_rgb(opj_image_t *img)
   }
 
   DT_OMP_FOR()
-  for(size_t i = 0; i < maxh; i += 2)
+  for(size_t i = 0; i < maxh; ++i)
   {
-    const size_t subrow = (i/2) * maxw;
     const size_t rowstart = i * maxw;
-    const size_t nextrow = (i+1) * maxw;
-
-    for(size_t j = 0; j < maxw; j += 2)
+    const size_t chroma_x_offset = img->x0 % 2;
+    const size_t chroma_y_offset = img->y0 % 2;
+    for(size_t j = 0; j < maxw; ++j)
     {
-      const int curr_cb = cb[subrow + j/2];
-      const int curr_cr = cr[subrow + j/2];
+      int curr_cb = offset;
+      int curr_cr = offset;
+      if(j >= chroma_x_offset && i >= chroma_y_offset)
+      {
+        const size_t chroma_x = (j - chroma_x_offset) / 2;
+        const size_t chroma_y = (i - chroma_y_offset) / 2;
+        if(chroma_y < img->comps[1].h && chroma_x < img->comps[1].w)
+          curr_cb = img->comps[1].data[chroma_y * img->comps[1].w + chroma_x];
+        if(chroma_y < img->comps[2].h && chroma_x < img->comps[2].w)
+          curr_cr = img->comps[2].data[chroma_y * img->comps[2].w + chroma_x];
+      }
       sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
-      sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
-      sycc_to_rgb(offset, upb, y[nextrow+j], curr_cb, curr_cr, r+nextrow+j, g+nextrow+j, b+nextrow+j);
-      sycc_to_rgb(offset, upb, y[nextrow+j+1], curr_cb, curr_cr, r+nextrow+j+1, g+nextrow+j+1, b+nextrow+j+1);
     }
   }
   free(img->comps[0].data);
