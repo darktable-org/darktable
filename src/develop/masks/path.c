@@ -1928,7 +1928,29 @@ static void _path_get_distance(const float x,
       *inside_border = TRUE;
     }
     else
+    {
+      // the ray cast misses a node inside a border loop left uncut around
+      // a sharp inward corner: test the nodes and feather handles as
+      // _path_events_mouse_moved() does, so they can still be grabbed
+      if(gpt->points_count >= _nb_wctrl_points(corner_count)
+         && gpt->border_count >= _nb_wctrl_points(corner_count))
+      {
+        for(int k = 0; k < corner_count; k++)
+        {
+          const float *const corner = &gpt->points[k * 6 + 2];
+          const float *const handle = &gpt->border[k * 6];
+          if((fabsf(x - corner[0]) < as && fabsf(y - corner[1]) < as)
+             || (fabsf(x - handle[0]) < as && fabsf(y - handle[1]) < as))
+          {
+            *nearest = k;
+            *dist = fminf(sqf(x - corner[0]) + sqf(y - corner[1]),
+                          sqf(x - handle[0]) + sqf(y - handle[1]));
+            return;
+          }
+        }
+      }
       return;
+    }
   }
   else
     *inside_border = TRUE;
