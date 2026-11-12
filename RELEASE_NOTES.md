@@ -1200,6 +1200,10 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed nodes of a drawn path that could not be selected or moved
+  after a large feather was given to a sharp corner where the path
+  turns inward, such as the middle nodes of a sunglasses-shaped path.
+
 ## Lua
 
 ### API Version
