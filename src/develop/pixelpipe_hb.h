@@ -67,6 +67,16 @@ typedef struct dt_dev_refine_bypass_t
   int nkeys;
 } dt_dev_refine_bypass_t;
 
+// the uniform transform out = (in - offset) * scale that a piece applies, published on the
+// pipe thread (commit_params() or process()) so that a later module of the same pipe can undo
+// it without reading another module's GUI-owned params. Only the exposure module fills it
+typedef struct dt_dev_pixelpipe_linear_t
+{
+  gboolean valid; // FALSE if the transform is not known for the current params
+  float offset;
+  float scale;
+} dt_dev_pixelpipe_linear_t;
+
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -123,6 +133,9 @@ typedef struct dt_dev_pixelpipe_iop_t
   // the refinements previewed as off, copied at commit time so that the
   // renderer never reads the GUI's set from a worker thread
   dt_dev_refine_bypass_t refine_bypass;
+
+  // see dt_dev_pixelpipe_linear_t
+  dt_dev_pixelpipe_linear_t linear;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t

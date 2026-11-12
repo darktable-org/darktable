@@ -104,6 +104,11 @@ typedef struct dt_iop_exposure_data_t
   gboolean deflicker;
   float black;
   float scale;
+  // the committed params and mode that produced piece->linear in process(), and the
+  // record it published, so that commit_params() can restore it when they did not change
+  dt_iop_exposure_params_t published_params;
+  gboolean published_deflicker;
+  dt_dev_pixelpipe_linear_t published_linear;
   // cache the raw source histogram per pipe: cleanup is serialized with
   // processing, and image changes rebuild the pipe nodes
   uint32_t *deflicker_histogram;
@@ -475,13 +480,21 @@ static void _compute_deflicker_correction(dt_iop_exposure_params_t *p,
 
 static gboolean _show_computed(gpointer user_data);
 
+// the black and scale that process() applies for a given total exposure (in EV)
+static void _black_and_scale(const float exposure, const float black_param,
+                             float *black, float *scale)
+{
+  const float white = exposure2white(exposure);
+  *black = black_param >= white ? white - 0.01f : black_param;
+  *scale = 1.0f / (white - *black);
+}
+
 static void _process_common_setup(dt_iop_module_t *self,
                                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
   dt_iop_exposure_data_t *d = piece->data;
 
-  d->black = d->params.black;
   // the default is also the fallback for _compute_deflicker_correction below
   float exposure = d->params.exposure;
 
@@ -505,10 +518,13 @@ static void _process_common_setup(dt_iop_module_t *self,
     }
   }
 
-  const float white = exposure2white(exposure);
-  if(d->black >= white)
-    d->black = white - 0.01f;
-  d->scale = 1.0f / (white - d->black);
+  _black_and_scale(exposure, d->params.black, &d->black, &d->scale);
+  piece->linear = (dt_dev_pixelpipe_linear_t){ .valid = TRUE,
+                                               .offset = d->black,
+                                               .scale = d->scale };
+  d->published_linear = piece->linear;
+  d->published_params = d->params;
+  d->published_deflicker = d->deflicker;
 }
 
 #ifdef HAVE_OPENCL
@@ -664,6 +680,26 @@ void commit_params(dt_iop_module_t *self,
   {
     d->deflicker = TRUE;
   }
+
+  if(d->deflicker)
+  {
+    // the correction is only known once process() has run: restore what it
+    // published from the same committed params, which give the same correction.
+    // Do not trust piece->linear here: synch_all() commits the default params first
+    if(d->published_deflicker
+       && !memcmp(&d->published_params, &d->params, sizeof(d->params)))
+      piece->linear = d->published_linear;
+    else
+      piece->linear.valid = FALSE;
+  }
+  else
+  {
+    float black, scale;
+    _black_and_scale(d->params.exposure, d->params.black, &black, &scale);
+    piece->linear = (dt_dev_pixelpipe_linear_t){ .valid = TRUE,
+                                                 .offset = black,
+                                                 .scale = scale };
+  }
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -671,6 +707,7 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1,sizeof(dt_iop_exposure_data_t));
+  piece->linear.valid = FALSE;
 }
 
 void cleanup_pipe(dt_iop_module_t *self,
