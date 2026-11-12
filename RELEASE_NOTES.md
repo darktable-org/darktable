@@ -1059,6 +1059,10 @@ changes (where available).
   groups other than the Quick Access panel. Entries already
   duplicated by this bug are merged when the layout is loaded.
 
+- Fixed the local copy indicator, and other thumbnail overlay icons, being
+  misplaced after switching away from the "overlays block on mouse hover"
+  mode, and the local copy indicator showing in "no overlays" mode.
+
 ## Lua
 
 ### API Version
