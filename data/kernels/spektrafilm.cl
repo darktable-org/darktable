@@ -877,9 +877,10 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
  * dt_gaussian_kernel_1d(), the same kernel the CPU path
  * convolves with, so GPU and CPU renders match. Clamp-to-edge boundary.
   * Separate _row/_col entry points keep the
- * inner loop's memory access pattern explicit at the call site. Separate
- * _1c/_4c variants avoid packing a lone scatter-stage channel into an
- * otherwise-wasted float4. */
+ * inner loop's memory access pattern explicit at the call site. The _4c
+ * variants take one tap per channel, so the scatter stage can blur each
+ * color channel with its own sigma in a single pass; a channel with a
+ * narrower kernel has zero taps at both ends. */
 /* Young-van Vliet order-3 recursive Gaussian, one work-item per line. Same
    coefficients and same edge-replicated seeding as sf_gauss_yvv_coeffs /
    _sf_gauss_iir_1d on the CPU, so both paths deliver the identical blur above
@@ -892,7 +893,9 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
    coefficients round to, and no cancelling large terms. The recursion feeds
    the result back in, so one differing rounding between host and device
    becomes a different filter rather than a one-ulp difference; FP_CONTRACT
-   pragmas do not settle this on either side, an explicit fma does. */
+   pragmas do not settle this on either side, an explicit fma does.
+   B, B2 and B3 hold one coefficient per channel, as the scatter stage has
+   one sigma per color channel. */
 /* Rows: one work-group of tw x th items (its local size) covers th rows. The
    rows are walked in chunks of YVV_CHUNK columns; each chunk is loaded and
    stored by the whole group in contiguous segments through `tile`, local
@@ -903,8 +906,8 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
 #define YVV_TILE_PITCH (YVV_CHUNK + 1)
 
 __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4 *dst,
-                                     const int w, const int h, const float B, const float B2,
-                                     const float B3, __local float4 *tile)
+                                     const int w, const int h, const float4 B, const float4 B2,
+                                     const float4 B3, __local float4 *tile)
 {
   const int tw = get_local_size(0);
   const int lx = get_local_id(0);
@@ -957,8 +960,8 @@ __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4
 }
 
 __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4 *dst,
-                                     const int w, const int h, const float B, const float B2,
-                                     const float B3)
+                                     const int w, const int h, const float4 B, const float4 B2,
+                                     const float4 B3)
 {
   /* One work-item per line. The launch asks for a second global dimension of
      1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
@@ -979,87 +982,6 @@ __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4
   {
     const size_t k = (size_t)i * w + col;
     const float4 v = v1 + fma(B, dst[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
-    dst[k] = v; v3 = v2; v2 = v1; v1 = v;
-  }
-}
-
-__kernel void spektrafilm_yvv_row_1c(__global const float *src, __global float *dst,
-                                     const int w, const int h, const float B, const float B2,
-                                     const float B3, __local float *tile)
-{
-  const int tw = get_local_size(0);
-  const int lx = get_local_id(0);
-  const int ly = get_local_id(1);
-  const int row = get_global_id(1);
-  const int valid = row < h;
-  __global const float *s = src + (size_t)min(row, h - 1) * w;
-  __global float *d = dst + (size_t)min(row, h - 1) * w;
-  __local float *t = tile + ly * YVV_TILE_PITCH;
-  const int last = ((w - 1) / YVV_CHUNK) * YVV_CHUNK;
-
-  float w1 = s[0], w2 = w1, w3 = w1;
-  for(int c0 = 0; c0 < w; c0 += YVV_CHUNK)
-  {
-    const int n = min(YVV_CHUNK, w - c0);
-    for(int j = lx; valid && j < n; j += tw) t[j] = s[c0 + j];
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if(valid && lx == 0)
-    {
-      for(int j = 0; j < n; j++)
-      {
-        const float v = w1 + fma(B, t[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
-        t[j] = v; w3 = w2; w2 = w1; w1 = v;
-      }
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-    for(int j = lx; valid && j < n; j += tw) d[c0 + j] = t[j];
-    barrier(CLK_LOCAL_MEM_FENCE);
-  }
-
-  /* w1 holds d[w - 1] */
-  float v1 = w1, v2 = v1, v3 = v1;
-  for(int c0 = last; c0 >= 0; c0 -= YVV_CHUNK)
-  {
-    const int n = min(YVV_CHUNK, w - c0);
-    for(int j = lx; valid && j < n; j += tw) t[j] = d[c0 + j];
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if(valid && lx == 0)
-    {
-      for(int j = n - 1; j >= 0; j--)
-      {
-        const float v = v1 + fma(B, t[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
-        t[j] = v; v3 = v2; v2 = v1; v1 = v;
-      }
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-    for(int j = lx; valid && j < n; j += tw) d[c0 + j] = t[j];
-    barrier(CLK_LOCAL_MEM_FENCE);
-  }
-}
-
-__kernel void spektrafilm_yvv_col_1c(__global const float *src, __global float *dst,
-                                     const int w, const int h, const float B, const float B2,
-                                     const float B3)
-{
-  /* One work-item per line. The launch asks for a second global dimension of
-     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
-     device's preferred multiple, so this is entered by a whole row of items
-     per line -- all of which would otherwise run the same serial recursion
-     over the same addresses and race. Only item 0 may proceed. */
-  const int col = get_global_id(0);
-  if(col >= w || get_global_id(1) != 0) return;
-  float w1 = src[col], w2 = w1, w3 = w1;
-  for(int i = 0; i < h; i++)
-  {
-    const size_t k = (size_t)i * w + col;
-    const float v = w1 + fma(B, src[k] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
-    dst[k] = v; w3 = w2; w2 = w1; w1 = v;
-  }
-  float v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
-  for(int i = h - 1; i >= 0; i--)
-  {
-    const size_t k = (size_t)i * w + col;
-    const float v = v1 + fma(B, dst[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
     dst[k] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
@@ -1135,7 +1057,7 @@ __kernel void spektrafilm_wide_up(__global const float4 *low, __global float4 *o
 
 __kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global float4 *dst,
                                        const int w, const int h,
-                                       __global const float *weights, const int radius)
+                                       __global const float4 *weights, const int radius)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -1151,7 +1073,7 @@ __kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global floa
 
 __kernel void spektrafilm_gauss_col_4c(__global const float4 *src, __global float4 *dst,
                                        const int w, const int h,
-                                       __global const float *weights, const int radius)
+                                       __global const float4 *weights, const int radius)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -1225,43 +1147,6 @@ __kernel void spektrafilm_accum(__global const float4 *blurred, __global float4 
   a.x = fma(wk, b.x, a.x);
   a.y = fma(wk, b.y, a.y);
   a.z = fma(wk, b.z, a.z);
-  acc[k] = a;
-}
-
-/* Pull one channel out of a float4 buffer into a packed single-channel
- * buffer, so it can be blurred on its own (1 channel of work) instead of
- * blurring all 4 channels of a float4 buffer just to keep 1 of them. */
-__kernel void spektrafilm_channel_extract(__global const float4 *src, __global float *dst,
-                                          const int w, const int h, const int channel)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  size_t k = (size_t)y * w + x;
-  float4 s = src[k];
-  dst[k] = (channel == 0) ? s.x : (channel == 1) ? s.y : s.z;
-}
-
-/* Accumulate weight*blurred[k] (a single-channel buffer, already blurred with
- * that channel's own sigma via spektrafilm_channel_extract + a 1-channel
- * Gaussian blur) into acc[.channel] only, leaving the other two channels of
- * acc untouched (unless reset, which zeroes all of acc.xyz once up front).
- * Used to assemble a genuinely per-channel-sigma blur: each channel gets its
- * own extract + blur + accum, at 1x the per-channel blur cost instead of
- * blurring a full float4 (4x the work) just to keep one channel of it.
- * Channel is 0=R, 1=G, 2=B; alpha (.w) is left as acc's own, unset here
- * since none of the scatter/tail stages carry alpha. */
-__kernel void spektrafilm_channel_accum(__global const float *blurred, __global float4 *acc,
-                                        const int w, const int h, const float weight,
-                                        const int channel, const int reset)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  size_t k = (size_t)y * w + x;
-  const float bv = blurred[k];
-  float4 a = reset ? (float4)(0.f) : acc[k];
-  const float av = (channel == 0) ? a.x : (channel == 1) ? a.y : a.z;
-  const float nv = fma(weight, bv, av);
-  if(channel == 0) a.x = nv; else if(channel == 1) a.y = nv; else a.z = nv;
   acc[k] = a;
 }
 
