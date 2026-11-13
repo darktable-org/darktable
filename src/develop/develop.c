@@ -3685,20 +3685,6 @@ gboolean dt_dev_is_current_image(const dt_develop_t *dev,
   return dev && (dev->image_storage.id == imgid);
 }
 
-static dt_dev_proxy_exposure_t *_dev_exposure_proxy_available(dt_develop_t *dev)
-{
-  if(!dev->proxy.exposure.module || dt_view_get_current() != DT_VIEW_DARKROOM) return NULL;
-
-  dt_dev_proxy_exposure_t *instance = &dev->proxy.exposure;
-  return instance && instance->module ? instance : NULL;
-}
-
-float dt_dev_exposure_get_exposure(dt_develop_t *dev)
-{
-  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
-  return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
-}
-
 float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
 {
   if (dt_view_get_current() != DT_VIEW_DARKROOM)
@@ -3734,12 +3720,6 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
   }
 
   return 0.0f;
-}
-
-float dt_dev_exposure_get_black(dt_develop_t *dev)
-{
-  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
-  return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
 }
 
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,

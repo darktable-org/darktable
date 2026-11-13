@@ -98,22 +98,15 @@ typedef enum dt_clipping_preview_mode_t
 } dt_clipping_preview_mode_t;
 
 // Cross-module access to the current settings of the exposure module, registered by
-// its gui_init() and currently used by the histogram, channelmixerrgb and agx.
+// its gui_init() and currently used by the histogram and agx.
 //
 // Thread contract: must only be called from the GTK main thread -- the accessors read the
 // exposure module's live `params` and the `module` pointer itself, both owned by that
 // thread. See dev-doc/GUI_Threading.md, "Publishing gui_data Through a Proxy".
-//
-// TODO: Known violation tracked as #22005 (remove this when fixed):
-// channelmixerrgb calls dt_dev_exposure_get_exposure() and dt_dev_exposure_get_black()
-// from _extract_patches(), which runs in process() on the preview pipe thread during
-// ColorChecker profiling.
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
-  float (*get_exposure)(struct dt_iop_module_t *exp);
   float (*get_effective_exposure)(struct dt_iop_module_t *exp);
-  float (*get_black)(struct dt_iop_module_t *exp);
   void (*handle_event)(int, gdouble, GdkModifierType, const gboolean);
 } dt_dev_proxy_exposure_t;
 
@@ -576,14 +569,10 @@ void dt_dev_set_occlusion(dt_dev_viewport_t *port,
                           const int32_t left,
                           const int32_t right);
 
-/** the four calls below go through dt_dev_proxy_exposure_t: GTK main thread only,
+/** the two calls below go through dt_dev_proxy_exposure_t: GTK main thread only,
     see the thread contract on that struct */
-/** get exposure level */
-float dt_dev_exposure_get_exposure(dt_develop_t *dev);
 /** get final effective exposure level including compensations */
 float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
-/** get exposure black level */
-float dt_dev_exposure_get_black(dt_develop_t *dev);
 
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,
                                   GdkModifierType state,
