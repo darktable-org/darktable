@@ -930,15 +930,21 @@ void expose(dt_view_t *self,
     if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
     {
       // Cache the rendered content for display while loading the next image.
-#ifdef _WIN32
-      // On the Win32 GDK backend, holding a cairo_surface_reference() to
+#if defined(_WIN32) || defined(GDK_WINDOWING_QUARTZ)
+      // Copy to a standalone image surface buffer for certain backends:
+      // 1. On the Win32 GDK backend, holding a cairo_surface_reference() to
       // cairo_get_target(cri) prevents GTK from properly invalidating the
       // widget surface, causing gtk_widget_queue_draw() to silently fail
-      // (issue #20831). Copy to a standalone image surface instead.
+      // (issue #20831).
+      // 2. On the macOS Quartz GDK backend, every resize step drops a reference
+      // to cairo's surface, decrementing its refcount.
+      // When cairo_surface_destroy() later runs to clean up, it fails its refcount
+      // assertion and aborts (issue #21558, #20829).
       cairo_surface_t *target = cairo_get_target(cri);
       if(width > 0 && height > 0)
       {
-        darktable.gui->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        // Respect device screen scaling when creating image surface
+        darktable.gui->surface = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
         cairo_t *cr2 = cairo_create(darktable.gui->surface);
         cairo_set_source_surface(cr2, target, 0, 0);
         cairo_paint(cr2);
