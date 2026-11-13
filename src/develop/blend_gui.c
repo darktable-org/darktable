@@ -1410,10 +1410,44 @@ static gboolean _swallow_unregistered_modifier(GtkGestureSingle *gesture,
   return TRUE;
 }
 
-// the modifiers a click on a row or a group header gives a meaning: ctrl
-// renames, shift picks it with the others, both delete it. Any other
-// combination does nothing
-#define MASKS_CLICK_MODS (GDK_CONTROL_MASK | GDK_SHIFT_MASK)
+// the key that picks, as in the lighttable (see thumbtable.c): ctrl, or cmd on
+// macOS, where GTK3 reports it as MOD2 and ctrl+click is a right click. MOD2 is
+// num lock elsewhere
+#ifdef __APPLE__
+#define MASKS_PRIMARY_MASK (GDK_MOD2_MASK | GDK_META_MASK)
+#else
+#define MASKS_PRIMARY_MASK GDK_CONTROL_MASK
+#endif
+
+// what a click on a row or a group header does, by the modifiers held: ctrl/cmd
+// picks it with the others, shift picks the range from the last pick, both add
+// that range to the picks, alt renames (and ctrl, on macOS). Any other combination does nothing
+typedef enum _click_t
+{
+  CLICK_PLAIN,
+  CLICK_PICK,
+  CLICK_RANGE,
+  CLICK_RANGE_ADD,
+  CLICK_RENAME,
+  CLICK_IGNORED,
+} _click_t;
+
+static _click_t _click_kind(const GdkModifierType state)
+{
+  // alt, or option on macOS, alone renames
+  const GdkModifierType held = state & gtk_accelerator_get_default_mod_mask();
+  if(held == GDK_MOD1_MASK) return CLICK_RENAME;
+#ifdef __APPLE__
+  // ctrl picks nothing there (cmd does), so it renames, as it does on a module
+  // header (see _header_rename_click in imageop.c)
+  if(held == GDK_CONTROL_MASK) return CLICK_RENAME;
+#endif
+  const GdkModifierType known = MASKS_PRIMARY_MASK | GDK_SHIFT_MASK;
+  if((state & gtk_accelerator_get_default_mod_mask() & ~known) != 0) return CLICK_IGNORED;
+  const gboolean primary = (state & MASKS_PRIMARY_MASK) != 0;
+  const gboolean shift = (state & GDK_SHIFT_MASK) != 0;
+  return primary ? (shift ? CLICK_RANGE_ADD : CLICK_PICK) : (shift ? CLICK_RANGE : CLICK_PLAIN);
+}
 
 static void _modifier_filter_pressed(GtkGestureSingle *gesture,
                                      const int n_press,
@@ -4483,6 +4517,46 @@ dt_masks_pick_result_t dt_masks_model_pick_toggle(dt_masks_form_t *grp,
   }
 
   if(*picked && !(*picked)->next)
+  {
+    const dt_masks_pick_result_t left = { DT_MASKS_PICK_SELECT, GPOINTER_TO_INT((*picked)->data) };
+    g_list_free(*picked);
+    *picked = NULL;
+    return left;
+  }
+  const dt_masks_pick_result_t changed = { DT_MASKS_PICK_CHANGED, INVALID_MASKID };
+  return changed;
+}
+
+dt_masks_pick_result_t dt_masks_model_pick_range(dt_masks_form_t *grp,
+                                                 GList **picked,
+                                                 const GList *order,
+                                                 const dt_mask_id_t anchor,
+                                                 const dt_mask_id_t fid,
+                                                 const gboolean add)
+{
+  const dt_masks_pick_result_t ignored = { DT_MASKS_PICK_IGNORED, INVALID_MASKID };
+  const dt_mask_id_t id = dt_is_valid_maskid(fid) ? dt_masks_model_pick_id(fid) : INVALID_MASKID;
+  const int from = g_list_index((GList *)order, GINT_TO_POINTER(anchor));
+  const int to = g_list_index((GList *)order, GINT_TO_POINTER(id));
+  if(!grp || from < 0 || to < 0 || _is_mask_root(grp, id)) return ignored;
+
+  if(!add)
+  {
+    g_list_free(*picked);
+    *picked = NULL;
+  }
+  const int lo = MIN(from, to), hi = MAX(from, to);
+  const GList *row = g_list_nth((GList *)order, lo);
+  for(int i = lo; i <= hi && row; i++, row = g_list_next(row))
+  {
+    // the mask's own group may be the anchor, but is no pick, and adding it
+    // would add every member
+    const dt_mask_id_t rid = GPOINTER_TO_INT(row->data);
+    if(!_is_mask_root(grp, rid) && dt_masks_gui_group_point(grp, rid)) _picks_add(grp, picked, rid);
+  }
+
+  if(!*picked) return ignored;
+  if(!(*picked)->next)
   {
     const dt_masks_pick_result_t left = { DT_MASKS_PICK_SELECT, GPOINTER_TO_INT((*picked)->data) };
     g_list_free(*picked);
@@ -9650,7 +9724,7 @@ static void _linked_link_clicked(GtkButton *button, dt_iop_module_t *module)
   _set_form_target(next, fid);
 }
 
-// the rename entry open in the list, if any (weak), and the rename a ctrl+click
+// the rename entry open in the list, if any (weak), and the rename an alt+click
 // asked for while it was: started once the rebuild that commits the open one
 // has replaced the list (_rename_after_pending, _resume_pending_rename)
 static GtkWidget *_rename_entry = NULL;
@@ -9776,18 +9850,18 @@ static void _rename_focus_out(GtkEventController *controller, dt_iop_module_t *m
 
 
 // start inline rename on `evbox` (swap its name label for an entry): shared by
-// a ctrl+click on the row's name (_row_click_press) and a double-click or
-// ctrl+click on the selection panel's name (_selection_rename).
+// an alt+click on the row's name (_row_click_press) and on the selection
+// panel's name (_selection_rename)
 static void
 _start_rename_element(GtkWidget *evbox, dt_iop_module_t *module, const dt_mask_id_t id)
 {
-  // same gesture as renaming a module (ctrl+click), for consistency -- see
+  // same gesture as renaming a module, for consistency -- see
   // _iop_plugin_header_released in imageop.c
   GtkWidget *name_box = gtk_bin_get_child(GTK_BIN(evbox));
   GtkWidget *child = name_box ? g_object_get_data(G_OBJECT(name_box), "title-child") : NULL;
   if(child && GTK_IS_ENTRY(child))
   {
-    // already renaming (a quick second ctrl+click): focus the entry. Do not
+    // already renaming (a quick second alt+click): focus the entry. Do not
     // destroy it: its focus-out-event commits and rebuilds the list in the
     // middle of the destroy, which crashes
     gtk_widget_grab_focus(child);
@@ -10212,14 +10286,10 @@ static void _select_member_alone(dt_iop_module_t *module, const dt_mask_id_t id)
     _set_form_target(module, id);
 }
 
-// shift+click on the row or header of form `fid` (see
-// dt_masks_model_pick_toggle for what it does)
-static void _pick_toggle(dt_iop_module_t *module, const dt_mask_id_t fid)
+// show what a pick or a range did (see dt_masks_model_pick_toggle)
+static void _pick_outcome(dt_iop_module_t *module, const dt_masks_pick_result_t r)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
-  const dt_masks_pick_result_t r =
-    dt_masks_model_pick_toggle(dt_masks_gui_module_mask_group(module), &bd->masks_picked,
-                               bd->panel_selected_formid, bd->panel_selected_group_cid, fid);
   switch(r.outcome)
   {
     case DT_MASKS_PICK_IGNORED:
@@ -10252,7 +10322,76 @@ static void _pick_toggle(dt_iop_module_t *module, const dt_mask_id_t fid)
   }
 }
 
-// shift+click on a row or header: pick it, and nothing else, whatever the
+// ctrl/cmd+click on the row or header of form `fid` (see
+// dt_masks_model_pick_toggle for what it does). The row is where a range goes
+// on from
+static void _pick_toggle(dt_iop_module_t *module, const dt_mask_id_t fid)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  bd->masks_range_anchor = dt_masks_model_pick_id(fid);
+  _pick_outcome(module,
+                dt_masks_model_pick_toggle(dt_masks_gui_module_mask_group(module), &bd->masks_picked,
+                                           bd->panel_selected_formid, bd->panel_selected_group_cid,
+                                           fid));
+}
+
+typedef struct _order_t
+{
+  GList *ids;
+} _order_t;
+
+// the rows and headers as the list shows them, top down: a folded group's
+// members are not shown, and a range does not reach them
+static _walk_t _order_step(GtkWidget *w, gpointer data)
+{
+  _order_t *o = data;
+  if(!gtk_widget_get_mapped(w)) return WALK_PAST;
+  dt_mask_id_t id = INVALID_MASKID;
+  if(g_object_get_data(G_OBJECT(w), "mask-row"))
+    id = dt_masks_model_pick_id(_widget_id(w, "formid"));
+  else if(g_object_get_data(G_OBJECT(w), "mask-header"))
+    id = _header_cid(w);
+  if(dt_is_valid_maskid(id) && !g_list_find(o->ids, GINT_TO_POINTER(id)))
+    o->ids = g_list_append(o->ids, GINT_TO_POINTER(id));
+  return WALK_INTO;
+}
+
+// the row a range starts from: the last one picked, or else the one selected
+static dt_mask_id_t _range_anchor(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(bd->masks_picked && g_list_find(bd->masks_picked, GINT_TO_POINTER(bd->masks_range_anchor)))
+    return bd->masks_range_anchor;
+  if(bd->masks_picked) return GPOINTER_TO_INT(g_list_last(bd->masks_picked)->data);
+  return dt_masks_model_pick_anchor(grp, bd->panel_selected_formid, bd->panel_selected_group_cid);
+}
+
+// shift+click (`add` for ctrl/cmd+shift): pick every row from the anchor to the
+// one clicked, `add`ing to the picks or replacing them. With nothing to start
+// from it is a plain click
+static void _range_pressed(dt_iop_module_t *module, const dt_mask_id_t fid, const gboolean add)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  bd->masks_skip_group_select_release = TRUE;
+  if(dt_develop_blend_mask_locked(module->blend_params)) return;
+  dt_iop_request_focus(module);
+  const dt_mask_id_t anchor = _range_anchor(module);
+  _order_t o = { NULL };
+  if(bd->masks_list_box) _walk_widgets(GTK_WIDGET(bd->masks_list_box), _order_step, &o);
+  const dt_masks_pick_result_t r =
+    dt_masks_model_pick_range(dt_masks_gui_module_mask_group(module), &bd->masks_picked, o.ids,
+                              anchor, fid, add);
+  g_list_free(o.ids);
+  if(r.outcome == DT_MASKS_PICK_IGNORED)
+  {
+    _pick_outcome(module, (dt_masks_pick_result_t){ DT_MASKS_PICK_SELECT, dt_masks_model_pick_id(fid) });
+    return;
+  }
+  _pick_outcome(module, r);
+}
+
+// ctrl/cmd+click on a row or header: pick it, and nothing else, whatever the
 // release does (see _row_click_press). A locked mask picks nothing. Like a
 // plain click, it focuses the module, which the claim of the press kept from
 // reaching the module's body
@@ -10601,14 +10740,13 @@ static const dt_masks_point_group_t *_row_point_of(GtkWidget *w)
 // handle, the name and the row's background between its controls, so that a
 // click does the same on any of them. Each carries the "formid",
 // "handle-widget" and "name-evbox" tags (_make_shape_row):
-//  * ctrl+click:         rename
-//  * shift+click:        pick the element with the others (see _pick_toggle)
-//  * ctrl+shift+click:   delete the element
+//  * alt+click:          rename
+//  * ctrl/cmd+click:     pick the element with the others (see _pick_toggle)
+//  * shift+click:        pick the range from the last pick (see _range_pressed)
+//  * ctrl/cmd+shift+click: add that range to the picks
 //  * plain click/release: select (toggles off if already selected, except on
 //    a parametric editor's margin, tagged "select-only")
 // any other modifier does nothing
-// No double-click to solo: the first click's release already toggled the
-// selection, so the element would read as deselected by the second press
 //
 // Every press is claimed by the surface it lands on, so a surface nested in
 // another (the handle and the name sit on the row's background) is the only
@@ -10637,32 +10775,33 @@ static void _row_click_press(GtkGestureSingle *gesture,
   bd->panel_pressed_point = _row_point_of(w);
   // nothing happens, and the release (or the click a drag that did not move
   // ends in, see _masks_drag_end) must not select either
-  if(button == GDK_BUTTON_PRIMARY && _modifier_unregistered(gesture, MASKS_CLICK_MODS))
+  const _click_t kind = button == GDK_BUTTON_PRIMARY ? _click_kind(dt_gui_current_state(gesture)) : CLICK_PLAIN;
+  if(kind == CLICK_IGNORED)
   {
     bd->masks_skip_group_select_release = TRUE;
     return;
   }
-  if(button == GDK_BUTTON_PRIMARY && dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK))
+  // alt+click renames, as on the selection panel's name. It selects the row
+  // first, and the release must not toggle that off, nor rebuild the list under
+  // the entry
+  if(kind == CLICK_RENAME)
   {
+    bd->masks_skip_group_select_release = TRUE;
     if(bd->panel_selected_formid != id) _set_form_target(module, id);
     GtkWidget *evbox = g_object_get_data(G_OBJECT(w), "name-evbox");
     _start_rename_element(evbox, module, id);
     return;
   }
-  // ctrl+shift+click deletes the element, with no selection: the release must
-  // not select either. The list is rebuilt later, not under this press
-  if(button == GDK_BUTTON_PRIMARY
-     && dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-  {
-    bd->masks_skip_group_select_release = TRUE;
-    _delete_target(module, id, FALSE, _pressed_point(module, id), FALSE);
-    return;
-  }
-  // shift+click picks the element, as delete acts: on the press, and the
-  // release must not select either (see _pick_pressed)
-  if(button == GDK_BUTTON_PRIMARY && dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
+  // the picks act on the press, and the release must not select either (see
+  // _pick_pressed)
+  if(kind == CLICK_PICK)
   {
     _pick_pressed(module, id);
+    return;
+  }
+  if(kind == CLICK_RANGE || kind == CLICK_RANGE_ADD)
+  {
+    _range_pressed(module, id, kind == CLICK_RANGE_ADD);
     return;
   }
   // selection happens on release (a release is not delivered when a drag
@@ -10751,8 +10890,8 @@ static void _row_drag_begin(GtkWidget *w, GdkDragContext *dc, dt_iop_module_t *m
   _masks_drag_begin(module, GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "formid")));
 }
 
-// matching release for _row_click_press's plain-click case. ctrl+click,
-// shift+click and ctrl+shift+click are handled entirely on press and must not
+// matching release for _row_click_press's plain-click case. picks,
+// ranges and the rename are handled entirely on press and must not
 // also do anything here. Connected as "released" alone, never through dt_gui_connect_click(),
 // which would also turn the cancel a starting drag causes into a release
 static void _row_click_release(GtkGestureSingle *gesture,
@@ -10763,12 +10902,8 @@ static void _row_click_release(GtkGestureSingle *gesture,
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
   const GdkModifierType state = dt_gui_current_state(gesture);
-  // ctrl, shift and ctrl+shift acted on press, any other modifier does nothing
-  if(dt_modifier_is(state, GDK_CONTROL_MASK)
-     || dt_modifier_is(state, GDK_SHIFT_MASK)
-     || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
-     || _modifier_unregistered(gesture, MASKS_CLICK_MODS))
-    return;
+  // picks and ranges acted on press, any other modifier does nothing
+  if(_click_kind(state) != CLICK_PLAIN) return;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(_picks_drag_attempt(bd, x, y)) return;
   if(bd->masks_skip_group_select_release)
@@ -11072,53 +11207,23 @@ static gboolean _crossing_ignored(GtkEventControllerMotion *controller, const gb
   return ignore || !darktable.develop || !darktable.develop->form_gui;
 }
 
-// holding ctrl+shift over the list arms the ctrl+shift+click delete (see
-// _row_click_press): the pointer turns into a trash bin and the hovered header
-// into the delete shade, so what a click removes is seen before it goes.
-// Holding shift alone arms the shift+click pick the same way (see
-// _pick_toggle), with the plus pointer (a minus over what is selected already,
+// holding ctrl/cmd, shift or alt over the list arms the pick, the range or the
+// rename the click would make (see _click_kind), so what a click does is seen before it is made,
+// with the plus pointer (a minus over what is selected already,
 // or held by the selection), or the not-allowed pointer over the whole mask,
 // which cannot be picked. GTK sends nothing when a modifier alone changes, so
 // a timer watches it, but only while the pointer is over the list
 typedef enum _armed_t
 {
   ARMED_NONE = 0,
-  ARMED_DELETE,
   ARMED_PICK,
   ARMED_UNPICK, // a pick over what is picked: it takes it off
   ARMED_INVALID, // a pick over the whole mask, which is not one of its members
+  ARMED_RENAME, // alt held: a click renames
 } _armed_t;
 
 static GtkWidget *_armed_list = NULL; // weak: a rebuilt list takes its timer along
 static guint _armed_timer = 0;
-
-#if !GTK_CHECK_VERSION(4, 0, 0)
-static GdkCursor *_delete_cursor(GtkWidget *w)
-{
-  static GdkCursor *cursor = NULL;
-  if(cursor) return cursor;
-  const int size = 24, scale = gtk_widget_get_scale_factor(w);
-  cairo_surface_t *surface =
-    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size * scale, size * scale);
-  cairo_surface_set_device_scale(surface, scale, scale);
-  cairo_t *cr = cairo_create(surface);
-  // the delete button's trash bin, light over a dark halo to read on any theme
-  // the eight offsets around the middle in dark, then the middle in light
-  for(int k = 0; k < 9; k++)
-  {
-    const int m = k < 4 ? k : k + 1; // 4 is the middle of the 3x3 block
-    const int light = k == 8;
-    const int at = light ? 4 : m;
-    cairo_set_source_rgb(cr, light, light, light);
-    dtgtk_cairo_paint_trash(cr, 2 + at % 3 - 1, 2 + at / 3 - 1, size - 4, size - 4, 0, NULL);
-  }
-  cairo_destroy(cr);
-  cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(w), surface,
-                                       size / 2.0, size / 2.0);
-  cairo_surface_destroy(surface);
-  return cursor;
-}
-#endif
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
 // the pointer of a pick: an arrow with a plus for a pick that adds, a minus for
@@ -11182,19 +11287,15 @@ static GdkCursor *_pick_cursor(GtkWidget *w, const _armed_t mode)
 
 static _armed_t _armed_current(GtkWidget *list)
 {
-  return _has_class(list, "dt_masks_deleting")        ? ARMED_DELETE
-         : _has_class(list, "dt_masks_unpicking")    ? ARMED_UNPICK
+  return _has_class(list, "dt_masks_unpicking")      ? ARMED_UNPICK
          : _has_class(list, "dt_masks_picking")      ? ARMED_PICK
          : _has_class(list, "dt_masks_pick_invalid") ? ARMED_INVALID
+         : _has_class(list, "dt_masks_rename_armed") ? ARMED_RENAME
                                                      : ARMED_NONE;
 }
 
 static void _armed_set(GtkWidget *list, const _armed_t mode)
 {
-  if(mode == ARMED_DELETE)
-    dt_gui_add_class(list, "dt_masks_deleting");
-  else
-    dt_gui_remove_class(list, "dt_masks_deleting");
   // taking off is picking, for the shade
   if(mode == ARMED_PICK || mode == ARMED_UNPICK)
     dt_gui_add_class(list, "dt_masks_picking");
@@ -11209,6 +11310,10 @@ static void _armed_set(GtkWidget *list, const _armed_t mode)
     dt_gui_add_class(list, "dt_masks_pick_invalid");
   else
     dt_gui_remove_class(list, "dt_masks_pick_invalid");
+  if(mode == ARMED_RENAME)
+    dt_gui_add_class(list, "dt_masks_rename_armed");
+  else
+    dt_gui_remove_class(list, "dt_masks_rename_armed");
   // the frames are drawn by the list, and shift changes how far they reach
   gtk_widget_queue_draw(list);
   // the list's own window, under which every row inherits the cursor
@@ -11218,7 +11323,7 @@ static void _armed_set(GtkWidget *list, const _armed_t mode)
                     mode == ARMED_PICK       ? "copy"
                     : mode == ARMED_UNPICK   ? "zoom-out"
                     : mode == ARMED_INVALID  ? "not-allowed"
-                    : mode == ARMED_DELETE   ? "not-allowed"
+                    : mode == ARMED_RENAME   ? "text"
                                              : NULL,
                     "mask/armed");
 #else
@@ -11226,7 +11331,7 @@ static void _armed_set(GtkWidget *list, const _armed_t mode)
                       mode == ARMED_PICK       ? _pick_cursor(area, ARMED_PICK)
                       : mode == ARMED_UNPICK   ? _pick_cursor(area, ARMED_UNPICK)
                       : mode == ARMED_INVALID  ? _pick_cursor(area, ARMED_INVALID)
-                      : mode == ARMED_DELETE   ? _delete_cursor(area)
+                      : mode == ARMED_RENAME   ? dt_gui_cursor_rename(area)
                                                : NULL);
 #endif
 }
@@ -11237,9 +11342,12 @@ static void _armed_set(GtkWidget *list, const _armed_t mode)
 static _armed_t _armed_mode(dt_iop_module_t *module)
 {
   if(dt_develop_blend_mask_locked(module->blend_params)) return ARMED_NONE;
-  const GdkModifierType state = dt_key_modifier_state();
-  if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)) return ARMED_DELETE;
-  if(!dt_modifier_is(state, GDK_SHIFT_MASK)) return ARMED_NONE;
+  const _click_t kind = _click_kind(dt_key_modifier_state());
+  // the whole mask has no name of its own
+  if(kind == CLICK_RENAME)
+    return _hover_washed_row && _has_class(_hover_washed_row, "dt_masks_root") ? ARMED_INVALID
+                                                                               : ARMED_RENAME;
+  if(kind == CLICK_PLAIN || kind == CLICK_IGNORED) return ARMED_NONE;
   // a pick joins the picks, or what is selected, the whole mask included
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd || !bd->masks_list_box) return ARMED_NONE;
@@ -11267,7 +11375,8 @@ static _armed_t _armed_mode(dt_iop_module_t *module)
     _hover_washed_row && !bd->masks_picked
     && _is_mask_root(grp, dt_masks_model_pick_anchor(grp, bd->panel_selected_formid,
                                                      bd->panel_selected_group_cid));
-  return over_picked || in_whole ? ARMED_UNPICK : ARMED_PICK;
+  // a range only adds
+  return kind == CLICK_PICK && (over_picked || in_whole) ? ARMED_UNPICK : ARMED_PICK;
 }
 
 static gboolean _armed_poll(gpointer data)
@@ -12065,11 +12174,11 @@ static void _group_reset_members(dt_iop_module_t *module, const dt_mask_id_t cid
 static void _group_toggle_bypass(dt_iop_module_t *module, dt_mask_id_t cid);
 
 // start inline rename on a group's title: swap `lbl_box`'s label child for an
-// entry, same gesture as renaming an element (ctrl+click, see
+// entry, same gesture as renaming an element (alt+click, see
 // _start_rename_element) -- but the typed text names the group (see
-// _group_rename_commit). Shared by ctrl+click anywhere on the header that is
-// not a control of its own (_group_header_press) and a double-click or
-// ctrl+click on the selection panel's name (_selection_rename)
+// _group_rename_commit). Shared by alt+click anywhere on the header that is
+// not a control of its own (_group_header_press) and on the selection
+// panel's name (_selection_rename)
 static void _start_group_rename(GtkWidget *lbl_box,
                                 dt_iop_module_t *module,
                                 const dt_mask_id_t cid)
@@ -12080,7 +12189,7 @@ static void _start_group_rename(GtkWidget *lbl_box,
   if(current && GTK_IS_ENTRY(current))
   {
     // already renaming -- see _row_click_press for why a fast repeated
-    // ctrl+click must re-focus rather than destroy/recreate the entry
+    // alt+click must re-focus rather than destroy/recreate the entry
     gtk_widget_grab_focus(current);
     return;
   }
@@ -12113,7 +12222,7 @@ static void _start_group_rename(GtkWidget *lbl_box,
   dt_gui_connect_focus(entry, NULL, _group_rename_focus_out, module);
   dt_gui_connect_key(entry, _rename_key_pressed, module);
   // disarm the header's drag source (on the ancestor tagged "group-key")
-  // while renaming: it can arm on the ctrl+click without movement (as in
+  // while renaming: it can arm on the alt+click without movement (as in
   // _row_drag_begin) and grab the pointer, taking the focus off the entry,
   // whose focus-out commits and destroys it. The rebuild that ends the rename
   // arms it again
@@ -12136,9 +12245,7 @@ static void _group_header_press(GtkGestureSingle *gesture,
                                 const double y,
                                 dt_iop_module_t *module)
 {
-  // no double-click-to-solo: the first click's release always runs first,
-  // (de)selecting the group before the second press is recognized. A group is
-  // soloed by shift+clicking its visibility button (see
+  // a group is soloed by shift+clicking its visibility button (see
   // _visibility_group_pressed). Rename selects
   // the group first, as it does an element (see _row_click_press), so the
   // highlight shows what it acts on
@@ -12149,40 +12256,33 @@ static void _group_header_press(GtkGestureSingle *gesture,
   const dt_mask_id_t cid =
     (dt_mask_id_t)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(w), "group-key"));
   const guint button = gtk_gesture_single_get_current_button(gesture);
-  if(button == GDK_BUTTON_PRIMARY && _modifier_unregistered(gesture, MASKS_CLICK_MODS))
+  const _click_t kind = button == GDK_BUTTON_PRIMARY ? _click_kind(dt_gui_current_state(gesture)) : CLICK_PLAIN;
+  if(kind == CLICK_IGNORED)
   {
     dt_gui_claim(gesture);
     bd->masks_skip_group_select_release = TRUE;
     return;
   }
-  const gboolean rename = button == GDK_BUTTON_PRIMARY
-                          && dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK);
-  if(rename && bd->panel_selected_group_cid != cid)
-    _set_group_target(module, cid);
-  if(rename)
+  // alt+click renames
+  if(kind == CLICK_RENAME)
   {
     dt_gui_claim(gesture);
+    bd->masks_skip_group_select_release = TRUE;
+    bd->masks_pick_press = TRUE;
+    if(bd->panel_selected_group_cid != cid) _set_group_target(module, cid);
     _start_group_rename(g_object_get_data(G_OBJECT(w), "title-label-box"), module, cid);
     return;
   }
   bd->masks_skip_group_select_release = FALSE;
-  // ctrl+shift+click deletes the group, as on an element row (see
-  // _row_click_press)
-  if(button == GDK_BUTTON_PRIMARY
-     && dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-  {
-    dt_gui_claim(gesture);
-    bd->masks_skip_group_select_release = TRUE;
-    _delete_target(module, cid, TRUE, NULL, FALSE);
-    return;
-  }
-  // shift+click picks the group, as on an element row (see _row_click_press)
-  if(button == GDK_BUTTON_PRIMARY
-     && dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
+  // picks and ranges, as on an element row (see _row_click_press)
+  if(kind == CLICK_PICK || kind == CLICK_RANGE || kind == CLICK_RANGE_ADD)
   {
     dt_gui_claim(gesture);
     bd->masks_pick_press = TRUE;
-    _pick_pressed(module, cid);
+    if(kind == CLICK_PICK)
+      _pick_pressed(module, cid);
+    else
+      _range_pressed(module, cid, kind == CLICK_RANGE_ADD);
   }
 }
 
@@ -12207,17 +12307,11 @@ static void _group_header_release(GtkGestureSingle *gesture,
     bd->masks_pick_press = FALSE;
     return;
   }
-  // ctrl+click renames on press (_group_header_press), as in
+  // a rename acts on press (_group_header_press), as in
   // _row_click_release: selecting here can queue a rebuild, which would
-  // destroy the rename entry before anything is typed. ctrl+shift+click
-  // deleted the group on press, shift+click picked it, and any other modifier
-  // does nothing
-  const GdkModifierType state = dt_gui_current_state(gesture);
-  if(dt_modifier_is(state, GDK_CONTROL_MASK)
-     || dt_modifier_is(state, GDK_SHIFT_MASK)
-     || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
-     || _modifier_unregistered(gesture, MASKS_CLICK_MODS))
-    return;
+  // destroy the rename entry before anything is typed. Picks and ranges act
+  // on press too, and any other modifier does nothing
+  if(_click_kind(dt_gui_current_state(gesture)) != CLICK_PLAIN) return;
   const dt_mask_id_t cid =
     (dt_mask_id_t)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)),
                                                      "group-key"));
@@ -12438,15 +12532,8 @@ static void _group_flexi_op_pressed(GtkGestureSingle *gesture,
   dt_gui_claim(gesture);
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(btn), "module");
   if(button != GDK_BUTTON_PRIMARY || !module) return;
-  // ctrl+shift+click deletes the group, as anywhere on its header; any other
-  // modifier does nothing
-  const GdkModifierType state = dt_gui_current_state(gesture);
-  if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-  {
-    _delete_target(module, _header_cid(btn), TRUE, NULL, FALSE);
-    return;
-  }
-  if(dt_modifier_is(state, 0)) _build_flexi_op_menu(btn, module, _header_cid(btn));
+  // any modifier does nothing
+  if(dt_modifier_is(dt_gui_current_state(gesture), 0)) _build_flexi_op_menu(btn, module, _header_cid(btn));
 }
 
 // bypass or restore a whole group, on its marker. Bypass is a modifier, so the
@@ -13014,7 +13101,7 @@ static void _masks_drag_end(GtkWidget *w, GdkDragContext *dc, dt_iop_module_t *m
   _pointer_root_position(&x, &y);
   gint threshold = 8;
   g_object_get(gtk_settings_get_default(), "gtk-dnd-drag-threshold", &threshold, NULL);
-  // not after a click that skips its release (a ctrl+shift+click, see _row_click_press)
+  // not after a click that skips its release (a pick or a range, see _row_click_press)
   if(fabs(x - _masks_drag.start_x) <= threshold && fabs(y - _masks_drag.start_y) <= threshold
      && !((dt_iop_gui_blend_data_t *)module->blend_data)->masks_skip_group_select_release)
     _set_form_target(module, _masks_drag.formid);
@@ -13636,7 +13723,7 @@ static GtkWidget *_make_pending_shape_row(dt_iop_module_t *module, dt_masks_form
 }
 
 // the event box wrapping a group header, carrying its click wiring, its drag
-// source and the tags a ctrl+click rename and the solo dimming look the header
+// source and the tags an alt+click rename and the solo dimming look the header
 // up by. It is no drop target: the list is the only one (see _drop_target_at).
 //
 // `source_targets`/`drag_get` NULL means "not a drag source": the mask's own
@@ -13651,7 +13738,7 @@ static GtkWidget *_make_group_header_evbox(dt_iop_module_t *module,
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(evbox), TRUE);
   gtk_container_add(GTK_CONTAINER(evbox), hdr);
 
-  // ctrl+click rename finds the title by this tag (see _group_header_press)
+  // alt+click rename finds the title by this tag (see _group_header_press)
   g_object_set_data(G_OBJECT(evbox), "title-label-box", lbl_box);
   // solo dimming must reach the header row itself, never an enclosing block --
   // the member rows already dim individually, so dimming a block would
@@ -15744,7 +15831,7 @@ static void _wire_element_click_surface(GtkWidget *w,
                                         GtkWidget *name_evbox)
 {
   // _row_click_press/_release read all three off `w`: the id to act on, the
-  // handle, and the name ctrl+click rename swaps an entry in for. Neither uses the event's coordinates, so it
+  // handle, and the name alt+click rename swaps an entry in for. Neither uses the event's coordinates, so it
   // does not matter that these surfaces have different origins.
   g_object_set_data(G_OBJECT(w), "formid", GINT_TO_POINTER(fid));
   g_object_set_data(G_OBJECT(w), "handle-widget", handle);
@@ -15991,9 +16078,8 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
   // icon on the canvas reopens (object.c)
   if(form->type & DT_MASKS_OBJECT)
     g_string_append(tip, _("click its icon on the canvas to refine the selection\n"));
-  g_string_append(tip, _("ctrl+click to rename\n"));
-  g_string_append(tip, _("ctrl+shift+click to delete it\n"));
-  g_string_append(tip, _("shift+click to select it with others\n"));
+  g_string_append(tip, _("alt+click to rename\n"));
+  g_string_append(tip, _("ctrl/cmd+click to select it with others, shift+click to select a range\n"));
   // the keys as bound when the row is built, which a rebind waits for
   gchar *delete_keys = _delete_selection_keys();
   if(delete_keys)
@@ -16737,7 +16823,7 @@ static void _pack_group(dt_iop_module_t *module,
 
   // label: "<mode>-<id>" -- the group's flexi operator and its per-mode id
   // (shared with empty groups and the refinement caption). Once the group
-  // is given a custom name (ctrl+click the title, masks v7) that replaces the
+  // is given a custom name (alt+click the title, masks v7) that replaces the
   // default label outright rather than being appended to it -- the "<op>-<id>"
   // form only exists as a placeholder until the user names the thing. No
   // disclosure triangle (groups don't expand).
@@ -16789,7 +16875,7 @@ static void _pack_group(dt_iop_module_t *module,
   GtkWidget *lbl_box = dt_gui_hbox();
   dt_gui_add_class(lbl_box, "dt_masks_row_name");
   dt_gui_box_add(lbl_box, lbl, group_lowop_badge);
-  // tagged so _group_header_press's ctrl+click can find (and later replace)
+  // tagged so _group_header_press's alt+click can find (and later replace)
   // whichever of lbl / the rename entry currently occupies this slot
   g_object_set_data(G_OBJECT(lbl_box), "title-child", lbl);
   GtkWidget *labevt = gtk_event_box_new();
@@ -16826,8 +16912,7 @@ static void _pack_group(dt_iop_module_t *module,
     g_ptr_array_add(tip_lines,
                     g_strdup(_("the whole mask: every member is inside it\n"
                                "click to select it: the refinements then act on the"
-                               " whole mask\n"
-                               "ctrl+shift+click to reset the mask")));
+                               " whole mask")));
     if(delete_keys)
       g_ptr_array_add(tip_lines,
                       g_strdup_printf(_("%s to reset the mask, once selected"), delete_keys));
@@ -16839,10 +16924,9 @@ static void _pack_group(dt_iop_module_t *module,
                                             " drop one here, to fill it")));
     g_ptr_array_add(tip_lines, g_strdup(_("click to select this group, click again to select"
                                           " the whole mask\n"
-                                          "ctrl+click to rename")));
-    g_ptr_array_add(tip_lines, g_strdup(_("shift+click to select it with others")));
-    g_ptr_array_add(tip_lines, g_strdup(_("ctrl+shift+click to delete it and every member"
-                                          " in it")));
+                                          "alt+click to rename")));
+    g_ptr_array_add(tip_lines, g_strdup(_("ctrl/cmd+click to select it with others, shift+click"
+                                          " to select a range")));
     if(movable)
       g_ptr_array_add(tip_lines, g_strdup(_("drag to rearrange: drop it onto a group to put it"
                                             " inside, onto the group's top or bottom edge to"
@@ -16971,7 +17055,7 @@ static void _pack_group(dt_iop_module_t *module,
   // the group is selected on release (see _group_header_press). The base
   // group is tagged, for what acts on it
   g_object_set_data(G_OBJECT(hdr_evbox), "group-key", GUINT_TO_POINTER(cid));
-  // "title-label-box" (ctrl+click rename) is tagged by
+  // "title-label-box" (alt+click rename) is tagged by
   // _make_group_header_evbox, shared with the staged-group header.
   // tagged so _apply_group_selection (a lightweight, no-rebuild selection update)
   // can find this header and toggle its highlight in place
@@ -18291,7 +18375,7 @@ static void _shortcut_invert_selected_element(dt_action_t *action)
 }
 
 // delete the member `id`: the selection panel's delete button, the
-// "delete selection" shortcut and a ctrl+shift+click on a row or header, which all
+// "delete selection" shortcut and the multiple selection's delete button, which all
 // come here. `pt` is the member point of an element row that asked, NULL for
 // the first reference. While the target is the whole mask, that is its own
 // group, which stays (see _group_delete): the mask is reset instead, after
@@ -18562,8 +18646,8 @@ static void _selection_rename(dt_iop_module_t *module)
   if(!group || id != _mask_group_cid(module)) _rename_in_list(module, id, group);
 }
 
-// double-click or ctrl+click (as on a row) on the selection's name renames it,
-// the only way to rename from the selection panel
+// alt+click (as on a row) on the selection's name renames it, the only way to
+// rename from the selection panel
 static void _selection_name_pressed(GtkGestureSingle *gesture,
                                     const int n_press,
                                     const double x,
@@ -18571,8 +18655,7 @@ static void _selection_name_pressed(GtkGestureSingle *gesture,
                                     dt_iop_module_t *module)
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
-  if(_modifier_unregistered(gesture, GDK_CONTROL_MASK)) return;
-  if(n_press != 2 && !dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK)) return;
+  if(_click_kind(dt_gui_current_state(gesture)) != CLICK_RENAME) return;
   _selection_rename(module);
 }
 
@@ -18653,14 +18736,7 @@ static void _selection_actions_sync(dt_iop_module_t *module)
   gtk_widget_set_sensitive(bd->masks_selection_compose_btn, composable);
   gtk_widget_set_sensitive(bd->masks_selection_delete_btn, any);
   gtk_widget_set_tooltip_text(bd->masks_selection_compose_btn, compose_tip);
-  // the quicker way, which a click on this button would not teach
-  gchar *delete_full =
-    delete_tip && any
-      ? g_strconcat(delete_tip, "\n",
-                    _("hold down ctrl+shift and click on row headers to delete items"), NULL)
-      : NULL;
-  gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, delete_full ? delete_full : delete_tip);
-  g_free(delete_full);
+  gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, delete_tip);
 
   // the reasons in the order _presets_target checks them
   dt_mask_id_t presets_cid;
