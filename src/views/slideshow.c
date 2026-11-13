@@ -25,6 +25,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presenter.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "views/view.h"
@@ -53,9 +54,7 @@ typedef enum dt_slideshow_slot_t
 
 typedef struct _slideshow_buf_t
 {
-  uint8_t *buf;
-  size_t width;
-  size_t height;
+  dt_frame_t *frame;
   int rank;
   dt_imgid_t imgid;
   gboolean invalidated;
@@ -77,6 +76,8 @@ typedef struct dt_slideshow_t
   gboolean auto_advance;
   int exporting;
   int delay;
+  // the serial of the window's output that expose last checked the slots for
+  uint32_t serial;
 
   // some magic to hide the mouse pointer
   guint mouse_timeout;
@@ -132,9 +133,7 @@ static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d,
 
 static void _init_slot(dt_slideshow_buf_t *s)
 {
-  s->buf = NULL;
-  s->width = 0;
-  s->height = 0;
+  s->frame = NULL;
   s->rank = -1;
   s->imgid = NO_IMGID;
   s->invalidated = TRUE;
@@ -142,7 +141,7 @@ static void _init_slot(dt_slideshow_buf_t *s)
 
 static void _shift_left(dt_slideshow_t *d)
 {
-  uint8_t *tmp_buf = d->buf[S_LEFT].buf;
+  dt_frame_t *tmp = d->buf[S_LEFT].frame;
 
   for(dt_slideshow_slot_t slot=S_LEFT; slot<S_RIGHT; slot++)
   {
@@ -156,12 +155,12 @@ static void _shift_left(dt_slideshow_t *d)
     : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
-  dt_free_align(tmp_buf);
+  dt_frame_unref(tmp);
 }
 
 static void _shift_right(dt_slideshow_t *d)
 {
-  uint8_t *tmp_buf = d->buf[S_RIGHT].buf;
+  dt_frame_t *tmp = d->buf[S_RIGHT].frame;
 
   for(dt_slideshow_slot_t slot=S_RIGHT; slot>S_LEFT; slot--)
   {
@@ -175,7 +174,7 @@ static void _shift_right(dt_slideshow_t *d)
     : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
-  dt_free_align(tmp_buf);
+  dt_frame_unref(tmp);
 }
 
 static void _requeue_job(dt_slideshow_t *d)
@@ -198,25 +197,21 @@ static int _process_image(dt_slideshow_t *d,
   const size_t s_width = d->width;
   const size_t s_height = d->height;
   const dt_imgid_t imgid = d->buf[slot].imgid;
-  size_t width, height;
-  uint8_t *buf = NULL;
 
   dt_pthread_mutex_unlock(&d->lock);
 
-  dt_dev_image(imgid,
-               d->width / darktable.gui->ppd,
-               d->height / darktable.gui->ppd,
-               -1,
-               &buf,
-               NULL,
-               &width,
-               &height,
-               NULL,
-               -1,
-               NULL,
-               DT_DEVICE_NONE,
-               FALSE,
-               FALSE);
+  dt_display_output_t output;
+  dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+  dt_frame_t *frame = dt_dev_image(imgid,
+                                   d->width / darktable.gui->ppd,
+                                   d->height / darktable.gui->ppd,
+                                   TRUE,
+                                   -1,
+                                   -1,
+                                   NULL,
+                                   DT_DEVICE_NONE,
+                                   FALSE,
+                                   &output);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -228,21 +223,24 @@ static int _process_image(dt_slideshow_t *d,
   if(d->buf[slt].imgid != imgid)
     slt = _get_slot_for_image(d, imgid);
 
-  // also ensure that the screen has not been resized, otherwise we discard
-  // the image. it will get regenerated in another later job.
+  // also ensure that the screen has not been resized and the window's
+  // output has not changed, otherwise we discard the image. it will get
+  // regenerated in another later job.
   if(slt != -1
      && d->width == s_width
-     && d->height == s_height)
+     && d->height == s_height
+     && output.serial == dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY))
   {
-    d->buf[slt].width = width;
-    d->buf[slt].height = height;
-    d->buf[slt].buf = buf;
+    // the image it replaces, if made for an earlier output. a render that
+    // failed leaves the slot empty, and is not tried again
+    dt_frame_unref(d->buf[slt].frame);
+    d->buf[slt].frame = frame;
     d->buf[slt].invalidated = FALSE;
   }
   else
   {
-    // otherwise, just free the buffer which is now not needed
-    dt_free_align(buf);
+    // otherwise, just drop the frame which is now not needed
+    dt_frame_unref(frame);
   }
 
   d->exporting--;
@@ -251,13 +249,19 @@ static int _process_image(dt_slideshow_t *d,
   return 0;
 }
 
+// make sure that d->lock is held when calling this!
 static gboolean _is_slot_waiting(const dt_slideshow_t *d,
                                  const dt_slideshow_slot_t slot)
 {
-  return d->buf[slot].invalidated
-         && d->buf[slot].buf == NULL
-         && dt_is_valid_imgid(d->buf[slot].imgid)
-         && d->buf[slot].rank >= 0;
+  const dt_slideshow_buf_t *s = &d->buf[slot];
+  // an image made for an earlier output of the window is replaced, and
+  // shown until then
+  const gboolean outdated =
+    s->frame
+    && dt_frame_made_for(s->frame) != dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY);
+  return ((s->invalidated && s->frame == NULL) || outdated)
+         && dt_is_valid_imgid(s->imgid)
+         && s->rank >= 0;
 }
 
 static gboolean _is_idle(const dt_slideshow_t *d)
@@ -272,7 +276,11 @@ static gboolean _auto_advance(gpointer user_data)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)user_data;
   if(!d->auto_advance) return FALSE;
-  if(!_is_idle(d))
+  // the slots' frames go with a step, under the lock
+  dt_pthread_mutex_lock(&d->lock);
+  const gboolean idle = _is_idle(d);
+  dt_pthread_mutex_unlock(&d->lock);
+  if(!idle)
     return TRUE; // never try to advance if still exporting, but call me back again
   _step_state(d, S_REQUEST_STEP);
   return FALSE;
@@ -316,7 +324,10 @@ static int32_t _process_job_run(dt_job_t *job)
   }
 
   // any other slot to fill?
-  if(!_is_idle(d))
+  dt_pthread_mutex_lock(&d->lock);
+  const gboolean idle = _is_idle(d);
+  dt_pthread_mutex_unlock(&d->lock);
+  if(!idle)
     _requeue_job(d);
 
   return 0;
@@ -349,8 +360,8 @@ static void _step_state(dt_slideshow_t *d,
         ? _get_image_at_rank(d->buf[S_RIGHT].rank)
         : NO_IMGID;
       d->buf[S_RIGHT].invalidated = TRUE;
-      dt_free_align(d->buf[S_RIGHT].buf);
-      d->buf[S_RIGHT].buf = NULL;
+      dt_frame_unref(d->buf[S_RIGHT].frame);
+      d->buf[S_RIGHT].frame = NULL;
       refresh_display = TRUE;
       _requeue_job(d);
     }
@@ -370,8 +381,8 @@ static void _step_state(dt_slideshow_t *d,
         ? _get_image_at_rank(d->buf[S_LEFT].rank)
         : NO_IMGID;
       d->buf[S_LEFT].invalidated = TRUE;
-      dt_free_align(d->buf[S_LEFT].buf);
-      d->buf[S_LEFT].buf = NULL;
+      dt_frame_unref(d->buf[S_LEFT].frame);
+      d->buf[S_LEFT].frame = NULL;
       refresh_display = TRUE;
       _requeue_job(d);
     }
@@ -502,6 +513,7 @@ void enter(dt_view_t *self)
 
   d->auto_advance = FALSE;
   d->delay = dt_conf_get_int("slideshow_delay");
+  d->serial = dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY);
   // restart from beginning, will first increment counter by step and then prefetch
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -533,8 +545,8 @@ void leave(dt_view_t *self)
 
   for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
   {
-    dt_free_align(d->buf[slot].buf);
-    d->buf[slot].buf = NULL;
+    dt_frame_unref(d->buf[slot].frame);
+    d->buf[slot].frame = NULL;
   }
   dt_pthread_mutex_unlock(&d->lock);
 }
@@ -553,11 +565,20 @@ void expose(dt_view_t *self,
   dt_slideshow_buf_t *slot = &(d->buf[S_CURRENT]);
   const dt_imgid_t imgid = slot->imgid;
 
-  if(d->width < slot->width
-     || d->height < slot->height)
+  const dt_frame_geometry_t *g = slot->frame ? dt_frame_geometry(slot->frame) : NULL;
+  if(g && (d->width < (size_t)g->width || d->height < (size_t)g->height))
   {
     slot->invalidated = TRUE;
     _requeue_job(d);
+  }
+
+  // a new output of the window replaces the image of every slot. the jobs
+  // go on while a slot waits, so one is enough
+  const uint32_t serial = dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY);
+  if(serial != d->serial)
+  {
+    d->serial = serial;
+    if(!_is_idle(d)) _requeue_job(d);
   }
 
   cairo_paint(cr);
@@ -567,15 +588,12 @@ void expose(dt_view_t *self,
 
   // redraw even if the current displayed image is imgid as we want the
   // "working..." label to be cleared.
-  if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated)
+  if(slot->frame && dt_is_valid_imgid(imgid) && !slot->invalidated)
   {
-    double scale = MIN((double)width / slot->width, (double)height / slot->height);
+    double scale = MIN((double)width / g->width, (double)height / g->height);
     cairo_scale(cr, scale, scale);
-    cairo_surface_t *surface = dt_view_create_surface(slot->buf, slot->width, slot->height);
-    cairo_set_source_surface(cr, surface, - 0.5 * slot->width, -0.5 * slot->height);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_paint(cr);
-    cairo_surface_destroy(surface);
+    dt_presenter_image(cr, -0.5 * g->width, -0.5 * g->height, slot->frame,
+                       CAIRO_FILTER_BEST);
 
     d->id_displayed = imgid;
     d->id_preview_displayed = imgid;

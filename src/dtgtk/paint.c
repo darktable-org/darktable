@@ -2899,20 +2899,6 @@ void dtgtk_cairo_paint_softproof(cairo_t *cr, const gint x, const gint y, const 
   FINISH
 }
 
-void dtgtk_cairo_paint_display(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
-{
-  PREAMBLE(1, 1, 0, 0)
-
-  cairo_rectangle(cr, 0, 0, 1, 3./4.);
-  cairo_move_to(cr, 0.5, 3./4);
-  cairo_line_to(cr, 0.5, 1);
-  cairo_move_to(cr, 0.3, 1);
-  cairo_line_to(cr, 0.7, 1);
-  cairo_stroke(cr);
-
-  FINISH
-}
-
 void dtgtk_cairo_paint_display2(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.55, 1, 0.5, 0.5)

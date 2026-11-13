@@ -664,20 +664,12 @@ void dt_view_paint_pixbuf(cairo_t *cr,
                           const size_t processed_height,
                           const dt_window_t window);
 
-cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
-                                        const size_t processed_width,
-                                        const size_t processed_height);
-
 void dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           uint8_t *buf,
-                           float buf_scale,
-                           int buf_width,
-                           int buf_height,
-                           dt_dev_zoom_pos_t buf_zoom_pos);
+                           struct dt_frame_t *frame);
 
 typedef dt_hash_t dt_view_context_t;
 
