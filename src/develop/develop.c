@@ -4139,7 +4139,11 @@ dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
     }
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
-    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+    // skip no-history-stack modules (demosaicscale, finalscale, overexposed,
+    // rawoverexposed) whose piece->enabled depends on pipe->type, so preview
+    // and canvas pipes produce matching hashes
+    if(piece->enabled && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
+                      && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                               && module->iop_order >= iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
