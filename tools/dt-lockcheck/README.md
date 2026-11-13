@@ -26,6 +26,9 @@ build.
 [lemmalog](https://github.com/JordyZomer/lemmalog) is optional. Only `--why`
 needs it, to print the [proof tree](#proof-trees) behind each finding.
 
+[`dt-lockcheck-diff.py`](#comparing-two-trees), which compares two trees, also
+needs `git` and `tar` on `$PATH`.
+
 
 ## Usage
 
@@ -37,40 +40,37 @@ own directory, the project root or a build directory, or put it on your
 ./dt-lockcheck.py
 ```
 
-That is the ordinary invocation. It runs the default rules over all of
-`src/iop`, and suppresses the findings that somebody has already read and
-judged not to be defects, using a [list](#the-false-positive-list) checked in
-beside the script. Before it starts, it prints the sources it found:
+This runs the default rules over all of `src/iop` and leaves out the findings
+that somebody has already read and judged not to be defects, which the
+[false-positive list](#the-false-positive-list) beside the script records.
+Before the findings, the script prints the sources it found to stderr:
 
 ```
 dt-lockcheck: 97 sources in /home/you/darktable/src/iop (darktable root above $PWD); 87 with a gui_data struct, 10 skipped
 ```
 
-The end of the line counts the sources that have a `dt_iop_*_gui_data_t` at
-all. The rest have no GUI state to share, and the tool does not analyse them.
-The line goes to stderr, so it does not mix with `--format csv` or `json`
-output, and `-q` suppresses it. If you keep more than one checkout, read it,
-because it shows when the tool picked the wrong one.
+The tool analyzes only the sources with a `dt_iop_*_gui_data_t`, because the
+rest have no GUI state to share. `-q` drops the line. If you keep more than one
+checkout, read it, because it shows when the tool picked the wrong one.
 
 ### Options
 
-The tables list every flag, in five groups. The paragraphs after them give the
-details that do not fit in a table row.
+The tables list every flag, grouped by purpose.
 
 **Which tree, and what goes to stderr:**
 
 | flag | what it does |
 | --- | --- |
-| `--src PATH` | the tree to analyse, either `src/iop` or a checkout root. Without it, the script searches, as described below |
+| `--src PATH` | the tree to analyze, either `src/iop` or a checkout root. Without it, the script searches, as described below |
 | `-q`, `--quiet` | drop the source-directory line from stderr. The [false-positive](#the-false-positive-list) banner still prints |
 
 **What to report on:**
 
 | flag | what it does |
 | --- | --- |
-| `--module NAME` | restrict the run to one module. Repeatable, and every name has to resolve |
+| `--module NAME` | restrict the run to one module. Repeatable. A name that matches no source, or a source with no `gui_data` struct, fails the whole run, so a CI job pinned to a module list notices a rename. It does not make the run faster, because the script analyzes every source and then filters |
 | `--rules LIST` | which of [the rules](#the-rules) to report, comma-separated, or `ALL` for every rule, including the noisy one left out by default |
-| `--include-false-positives` | also report the known false positives, which a default run leaves out. `--format report` or `csv` only |
+| `--include-false-positives` | also report the findings that the false-positive list suppresses, without their recorded reasons. `--format report` or `csv` only, and not with `--fail-on-stale-false-positives-only` or `--confirm-false-positive`, which need the list applied |
 
 **How to report it:**
 
@@ -84,25 +84,25 @@ details that do not fit in a table row.
 
 | flag | what it does |
 | --- | --- |
-| `--confirm-false-positive MODULE[:FIELD]` | record a judgement, or re-key a stale entry. Repeatable. The script rewrites the list and exits without reporting |
+| `--confirm-false-positive MODULE[:FIELD]` | record a judgement, or re-key a stale entry. Repeatable. The script rewrites the list and exits without reporting, so it cannot be combined with another `--format`, `--why` or a gate |
 | `--false-positive-reason TEXT` | the judgement to record. Required for a new entry, optional when re-confirming. Every confirmation in the run has to name the same module |
 
-**For an automated build:**
+**For an automated build** (see [Exit status](#exit-status)):
 
 | flag | what it does |
 | --- | --- |
-| `--fail-on-findings` | exit 1 when anything is reported. This wide gate fails until every finding is fixed or recorded as a false positive. See [Exit status](#exit-status) |
+| `--fail-on-findings` | exit 1 when anything is reported. This wide gate fails until every finding is fixed or recorded as a false positive |
 | `--fail-on-stale-false-positives-only` | exit 1 only when a recorded false positive has gone stale, and report only those entries. This narrow gate can pass while findings are still unreviewed |
 
-Two environment variables each stand in for a flag. They are for CI, where a
-path does not belong in the invocation:
+Two environment variables stand in for flags. They are for CI, where a path
+does not belong in the invocation:
 
 | variable | equivalent to |
 | --- | --- |
 | `$DT_LOCKCHECK_SRC` | `--src` |
 | `$DT_LOCKCHECK_LEMMALOG` | `--lemmalog` |
 
-To analyse a tree other than the one you are in:
+To analyze a tree other than the one you are in:
 
 ```sh
 ./dt-lockcheck.py --src /path/to/darktable/src/iop
@@ -113,38 +113,9 @@ The script looks for `src/iop` in this order: `--src`, then
 `$DT_LOCKCHECK_SRC`, then a walk up from the current directory, then a walk up
 from the script's own location. The current directory comes before the script
 location on purpose. If you symlink the script onto `$PATH` from one checkout
-and run it inside another, it analyses the one you are in. An explicit `--src`
+and run it inside another, it analyzes the one you are in. An explicit `--src`
 never falls back to the search, so a typo fails with an error.
 
-`--module` is repeatable, and every name has to resolve. One bad name in a list
-fails the whole run instead of analysing the rest, so a CI job pinned to a
-module list notices when a module is renamed. The script checks options that
-can only be wrong about the invocation before it reads anything. These are an
-unknown `--rules` name, and `--why` or a `--fail-on-*` gate with a `--format`
-that cannot carry it. They fail the same way whatever `--format` asked for.
-
-`--why` adds the proof tree behind each finding, as described in
-[Proof trees](#proof-trees). It is off by default and needs the
-[lemmalog](https://github.com/JordyZomer/lemmalog) engine. `--lemmalog PATH`
-points at a binary that is not on `$PATH`. `--format csv`, `json` and
-`lemmalog` never carry a tree and never start the engine, so a script that
-consumes them behaves the same whether or not lemmalog is installed.
-
-`--format` chooses between the human-readable report, a csv of the findings,
-and the raw extracted facts as json or as Datalog assertions.
-[Output formats](#output-formats) describes what each one contains.
-
-The section [The false-positive list](#the-false-positive-list) covers
-`--include-false-positives` and `--confirm-false-positive`. It explains what
-suppression covers and what makes an entry expire. The script consults the
-list after the rules have run, so the list changes which findings are reported
-and nothing else. `json` and `lemmalog` carry the facts the rules run on, so
-the list does not affect them, for the same reason `--rules` does not.
-
-`--fail-on-findings` and `--fail-on-stale-false-positives-only` are the two CI
-gates. Both are off by default, and a run may ask for at most one.
-[Exit status](#exit-status) explains what each one fails on, and why only the
-second can pass while findings are still unreviewed.
 
 
 ## Exit status
@@ -153,56 +124,50 @@ second can pass while findings are still unreviewed.
 | --- | --- |
 | 0 | the run completed, whatever it found |
 | 1 | a `--fail-on-*` gate was given and it fired |
-| 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` or a `--fail-on-*` gate with a `--format` that cannot carry one, or a `--lemmalog` path that does not exist |
+| 2 | the run did not complete, and stderr says why: a wrong invocation, such as an unknown rule name or a `--module` that names no source, a `src/iop` that cannot be found, a malformed `false-positives.json` in a run that reads it, or a `--why` that finds no lemmalog binary |
 
-There are two gates, and a run may ask for at most one of them.
+A CI job that only checks for a non-zero status cannot tell a gate that fired
+from a run that did not complete, so check for 1 and 2 separately.
+
+There are two gates, and a run may ask for at most one of them:
 
 - **`--fail-on-findings`** exits 1 when anything is reported. It stays red
   while any finding survives the
   [false-positive list](#the-false-positive-list), whether that finding is
-  unreviewed, filed and unfixed, or wrong. It passes once every finding is
-  either fixed or recorded as judged. That is the condition for adding it to
-  CI.
+  unreviewed, filed and unfixed, or wrong. Without
+  `--include-false-positives`, it passes once every finding is either fixed or
+  recorded as a false positive, and only then is it useful in CI.
 - **`--fail-on-stale-false-positives-only`** exits 1 only when a recorded false
-  positive has gone stale, which means that a judgement no longer covers the
-  code it was made about. It passes as long as the list is kept up to date, so
-  a CI job or a pre-commit hook can use it before every finding has been
-  reviewed. It says nothing about findings nobody has judged, which is why it
-  can pass. It also reports only the stale entries, in `report` and in `csv`.
-  People read a gate's output to find out why it fired, and the other findings
-  are not what it fired on.
+  positive has gone stale, which means that the facts or the access lines it
+  was judged on have changed. It passes as long as the list is kept up to date,
+  so a CI job or a pre-commit hook can use it before every finding has been
+  reviewed. It says nothing about findings that nobody has judged. It reports
+  only the stale entries, in `report` and in `csv`, because those are what it
+  fired on.
 
-Asking for both gates is an error, not a conjunction. One exit status cannot
-carry two answers, and the wide gate already fails on everything the narrow
-one does.
+Asking for both gates is an error. One exit status cannot carry two answers,
+and the wide gate already fails on everything the narrow one does.
 
-Either gate with `--format json` or `lemmalog` is an error too, for the same
-reason `--why` is. Those formats carry the facts the rules run on and return
-before any finding exists, so the gate would have nothing to fire on and the
-run would exit 0 regardless. A CI job set up that way would pass without ever
-running the check, so the script rejects the combination up front, like every
-other option that can only be wrong about the invocation. A gate needs
-`--format report` or `csv`.
+Either gate with `--format json` or `lemmalog` is an error too. Those formats
+carry the facts the rules run on, not findings, so the gate would have nothing
+to fire on and the run would exit 0 regardless. A CI job set up that way would
+pass without ever running the check. A gate needs `--format report` or `csv`.
 
-`--fail-on-findings` fails on what the run reported, so it honours
-`--include-false-positives` and then counts the suppressed findings too. This
-is the consistent reading of both flags. It also means that the combination
-can never pass while the list has an entry, because a false positive is still
-a finding, which the list suppresses but does not remove. Combine the two flags
-only with an empty list.
+`--fail-on-findings` fails on what the run reported. With
+`--include-false-positives` the run also reports the findings that the list
+would suppress, so a finding recorded as a false positive still fails the
+gate.
 
-A gate that fails only on new findings would be a third kind. It would need a
-checked-in baseline of all findings, and none exists here.
-
-A CI job needs to tell exit codes 1 and 2 apart. Code 2 means that nothing was
-analysed, and a plain "non-zero" check would read it as a clean run that
-turned bad.
+A gate that fails only on the findings a change adds compares two trees, so it
+is a separate script, `dt-lockcheck-diff.py`. See
+[Comparing two trees](#comparing-two-trees).
 
 
 ## Which thread is this on?
 
-The tool labels every function it analyses, and every site it reports, with
-one of three threads. Most of this section explains `either`.
+The tool labels every function it analyzes, and every site it reports, with
+one of three threads, or `?` when it cannot tell. Most of this section explains
+`either`.
 
 | label | what it means |
 | --- | --- |
@@ -218,10 +183,9 @@ one of three threads. Most of this section explains `either`.
   image rebuilds the screen pipes from an idle callback,
   `_dev_load_requested_image()` in `src/views/darkroom.c`. That callback runs
   in the GTK main loop, so both functions run there.
-- The colour picker calls `default_colorspace()` while it builds a picker
-  button (`_init_picker()` in `src/gui/color_picker_proxy.c`), with `NULL` for
-  both `pipe` and `piece`. The blend GUI calls `blend_colorspace()` the same
-  way.
+- The color picker calls `default_colorspace()` while it builds a picker button
+  (`_init_picker()` in `src/gui/color_picker_proxy.c`), with `NULL` for both
+  `pipe` and `piece`. The blend GUI calls `blend_colorspace()` the same way.
 - Mask handling and darkroom zoom call `distort_transform()` and
   `distort_backtransform()` directly.
 
@@ -230,7 +194,7 @@ calls of the same callback can run on different threads. When a finding rests
 on such a site, check it before you accept it. On the path you care about,
 both sites may always run on the same thread.
 
-Each label also covers the static helpers reached from the labelled function.
+Each label also covers the static helpers reached from the labeled function.
 The tool propagates labels along the call graph within one file. This matters
 because the offending line is often two or three calls down, in a function
 whose name says nothing about which thread reached it.
@@ -251,106 +215,84 @@ label. Another module calls them, and that module cannot take your `gui_lock`.
 `dev-doc/GUI_Threading.md` covers this under
 *Publishing `gui_data` Through a Proxy*.
 
-The labels in the tables above come from the module API, so propagation never
-overwrites them.
+Propagation never changes the label of a module API callback, such as
+`process()` or `gui_update()`, because the API fixes its thread.
+
 
 ## The rules
 
 The table lists the rules in the order the report uses, most worth reading
-first. All but `discipline_gap` run by default. Add
-`--rules ...,discipline_gap` for that one, or `--rules ALL` for every rule.
+first. A field is reported under at most one rule, the first in this order that
+matches, so a widget reached from the pipe is a `widget_from_pipe` finding and
+not also a `violation`.
 
 | rule | default | what it checks |
 | --- | --- | --- |
 | `widget_from_pipe` | yes | a `Gtk*`- or `Dtgtk*`-typed field touched from a `pipe` or `either` function, locked or not. Only the main thread may call GTK, so the lock does not matter |
-| `violation` | yes | the module locks the field somewhere and also accesses it unlocked from the other side, and the field is shared across the two threads. The module's own code is the evidence that the lock is needed |
-| `no_lock_share` | yes | the field is written and shared across both threads, and the module never locks it |
+| `violation` | yes | the field is shared across the two threads and locked somewhere, and some access to it is unlocked. The module's own code is the evidence that the lock is needed |
+| `no_lock_share` | yes | the field is written and shared across the two threads, and the module never locks it |
 | `discipline_gap` | no | the field is locked somewhere and accessed unlocked, but no cross-thread sharing was proven. Mostly noise, so read it last |
-| `pointer_share` | yes | a pointer-typed field shared across the two threads, with no unlocked access anywhere. The lock protects the pointer load, not the object, which the other thread may free while the reader uses it |
+| `pointer_share` | yes | a pointer-typed field shared across the two threads that no rule above reported: every access is locked, or the field is never locked and only read. A lock on the pointer does not protect the object behind it, which the other thread may free while the reader uses it |
 
-`--rules` takes a comma-separated list of the names above, in any order, or
-the single token `ALL` for every rule. `ALL` is upper-case on purpose. The rule
-names are lower-case everywhere, here and in `rules.lemma`, so an upper-case
-token cannot be mistaken for a rule name, and a lower-case `all` is an unknown
-rule, not a second spelling. `ALL` also means every rule the tool knows about,
-so a script that asks for it picks up a rule added later without being edited.
-That is the reason to use it instead of listing the names, and the reason not
-to use it in a CI job that wants a fixed set. It may appear alongside names
-(`--rules ALL,violation`), and then it wins.
+When the rules decide whether a field is shared, written or accessed unlocked,
+they ignore `gui_init`, `gui_cleanup` and `gui_reset`, because those run before
+or after anything else can reach the field. A field written only there counts
+as never written.
 
-The report lists a field under at most one rule, the first in that order that
-matches. A widget reached from the pipe is a `widget_from_pipe` finding and
-not also a `violation`. `violation`, `no_lock_share` and `discipline_gap`
-ignore accesses in `gui_init`, `gui_cleanup` and `gui_reset`, because those
-run once, before or after anything else can reach the field. The other two
-rules do not need the exception. `widget_from_pipe` only fires on a `pipe` or
-`either` function, and those three are labelled `gtk`. `pointer_share` asks
-about the field's type and threads, not about any one access.
-
-`widget_from_pipe` is the narrowest of the five. Across all of `src/iop` it
-returns only a few fields, which says nothing about how often it is right,
-only that it asks for little. For each hit, check how the pipe-side function
-is reached. A `dev->proxy` accessor such as `exposure`'s
-`_exposure_proxy_handle_event()` is labelled `either` because another module
-calls it. Only the callers in the source show whether any of them runs on a
-pipe thread. See [the widget hand-off](#before-you-file-anything) below for a
-pattern that is a false positive.
+`--rules` takes a comma-separated list of the names above, or `ALL`. `ALL` is
+upper-case so that it cannot be mistaken for a rule name, and lower-case `all`
+is an unknown rule. `ALL` means every rule the tool knows, including any added
+later, so a CI job that wants a fixed set should list the names instead. Next
+to names (`--rules ALL,violation`), `ALL` wins.
 
 The last line of a report counts its findings, so
 `./dt-lockcheck.py --rules NAME --include-false-positives` gives the count for
 one rule on your tree.
 
-`discipline_gap` is the one rule outside the default set. It asks the least of
-the five: a lock somewhere, an unlocked access anywhere, and, unlike
-`violation`, no requirement that the two threads ever meet on the field. On the
-tree the tool was developed against, it returned more findings than any other
-rule, and only one of them named a field from a confirmed defect report. Most
-of its findings are fields locked for one reason and read unlocked for
-another, which is not a defect. Turn it on when you audit a single module by
-hand:
+For each `widget_from_pipe` hit, check how the pipe-side function is reached.
+A `dev->proxy` accessor such as `exposure`'s `_exposure_proxy_handle_event()`
+is labeled `either` because another module calls it, and only the callers
+show whether any of them runs on a pipe thread.
+[Before you file anything](#before-you-file-anything) describes the widget
+hand-off, a pattern that is a false positive.
+
+`discipline_gap` asks the least of the five: a lock somewhere and an unlocked
+access anywhere, with no requirement that the two threads ever meet on the
+field. On the tree the tool was developed against, it returned more findings
+than any other rule, and only one of them named a field from a confirmed
+defect report. Most of its findings are fields locked for one reason and read
+unlocked for another, which is not a defect. It is not worth reading across
+the whole tree, but it helps when you audit a single module by hand:
 
 ```sh
 ./dt-lockcheck.py --module toneequal --rules discipline_gap
 ```
 
-It is not worth reading across the whole tree.
-
-`pointer_share` is the opposite case. It proves less than the other three
-default rules, but it is in the default set anyway. Every field it reports is
-correctly locked. What it says is that the lock is not enough on its own. The
-critical section protects the pointer load, not the object, and the other
-thread may free that object while the reader still uses it.
+`pointer_share` is in the default set although it proves less than the other
+default rules. The critical section protects the pointer load, not the object.
 `dev-doc/GUI_Threading.md` puts it as "a scalar hands over cleanly; an
 allocation does not". Proving that the pointer escapes the lock needs dataflow
-inside a function, which this tool cannot do (see KNOWN LIMITS in the script).
-So the rule fires on the pattern, and you have to read every hit before you
-believe it.
+inside a function, which this tool cannot do, so the rule fires on the pattern
+and you have to read every hit.
 
-It has few hits to read, because the pattern is rare. Few non-widget pointer
-fields in `gui_data` are touched from both threads, and the other default
-rules already report most of them, because some access to them is unlocked.
 The rule was written for `colorreconstruction`'s `can`, the frozen bilateral
 grid, filed as
-[#22060](https://github.com/darktable-org/darktable/issues/22060). The report
-describes the pattern: `process()` copies the pointer out of `gui_data` under
-`gui_lock` and thaws the grid after releasing the lock, while the preview
-pipe's own `process()` can free it and store a new one. Every access in that
-pattern is under the lock, so the other four rules cannot see it.
+[#22060](https://github.com/darktable-org/darktable/issues/22060). `process()`
+copies the pointer out of `gui_data` under `gui_lock` and thaws the grid after
+releasing the lock, while the preview pipe's own `process()` can free it and
+store a new one. Every access is under the lock, so the other four rules
+cannot see it. For the same reason, the rule catches the wrong fix for this
+kind of defect: locking every access to a shared buffer pointer silences every
+other rule, but not this one.
 
 ```sh
 ./dt-lockcheck.py --rules pointer_share
 ```
 
-The rule's output cannot grow much. The number of shared pointer fields limits
-it, and that number is small. Even if every open finding in this tool were
-"fixed" by adding locks, which is the wrong fix for a pointer, the rule would
-return no more than those fields. It stays in the default set because its list
-is short enough to read. If that stops being true, move it out next to
-`discipline_gap`.
-
-The rule exists to catch that wrong fix. If someone locks every access to a
-shared buffer pointer, every other rule here stops reporting a field that can
-still be used after it is freed. This rule still reports it.
+Its output stays short, because few `gui_data` fields are pointers shared
+between the threads, and adding locks cannot push it past that number. If the
+list stops being short enough to read, move the rule out of the default set,
+next to `discipline_gap`.
 
 
 ## Output formats
@@ -365,12 +307,11 @@ and differ in how much of it they keep:
 | `json` | the raw extracted facts, before any rule ran |
 | `lemmalog` | the same facts as Datalog assertions, for the engine |
 
-`report` and `csv` carry findings, so both honour `--rules`. `json` and
-`lemmalog` carry the facts the rules run on, which exist before any rule runs,
-so `--rules` does not change them. Filter or extend them on your side instead.
-`--src` and `--module` narrow all four. Only `report` can carry proof trees
-([`--why`](#proof-trees)). Asking for them with any other format is an error,
-not a silent no-op.
+`report` and `csv` carry findings, so `--rules` and the false-positive list
+apply to them. `json` and `lemmalog` carry the facts the rules run on, so
+neither changes them. Filter or extend those on your side instead. `--src` and
+`--module` narrow all four. Only `report` can carry
+[proof trees](#proof-trees).
 
 The status banner, the lemmalog notices and every warning go to stderr, so you
 can redirect stdout whatever the format.
@@ -381,27 +322,28 @@ can redirect stdout whatever the format.
 === violation  (34) ===========================================
 
 basicadj.c  g->call_auto_exposure   (int)
-   locked  : process_cl:1302[pipe](gui_lock), process_cl:1304[pipe](gui_lock),
-             process_cl:1335[pipe](gui_lock), process:1420[pipe](gui_lock),
-             process:1422[pipe](gui_lock), process:1434[pipe](gui_lock), ... (+5 more)
+   locked  : process_cl:1302[pipe](gui_lock), process_cl:1304[pipe](gui_lock), process_cl:1335[pipe](gui_lock), process:1420[pipe](gui_lock), process:1422[pipe](gui_lock), process:1434[pipe](gui_lock), ... (+5 more)
    unlocked: button_released:384[gtk], change_image:600[gtk]
 ```
 
 `locked` lists the sites that establish the module's own convention. They are
 the evidence that the field is meant to be protected. `unlocked` lists the
-suspected defect. Sites are `function:line[thread]`, where the thread is
-[`pipe`, `gtk` or `either`](#which-thread-is-this-on). `pipe` and `either`
-sites come first, because the half off the main thread is usually the
-interesting one. A `?` means that the tool could not work out where the
-function runs.
+suspected defect. A finding with no site of one kind has no such line: a
+`no_lock_share` finding has no `locked` line, and a `pointer_share` finding
+usually has no `unlocked` line. Sites are `function:line[thread]`, where the
+thread is [`pipe`, `gtk` or `either`](#which-thread-is-this-on), and a locked
+site also names the lock. `pipe` and `either` sites come first, because the
+half off the main thread is usually the interesting one. A `?` means that the
+tool could not work out where the function runs.
 
 The report prints at most six locked and eight unlocked sites per finding and
-says how many it left out. `--format csv` writes every site, so use it when the
-count matters.
+says how many it left out. `--format csv` writes every site.
 
-Open both sets of sites and decide whether the two can really run at the same
-time. If they can, the usual fix is to extend the existing critical section to
-the unlocked sites, not to add a new lock.
+Open the listed sites and decide whether the accesses can really run at the
+same time. If they can, the usual fix is to extend the module's existing
+critical section to the unlocked sites, not to add a new lock. For
+`pointer_share`, decide instead whether the other thread can free the object
+behind the pointer while a reader still uses it.
 
 When a finding's [false-positive entry](#the-false-positive-list) has gone
 stale, the report shows the recorded judgement and the command that
@@ -416,8 +358,8 @@ exposure.c  g->black   (GtkWidget *)
      ./dt-lockcheck.py --confirm-false-positive exposure:black
 ```
 
-A final `N findings.` line closes the report. It counts every rule asked for,
-and says how many findings the false-positive list suppressed.
+The last line counts the findings of every rule asked for, and how many the
+false-positive list suppressed.
 
 ### csv
 
@@ -426,7 +368,7 @@ report, in the same order, with nothing capped:
 
 | column | contents |
 | --- | --- |
-| `module` | the module name, i.e. the source file without its extension |
+| `module` | the module name, which is the source file name without its extension |
 | `field` | the `gui_data` field, without the `g->` |
 | `ctype` | the field's type as declared in the struct, including any `*` |
 | `rule` | which of [the rules](#the-rules) fired |
@@ -434,17 +376,13 @@ report, in the same order, with nothing capped:
 | `unlocked_sites` | every unlocked site, in the same form |
 | `fp` | `stale` when the finding has a [false-positive entry](#the-false-positive-list) that the source has moved past, empty otherwise |
 
-`fp` is the last column, not inserted between others, so a consumer that reads
-the first six columns by position is not affected by it. Suppressed findings
-are absent from the csv, as they are from the report.
-
-The csv lacks two things the report shows: the name of the lock held at each
-locked site (the report's `(gui_lock)` suffix), and the proof trees. Use `json`
-for the first.
+`fp` comes last so that a consumer that reads the first six columns by
+position still works. The csv lacks the name of the lock at each locked site
+and the proof trees. `json` has the lock names.
 
 ### json
 
-The whole extracted fact base, one object per analysed module, before any rule
+The whole extracted fact base, one object per analyzed module, before any rule
 ran:
 
 ```json
@@ -452,7 +390,7 @@ ran:
  "basicadj": {
   "module": "basicadj",
   "src": "basicadj.c",
-  "fields": { "call_auto_exposure": "int", "bt_auto_levels": "GtkWidget" },
+  "fields": { "call_auto_exposure": "int", "bt_auto_levels": "GtkWidget *" },
   "accesses": [ ["process", "call_auto_exposure", "gui_lock", 1420, "w"] ],
   "thread": { "process": "pipe", "button_released": "gtk", "flags": null }
  }
@@ -462,10 +400,10 @@ ran:
 | key | contents |
 | --- | --- |
 | `module` | the module name, repeated from the key |
-| `src` | the basename of the analysed source, with its extension, which is `.cc` for the modules written in C++ |
+| `src` | the basename of the analyzed source, with its extension, which is `.cc` for the modules written in C++ |
 | `fields` | every field of the `gui_data` struct, mapped to its declared type. A nested anonymous struct appears once, under its own member name, with type `struct` |
 | `accesses` | one entry per `g->field` mention, `[function, field, lock, line, mode]` |
-| `thread` | every function in the file, mapped to its inferred thread |
+| `thread` | every function in the file, including ones that never touch `gui_data`, mapped to its inferred thread |
 
 In `accesses`, `lock` is the innermost lock held at that line:
 
@@ -474,18 +412,16 @@ In `accesses`, `lock` is the innermost lock held at that line:
 | `none` | nothing is held. These are the sites a finding accuses |
 | `gui_lock` | inside `dt_iop_gui_enter/leave_critical_section()` |
 | `callee_lock` | the lock is not held here, but `&self->gui_lock` is passed to the callee, as in `dt_dev_sync_pixelpipe_hash()` |
-| `bulk_init` | held, but in a function that writes eight or more fields under it and reads none back. That is bulk initialisation, which establishes no per-field convention. See [Before you file anything](#before-you-file-anything) |
-| anything else | the name of a private mutex field, e.g. `histogram_lock`, taken with `dt_pthread_mutex_lock(&g->histogram_lock)` |
+| `bulk_init` | `gui_lock` is held, but in a function that writes eight or more fields under it and reads none of them back. That is bulk initialization, which establishes no per-field convention |
+| anything else | the name of a private mutex field, such as `histogram_lock`, taken with `dt_pthread_mutex_lock(&g->histogram_lock)` |
 
 `mode` is `w` for a write and `r` for a read. `line` is 1-based, in the file
 that `src` names.
 
-In `thread` the value is `pipe`, `gtk`, `either` (see
-[Which thread is this on?](#which-thread-is-this-on)) or `null` when inference
+In `thread` the value is `pipe`, `gtk`, `either` or `null` when inference
 failed. A `null` function counts on neither side of the cross-thread test, so
 it can never be what makes a field shared. Its unlocked accesses are still
-listed as sites, and that is where the report's `?` comes from. The map covers
-every function in the file, including ones that never touch `gui_data`.
+listed as sites, and that is where the report's `?` comes from.
 
 Modules with no `gui_data` struct are absent, not present and empty. All
 output is sorted, so two runs over the same tree diff cleanly.
@@ -506,8 +442,8 @@ run the two together.
 
 | predicate | meaning |
 | --- | --- |
-| `gtk_type(T)` | `T` is a widget type, i.e. one whose name starts with `Gtk` or `Dtgtk`. Only types that appear in some `gui_data` struct are emitted. `is_widget` asks this |
-| `ptr_type(T)` | `T` is a pointer type, i.e. one written with a `*`. Emitted on the same terms. `is_pointer` asks this |
+| `gtk_type(T)` | `T` is a widget type, one whose name starts with `Gtk` or `Dtgtk`. Only types that appear in some `gui_data` struct are emitted. `is_widget` asks this |
+| `ptr_type(T)` | `T` is a pointer type, one written with a `*`. Emitted on the same terms. `is_pointer` asks this |
 | `ftype(M, F, T)` | field `F` of module `M` is declared `T` |
 | `runs_on(M, Fn, T)` | function `Fn` of module `M` runs on thread `T` |
 | `access(M, F, Fn, Lock, Mode)` | `Fn` reads or writes `F` with `Lock` held |
@@ -519,65 +455,45 @@ of one function's accesses to one field, under one lock and in one mode, are a
 single fact however many lines they span.
 
 
-## Recommended workflow
+## Review the findings
 
-Scan with the defaults, then read the source at the sites the report names.
-Use `--why` or `--format json` only when you have a question the report cannot
-answer:
+Run the scan, then read the source at the sites the report names:
 
 ```sh
 ./dt-lockcheck.py                                  # the scan
 ./dt-lockcheck.py --module basicadj --why          # why does it believe this?
-./dt-lockcheck.py --module basicadj --format json  # let me ask the facts myself
+./dt-lockcheck.py --module basicadj --format json  # the facts behind it
 ```
 
-**Read the stale entries first.** The stderr banner names them, and the report
-marks each one. Usually there are none. A stale entry means that somebody read
-that exact code, concluded it was safe, and the code has since changed. Read
-those findings before the ones nobody has judged.
+1. Read the stale entries before the other findings. The stderr banner names
+   them, and the report prints each one with its recorded reason. A stale entry
+   means that somebody judged that exact code safe, and its facts or access
+   lines have changed since. Usually there are none.
+2. For each finding, open the sites it lists and decide whether it is real, as
+   the [report](#report) format describes. The source settles that faster than
+   another run. The causes that make a finding wrong are the ones the tool
+   cannot see, such as exclusion by protocol, a lock passed into a callee, or a
+   widget handed to the main loop.
+   [Before you file anything](#before-you-file-anything) has the full list.
 
-**Read the source first.** To decide whether a finding is real, open the
-`file:line` the report gives for the locked and the unlocked side. That is
-usually faster than another run, and always more conclusive, because the
-causes that make a finding wrong are the ones the tool cannot see: mutual
-exclusion by protocol, a lock passed into a callee, a widget handed to the main
-loop. [Before you file anything](#before-you-file-anything) has the full list.
-`--why` tells you why the tool reached a conclusion. Only the source tells you
-whether the conclusion is true.
+Use the other two commands only when the report leaves a question open:
 
-**`--why` shows why the tool believes a finding.** For each finding it prints
-the chain from the rule down to the base facts: the locked site that
-established the convention, and the thread inference that made the field
-cross-thread, including whether that inference went through an
-[`either`](#which-thread-is-this-on) site. Run it when
+- `--why` shows the facts behind a finding, such as the locked site that
+  established a convention, and the thread inference that made the field
+  shared, including whether it went through an
+  [`either`](#which-thread-is-this-on) site. Use it when you doubt a thread
+  label, for an `either` site or a static helper several calls below its
+  callback, or when you want the evidence chain as the outline of a bug report.
+  Narrow the run first, as [Proof trees](#proof-trees) explains.
+- `--format json` gives the extracted facts with no rule applied. Use it to
+  see every access to a field, including the ones no rule fired on, or the
+  thread inferred for each function, including the ones where inference failed,
+  or to run a filter or a rule of your own. Add `--module` to keep the output
+  small. An agent driving this tool should consume this format.
+  `--format lemmalog` gives the same facts in the form the Datalog rules use.
 
-- you doubt the thread labels, for an `either` site or a static helper that
-  the call graph reached two or three calls below the callback. The tree names
-  the exact `runs_on` fact, which you would otherwise reconstruct by hand;
-- you are writing the finding up and want the evidence chain as the outline of
-  a bug report.
-
-Narrow the run first, to one `--module` or one `--rules`, because the trees
-make a full report about six times longer. `--why` needs the lemmalog engine,
-works with `--format report` only, and explains the first unlocked site of
-each finding, not all of them. See [Proof trees](#proof-trees).
-
-**`--format json` lets you query the facts yourself.** It is the whole
-extracted fact base with no rule applied, so use it when your question is not
-about a rule:
-
-- every access to one field, including the ones no rule fired on, since the
-  report only lists sites for fields that triggered a rule;
-- the thread the tool inferred for each function, including the `null` ones
-  where inference failed;
-- a filter or a rule of your own over the facts, or a diff of two runs to see
-  what a patch changed.
-
-Use it with `--module` to keep the output small. An agent driving this tool
-should consume this format. See [Output formats](#output-formats) for the
-keys, and [Proof trees](#proof-trees) for `--format lemmalog`, which gives the
-same facts in the form the Datalog rules use, if you would rather add rules
-than write code.
+To see what a change does to the findings, use `dt-lockcheck-diff.py`, as
+[Comparing two trees](#comparing-two-trees) describes.
 
 
 ## Before you file anything
@@ -587,11 +503,9 @@ thirds of the default-rule findings named a field that a report from an
 earlier `gui_data` audit also named. A spot-check of a dozen of the rest found
 most of them to be real defects of the same kind. Nobody has measured a
 false-positive rate, and `discipline_gap` is much worse than the four default
-rules. `pointer_share` fires rarely, and a few hits do not measure precision
-either, so read them like the rest. Confirm a finding by reading the code
-before you open an issue.
+rules. Confirm a finding by reading the code before you open an issue.
 
-Five causes of false positives come up often:
+Seven causes of false positives come up often:
 
 - **Exclusion by protocol instead of by lock.** `rgblevels` hands work to the
   pipe through a state machine (`0` idle, `1` requested, `-1` running, `2`
@@ -600,25 +514,30 @@ Five causes of false positives come up often:
   thread that set the state to `-1` touches it. The script cannot see this.
   The protocol does not cover the whole module, though. The GTK side writes
   `box_cood`, `channel` and `call_auto_levels` without checking the state, so
-  the protocol does not exclude their findings, and they are not false
-  positives on this ground.
+  the protocol does not make their findings false positives.
 - **A lock passed into a callee.** The tool handles the common
   `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` pattern, but not
   the general case.
+- **A lock held by the caller.** The tool tracks lock depth within one
+  function, so a helper called inside the caller's critical section looks
+  unlocked. Such a finding is false only if every call path into the helper
+  holds `gui_lock` across the access. Check every caller and every branch.
 - **A field that only sits inside a critical section taken for a different
-  field.** The tool handles part of this. A function that writes eight or more
-  distinct fields under the lock, and never reads them back, counts as bulk
-  initialisation, and its accesses are not evidence of a per-field convention.
+  field.** The tool handles part of this with the `bulk_init` lock state, which
+  the [json](#json) section describes.
 - **A widget touched from the pipe only to hand it to the main loop.** Taking
   `g_object_ref()` on the widget and passing it to `g_idle_add()` or
   `gdk_threads_add_idle()` is correct, because the ref is atomic and the GTK
   calls happen on the main thread. `widget_from_pipe` still reports it, because
   it sees a widget field touched from the pipe.
-- **A finding that rests entirely on an `either` site.** An `either` site
-  counts on both sides of the cross-thread test because it can run on either
-  thread, but on the path that matters it may always run on one. Check the
-  proof tree, or the `[either]` labels in the report, before you trust such a
-  finding.
+- **A finding that rests entirely on an `either` site.** On the path that
+  matters, the site may always run on one thread. Check the proof tree, or the
+  `[either]` labels in the report, before you trust such a finding.
+- **A `pointer_share` hit on a field that is already handled correctly.**
+  Holding the lock through the last use, copying the data instead of the
+  pointer, and transferring ownership so that the publisher cannot free the
+  object are all correct, and all leave a shared pointer field. The tool cannot
+  tell them from the defect.
 
 The tool also has these limits:
 
@@ -626,68 +545,77 @@ The tool also has these limits:
   branch makes later code on other branches look unlocked.
 - Thread inference uses function names, call-graph propagation within one
   file, and the [address-taken rules](#which-thread-is-this-on) above. A
-  function it still cannot label gets thread `?`. Such a site counts on neither
-  side of the cross-thread test, so it can never be what makes a field shared.
+  function it still cannot label gets thread `?`.
 - Sharing means pipe versus GTK only. One pipe also uses `gui_data` to hand a
   value to another. For example, the preview pipe computes a whole-image
   property and the full pipe reads it. That needs the same lock (see
   *Passing Values Between Pipes Through `gui_data`* in
   `dev-doc/GUI_Threading.md`), and no rule here looks for it. The tool cannot
   see a field that both pipes touch and the GTK thread never does.
-- Coverage is `src/iop/*.c` and `*.cc` only. The tool does not analyse shared
-  code under `src/develop/` and `src/libs/`. Widening the glob would not help.
-  Outside `src/iop`, the `*_gui_data_t` structs belong to imageio format and
-  storage modules. Those hand their GUI values to the worker through a params
-  snapshot (`write_image()` takes a `dt_imageio_module_data_t *` and never
-  reaches `gui_data`), which is the separation this tool recommends.
-  `src/libs` uses a different convention, `dt_lib_<name>_t *d = self->data`,
-  and has no IOP callbacks for the thread labels to use. Shared code that takes
-  the same `gui_lock`, such as `src/develop/preview_data.c`, would need a
-  different extractor, because it has no `gui_data` struct.
-- The tool matches `g` by name, not by type. It skips a function that binds
-  `g` to something other than the module's GUI data, such as a gain map or a
-  gaussian handle, so it also misses any real `gui_data` access in that
-  function.
-- The tool cannot find defects that need dataflow inside a function. One
-  example is a pointer copied under the lock and dereferenced after the lock is
-  released, which is a real and recurring pattern here. A clean run does not
-  mean that there are no defects.
+- It analyzes `src/iop/*.c` and `*.cc` only. A source that a module includes
+  from a subdirectory, such as `hlreconstruct/opposed.c` in `highlights.c`, is
+  not analyzed, so its `gui_data` accesses are missing from the module's facts.
+- It does not analyze shared code under `src/develop/` and `src/libs/`, and
+  widening the glob would not help. Outside `src/iop`, the `*_gui_data_t`
+  structs belong to imageio format and storage modules. Those hand their GUI
+  values to the worker through a params snapshot (`write_image()` takes a
+  `dt_imageio_module_data_t *` and never reaches `gui_data`), which is the
+  separation this tool recommends. `src/libs` uses a different convention,
+  `dt_lib_<name>_t *d = self->data`, and has no IOP callbacks for the thread
+  labels to use. Shared code that takes the same `gui_lock`, such as
+  `src/develop/preview_data.c`, would need a different extractor, because it
+  has no `gui_data` struct.
+- It matches `g` by name, not by type. It skips a function that binds `g` to
+  something other than the module's GUI data, such as a gain map or a gaussian
+  handle, so it also misses any real `gui_data` access in that function.
+- A nested anonymous struct is one field. `globaltonemap`'s
+  `struct { GtkWidget *bias; ... } drago;` is the field `drago` of type
+  `struct`, so `g->drago.bias` does not reach `widget_from_pipe`.
+- It finds function boundaries by counting braces from an opening `{` in
+  column zero. darktable uses that style throughout, but C in general does not.
+- It cannot find defects that need dataflow inside a function. One example is
+  a pointer copied under the lock and dereferenced after the lock is released,
+  which is a real and recurring pattern here. A clean run does not mean that
+  there are no defects.
 
 
 ## The false-positive list
 
 `false-positives.json`, next to the script, records the findings that a person
-has read and judged not to be defects. Suppression is on by default. The
-script does not report a finding that has a matching entry, so a later review
-does not re-read what an earlier one decided.
+has read and judged not to be defects. Unless you pass
+`--include-false-positives`, the script does not report a finding that has a
+matching entry, so a later review does not re-read what an earlier one
+decided.
 
 The risk in such a list is that a suppression outlives the code it was true
 about, and hides a defect that later appears in the same place. So every entry
-carries a key computed over the finding. A source change that could alter the
-judgement changes the key, and the entry goes stale. The finding then comes
-back, with the recorded reason printed next to it.
+carries a key computed over the finding's facts and the text of its access
+lines, as [What the key covers](#what-the-key-covers) explains. A change to
+either makes the entry stale, and the finding comes back with the recorded
+reason printed next to it. A change elsewhere does not, even when the judgement
+depends on it, such as an edit to the state machine that makes an access safe.
+When you change such code, re-read the entries that rely on it.
 
 Whenever the list affects a run, the stderr banner says how many findings it
-suppressed, how many entries went stale and which entries are orphaned. `-q`
-does not silence that line, so the number of suppressed findings is always
-visible.
+suppressed and names the stale and the orphaned entries. `-q` does not silence
+that line, so the number of suppressed findings is always visible.
 
 ### The three states
 
-The script identifies an entry by `(module, field, rule)`. The key is computed
-over other data, so there are three cases:
+The script identifies an entry by `(module, field, rule)`, and compares the key
+separately, so an entry is in one of three states:
 
 | state | what it means | what the tool does |
 | --- | --- | --- |
 | current | the entry matches a finding, and the keys are equal | suppress the finding |
 | stale | the entry matches a finding, and the keys differ | report the finding, with the recorded reason and the command to re-confirm it |
-| orphan | the entry matches no finding | name it in the banner. The code has moved past it, and the entry should be deleted |
+| orphan | the entry matches no finding | name it in the banner. The code has moved past it, and the entry should be deleted. If the field now has a finding under another rule, and no entry under that rule, confirm the field with a new reason to move the entry there |
 
 The rule is part of the identity on purpose. A field that moves from one rule
 to another is a new finding and shows up as one, instead of inheriting a
 judgement made under a rule it no longer matches.
 
-The script counts orphans within the run's own scope. `--module` and `--rules`
+Orphans are counted within the run's own scope. `--module` and `--rules`
 narrow what the tool looked for, and an entry the run did not look for is not
 an orphan.
 
@@ -699,7 +627,7 @@ The key has two parts, because neither is safe alone:
   and the `(function, lock, mode)` of every access. This is the
   [`--format lemmalog`](#lemmalog) view, which has no line numbers, so moving
   code or renaming a local does not change it;
-- the text of every access line, copied verbatim from the source.
+- the text of every access line, with the surrounding whitespace stripped.
 
 Each part catches what the other misses. When the key was designed,
 colorharmonizer's `_update_histogram()` handed its `auto_detect` button to the
@@ -712,8 +640,9 @@ have kept suppressing it. The opposite case is a critical section removed from
 around an access. The facts show that change, and the text of the access line
 does not.
 
-The choice comes from a measurement over 6105 finding transitions across 80
-commits that touch `src/iop`, plus seven targeted edits to a real entry:
+When the key was designed, four candidates were measured over 6105 finding
+transitions across 80 commits that touch `src/iop`, plus seven targeted edits
+to a real entry:
 
 | candidate key | fires | missed a rule change | missed a site change |
 | --- | --- | --- | --- |
@@ -722,13 +651,14 @@ commits that touch `src/iop`, plus seven targeted edits to a real entry:
 | `function:line` sites | 5.6% | 0 | 2 |
 | facts + access-line text, the key in use | 0.28% | 0 | 0 |
 
-The whole-file hash is not a safe but excessive choice. It fires 34 times as
-often for no extra safety, and a key that fires often leads people to
-re-confirm entries without reading them.
+The whole-file hash fires 34 times as often as the key in use and catches
+nothing more. A key that fires often teaches people to re-confirm entries
+without reading them.
 
 ### Confirming an entry
 
-Do not edit the file by hand. Use the tool:
+Add and re-confirm entries with the tool, not by hand, because the tool
+computes the key:
 
 ```sh
 ./dt-lockcheck.py --confirm-false-positive rgblevels:params --false-positive-reason "why this is not a defect"
@@ -737,8 +667,29 @@ Do not edit the file by hand. Use the tool:
 
 `MODULE:FIELD` names one finding. A bare `MODULE` re-confirms every stale entry
 in that module, which is what an audit of one module in one sitting produces.
-It cannot add entries, on purpose. Adding one is a judgement about a single
-field and has to name it, otherwise one word could silence a whole module.
+It cannot add or move entries, on purpose. Adding one is a judgement about a
+single field and has to name it, otherwise one word could silence a whole
+module.
+A confirmation looks at every rule, whatever `--rules` says, so it also finds
+the `discipline_gap` entries that the default rules leave out.
+The tool never deletes entries. Delete an orphan from the file by hand.
+
+When a field moves to another rule, its entry becomes an orphan, and the
+finding under the new rule has no entry. If it is still not a defect, confirm it
+with `MODULE:FIELD` and a new reason. The tool then moves the entry to the new
+rule, with the new key, sites and reason, instead of adding a second entry. It
+refuses without a reason, because the recorded one judged the old rule, and it
+prints that reason so that you can start from it. A bare `MODULE` names such
+entries but does not move them. If the field already has an entry under the
+new rule, which only a hand edit produces, the tool keeps that entry and names
+the old one for you to delete.
+
+A new entry requires `--false-positive-reason`, because the tool prints that
+sentence back when the entry goes stale. An entry without one would be a
+blanket suppression that nobody can re-judge. Re-confirming keeps the recorded
+reason unless you pass a new one. Either way the tool rewrites the key, the
+site list and the confirmation date, prints what it changed, and exits without
+reporting.
 
 `--confirm-false-positive` is repeatable, and `--false-positive-reason` is not.
 When a reason is given, every confirmation in the run has to name the same
@@ -754,69 +705,163 @@ key cannot catch that mistake:
 rgblevels:params: reason updated, key a447820dfb82 unchanged under no_lock_share (previous reason replaced)
 ```
 
-A new entry requires `--false-positive-reason`, because the tool prints that
-sentence back when the entry goes stale. An entry without one would be a
-blanket suppression that nobody can re-judge. Re-confirming keeps the recorded
-reason unless you pass a new one. Either way the tool rewrites the key, the
-site list and the confirmation date, prints what it changed, and exits without
-reporting.
-
 Name functions in a reason, not line numbers. The report already prints
 `function:line` for every site, and the key does not cover the reason. A line
 number in the reason goes out of date with every unrelated edit above it, while
 the entry stays current.
 
-### Reading and overriding it
+Each entry also carries its site list as `function:line[thread](lock)`, only
+so that a diff of the file is readable. Those line numbers are not part of the
+key.
+
+### Reviewing the entries
 
 ```sh
 ./dt-lockcheck.py                                       # stale entries are marked in the report
-./dt-lockcheck.py --include-false-positives             # the suppressed findings too
+./dt-lockcheck.py --module rgblevels --include-false-positives  # one module, suppressed findings too
 ./dt-lockcheck.py --fail-on-stale-false-positives-only  # exit 1, and report the stale entries alone
 ```
 
-An ordinary run shows the entries in context. The stderr banner names every
-stale entry, and the report marks each one with its recorded reason among the
-other findings. The gate in the third line narrows the report to the stale
-entries, which helps when you want to know why the gate fired. It only filters
-the output. A full run takes as long either way, and `--module` does not make
-it faster.
-
-`--include-false-positives` puts the suppressed findings back in the report.
-Use it when you review one module and want to re-read its judgements too. It
-only changes what is reported, so it is an error with `--format json` or
-`lemmalog`, which carry the facts the rules run on and never use the list.
-
-`--fail-on-stale-false-positives-only` turns the same check into a gate for a
-CI job or a pre-commit hook. It can pass before every finding has been
-reviewed. Its report and its csv contain only the stale entries. It cannot be
-combined with `--fail-on-findings`, and asking for both is an error, not a
-conjunction.
-
-Each entry also carries its site list as `function:line[thread](lock)`, only
-so that a diff of the file is readable. Those line numbers are for information
-and are not part of the key.
+An ordinary run shows the stale entries among the other findings, each with its
+recorded reason. `--include-false-positives` with `--module` puts the
+suppressed findings back in the report, for when you review one module and want
+to see every finding. Their recorded reasons are only in
+`false-positives.json`. The gate in the third line narrows the report to the
+stale entries, which helps when you want to know why it fired.
 
 ### What it is not
 
-The list is not a baseline of every finding, and neither gate is a
-new-findings gate. `--fail-on-findings` fails on every finding the list does
-not suppress, including unreviewed ones and ones that are filed but unfixed.
-`--fail-on-stale-false-positives-only` fails only on the judgements recorded
-here, and cannot see a defect nobody has looked at. A gate that fails on new
-findings would need a checked-in baseline of all findings, a different file
-with different rules for when its entries expire. That does not exist here.
+The list is not a baseline of every finding, and neither gate fails only on
+new findings. `dt-lockcheck-diff.py` does that, by comparing a change with its
+base. See [Comparing two trees](#comparing-two-trees).
 
 An entry also proves little on its own. It records that one person read one
 finding at one commit and reached a conclusion. The key makes that conclusion
-expire when the code changes. It cannot make the conclusion right.
+expire when the code it covers changes. It cannot make the conclusion right.
+
+
+## Comparing two trees
+
+`dt-lockcheck-diff.py`, beside `dt-lockcheck.py`, reports what a change does to
+the findings: which ones it adds, removes or alters. Nearly every finding on a
+current tree predates any given change, so this is the view to read when you
+review one. It is also the gate a CI job can use before every existing finding
+has been reviewed, because the findings that predate the change cancel out.
+
+```sh
+./dt-lockcheck-diff.py master                  # the working tree against its merge base with master
+./dt-lockcheck-diff.py --head HEAD HEAD^1      # one commit against its first parent
+./dt-lockcheck-diff.py --fail-on-new-findings --github --head HEAD HEAD^1   # in a CI job
+```
+
+Run it inside the checkout under review, or name that checkout with `--repo`.
+Like `git diff BASE...HEAD`, it compares the head with the merge base of `BASE`
+and the head. The head is the working tree, untracked files included, unless
+`--head` names a commit. The script extracts committed trees with
+`git archive`, so it never changes the checkout. It runs dt-lockcheck on both
+trees with every rule and prints the findings that differ.
+
+Each finding is `new`, `gone` or `changed`, and lists only the sites whose
+count changed, with the line numbers on each side. For example, one of the
+four findings reported for 31b2dacaf0, the commit that added demosaic's
+capture-sharpen auto-tune:
+
+```
+new      demosaic  g->new_radius  (float)  violation  [newly reported]
+    locked    process[pipe]  0 -> 1   head: 775
+    locked    process_cl[pipe]  0 -> 1   head: 1088
+    locked    reload_defaults[gtk]  0 -> 1   head: 1573
+    unlocked  _ui_pipe_done[gtk]  0 -> 2   head: 1766, 1770
+    unlocked  gui_update[gtk]  0 -> 1   head: 1699
+```
+
+### How findings are matched
+
+- By module and field. dt-lockcheck reports a field under one rule at most, so
+  a field that moves to another rule is one `changed` finding, with a `rule:`
+  line.
+- Sites are compared as counts per function, lock state and thread, not by
+  line number. Code that only moved is not a difference.
+- One `dt-lockcheck.py` and its `false-positives.json` judge both trees. By
+  default these are the copies beside the script, which in a CI job are the
+  change's own. `--lockcheck` names another copy. A change to the rules or to
+  the list therefore acts on both sides alike, and only the change to
+  `src/iop` shows.
+
+### Newly reported findings
+
+A finding is *reported* on one side when an ordinary `./dt-lockcheck.py` run
+would print it: its rule is a default rule, and no current false-positive
+entry suppresses it. The report tags two kinds of difference:
+
+| tag | meaning | fails `--fail-on-new-findings` |
+| --- | --- | --- |
+| `[newly reported]` | the head reports the finding and the base does not: a new finding, a field that moved into a default rule from `discipline_gap`, or a false-positive entry that the change made stale by editing the code it was judged on | yes |
+| `[more unlocked accesses]` | the base already reports the finding, and the change adds unlocked accesses to it | no |
+
+The second kind does not fail, because the change did not introduce the
+finding. Everything else in the report is information: findings the change
+removes, `discipline_gap` findings, added locked accesses, a changed field
+type, and false-positive changes that leave the head clean.
+
+### When it fires
+
+A newly reported finding is a candidate, like any other. Read the source at
+the sites the report names, as [Before you file anything](#before-you-file-anything)
+describes. Then:
+
+- if it is a defect, fix it in the change;
+- if it is not, record why, and commit the updated list with the change:
+
+  ```sh
+  ./dt-lockcheck.py --confirm-false-positive MODULE:FIELD --false-positive-reason "why this is not a defect"
+  ```
+
+  The head then matches the entry, the comparison stops counting the finding,
+  and the entry shows in the change's diff for the reviewer to check. When the
+  report shows a `rule:` line and a false-positive entry on the base, the same
+  command moves that entry to the new rule.
+
+For a stale entry, read the reason recorded for it first:
+`./dt-lockcheck.py --module MODULE` prints it beside the finding. If the
+reason still holds for the edited code, re-confirm the entry with
+`./dt-lockcheck.py --confirm-false-positive MODULE:FIELD`. Otherwise fix the
+code. [Confirming an entry](#confirming-an-entry) has the details.
+
+### In GitHub Actions
+
+`--github` adds two things for a workflow:
+
+- one annotation per tagged finding, on one of its access lines in the head,
+  preferably an unlocked access the change added, so that it shows next to the
+  code in the pull request. A newly reported
+  finding is an error under `--fail-on-new-findings` and a warning otherwise.
+  More unlocked accesses are always a warning. GitHub caps the number of
+  annotations per step, so the script writes one per finding, not one per
+  access;
+- the report, under a one-line verdict, appended to the job summary when
+  `$GITHUB_STEP_SUMMARY` is set.
+
+A workflow triggered by `pull_request` checks out GitHub's merge of the pull
+request into its target branch. The first parent of that merge commit is the
+target branch, so `--head HEAD HEAD^1` compares exactly what merging would
+change, and a checkout with `fetch-depth: 2` is enough. darktable's own job is
+`.github/workflows/dt-lockcheck.yml`.
+
+### Exit status of the comparison
+
+| code | meaning |
+| --- | --- |
+| 0 | the comparison ran, and `--fail-on-new-findings` was not given or did not fire |
+| 1 | `--fail-on-new-findings` fired |
+| 2 | the comparison did not run: not inside a checkout, a ref that names no commit, no merge base, or dt-lockcheck failing on one of the trees |
 
 
 ## Proof trees
 
 `rules.lemma` contains the same rules written as Datalog, for
-[lemmalog](https://github.com/JordyZomer/lemmalog). Install lemmalog and put it
-on your `$PATH`, and `--why` prints the proof behind every finding in the
-report:
+[lemmalog](https://github.com/JordyZomer/lemmalog). With lemmalog on your
+`$PATH`, `--why` prints the proof behind each finding in the report:
 
 ```sh
 ./dt-lockcheck.py --module basicadj --why
@@ -846,45 +891,43 @@ basicadj.c  g->box_cood   (dt_boundingbox_t)
 ```
 
 The tree ends at the extracted base facts, and that makes it useful. It names
-the exact locked site that is the evidence for the convention, and the thread
-inference that made the field cross-thread, including whether that inference
-went through `may_pipe` or `may_gtk` on an
+the facts the finding rests on, such as the locked site that is the evidence
+for a convention, and the thread inference that made the field cross-thread,
+including whether that inference went through `may_pipe` or `may_gtk` on an
 [`either`](#which-thread-is-this-on) site. You can use it as the outline of a
 bug report. It also shows when a finding rests on a thread guess you disagree
 with.
 
-The `why     :` line names the goal, because a finding may list several
-unlocked sites and the tree explains only the first. That is the `pipe` or
-`either` site the report lists first.
+The `why     :` line names the goal. `no_lock_share` and `pointer_share` are
+proven per field. `violation` and `discipline_gap` are proven per unlocked
+access, and the tree explains the first unlocked site the report lists, which
+is a `pipe` or `either` site when there is one. `widget_from_pipe` is proven
+per `pipe` or `either` access, locked or not, and the tree explains the first
+such site the report lists.
 
-**`--why` changes no findings.** The Python code and the Datalog rules
-implement the same rules and produce the same findings, so `--why` does not
-change which findings are reported.
+The Python code and the Datalog rules produce the same findings, so `--why`
+does not change which findings are reported. It does change these things:
 
-- `--why` is off by default, because the trees make a full report about six
-  times longer. Use it on a narrowed run, such as one `--module` or one rule
-  you are about to write up.
-- `--why` fails with exit code 2 when it cannot find a lemmalog binary, instead
-  of printing a plain report. You asked for the trees, so a missing engine is a
-  problem to fix, not one to hide.
+- The trees make a full report several times longer, so `--why` is off by
+  default. Use it on a narrowed run, such as one `--module` or one rule you are
+  about to write up.
+- It runs lemmalog once for the whole report, over the facts that
+  `--format lemmalog` writes, which roughly doubles the run time.
+- It fails with exit code 2 when it cannot find a lemmalog binary, instead of
+  printing a plain report. You asked for the trees, so a missing engine is a
+  problem to fix, not one to hide. If lemmalog is found but the proof run
+  fails, because `rules.lemma` is missing, the engine reports an error or it
+  times out, the script prints a warning on stderr and the report without
+  trees.
 - `--lemmalog PATH` or `$DT_LOCKCHECK_LEMMALOG` names a binary that is not on
   `$PATH`. `--lemmalog` implies `--why`, because that is the only reason to
   name it. A path that does not exist is an error even if `lemmalog` is on
   `$PATH`, because an explicit path never falls back to the search.
-- Only `--format report` carries the trees. `csv`, `json` and `lemmalog` do not
-  start the engine, and produce the same findings and facts either way. This is
-  deliberate, because those formats feed other tools, and their shape should
-  not depend on whether an optional binary is installed. `--why` with one of
-  them is an error, not a silent no-op. The script captures the engine's output
-  instead of passing it through, so it cannot reach stdout. The line that names
-  the binary goes to stderr, like the other status lines.
-
-The cost is one `lemmalog` run for the whole report, over the facts that
-`--format lemmalog` writes, and it roughly doubles the run time. If the engine
-fails after the script has found and started it, for example with an engine
-error, a timeout or a missing `rules.lemma`, the script prints a warning on
-stderr and the report without trees, because by then it has a report worth
-printing.
+- Only `--format report` carries the trees. `--why` with another format is an
+  error, not a silent no-op. `csv`, `json` and `lemmalog` never start the
+  engine, because those formats feed other tools, and their shape should not
+  depend on whether an optional binary is installed. The script captures the
+  engine's output, so it cannot reach stdout.
 
 To drive the engine yourself, for example to add rules of your own or to query
 it interactively, use `--format lemmalog` to write out the base facts:

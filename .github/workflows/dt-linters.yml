@@ -1,0 +1,32 @@
+name: Linters
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+        - "src/iop/**"
+        - "tools/dt-lockcheck/**"
+        - ".github/workflows/dt-lockcheck.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dt-lockcheck:
+    if: github.repository == 'darktable-org/darktable'
+    name: dt-lockcheck
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: false
+          # GitHub's merge of the pull request and its parents; the first
+          # parent, HEAD^1, is the target branch
+          fetch-depth: 2
+
+      - name: Report the findings the pull request adds
+        # advisory: findings become warnings and the job passes, until the
+        # noise level on real pull requests is known. Add
+        # --fail-on-new-findings to make it blocking
+        run: python3 tools/dt-lockcheck/dt-lockcheck-diff.py --github --head HEAD HEAD^1

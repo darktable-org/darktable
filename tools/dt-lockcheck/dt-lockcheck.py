@@ -12,7 +12,7 @@ WHAT IT LOOKS FOR
 
 WHICH THREAD
   The script labels every function `gtk`, `pipe` or `either`, and the report
-  labels every site the same way.
+  labels every site the same way.  A function it cannot label shows as `?`.
 
     gtk     the GTK main thread: gui_init, gui_update, gui_changed, widget and
             draw callbacks, mouse and scroll handlers.
@@ -48,18 +48,20 @@ WHICH THREAD
 
     widget_from_pipe  a Gtk*- or Dtgtk*-typed field touched from a `pipe` or
                       `either` function.  Only the main thread may call GTK.
-    violation         the module locks the field somewhere, and also accesses it
-                      unlocked from the other side.  The module's own code is
-                      the evidence that the field needs the lock.
+    violation         the field is shared across the two threads and locked
+                      somewhere, and some access to it is unlocked.  The
+                      module's own code is the evidence that the field needs
+                      the lock.
     no_lock_share     the field is written and shared across the two threads,
                       and the module never locks it.
     discipline_gap    the module locks the field somewhere and accesses it
                       unlocked, but no cross-thread sharing was proven.  The
                       noisiest rule, so read it last.
-    pointer_share     a pointer-typed field shared across the two threads, with
-                      no unlocked access anywhere.  The lock protects the
-                      pointer load, not the object, which the other thread may
-                      free while the reader uses it.  The rule fires on the
+    pointer_share     a pointer-typed field shared across the two threads that
+                      no rule above reported: every access is locked, or the
+                      field is never locked and only read.  A lock protects
+                      the pointer load, not the object, which the other thread
+                      may free while the reader uses it.  The rule fires on the
                       pattern, not on a proven escape, so read each hit before
                       you believe it.  The pattern is rare, and the number of
                       such fields limits the rule's output.
@@ -73,12 +75,13 @@ WHICH THREAD
 PROOF TREES (--why, off by default)
   rules.lemma, next to this script, contains the same rules written as Datalog.
   With --why, the report follows each finding with the proof tree behind it.
-  The tree shows the locked site that established the convention, the thread
-  facts, and the unlocked site that broke it.  --why needs the lemmalog engine
+  The tree shows the facts behind the finding, such as the locked site that
+  established a convention, the thread facts, and the unlocked site that broke
+  it.  --why needs the lemmalog engine
   (github.com/JordyZomer/lemmalog) on $PATH, in $DT_LOCKCHECK_LEMMALOG, or named
   by --lemmalog PATH.  Asking for --why without one is an error, not a silent
   plain report.  The trees do not change which findings are reported.  They make
-  a full report about six times longer, which is why they are opt-in.
+  a full report several times longer, which is why they are opt-in.
 
   Only the report carries the trees.  --format csv, json and lemmalog never run
   the engine and never carry a tree, so --why with one of those is an error too.
@@ -86,17 +89,18 @@ PROOF TREES (--why, off by default)
   cannot reach stdout.  The line that names the binary goes to stderr.
 
 HOW TO READ THE OUTPUT
-  Each finding names the locked sites, which are the evidence that a convention
-  exists, and the unlocked sites, which are the suspected defect.  It gives the
-  line numbers and the thread inferred for each function.  Open both and decide.
-  This is a lexical analysis, not a verified race detector.  A person has to
-  confirm, for every finding, that the two sites can really run at the same
-  time.
+  Each finding names its locked sites, which are the evidence that a convention
+  exists, and its unlocked sites, which are the suspected defect, with the line
+  numbers and the thread inferred for each function.  A finding lists only the
+  kinds of site it has: no_lock_share has no locked site.  This is a lexical
+  analysis, not a verified race detector.  A person has to confirm, for every
+  finding, that the accesses can really run at the same time.
 
-  pointer_share is the exception.  It prints no unlocked line, because it has no
-  unlocked site.  Its claim is that locking every access is still not enough.
-  Read its locked sites for the load and the free, and decide whether the object
-  can be freed while the reader still uses it.
+  pointer_share is the exception.  Its claim is not a missing lock, but that a
+  lock on the pointer does not protect the object behind it, so it usually has
+  no unlocked site.  Read its sites and the code that frees or replaces the
+  object, and decide whether the object can be freed while the reader still
+  uses it.
 
 THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   The list records the findings that somebody has read and judged not to be
@@ -105,15 +109,19 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   with or without -q.
 
   Every entry carries a key over the finding's facts and over the source text of
-  its access lines.  An edit that could change the judgement changes the key.
-  The entry then goes stale, the finding comes back, and the report prints the
-  recorded reason with it.  An entry that matches no finding at all is an
+  its access lines.  An edit to either changes the key.  The entry then goes
+  stale, the finding comes back, and the report prints the recorded reason with
+  it.  An edit elsewhere does not, even when the judgement depends on it, such
+  as a change to the state machine that makes an access safe.  An entry that matches no finding at all is an
   orphan.  The banner names orphans, so that they can be deleted and the list
-  does not grow.
+  does not grow.  When the field now has a finding under another rule and no
+  entry under it, confirm the field with a new reason instead, which moves the
+  entry to that rule.
 
     --include-false-positives  report the suppressed findings too
     --confirm-false-positive MODULE:FIELD --false-positive-reason TEXT
-                               add one entry, or re-key it
+                               add one entry, re-key it, or move it to the
+                               field's new rule
     --confirm-false-positive MODULE
                                re-key every stale entry in that module
     --fail-on-findings         exit 1 if anything is reported (off by default)
@@ -121,9 +129,12 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
                                and report only the stale entries
 
   A new entry needs --false-positive-reason, because the tool prints that
-  sentence back when the entry goes stale.  A bare module re-confirms entries
-  but never adds them, so silencing a whole module has to name each field.
-  "The false-positive list" in README.md explains what the key covers and what
+  sentence back when the entry goes stale.  So does moving an entry to another
+  rule, because the recorded reason judged the old one.  A bare module
+  re-confirms entries but never adds or moves them, so silencing a whole module
+  has to name each field.
+  A confirmation looks at every rule, discipline_gap included, whatever
+  --rules says.  "The false-positive list" in README.md explains what the key covers and what
   was measured.
 
 KNOWN FALSE-POSITIVE CAUSES (check these before you report a finding upstream)
@@ -138,6 +149,10 @@ KNOWN FALSE-POSITIVE CAUSES (check these before you report a finding upstream)
   * A lock passed into a callee.  The script handles the common
     `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` pattern, but not
     the general case.
+  * A lock held by the caller.  Lock depth is tracked within one function, so
+    a helper called inside the caller's critical section looks unlocked.  Such
+    a finding is false only if every call path into the helper holds gui_lock
+    across the access.  Check every caller and every branch.
   * A field that only sits inside a critical section taken for a different
     field.  The script handles part of this.  A function that writes 8 or more
     distinct fields under the lock and never reads them back counts as bulk
@@ -168,8 +183,9 @@ KNOWN LIMITS
     critical section.
   * Thread inference uses function names, call-graph propagation within one
     file, and the address-taken rules above.  A function it still cannot label
-    gets thread `None`.  Such a function counts on neither side of the
-    cross-thread test, so it can never be what makes a field shared.
+    gets no thread (`?` in the report, null in json).  Such a function counts
+    on neither side of the cross-thread test, so it can never be what makes a
+    field shared.
   * Sharing means pipe versus GTK only.  One pipe also uses gui_data to hand a
     value to another.  For example, the preview pipe computes a whole-image
     property and the full pipe reads it (dev-doc/GUI_Threading.md, "Passing
@@ -193,9 +209,11 @@ KNOWN LIMITS
     in column zero.  darktable uses that style throughout, but C in general
     does not.
   * Only `src/iop/*.c` and `*.cc` are covered, not shared code under
-    `src/develop/` or `src/libs/`.  The script skips a source with no
-    `dt_iop_<module>_gui_data_t`, because it has nothing to share, and the
-    stderr banner says how many it skipped.
+    `src/develop/` or `src/libs/`.  A source that a module includes from a
+    subdirectory, such as hlreconstruct/opposed.c in highlights.c, is not
+    read either, so its gui_data accesses are missing.  The script skips a
+    source with no `dt_iop_<module>_gui_data_t`, because it has nothing to
+    share, and the stderr banner says how many it skipped.
 
 USAGE
   Run it from anywhere inside a darktable checkout, or with the script on $PATH.
@@ -223,14 +241,17 @@ USAGE
   positives to expect.
 
   Python 3.8+, standard library only.  The exit status is 0 for a completed run,
-  whatever it found, 1 when a --fail-on-* gate was given and fired, and 2 for a
-  wrong invocation.  A wrong invocation includes either --fail-on-* gate with
-  --format json or lemmalog, because those carry the facts the rules run on and
-  leave a gate nothing to fire on.  Both gates are off by default.
+  whatever it found, 1 when a --fail-on-* gate was given and fired, and 2 when
+  the run did not complete: a wrong invocation, a malformed
+  false-positives.json in a run that reads it, or --why without a lemmalog
+  binary.  A wrong invocation includes either --fail-on-* gate with --format
+  json or lemmalog, because those carry the facts the rules run on and leave a
+  gate nothing to fire on, and --confirm-false-positive with anything that
+  needs a report, because it reports nothing.  Both gates are off by default.
   --fail-on-findings passes only once every finding is either fixed or recorded
   in false-positives.json.  --fail-on-stale-false-positives-only fails only when
   a recorded entry has gone stale, so it can pass while findings are still
-  unreviewed.  See "Before you file anything" in README.md.
+  unreviewed.  See "Exit status" in README.md.
 """
 import argparse
 import csv
@@ -864,9 +885,9 @@ def print_report(fs, trees=None, suppressed=0, total=None):
                 print("   locked  : " + _sites(f["locked"], th, 6,
                                                lambda a: f"({a[2]})"))
             # pointer_share rests on the field's type and its threads, not on
-            # a missing lock, so it is the one rule that reaches here with no
-            # unlocked site to name.  Its evidence is the locked list above.
-            # Every access is under the lock, and the field is unsafe anyway.
+            # a missing lock, so it can reach here with no unlocked site to
+            # name.  Its evidence is then the locked list above: every access
+            # is under the lock, and the field is unsafe anyway.
             if f["unlocked"]:
                 print("   unlocked: " + _sites(f["unlocked"], th, 8))
             # A stale entry means that somebody judged this exact finding
@@ -885,8 +906,8 @@ def print_report(fs, trees=None, suppressed=0, total=None):
                 key = why_goal(f)[1]
                 tree = trees.get(key)
                 if tree:
-                    # name the goal, because the unlocked line above lists
-                    # several sites and the tree only explains this one
+                    # name the goal, because the lines above list several
+                    # sites and the tree only explains this one
                     print("   why     : " + key)
                     for line in tree:
                         print(ascii_safe("   " + line.rstrip()))
@@ -904,9 +925,9 @@ def print_report(fs, trees=None, suppressed=0, total=None):
 # review does not have to read them again.  The risk is that a suppression
 # outlives the code it was true about and hides a real defect.  So every entry
 # carries a key over the finding's own facts and over the source text of its
-# access lines.  An edit that could change the judgement changes the key, the
-# entry goes stale, and the finding comes back with the recorded reason
-# attached.  "The false-positive list" in README.md has the measurements behind
+# access lines.  An edit to either changes the key, the entry goes stale, and
+# the finding comes back with the recorded reason attached.  An edit elsewhere
+# that the judgement depends on does not.  "The false-positive list" in README.md has the measurements behind
 # that choice.
 FP_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                        "false-positives.json")
@@ -1102,48 +1123,82 @@ def parse_fp_spec(spec, res):
 
 
 def confirm_fps(specs, reason, fs, entries, res, wanted, path):
-    """Re-key stale entries, and add new ones, in place.
+    """Re-key stale entries, move entries whose field changed rule, and add new
+    ones, in place.
 
     A bare module name re-confirms every stale entry in it, which is what an
     audit of one module in one sitting produces.  It cannot create entries, on
     purpose.  Adding one is a judgement about a single field and has to name it,
-    otherwise one word could silence a whole module.
+    otherwise one word could silence a whole module.  Moving an entry to its
+    field's new rule is a new judgement too, so a bare module name only lists
+    those entries.
     """
     found = {fp_ident(f): f for f in fs}
+    # a field is reported under at most one rule
+    by_field = {(f["module"], f["field"]): f for f in fs}
+    recorded = {fp_ident(e) for e in entries}
     today = datetime.date.today().isoformat()
     touched = 0
     for spec in specs:
         module, field = parse_fp_spec(spec, res)
         if field is None:
-            stale = []
+            stale, moved = [], []
             for e in fp_scope(entries, res, wanted):
+                if e["module"] != module:
+                    continue
                 f = found.get(fp_ident(e))
-                if e["module"] == module and f and f["key"] != e["key"]:
+                if f and f["key"] != e["key"]:
                     stale.append((e, f))
-            if not stale:
+                elif not f:
+                    f = by_field.get((module, e["field"]))
+                    # an entry under the finding's own rule wins; this one is
+                    # then a plain orphan
+                    if f and fp_ident(f) not in recorded:
+                        moved.append((e, f))
+            if not (stale or moved):
                 print("%s: no stale entry to re-confirm" % module)
             for e, f in stale:
                 _rekey(e, f, res, reason, today)
                 touched += 1
+            for e, f in moved:
+                print("%s:%s: not moved: the entry is under %s, and the field "
+                      "now has a finding under %s.  Re-read the source, then "
+                      "move it with --confirm-false-positive %s:%s "
+                      "--false-positive-reason TEXT"
+                      % (module, e["field"], e["rule"], f["rule"], module,
+                         e["field"]))
             continue
-        # a field is reported under at most one rule, so module:field names at
-        # most one entry and at most one finding
-        ent = next((e for e in entries
-                    if e["module"] == module and e["field"] == field), None)
-        fnd = next((f for f in fs
-                    if f["module"] == module and f["field"] == field), None)
+        fnd = by_field.get((module, field))
+        ents = [e for e in entries
+                if e["module"] == module and e["field"] == field]
+        ent = next((e for e in ents if fnd and e["rule"] == fnd["rule"]), None)
         if ent is not None:
-            f = found.get(fp_ident(ent))
-            if f is None:
-                print("%s:%s: no finding under %s any more -- the entry is an "
-                      "orphan, delete it rather than re-confirming it"
-                      % (module, field, ent["rule"]))
-            elif f["key"] == ent["key"] and not reason:
+            if fnd["key"] == ent["key"] and not reason:
                 print("%s:%s: already current (key %s), nothing to do"
                       % (module, field, ent["key"]))
             else:
-                _rekey(ent, f, res, reason, today)
+                _rekey(ent, fnd, res, reason, today)
                 touched += 1
+        elif ents and fnd is not None:
+            # the recorded reason judged the field under its old rule, and a
+            # finding under another rule is a new finding ("The three states"
+            # in README.md).  Moving the entry therefore takes a new reason,
+            # like adding one; it replaces the old entry instead of leaving it
+            # behind as an orphan that has to be deleted by hand.
+            old = ents[0]
+            if not reason:
+                die("%s:%s: the entry is under %s, and the field now has a "
+                    "finding under %s.  Moving it needs a new judgement: "
+                    "re-read the source, and if it is still not a defect, say "
+                    "why with --false-positive-reason.  The recorded reason "
+                    "was: %s" % (module, field, old["rule"], fnd["rule"],
+                                 old["reason"]))
+            _rekey(old, fnd, res, reason, today)
+            touched += 1
+        elif ents:
+            print("%s:%s: no finding under %s any more -- the entry is an "
+                  "orphan, delete it rather than re-confirming it"
+                  % (module, field, ents[0]["rule"]))
         elif fnd is not None:
             if not reason:
                 die("a new entry needs --false-positive-reason: say why %s:%s "
@@ -1160,6 +1215,17 @@ def confirm_fps(specs, reason, fs, entries, res, wanted, path):
             die("--confirm-false-positive %s: no finding and no entry for that "
                 "field.  Rules in this run: %s"
                 % (spec, ",".join(r for r in ALL_RULES if r in wanted)))
+        # only a hand edit leaves a second entry for one field, and the code
+        # above acts on one entry at most, so name the rest instead of passing
+        # over them
+        if fnd is not None and ents:
+            kept = ent if ent is not None else ents[0]
+            for e in ents:
+                if e is not kept:
+                    print("%s:%s: the entry under %s is an orphan, because the "
+                          "field's finding is under %s; delete it from the "
+                          "file by hand"
+                          % (module, field, e["rule"], fnd["rule"]))
     if touched:
         save_fp_list(path, entries)
         print("%s: %d entr%s written" % (path, touched,
@@ -1167,8 +1233,9 @@ def confirm_fps(specs, reason, fs, entries, res, wanted, path):
 
 
 def _rekey(e, f, res, reason, today):
-    """Move an entry onto the finding as it stands now."""
-    was = e["key"]
+    """Move an entry onto the finding as it stands now, rule included."""
+    was, was_rule = e["key"], e["rule"]
+    e["rule"] = f["rule"]
     e["key"] = f["key"]
     e["sites"] = finding_sites(f, res)
     e["confirmed"] = today
@@ -1177,11 +1244,17 @@ def _rekey(e, f, res, reason, today):
     replaced = bool(reason) and reason != e["reason"]
     if reason:
         e["reason"] = reason
-    print("%s:%s: %s under %s%s"
-          % (e["module"], e["field"],
-             "re-confirmed, key %s -> %s" % (was, e["key"]) if was != e["key"]
-             else "reason updated, key %s unchanged" % e["key"],
-             e["rule"], " (previous reason replaced)" if replaced else ""))
+    if was_rule != e["rule"]:
+        what = "moved from %s to %s, key %s -> %s" % (was_rule, e["rule"], was,
+                                                      e["key"])
+    elif was != e["key"]:
+        what = "re-confirmed, key %s -> %s under %s" % (was, e["key"],
+                                                         e["rule"])
+    else:
+        what = "reason updated, key %s unchanged under %s" % (e["key"],
+                                                               e["rule"])
+    print("%s:%s: %s%s" % (e["module"], e["field"], what,
+                           " (previous reason replaced)" if replaced else ""))
 
 
 # --- optional proof trees via lemmalog --------------------------------------
@@ -1227,11 +1300,23 @@ def why_goal(f):
 
     The two differ because lemmalog echoes a goal back with the quotes
     stripped, and the answers have to be looked up by the echo.  The arity
-    depends on the rule.  no_lock_share and pointer_share are per field, and
-    the rest are per unlocked site.
+    depends on the rule.  no_lock_share and pointer_share are per field,
+    widget_from_pipe is per pipe or either access, and the other two are per
+    unlocked site.
     """
     if f["rule"] in ("no_lock_share", "pointer_share"):
         args = (f["module"], f["field"])
+    elif f["rule"] == "widget_from_pipe":
+        # The rule fires on any pipe or either access, locked or not.  The first
+        # unlocked site can be a gtk one, which does not prove the rule, and
+        # lemmalog would answer that the finding is not derivable.  Take the
+        # first pipe or either site in the order the report prints them.
+        th = f["thread"]
+        sites = [a for a in _pipe_first(f["locked"], th) + _pipe_first(f["unlocked"], th)
+                 if th.get(a[0]) in MAY_PIPE]
+        if not sites:
+            return None, None
+        args = (f["module"], f["field"], sites[0][0])
     else:
         # the site the report leads with, so the tree explains the line above it
         sites = _pipe_first(f["unlocked"], f["thread"])
@@ -1411,19 +1496,25 @@ def main():
     ap.add_argument("--include-false-positives", action="store_true",
                     dest="include_fp",
                     help="also report the findings that false-positives.json "
-                         "suppresses.  Use it when you review one module and want "
-                         "to re-read its judgements too")
+                         "suppresses, without their recorded reasons.  Use it "
+                         "when you review one module and want to see every "
+                         "finding")
     ap.add_argument("--confirm-false-positive", action="append",
                     metavar="MODULE[:FIELD]", dest="confirm",
                     help="record that a finding is not a defect, or that a stale "
                          "entry still holds (repeatable).  MODULE:FIELD names "
                          "one finding; a bare MODULE re-confirms every stale "
-                         "entry in it, but cannot add new ones.  Rewrites "
-                         "false-positives.json and exits without reporting")
+                         "entry in it, but cannot add or move entries.  It "
+                         "looks at every rule, whatever --rules says.  "
+                         "Rewrites "
+                         "false-positives.json and exits without reporting, "
+                         "so it cannot be combined with another --format, "
+                         "--why or a --fail-on-* gate")
     ap.add_argument("--false-positive-reason", metavar="TEXT", dest="reason",
                     help="why the finding is not a defect.  Required for a new "
                          "entry, because the tool prints it back when the entry "
-                         "goes stale.  Optional when re-confirming, where it "
+                         "goes stale, and for moving an entry to its field's "
+                         "new rule.  Optional when re-confirming, where it "
                          "replaces the recorded reason.  One judgement is about "
                          "one module, so every --confirm-false-positive in the "
                          "run has to name the same module")
@@ -1436,7 +1527,8 @@ def main():
                     dest="fail_on_stale",
                     help="exit 1 only when a false-positive entry has gone "
                          "stale, which means that somebody judged the finding "
-                         "harmless and the code has changed since.  The weaker "
+                         "harmless and its facts or access lines have changed "
+                         "since.  The weaker "
                          "gate, which a CI job can use before every finding has "
                          "been dealt with.  Reports only the stale entries, "
                          "because the other findings are not what this gate "
@@ -1464,6 +1556,12 @@ def main():
     if unknown:
         die("unknown rule(s): %s.  Pick from %s, or %s for every one"
             % (", ".join(sorted(unknown)), ", ".join(ALL_RULES), ALL_RULES_TOKEN))
+    # --rules chooses what a report shows, and a confirmation reports nothing.
+    # Scoped to the default rules, a bare MODULE would skip every stale
+    # discipline_gap entry, and MODULE:FIELD would call such an entry an orphan
+    # and ask for it to be deleted.  So a confirmation always sees every rule
+    if args.confirm:
+        wanted = set(ALL_RULES)
     if (args.why or args.lemmalog) and args.format != "report":
         die("--why adds proof trees to the report; --format %s cannot carry them"
             % args.format)
@@ -1500,9 +1598,20 @@ def main():
         die("--fail-on-findings and --fail-on-stale-false-positives-only are "
             "two gates; pick one.  The first fails on any finding; the second "
             "fails only on a judgement the source has moved past")
-    if args.confirm and (args.fail_on_findings or args.fail_on_stale):
-        die("--confirm-false-positive rewrites the list and reports nothing, so "
-            "there is no finding for a --fail-on-* gate to act on")
+    # --confirm-false-positive rewrites the list and exits without a report,
+    # so anything else the run asks for would be dropped without a word.  With
+    # json and lemmalog that includes the judgement itself, because those
+    # formats return before any finding exists to record it on
+    if args.confirm:
+        dropped = [flag for flag, given in (
+            ("--format " + args.format, args.format != "report"),
+            ("--why" if args.why else "--lemmalog", args.why or args.lemmalog),
+            ("--fail-on-findings", args.fail_on_findings),
+            ("--fail-on-stale-false-positives-only", args.fail_on_stale))
+            if given]
+        if dropped:
+            die("--confirm-false-positive rewrites the list and reports "
+                "nothing, so it cannot be combined with %s" % ", ".join(dropped))
     if args.reason and not args.confirm:
         die("--false-positive-reason records why a finding is not a defect, "
             "so it needs a --confirm-false-positive to record it on")
