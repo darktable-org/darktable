@@ -151,7 +151,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static float _exposure_proxy_get_exposure(dt_iop_module_t *self);
 static void _paint_hue(dt_iop_module_t *self);
 static void _exposure_set_black(dt_iop_module_t *self, const float black);
 
@@ -475,13 +474,21 @@ static void _compute_deflicker_correction(dt_iop_exposure_params_t *p,
 
 static gboolean _show_computed(gpointer user_data);
 
+// the black and scale that process() applies for a given total exposure (in EV)
+static void _black_and_scale(const float exposure, const float black_param,
+                             float *black, float *scale)
+{
+  const float white = exposure2white(exposure);
+  *black = black_param >= white ? white - 0.01f : black_param;
+  *scale = 1.0f / (white - *black);
+}
+
 static void _process_common_setup(dt_iop_module_t *self,
                                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
   dt_iop_exposure_data_t *d = piece->data;
 
-  d->black = d->params.black;
   // the default is also the fallback for _compute_deflicker_correction below
   float exposure = d->params.exposure;
 
@@ -505,10 +512,7 @@ static void _process_common_setup(dt_iop_module_t *self,
     }
   }
 
-  const float white = exposure2white(exposure);
-  if(d->black >= white)
-    d->black = white - 0.01f;
-  d->scale = 1.0f / (white - d->black);
+  _black_and_scale(exposure, d->params.black, &d->black, &d->scale);
 }
 
 #ifdef HAVE_OPENCL
@@ -664,6 +668,16 @@ void commit_params(dt_iop_module_t *self,
   {
     d->deflicker = TRUE;
   }
+
+  // other modules of this pipe read this to undo exposure. Automatic (deflicker) mode
+  // has no exposure slider to report, so the record is only published in manual mode
+  piece->linear.valid = p->mode != EXPOSURE_MODE_DEFLICKER;
+  if(piece->linear.valid)
+  {
+    _black_and_scale(d->params.exposure, d->params.black,
+                     &piece->linear.offset, &piece->linear.scale);
+    piece->linear.compensation = _exposure_compensation_ev(self, p);
+  }
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -671,6 +685,7 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1,sizeof(dt_iop_exposure_data_t));
+  piece->linear.valid = FALSE;
 }
 
 void cleanup_pipe(dt_iop_module_t *self,
@@ -798,20 +813,6 @@ static void _exposure_set_white(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static float _exposure_proxy_get_exposure(dt_iop_module_t *self)
-{
-  dt_iop_exposure_params_t *p = self->params;
-
-  if(p->mode == EXPOSURE_MODE_DEFLICKER)
-  {
-    return p->deflicker_target_level;
-  }
-  else
-  {
-    return p->exposure;
-  }
-}
-
 static void _exposure_set_black(dt_iop_module_t *self,
                                 const float black)
 {
@@ -832,15 +833,8 @@ static void _exposure_set_black(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static float _exposure_proxy_get_black(dt_iop_module_t *self)
-{
-  dt_iop_exposure_params_t *p = self->params;
-  return p->black;
-}
-
 // The exposure that is actually applied, for other modules to read through
-// dev->proxy.exposure. Derived from the parameters on the caller's thread, like
-// _exposure_proxy_get_exposure() and _exposure_proxy_get_black() above: a value cached
+// dev->proxy.exposure. Derived from the parameters on the caller's thread: a value cached
 // by the pipe would be one commit behind whenever the caller asks right after a change.
 // Reading params this way is only safe on the GTK thread, which owns them - see the
 // thread contract on dt_dev_proxy_exposure_t in develop.h.
@@ -1377,9 +1371,7 @@ void gui_init(dt_iop_module_t *self)
   */
   dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
   instance->module = self;
-  instance->get_exposure = _exposure_proxy_get_exposure;
   instance->get_effective_exposure = _exposure_proxy_get_effective_exposure;
-  instance->get_black = _exposure_proxy_get_black;
   instance->handle_event = _exposure_proxy_handle_event;
 }
 
