@@ -131,7 +131,7 @@ void dt_lua_init_lock()
 void dt_lua_lock_internal(const char *function, const char *file, int line, gboolean silent)
 {
 #ifdef _DEBUG
-  if(!silent && !darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
+  if(!silent && !g_atomic_int_get(&darktable.lua_state.ending) && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
   {
     dt_print(DT_DEBUG_LUA, "LUA WARNING locking from the gui thread should be avoided");
     //g_assert(false);
