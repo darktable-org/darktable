@@ -68,7 +68,7 @@
 #include <string.h>
 #include <time.h>
 
-DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_channelmixer_rgb_params_t)
 
 #define CHANNEL_SIZE 4
 #define INVERSE_SQRT_3 0.5773502691896258f
@@ -110,6 +110,12 @@ typedef struct dt_iop_channelmixer_rgb_params_t
 
   /* params of v3 */
   dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_3 $DESCRIPTION: "saturation algorithm"
+
+  /* params of v4 */
+  // color checker corners x,y (TL, TR, BR, BL) last used to calibrate,
+  // relative to the processed image size
+  gboolean checker_box_set;        // $DEFAULT: FALSE
+  float checker_box[8];            // $DEFAULT: 0.0
 
   /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
 
@@ -380,6 +386,18 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_channelmixer_rgb_params_v3_t);
     *new_version = 3;
+    return 0;
+  }
+  if(old_version == 3)
+  {
+    // v4 appends the color checker box, unset for legacy edits
+    dt_iop_channelmixer_rgb_params_t *n = calloc(1, sizeof(dt_iop_channelmixer_rgb_params_t));
+    memcpy(n, old_params, sizeof(dt_iop_channelmixer_rgb_params_v3_t));
+    n->checker_box_set = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_channelmixer_rgb_params_t);
+    *new_version = 4;
     return 0;
   }
   return 1;
@@ -2572,10 +2590,47 @@ static inline void _update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
   get_homography(g->box, g->ideal_box, g->inverse_homography);
 }
 
-static inline void _init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
+// returns TRUE when the stored box changed
+static gboolean _store_bounding_box(dt_iop_channelmixer_rgb_params_t *p,
+                                    const dt_iop_channelmixer_rgb_gui_data_t *g,
+                                    const float width,
+                                    const float height)
+{
+  float box[8];
+  gboolean changed = !p->checker_box_set;
+  for(size_t k = 0; k < 4; k++)
+  {
+    box[2 * k] = g->box[k].x / width;
+    box[2 * k + 1] = g->box[k].y / height;
+  }
+
+  // a restored box comes back through a multiply and a divide, so compare loosely
+  for(size_t k = 0; k < 8 && !changed; k++)
+    changed = !feqf(box[k], p->checker_box[k], 1e-6f);
+
+  if(!changed) return FALSE;
+
+  memcpy(p->checker_box, box, sizeof(box));
+  p->checker_box_set = TRUE;
+  return TRUE;
+}
+
+// p may be NULL to get the default box
+static inline void _init_bounding_box(const dt_iop_channelmixer_rgb_params_t *p,
+                                      dt_iop_channelmixer_rgb_gui_data_t *g,
                                       const float width,
                                       const float height)
 {
+  if(!g->checker_ready && p && p->checker_box_set)
+  {
+    for(size_t k = 0; k < 4; k++)
+    {
+      g->box[k].x = p->checker_box[2 * k] * width;
+      g->box[k].y = p->checker_box[2 * k + 1] * height;
+    }
+    g->checker_ready = TRUE;
+  }
+
   if(!g->checker_ready)
   {
     const float handle_offset = 10.0f;
@@ -2735,7 +2790,7 @@ int button_pressed(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->checker_ready = FALSE;
     g->profile_ready = FALSE;
-    _init_bounding_box(g, wd, ht);
+    _init_bounding_box(NULL, g, wd, ht);
     dt_iop_gui_leave_critical_section(self);
 
     dt_control_queue_redraw_center();
@@ -2975,7 +3030,7 @@ static void _checker_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   dt_iop_gui_enter_critical_section(self);
   g->profile_ready = FALSE;
-  _init_bounding_box(g, wd, ht);
+  _init_bounding_box(self->params, g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
 
   dt_control_queue_redraw_center();
@@ -3009,10 +3064,27 @@ static void _start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *
 
   // init bounding box
   dt_iop_gui_enter_critical_section(self);
-  _init_bounding_box(g, wd, ht);
+  _init_bounding_box(self->params, g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
 
   dt_control_queue_redraw_center();
+}
+
+// keep the box with the edit so that reopening the image or pasting its
+// history restores it. saving only here, not on every drag, spares a
+// pipe recompute per drag since the box does not change the output
+static void _save_bounding_box(dt_iop_module_t *self)
+{
+  dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+
+  float wd, ht;
+  if(!g->checker_ready || !dt_dev_get_preview_size(self->dev, &wd, &ht)) return;
+
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean changed = _store_bounding_box(self->params, g, wd, ht);
+  dt_iop_gui_leave_critical_section(self);
+
+  if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _run_profile_callback(GtkWidget *widget,
@@ -3020,6 +3092,8 @@ static void _run_profile_callback(GtkWidget *widget,
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+
+  _save_bounding_box(self);
 
   dt_iop_gui_enter_critical_section(self);
   g->run_profile = TRUE;
@@ -3033,6 +3107,8 @@ static void _run_validation_callback(GtkWidget *widget,
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+
+  _save_bounding_box(self);
 
   dt_iop_gui_enter_critical_section(self);
   g->run_validation = TRUE;
@@ -3985,6 +4061,8 @@ void gui_update(dt_iop_module_t *self)
 
   // always disable profiling mode by default
   g->is_profiling_started = FALSE;
+  // re-read the checker box from params (history, paste, undo) on next start
+  g->checker_ready = FALSE;
 
   const dt_iop_channelmixer_rgb_params_t *d = self->default_params;
   g->last_daylight_temperature = d->temperature;
