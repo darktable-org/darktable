@@ -376,6 +376,13 @@ changes (where available).
   output is unchanged. Existing edits render as before, and a "follow
   output peak" toggle in each module opts them in.
 
+- Filmic rgb (color science v6 and v7) now adapts to HDR output as
+  well. Its target white is relative to the output's peak, and the
+  same HDR shaping as AgX keeps middle gray and the shadows at their
+  SDR brightness while the highlights extend to the peak. SDR output
+  is unchanged. Existing edits render as before, and a "follow output
+  peak" toggle opts them in.
+
 - PNG exports using a PQ output color profile now include content
   light level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
 
