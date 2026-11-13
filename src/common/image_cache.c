@@ -236,7 +236,13 @@ void dt_image_cache_init()
 void dt_image_cache_cleanup()
 {
   dt_image_cache_t *cache = darktable.image_cache;
-  if(!cache) return;
+  if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_cleanup] called with NULL cache, this should not happen");
+    return;
+  }
+
   dt_print(DT_DEBUG_CACHE,
            "[image cache cleaup report] fill %.2f/%.2f MB (%.2f%%)",
            cache->cache.cost / (1024.0 * 1024.0),
@@ -252,7 +258,11 @@ dt_image_t *dt_image_cache_get(const dt_imgid_t imgid,
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_get] called with NULL cache, this should not happen");
     return NULL;
+  }
 
   if(!dt_is_valid_imgid(imgid))
     return NULL;
@@ -272,7 +282,11 @@ dt_image_t *dt_image_cache_testget(const dt_imgid_t imgid,
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_testget] called with NULL cache, this should not happen");
     return NULL;
+  }
 
   if(!dt_is_valid_imgid(imgid))
   {
@@ -315,7 +329,11 @@ void dt_image_cache_write_release_info(dt_image_t *img,
 
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_write_release_info] called with NULL cache, this should not happen");
     return;
+  }
 
   if(!dt_is_valid_imgid(img->id))
   {
@@ -467,7 +485,11 @@ void dt_image_cache_set_change_timestamp(const dt_imgid_t imgid)
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_set_change_timestamp] called with NULL cache, this should not happen");
     return;
+  }
 
   if(!dt_is_valid_imgid(imgid))
     return;
@@ -486,7 +508,11 @@ void dt_image_cache_set_change_timestamp_from_image(const dt_imgid_t imgid,
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_set_change_timestamp_from_image] called with NULL cache, this should not happen");
     return;
+  }
 
   if(!dt_is_valid_imgid(imgid) || !dt_is_valid_imgid(sourceid))
     return;
@@ -511,7 +537,11 @@ void dt_image_cache_unset_change_timestamp(const dt_imgid_t imgid)
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_unset_change_timestamp] called with NULL cache, this should not happen");
     return;
+  }
 
   if(!dt_is_valid_imgid(imgid))
     return;
@@ -531,7 +561,11 @@ void dt_image_cache_set_export_timestamp(const dt_imgid_t imgid)
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_set_export_timestamp] called with NULL cache, this should not happen");
     return;
+  }
 
   if(!dt_is_valid_imgid(imgid))
     return;
@@ -551,7 +585,11 @@ void dt_image_cache_set_print_timestamp(const dt_imgid_t imgid)
 {
   dt_image_cache_t *cache = darktable.image_cache;
   if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_image_cache_set_print_timestamp] called with NULL cache, this should not happen");
     return;
+  }
 
   if(!dt_is_valid_imgid(imgid))
     return;
