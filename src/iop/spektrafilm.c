@@ -3350,7 +3350,7 @@ int process_cl(dt_iop_module_t *self,
         SF_BLUR4_WIDE_OP_L(plane, plane2,
                            fmaxf((float)((cl_hal_sigma_um * (double)hscl
                                           / (double)pixel_um) * sqrt((double)k)), 1e-6f));
-        if(err != CL_SUCCESS) break;
+        SF_CL_STEP("halation bounce blur");
         const int reset = (k == 1);
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
                                                CLARG(acc), CLARG(w), CLARG(h), CLARG(dec[k - 1]),
@@ -3426,12 +3426,12 @@ int process_cl(dt_iop_module_t *self,
         if(sig[g3] >= SF_WIDE_BLUR_MIN_SIGMA)
         {
           err = _sf_blur_wide_cl(devid, gd, acc, plane2, w, h, roi_in->x, roi_in->y, sig[g3]);
-          if(err != CL_SUCCESS) break;
+          SF_CL_STEP("coupler tail blur");
         }
         else
         {
           err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, acc, plane2, 0, 0, npix * f * 4);
-          if(err != CL_SUCCESS) break;
+          SF_CL_STEP("coupler tail copy");
         }
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_accum, w, h,
                                                CLARG(plane2), CLARG(tmpa), CLARG(w), CLARG(h),
