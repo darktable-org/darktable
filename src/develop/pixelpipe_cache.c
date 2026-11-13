@@ -124,6 +124,8 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
   hash = dt_hash(hash, &pipe->export_profile_info, sizeof(pipe->export_profile_info));
   // the PQ peak is a preference, so the output profile alone does not fix the headroom
   hash = dt_hash(hash, &pipe->output_headroom, sizeof(pipe->output_headroom));
+  // colorout renders a window's output with the output's intent, which the profile info leaves out
+  hash = dt_hash(hash, &pipe->output.image.intent, sizeof(pipe->output.image.intent));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
@@ -151,6 +153,11 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
         }
       }
     }
+    // what colorout's output is, for colorout and the stages after it: the
+    // output profile info is a matrix stand-in, the same sRGB for every LUT
+    // profile, so two LUT proofs share it
+    if(dt_iop_module_is(piece->module, "colorout"))
+      hash = dt_hash(hash, &pipe->colorout_encoding, sizeof(pipe->colorout_encoding));
     pieces = g_list_next(pieces);
   }
   return hash;

@@ -87,6 +87,37 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
+- Wide gamut and HDR display on Wayland. On a compositor with color
+  management (color-management-v1 with parametric linear Rec. 2020
+  descriptions and half float buffers, as in KWin 6), the darkroom
+  image, its snapshots, the second window and the slideshow are handed
+  to the compositor as linear Rec. 2020 in half floats, and the
+  compositor makes the one conversion to the screen. Colors beyond
+  sRGB are shown as far as the screen can, and when the compositor
+  reports HDR headroom, highlights can go above SDR white: sigmoid and
+  AgX tone map to it when "follow output peak" is on (it is off in
+  edits made before that option existed). When the headroom changes,
+  as while the HDR brightness is dragged in KWin, the image is tone
+  mapped again once the headroom has settled, in steps of 1/8 EV,
+  instead of on every frame of the change. This also fixes the image
+  being converted twice on such compositors, once by darktable and
+  once by the compositor. There the rest of the interface, thumbnails
+  included, is shown in sRGB. Where the compositor lacks one of these,
+  or is GNOME in its default color mode, which describes every screen
+  as plain sRGB and leaves the monitor profile to applications, the
+  image is converted to the system display profile as before. Other
+  compositors and platforms keep the display path they had.
+
+- Wide gamut and HDR display on macOS. The darkroom image, its
+  snapshots, the second window and the slideshow are shown on an EDR
+  layer in extended linear Rec. 2020 half floats, and macOS makes the
+  one conversion to the screen. On screens with EDR headroom, such as
+  the XDR displays of MacBook Pros, highlights can go above SDR white:
+  sigmoid and AgX tone map to the screen's headroom when "follow output
+  peak" is on, and the image is tone mapped again once the headroom has
+  settled after a brightness change, in steps of 1/8 EV. Screens
+  without EDR still get wide gamut.
+
 - New module saturation curve: remaps saturation and brilliance via
   two independent curves plotted against each pixel's own perceptually
   normalized saturation (darktable UCS or JzAzBz): a scene-referred
@@ -355,9 +386,11 @@ changes (where available).
   pipeline moves the image from the CPU to the GPU.
 
 - Softproofing, gamut check and LUT-based ICC profiles in input and
-  output color profile can now run on the OpenCL device, through a 3D
-  LUT sampled from LittleCMS, instead of sending the image back to the
-  CPU. The "always use LittleCMS 2" export preference still applies the
+  output color profile can now run on the OpenCL device, LUT profiles
+  through a 3D LUT sampled from LittleCMS, instead of sending the image
+  back to the CPU. The gamut check of a softproof profile with lookup
+  tables, and a soft proof to a CMYK profile, still run on the CPU, and
+  the "always use LittleCMS 2" export preference still applies the
   exact transform on the CPU.
 
 - The LMMSE demosaicer can now run on the OpenCL device instead of
@@ -445,6 +478,54 @@ changes (where available).
     'ProfileHueSatMapData' is provided.
   If one of these new input profiles is selected, the pipe gets its
   data corrected according to DNG specs matching the intended look.
+
+- The display profile now comes from the system's color settings: the
+  X atom or colord on X11, the compositor or colord on Wayland, Windows
+  color management, and sRGB on macOS, where the system converts
+  darktable's output to the screen. To use a calibrated monitor
+  profile, install it there; darktable-cmstest shows what X11 reports.
+  Where that is not possible, the new "display profile file"
+  preference, in the interface preferences, names an ICC file to use
+  instead. It has no effect where the compositor manages color, and on
+  macOS, and on Windows with automatic color management or HDR, the
+  system converts the image a second time. The display profile
+  controls of the darkroom and the lighttable's "set display profile"
+  button are gone. Use soft proof to preview another display, print or
+  sRGB. A profile chosen there before is named in a message once and
+  no longer used.
+
+- On Windows, the display profile is the one the Windows Color System
+  assigns to the monitor. With Advanced Color on, for an SDR monitor
+  with automatic color management or for any HDR monitor, Windows
+  reports no profile, as Microsoft documents, and converts darktable's
+  output from sRGB itself, so darktable renders sRGB there and the
+  image is converted once. With the legacy ICC compatibility helper
+  enabled for darktable, it renders to the profile Windows reports
+  then.
+
+- A new "convert to the display profile in darktable" preference, in
+  the interface preferences, makes darktable convert images to the
+  display profile itself instead of handing them to the compositor's
+  color management, as a way around compositor or driver bugs. It
+  turns off wide gamut and HDR display on Wayland.
+
+- The histogram profile no longer offers the system display profile.
+  Where the compositor or the system converts darktable's output to
+  the screen, darktable cannot say what the screen shows. A histogram
+  set to that profile before uses sRGB now.
+
+- Soft proof has its own rendering intent, set next to the softproof
+  profile. It used the display rendering intent before, which the
+  darkroom showed only with "always use LittleCMS 2" on, and it starts
+  from that intent. A new "black point compensation" switch next to
+  it, on by default as before, can be turned off to see what an export
+  to the softproof profile stores.
+
+- The display rendering intent setting is gone. darktable shows images
+  on the screen relative colorimetric, which leaves the colors an
+  export holds unchanged where the screen can show them, or perceptual
+  where the compositor manages color and offers only that. It makes a
+  difference only with display profiles that have lookup tables.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
@@ -747,6 +828,45 @@ changes (where available).
 
 - Fixed auto calculation of capture radius and jumping of capture
   radius sliders in UI.
+
+- Fixed the display profile of the previous screen staying in use
+  when a window moved to a screen without a profile or when the
+  system removed the profile. darktable now uses sRGB there.
+
+- A display profile that is not an RGB profile, such as a printer
+  profile assigned to the monitor, is no longer taken for the screen:
+  darktable uses sRGB there, as when the system reports no profile.
+
+- The duplicate manager's preview, the slideshow and an image pinned
+  in the second window are now rendered again when the display profile
+  changes, as when the window moves to a screen with another profile,
+  instead of keeping the colors of the previous one.
+
+- Soft proof now renders the image as an export to the softproof
+  profile does, its HDR headroom included, and clips colors and
+  highlights where an integer export, such as JPEG or 16-bit TIFF,
+  does. Soft proof to Adobe RGB or a
+  linear profile showed colors outside the softproof profile unchanged
+  before.
+
+- With soft proof on, the histogram, waveform, vectorscope, the color
+  picker and the navigation thumbnail now show the proof, as an integer
+  export to the softproof profile holds it, instead of the image
+  without the proof.
+
+- The gamut check now marks exactly the colors an integer export to a
+  softproof profile such as sRGB, Adobe RGB or Rec. 2020 clips, the
+  same on every display. It marked some colors inside the profile and
+  missed some outside it before, and it also marked colors the display
+  could not show.
+
+- Snapshots and the duplicate manager's preview now follow changes
+  of the soft proof, its profile, intent and black point compensation,
+  instead of keeping the proof they were rendered with.
+
+- Fixed lighttable thumbnails that were sometimes shown for sRGB
+  instead of the display profile after startup, when colord answered
+  late, until the window was resized.
 
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
@@ -1131,11 +1251,18 @@ changes (where available).
 - libarchive, previously only needed for AI model downloads, is now
   required for the `.dtdata` sidecar
 
+- GTK 3.24.37 or later on macOS, the first release that tags the
+  window as sRGB, which darktable relies on for macOS to convert its
+  output to the screen. Other platforms still need GTK 3.24.15
+
 ### Optional
 
 - OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the
   core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
   or features/geometry on OpenCV 5)
+
+- libwayland-client 1.18 and wayland-scanner, with GTK's Wayland
+  backend, for wide gamut and HDR display on Wayland
 
 ## Camera support, compared to 5.6
 

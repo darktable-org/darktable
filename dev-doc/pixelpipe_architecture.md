@@ -22,6 +22,7 @@ Key members include:
 - `input_timestamp`: Timestamp of the input data, used for invalidation.
 - `bypass_blendif`: (boolean) If true, blending is bypassed (e.g., for mask display).
 - `mask_display`: Controls how/if masks are displayed in the UI.
+- `output`, `output_encoding`, `frame`, `backbuf`: What a screen pipe is asked to render to, what its output values actually are, the last frame it published in that encoding, and, for the other pipes, the last module's output. See [display_presentation.md](display_presentation.md).
 
 ### `dt_dev_pixelpipe_iop_t`
 Defined in `src/develop/pixelpipe_hb.h`. Represents a specific instance of a module *within a pipe*. While `dt_iop_module_t` represents the module's global state and settings, `dt_dev_pixelpipe_iop_t` ("piece") holds the state specific to one execution context.
@@ -99,7 +100,7 @@ When `dt_iop_commit_params` is called (usually after a param change), the `piece
 The key does not hash the pipe or the image record wholesale. It hashes selected fields, so "I can reach it through `piece->pipe` or `self->dev`" is not a reason to assume an input is covered. Three cases worth knowing:
 
 - **Image metadata other than the id.** The id identifies the image; it does not version it. Most of `dt_image_t` is capture data fixed at import, and the darkroom works from a copy of the record taken when the image was loaded (`dev->image_storage`, `src/develop/develop.c`), so that part cannot move under a running pipe. The database-backed part can, and none of it is read from that copy: on every call, `dt_variables_expand()` takes the rating from the live image-cache record and the color labels, tags and user metadata from their own tables (`src/common/variables.c`). Where each can be edited differs — the rating and the color labels from within the darkroom, the tagging panel there too when `plugins/darkroom/tagging/visible` is set, the user-metadata editor in lighttable and tethering only (`src/libs/metadata.c`).
-- **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at. They are in the base hash of every lookup, rather than in a `piece->hash`, because profile changes are committed globally rather than per-module and so cannot be tracked per piece.
+- **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at. They are in the base hash of every lookup, rather than in a `piece->hash`, because profile changes are committed globally rather than per-module and so cannot be tracked per piece. A develop keeps one profile info per profile content (`dt_ioppr_add_profile_info_to_list()`): by type and file name, and for the system display entries, whose profile changes under the same name with their window's device encoding, also by the registry's `cmsHPROFILE`, so such a change gets a new info, and a new key.
 - **Preferences and other process-global state.** `colorout` reads `plugins/lighttable/export/force_lcms2` from the config (`src/iop/colorout.c`).
 
 A module cannot add to the key: `dt_iop_commit_params()` builds `piece->hash` *after* the module's `commit_params()` has returned and assigns it unconditionally (`src/develop/imageop.c`), and `src/iop/iop_api.h` declares nothing else for the purpose. Three routes remain:

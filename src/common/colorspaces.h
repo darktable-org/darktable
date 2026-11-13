@@ -183,40 +183,174 @@ typedef enum dt_colorspaces_cicp_matrix_coefficients_t
     DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
+/* the system display entries change their profile under the same type and
+ * file name, with their window's device encoding, under xprofile_lock */
+static inline gboolean dt_colorspaces_replaced_in_session(const dt_colorspaces_color_profile_type_t type)
+{
+  return type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2;
+}
+
+/* what a pipe's output values mean: this profile's encoding (RGB, Lab or
+ * XYZ, PQ and HLG with their transfer functions), made with this intent and
+ * rendered for a peak of headroom times reference white. resolved: what
+ * the pipe produced after every fallback, not a request. type
+ * DT_COLORSPACE_NONE: no profile describes the values */
+typedef struct dt_color_encoding_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  // the registry's profile the values were made with. registry profiles
+  // live for the session, so this names the content even after a system
+  // display entry of the same type changed its profile
+  cmsHPROFILE profile;
+  dt_iop_color_intent_t intent;
+  float headroom;
+} dt_color_encoding_t;
+
+/* the two encodings name the same profile content. the type counts as
+ * well: PQ and HLG encode with a transfer function their profile does not
+ * describe */
+static inline gboolean dt_color_encoding_same_content(const dt_color_encoding_t *a,
+                                                      const dt_color_encoding_t *b)
+{
+  return a->type == b->type
+    && a->profile == b->profile
+    && !strcmp(a->filename, b->filename);
+}
+
+static inline gboolean dt_color_encoding_equal(const dt_color_encoding_t *a,
+                                               const dt_color_encoding_t *b)
+{
+  return dt_color_encoding_same_content(a, b)
+    && a->intent == b->intent
+    && a->headroom == b->headroom;
+}
+
+/* how a frame stores its pixels (develop/frame.h): float RGBA, or packed
+ * into 8 bits as cairo's RGB24 (BGRX in memory) */
+typedef enum dt_frame_format_t
+{
+  DT_FRAME_FLOAT = 0,
+  DT_FRAME_RGB24,
+} dt_frame_format_t;
+
+/* what a window wants. image is what its pipes render to: display-referred
+ * RGB, 1.0 at reference white and up to image.headroom above it. device is
+ * what untagged 8-bit values mean in the window, everything GTK draws
+ * there. both are resolved: profile names the registry's profile, NULL if
+ * there is none. format is what its frames are made in: RGB24 where cairo
+ * paints them, float where a native backend composes them */
+typedef struct dt_display_output_t
+{
+  dt_color_encoding_t image;
+  dt_color_encoding_t device;
+  dt_frame_format_t format;
+  // the platform owns the window's output: a backend reported it, and a
+  // new system display profile does not replace it
+  gboolean platform_owned;
+  // changes whenever anything above changes; continues across owners
+  uint32_t serial;
+} dt_display_output_t;
+
+/* what differs between two outputs of a window, whatever the serial. any
+ * difference moves the serial, which every producer compares with what it
+ * rendered for. a new device encoding or owner also changes what GTK draws
+ * there: thumbnails and module colors converted for it */
+typedef enum dt_display_output_change_t
+{
+  DT_DISPLAY_OUTPUT_UNCHANGED = 0,
+  DT_DISPLAY_OUTPUT_IMAGE = 1 << 0,
+  DT_DISPLAY_OUTPUT_DEVICE = 1 << 1,
+} dt_display_output_change_t;
+
+static inline dt_display_output_change_t dt_display_output_diff(const dt_display_output_t *a,
+                                                                const dt_display_output_t *b)
+{
+  // a new frame format renders the window's images again, as a new image
+  // encoding does
+  const gboolean image = !dt_color_encoding_equal(&a->image, &b->image)
+                         || a->format != b->format;
+  const gboolean device = !dt_color_encoding_equal(&a->device, &b->device)
+                          || a->platform_owned != b->platform_owned;
+  return (dt_display_output_change_t)((image ? DT_DISPLAY_OUTPUT_IMAGE : 0)
+                                      | (device ? DT_DISPLAY_OUTPUT_DEVICE : 0));
+}
+
+/* the 8-bit value a display-encoded float shows as on an 8-bit surface.
+ * built from comparisons and conversions, not libm calls, so that loops
+ * over it vectorize */
+static inline uint8_t dt_display_to_8bit(const float v)
+{
+  const float x = 255.0f * v;
+  // NaN fails both comparisons and goes to 0
+  const float c = x > 0.0f ? (x < 255.0f ? x : 255.0f) : 0.0f;
+  // c is in [0, 255], so the truncation is its floor and t + 0.5 is exact.
+  // halves round up; lrintf() would round them to even. c - t >= 0.5 would
+  // be the same test, but -ffp-contract may fuse that subtraction with the
+  // multiply above, and the unrounded product rounds differently
+  const int t = (int)c;
+  return (uint8_t)(t + (c >= (float)t + 0.5f));
+}
+
+/* n pixels of display-encoded float RGBA through dt_display_to_8bit(), as
+ * RGBX or, with bgr, as BGRX. the fourth byte is 0xff */
+void dt_display_to_8bit_pixels(const float *const __restrict__ in,
+                               uint8_t *const __restrict__ out,
+                               const size_t n,
+                               const gboolean bgr);
+
 typedef struct dt_colorspaces_t
 {
   GList *profiles;
 
   // xatom color profile:
   pthread_rwlock_t xprofile_lock;
-  gchar *colord_profile_file;
-  uint8_t *xprofile_data;
-  int xprofile_size;
 
-  gchar *colord_profile_file2;
-  uint8_t *xprofile_data2;
-  int xprofile_size2;
+  // every system display profile a window has had, with the bytes it was
+  // read from. none is freed before cleanup: a profile read from the
+  // registry stays valid after a replacement, without the lock
+  GList *system_display_profiles;
+  // each window's system display profile: what the platform reported for
+  // it, or the display profile file. it describes the window when cairo
+  // shows it; the registry's DISPLAY and DISPLAY2 entries hold the
+  // window's device encoding, which is this profile only then
+  cmsHPROFILE system_display[2];
+  // the sRGB each window's system display profile starts with, and goes
+  // back to when the platform reports no usable profile for it
+  cmsHPROFILE system_display_srgb[2];
+  // counts each window's queries, so that colord's answer to an older one,
+  // which arrives later, is dropped
+  uint32_t system_display_query[2];
+  // whether the log has said that a window got no profile, once a session
+  gboolean system_display_hinted[2];
 
   // the current set of selected profiles
-  dt_colorspaces_color_profile_type_t display_type;
-  dt_colorspaces_color_profile_type_t display2_type;
   dt_colorspaces_color_profile_type_t softproof_type;
   dt_colorspaces_color_profile_type_t histogram_type;
-  char display_filename[512];
-  char display2_filename[512];
   char softproof_filename[512];
   char histogram_filename[512];
-  dt_iop_color_intent_t display_intent;
-  dt_iop_color_intent_t display2_intent;
+  // from the image to the soft proof profile, where the proof goes on to
+  // the display relative colorimetric
   dt_iop_color_intent_t softproof_intent;
+  gboolean softproof_bpc;
 
   dt_colorspaces_color_mode_t mode;
 
-  // run these through dt_colorspaces_transform_to_display(), which needs the
-  // matching hdr transfer
+  // the main window's: from what the thumbnails are in to its device
+  // encoding, 8-bit RGBA to BGRA
   cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
-  cmsHTRANSFORM transform_srgb_to_display2, transform_adobe_rgb_to_display2;
-  int display_hdr_transfer, display2_hdr_transfer;
+
+  // what each window wants, index 0 the main window: its system display
+  // profile unless the platform owns it. written under xprofile_lock
+  dt_display_output_t outputs[2];
+
+  // the display profile selection a previous version used and this one
+  // no longer does, for the notice at startup; NULL if there was none
+  gchar *retired_display_selection;
+
+  // the display profile file of the preference last found unusable, so
+  // that it is reported once; NULL if the last one was usable
+  gchar *display_file_rejected;
 
 } dt_colorspaces_t;
 
@@ -228,8 +362,8 @@ typedef struct dt_colorspaces_color_profile_t
   cmsHPROFILE profile;                      // the actual profile
   int in_pos;                               // position in input combo box, -1 if not applicable
   int out_pos;                              // position in output combo box, -1 if not applicable
-  int display_pos;                          // position in display combo box, -1 if not applicable
-  int display2_pos;                         // position in display2 combo box, -1 if not applicable
+  gboolean display;                         // found by DT_PROFILE_DIRECTION_DISPLAY lookups
+  gboolean display2;                        // found by DT_PROFILE_DIRECTION_DISPLAY2 lookups
   int category_pos;                         // position in category combo box, -1 if not applicable
   int work_pos;                             // position in working combo box, -1 if not applicable
 } dt_colorspaces_color_profile_t;
@@ -416,15 +550,33 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
   (const dt_colorspaces_cicp_t *cicp,
    const char *filename);
 
-/** update the display transforms of srgb and adobergb to the display
- * profile.  make sure that darktable.color_profiles->xprofile_lock is
- * held when calling this! */
-void dt_colorspaces_update_display_transforms();
-/** same for display2 */
-void dt_colorspaces_update_display2_transforms();
-/** 8-bit RGBA to the screen's BGRA through one of the transforms above */
+/** what a window wants, defined from dt_colorspaces_init() on, whether the
+ * window exists or not: pass DT_COLORSPACE_DISPLAY for the main window,
+ * DT_COLORSPACE_DISPLAY2 for the second one */
+void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *output);
+
+/** the serial of a window's output, from any thread. a producer that made
+ * its image for another serial renders it again */
+uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_type_t window);
+
+/** once the main window shows: tell the user that the display profile
+ * selection a previous version stored is no longer used */
+void dt_colorspaces_notify_retired_selection(void);
+
+/** for the presenter: the platform takes over a window's output, which
+ * colorspaces resolves; NULL gives it back to the window's system display
+ * profile. a change redraws the window, where its producers find the new
+ * serial, and a new device encoding raises
+ * DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED with the window's type. the
+ * window's registry entry follows the device profile, and
+ * DT_SIGNAL_CONTROL_PROFILE_CHANGED says when it changed */
+void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
+                                      const dt_display_output_t *output);
+
+/** 8-bit RGBA to the screen's BGRA through one of the display transforms
+ * in dt_colorspaces_t */
 void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
-                                         const int hdr,
                                          const uint8_t *const in,
                                          uint8_t *const out,
                                          const int width,

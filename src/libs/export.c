@@ -1028,8 +1028,8 @@ static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 static void _pq_peak_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   dt_conf_set_int(CONFIG_PREFIX "pq_peak_nits", (int)roundf(dt_bauhaus_slider_get(widget)));
-  // colorout reads the peak when it commits, and a darkroom on a PQ
-  // display renders with it too
+  // colorout reads the peak when it commits, and a soft proof to a PQ
+  // profile renders with it too
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_reprocess_all(darktable.develop);
 }

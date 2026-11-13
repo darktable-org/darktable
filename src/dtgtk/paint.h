@@ -204,8 +204,6 @@ void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 void dtgtk_cairo_paint_warning(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a soft proofing icon */
 void dtgtk_cairo_paint_softproof(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** paint a display icon */
-void dtgtk_cairo_paint_display(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a display2 icon */
 void dtgtk_cairo_paint_display2(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a landscape rectangle */
