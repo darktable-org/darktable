@@ -1059,6 +1059,14 @@ changes (where available).
   groups other than the Quick Access panel. Entries already
   duplicated by this bug are merged when the layout is loaded.
 
+- Fixed the normalization values (exposure compensation and black
+  offset) in color calibration's color checker report, which are meant
+  to be set in exposure as-is: they were off when the black level was
+  not zero, and in validation. They are now shown as not available
+  when exposure before color calibration has several instances, is
+  masked or blended, or is in automatic (deflicker) mode, and when the
+  fitted values cannot be set in exposure.
+
 ## Lua
 
 ### API Version
