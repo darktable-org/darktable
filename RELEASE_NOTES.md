@@ -125,6 +125,8 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- Added a "copy original file paths" action for selected images, which
+  copies each original file path to the clipboard once, one per line.
 - Added back and forward navigation in collections, with user-assignable
   shortcuts. Navigation remembers collection rules and thumbnail scroll
   positions for up to 32 visits during the current session.

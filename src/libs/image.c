@@ -51,6 +51,7 @@ typedef struct dt_lib_image_t
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button;
   GtkWidget *delete_button, *create_hdr_button;
   GtkWidget *duplicate_button, *reset_button, *move_button, *copy_button;
+  GtkWidget *copy_paths_button;
   GtkWidget *group_button, *ungroup_button, *cache_button, *uncache_button;
   GtkWidget *refresh_button, *set_monochrome_button, *set_color_button;
   GtkWidget *copy_metadata_button, *paste_metadata_button, *clear_metadata_button;
@@ -155,6 +156,34 @@ static void _duplicate_virgin(dt_action_t *action)
   dt_control_duplicate_images(TRUE);
 }
 
+static void _copy_file_paths_callback(GtkWidget *widget,
+                                       gpointer user_data)
+{
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, TRUE);
+  GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  GString *paths = g_string_new(NULL);
+
+  for(const GList *iter = imgs; iter; iter = g_list_next(iter))
+  {
+    char path[PATH_MAX] = { 0 };
+    // a local copy or duplicate still refers to the original file
+    dt_image_full_path(GPOINTER_TO_INT(iter->data), path, sizeof(path), NULL);
+    if(path[0] && g_hash_table_add(seen, g_strdup(path)))
+    {
+      if(paths->len) g_string_append_c(paths, '\n');
+      g_string_append(paths, path);
+    }
+  }
+
+  if(paths->len)
+    gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()),
+                           paths->str, -1);
+
+  g_string_free(paths, TRUE);
+  g_hash_table_destroy(seen);
+  g_list_free(imgs);
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const int i = GPOINTER_TO_INT(user_data);
@@ -207,6 +236,7 @@ void gui_update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_any);
+  gtk_widget_set_sensitive(d->copy_paths_button, act_on_any);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_any);
@@ -519,6 +549,12 @@ void gui_init(dt_lib_module_t *self)
                                         GINT_TO_POINTER(9),
                                         _("copy to other folder"), 0, 0);
   gtk_grid_attach(grid, d->copy_button, 2, line++, 2, 1);
+
+  d->copy_paths_button = dt_action_button_new
+    (self, N_("copy original file paths"), _copy_file_paths_callback, NULL,
+     _("copy original file paths to the clipboard, one per line"), 0, 0);
+  ellipsize_button(d->copy_paths_button);
+  gtk_grid_attach(grid, d->copy_paths_button, 0, line++, 4, 1);
 
   d->create_hdr_button = dt_action_button_new
     (self, N_("create HDR"), button_clicked,
