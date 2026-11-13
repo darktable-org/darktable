@@ -474,6 +474,9 @@ void dt_dev_add_history_item_target(dt_develop_t *dev,
                                     struct dt_iop_module_t *module,
                                     const gboolean enable,
                                     const gpointer target);
+// make the next change start a new history item instead of merging into the
+// top one
+void dt_dev_history_seal(dt_develop_t *dev);
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable);

@@ -1606,6 +1606,16 @@ void dt_dev_add_history_item_target(dt_develop_t *dev,
   _dev_add_history_item(dev, module, enable, FALSE, target);
 }
 
+void dt_dev_history_seal(dt_develop_t *dev)
+{
+  // _dev_add_history_item_ext() merges into the top item while focus_hash
+  // matches the item's; flipping it ends the merge. An unchanged module still
+  // adds nothing, since the params are compared too
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  dev->focus_hash = !dev->focus_hash;
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+}
+
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  dt_iop_module_t *module,
                                  const gboolean enable)

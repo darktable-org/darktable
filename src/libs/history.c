@@ -56,6 +56,7 @@ typedef struct dt_lib_history_t
   GtkWidget *history_box;
   GtkWidget *create_button;
   GtkWidget *compress_button;
+  GtkWidget *seal_button;
   // how a compared step is shown, usable while comparing
   GtkWidget *mode_button, *rotate_button;
   // the compare toggles are being set from code, not clicked
@@ -100,6 +101,8 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
                                                               gpointer user_data);
+static void _lib_history_seal_clicked_callback(GtkWidget *widget,
+                                               gpointer user_data);
 /* signal callback for history change */
 
 static void _lib_history_will_change_callback(gpointer instance,
@@ -176,6 +179,16 @@ void gui_init(dt_lib_module_t *self)
         .clicked_cb = G_CALLBACK(_lib_history_create_style_button_clicked_callback),
       });
 
+  d->seal_button = dtgtk_button_new_full(dtgtk_cairo_paint_plus, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("keep the current state as a history item: the next change\n"
+                     "starts a new item instead of adding to this one"),
+        .action = DT_ACTION(self),
+        .action_label = N_("commit to history"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_lib_history_seal_clicked_callback),
+      });
+
   d->mode_button = dtgtk_button_new_full(dtgtk_cairo_paint_compare_mode, CPF_NONE, NULL,
       &(dtgtk_button_config_t){
         .tooltip = _("switch the compared step between side by side\n"
@@ -195,7 +208,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = dt_gui_vbox
     (dt_ui_resize_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"),
-     dt_gui_hbox(d->create_button, dt_gui_expand(d->compress_button),
+     dt_gui_hbox(d->create_button, d->seal_button, dt_gui_expand(d->compress_button),
                  d->mode_button, d->rotate_button));
   gtk_widget_set_name(self->widget, "history-ui");
   gtk_widget_show_all(self->widget);
@@ -1565,6 +1578,13 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
     dt_dev_write_history(darktable.develop);
     dt_gui_styles_dialog_new(darktable.develop->image_storage.id);
   }
+}
+
+static void _lib_history_seal_clicked_callback(GtkWidget *widget,
+                                               gpointer user_data)
+{
+  if(darktable.develop->image_storage.id)
+    dt_dev_history_seal(darktable.develop);
 }
 
 void gui_reset(dt_lib_module_t *self)
