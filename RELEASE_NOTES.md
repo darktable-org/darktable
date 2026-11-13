@@ -1067,6 +1067,10 @@ changes (where available).
   misplaced after switching away from the "overlays block on mouse hover"
   mode, and the local copy indicator showing in "no overlays" mode.
 
+- Fixed nodes of a drawn path that could not be selected or moved
+  after a large feather was given to a sharp corner where the path
+  turns inward, such as the middle nodes of a sunglasses-shaped path.
+
 ## Lua
 
 ### API Version
