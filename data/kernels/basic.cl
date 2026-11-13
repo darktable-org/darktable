@@ -2365,7 +2365,7 @@ float maketaps_lanczos(float *taps,
     for(int c = 0; c < 4; c++)
     {
       sine_arg1[c] = M_PI_F * r[c];
-      sine_arg2[c] = M_PI_F * vt[c] / vw[c];
+      sine_arg2[c] = M_PI_F * fp32_div(vt[c], vw[c]);
     }
     float sine1[4];
     float sine2[4];
@@ -2380,7 +2380,7 @@ float maketaps_lanczos(float *taps,
     }
     for(int c = 0; c < 4; c++)
     {
-      taps[4*i + c] = num[c] / denom[c];
+      taps[4*i + c] = fp32_div(num[c], denom[c]);
     }
     // prepare next iteration
     for(int c = 0; c < 4; c++)
@@ -2451,7 +2451,7 @@ float interpolation_compute_single(read_only image2d_t in,
     // Compute both horizontal and vertical kernels
     float normh = compute_upsampling_taps(itor_mode, itor_width, kernelh, x);
     float normv = compute_upsampling_taps(itor_mode, itor_width, kernelv, y);
-
+    float oonorm = fp32_div(1.0f, normh * normv);
     iy -= itor_width - 1;
     ix -= itor_width - 1;
 
@@ -2465,7 +2465,7 @@ float interpolation_compute_single(read_only image2d_t in,
       }
       s += kernelv[i] * h;
     }
-    s = s / (normh * normv);
+    s = s * oonorm;
   }
   return s;
 }
@@ -3254,8 +3254,11 @@ float _interpolate_linear_spline(global float *xi,
   {
     if(x >= xi[i - 1] && x <= xi[i])
     {
-      const float dydx = (yi[i] - yi[i - 1]) / (xi[i] - xi[i - 1]);
-      return yi[i - 1] + (x - xi[i - 1]) * dydx;
+      const float dx = x - xi[i - 1];
+      const float dy = yi[i] - yi[i - 1];
+      const float span = xi[i] - xi[i - 1];
+      const float dydx = fp32_div(dy, span);
+      return fma(dx, dydx, yi[i - 1]);
     }
   }
   return yi[ni - 1];
@@ -3312,7 +3315,7 @@ kernel void lens_man_vignette(read_only image2d_t in,
 
   const float dx = ((float)(roix + x) - w2);
   const float dy = ((float)(roiy + y) - h2);
-  const float radius = dt_fast_hypot(dx, dy) * inv_maxr;
+  const float radius = hypot(dx, dy) * inv_maxr;
   const float4 val = fmax(0.0f, intensity * _calc_vignette_spline(radius, spline, splinesize));
 
   float4 pixel  = Areadpixel(in, x, y);
@@ -3376,7 +3379,7 @@ kernel void md_lens_correction(read_only image2d_t in,
   const float iscale = fp32_div(1.0f, scale);
   const float cx = ((float)(roox + x) - w2) * iscale;
   const float cy = ((float)(rooy + y) - h2) * iscale;
-  const float radius = r * dt_fast_hypot(cx, cy);
+  const float radius = r * hypot(cx, cy);
   const float limw = (float)iwidth - 1.0f;
   const float limh = (float)iheight - 1.0f;
   float output[4];
@@ -3385,8 +3388,8 @@ kernel void md_lens_correction(read_only image2d_t in,
     const int plane = (c == 3 || pass_mode) ? 1 : c;
     const float dr =
       _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
-    const float xs = clamp(dr*cx + w2 - roix, 0.0f, limw);
-    const float ys = clamp(dr*cy + h2 - roiy, 0.0f, limh);
+    const float xs = clamp(fma(dr, cx, w2) - roix, 0.0f, limw);
+    const float ys = clamp(fma(dr, cy, h2) - roiy, 0.0f, limh);
     output[c] = interpolation_compute_single(in, itor_mode, itor_width,
                                              xs, ys, iwidth, iheight, c);
   }

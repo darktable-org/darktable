@@ -1158,6 +1158,8 @@ endif(USE_XMLLINT)
 include_directories("${CMAKE_SOURCE_DIR}/data/kernels")
 
 add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTABLE_BINDIR}/version_gen.c ${SOURCES})
+set_property(SOURCE "common/interpolation.c" APPEND PROPERTY
+  COMPILE_OPTIONS -fno-fast-math -ffp-contract=off)
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
 # since this isn't the same directory we do have to manually set it
