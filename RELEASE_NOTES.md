@@ -137,6 +137,13 @@ changes (where available).
   shortcuts. Navigation remembers collection rules and thumbnail scroll
   positions for up to 32 visits during the current session.
 
+- Added a compare icon to each step of the history module. It shows the
+  image as it was at that step next to the live edit, side by side or
+  as an overlay with a split line, and the live edit stays fully
+  editable while comparing. The mode and rotate buttons of the history
+  toolbar turn the view, and the comparison ends when an edit discards
+  the compared step.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
