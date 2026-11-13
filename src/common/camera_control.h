@@ -95,9 +95,13 @@ typedef struct dt_camera_t
   gboolean is_importing;
   /** Live view */
   gboolean is_live_viewing;
+  /** Skip live view frame grabs while autofocus is running */
+  gboolean live_view_suspended;
   /** The last preview image from the camera */
   uint8_t *live_view_buffer;
   int live_view_width, live_view_height;
+  uint8_t *live_view_spare;
+  int live_view_spare_width, live_view_spare_height;
   //dt_colorspaces_color_profile_type_t live_view_color_space;
   /** Rotation of live view, multiples of 90° */
   int32_t live_view_rotation;
@@ -115,6 +119,9 @@ typedef struct dt_camera_t
   dt_pthread_mutex_t live_view_buffer_mutex;
   /** A flag to tell the live view thread that the last job was completed */
   dt_pthread_mutex_t live_view_synch;
+  /** Last full gp_camera_get_config (g_get_monotonic_time) */
+  gint64 config_update_last_us;
+  gboolean config_update_pending;
 } dt_camera_t;
 
 /** A dummy camera object used for unused cameras */

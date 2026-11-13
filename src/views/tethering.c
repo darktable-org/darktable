@@ -85,6 +85,8 @@ typedef struct dt_capture_t
 
   /** Cursor position for dragging the zoomed live view */
   double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
+  /** Last live-view histogram update (g_get_monotonic_time) */
+  gint64 live_view_histogram_last_us;
 
   gboolean busy;
 } dt_capture_t;
@@ -297,67 +299,52 @@ static void _expose_tethered_mode(dt_view_t *self,
         dt_free_align(tmp_i);
       }
 
-      // process live view histogram
-      float *const tmp_f = dt_alloc_align_float((size_t)4 * pw * ph);
-      if(tmp_f)
+      // process live view histogram at most once per live_view_fps interval
+      const int fps = MAX(1, dt_conf_get_int("plugins/capture/camera/live_view_fps"));
+      const gint64 now = g_get_monotonic_time();
+      if(now - lib->live_view_histogram_last_us >= G_USEC_PER_SEC / fps)
       {
-        const uint32_t splitmix32_1337 = splitmix32(1337);
-        const uint32_t splitmix32_666 = splitmix32(666);
-        dt_develop_t *dev = darktable.develop;
-        // FIXME: add OpenMP
-        for(size_t p = 0; p < (size_t)4 * pw * ph; p += 4)
+        lib->live_view_histogram_last_us = now;
+        float *const tmp_f = dt_alloc_align_float((size_t)4 * pw * ph);
+        if(tmp_f)
         {
-          uint32_t DT_ALIGNED_ARRAY state[4]
+          const uint32_t splitmix32_1337 = splitmix32(1337);
+          const uint32_t splitmix32_666 = splitmix32(666);
+          dt_develop_t *dev = darktable.develop;
+          // FIXME: add OpenMP
+          for(size_t p = 0; p < (size_t)4 * pw * ph; p += 4)
+          {
+            uint32_t DT_ALIGNED_ARRAY state[4]
               = { splitmix32(p + 1),
                   splitmix32((p + 1) * (p + 3)),
                   splitmix32_1337,
                   splitmix32_666 };
 
-          xoshiro128plus(state);
-          xoshiro128plus(state);
-          xoshiro128plus(state);
-          xoshiro128plus(state);
+            xoshiro128plus(state);
+            xoshiro128plus(state);
+            xoshiro128plus(state);
+            xoshiro128plus(state);
 
-          for(int k = 0; k < 3; k++)
-            tmp_f[p + k] =
-              dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
-        }
-
-        // We need to do special cases for work/export colorspace
-        // which dt_ioppr_get_histogram_profile_type() can't handle
-        // when not in darkroom view.
-        const dt_iop_order_iccprofile_info_t *profile_to = NULL;
-        const dt_iop_order_iccprofile_info_t *const srgb_profile =
-          dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "",
-                                            DT_INTENT_RELATIVE_COLORIMETRIC);
-        if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
-        {
-          // The work profile of a SOC JPEG is nonsensical. So that
-          // the histogram will have some relationship to a captured
-          // image's profile, go with the standard work profile.
-          // FIXME: can figure out the current default work colorspace via checking presets?
-          profile_to = dt_ioppr_add_profile_info_to_list(dev,
-                                                         DT_COLORSPACE_LIN_REC2020, "",
-                                                         DT_INTENT_RELATIVE_COLORIMETRIC);
-        }
-        else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-        {
-          // don't touch the image
-          profile_to = srgb_profile;
-        }
-        else
-        {
-          profile_to = dt_ioppr_get_histogram_profile_info(dev);
-          if(!profile_to)
+            for(int k = 0; k < 3; k++)
+              tmp_f[p + k] =
+                dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
+          }
+          const dt_iop_order_iccprofile_info_t *profile_to = NULL;
+          const dt_iop_order_iccprofile_info_t *const srgb_profile =
+            dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+          if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+            profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+          else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
             profile_to = srgb_profile;
+          else
+          {
+            profile_to = dt_ioppr_get_histogram_profile_info(dev);
+            if(!profile_to) profile_to = srgb_profile;
+          }
+          darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph, srgb_profile, profile_to);
+          dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+          dt_free_align(tmp_f);
         }
-
-        // FIXME: if liveview image is tagged and we can read its colorspace, use that
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                               tmp_f, pw, ph,
-                                               srgb_profile, profile_to);
-        dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
-        dt_free_align(tmp_f);
       }
     }
     dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
@@ -560,6 +547,7 @@ static void _camera_capture_image_downloaded(const dt_camera_t *camera,
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = self->data;
+  lib->live_view_histogram_last_us = 0;
 
   // no active image when entering the tethering view
   lib->image_over = DT_VIEW_DESERT;
