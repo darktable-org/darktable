@@ -19,6 +19,7 @@
 #include "common/gdk_event_utils.h"
 
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/debug.h"
@@ -2552,6 +2553,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
         module->gui_update(module);
       }
       dt_iop_gui_update_blending(module);
+      dt_iop_gui_refresh_tabs(module);
       dt_iop_gui_update_expanded(module);
     }
     dt_iop_gui_update_header(module);

@@ -1755,6 +1755,14 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+static void _bind_channel(GtkWidget *page,
+                          dt_iop_module_t *self,
+                          const int ch)
+{
+  dt_iop_page_bind_field(page, self, "x", ch);
+  dt_iop_page_bind_field(page, self, "y", ch);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
@@ -1777,14 +1785,22 @@ void gui_init(dt_iop_module_t *self)
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
                        GTK_WIDGET(g->channel_tabs), &notebook_def);
-  dt_ui_notebook_page(g->channel_tabs, N_("luma"),
-                      _("change lightness at each feature size"));
-  dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
-                      _("change color saturation at each feature size"));
-  dt_ui_notebook_page
+  /* The tabs hold no widgets: one graph below them edits the channel the
+     current tab selects. Luma and chroma move their threshold channel along
+     with the visible one, so both count towards the same tab. */
+  GtkWidget *page = dt_ui_notebook_page(g->channel_tabs, N_("luma"),
+                                        _("change lightness at each feature size"));
+  _bind_channel(page, self, atrous_L);
+  _bind_channel(page, self, atrous_Lt);
+  page = dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
+                             _("change color saturation at each feature size"));
+  _bind_channel(page, self, atrous_c);
+  _bind_channel(page, self, atrous_ct);
+  page = dt_ui_notebook_page
     (g->channel_tabs, N_("edges"),
      _("change edge halos at each feature size\nonly changes results of luma"
        " and chroma tabs"));
+  _bind_channel(page, self, atrous_s);
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);

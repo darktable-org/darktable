@@ -22,6 +22,30 @@
 
 G_BEGIN_DECLS
 
+/* Say which parameters a notebook page governs, beyond the fields of the
+   parameter widgets on it.
+
+   A tab reads as changed when the parameters behind it differ from the
+   module's defaults, and resetting it copies the defaults back. A page
+   whose parameters are edited through a graph or through widgets without a
+   field names them with dt_iop_page_bind_field(): a whole field, or with
+   row >= 0 one row of an array field. A page whose parameter widgets sit
+   outside it, such as in a stack beside the notebook, names their container
+   with dt_iop_page_bind_widgets(). */
+void dt_iop_page_bind_field(GtkWidget *page,
+                            dt_iop_module_t *self,
+                            const char *field,
+                            const int row);
+
+void dt_iop_page_bind_widgets(GtkWidget *page,
+                              GtkWidget *container);
+
+// put a notebook page back to its module's defaults and commit history
+void dt_iop_page_reset(GtkWidget *page);
+
+// re-read the changed state of every tab a module holds
+void dt_iop_gui_refresh_tabs(dt_iop_module_t *module);
+
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param);
 
 GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param);

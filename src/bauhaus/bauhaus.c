@@ -1437,46 +1437,27 @@ gpointer dt_bauhaus_widget_get_field(GtkWidget *widget)
   return w->field;
 }
 
-static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
+size_t dt_bauhaus_widget_get_field_size(GtkWidget *widget)
 {
-  GtkWidget *notebook = gtk_widget_get_parent(w);
-  if(!GTK_IS_NOTEBOOK(notebook))
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(!w->field) return 0;
+
+  switch(w->field_type)
   {
-    w = notebook;
-    if(!notebook || !(GTK_IS_NOTEBOOK(notebook = gtk_widget_get_parent(notebook))))
-      return;
+    case DT_INTROSPECTION_TYPE_FLOAT:
+      return sizeof(float);
+    case DT_INTROSPECTION_TYPE_INT:
+    case DT_INTROSPECTION_TYPE_ENUM:
+      return sizeof(int);
+    case DT_INTROSPECTION_TYPE_UINT:
+      return sizeof(unsigned int);
+    case DT_INTROSPECTION_TYPE_USHORT:
+      return sizeof(unsigned short);
+    case DT_INTROSPECTION_TYPE_BOOL:
+      return sizeof(gboolean);
+    default:
+      return 0;
   }
-
-  gboolean is_changed = GPOINTER_TO_INT(user_data);
-
-  for(GList *c = gtk_container_get_children(GTK_CONTAINER(w));
-      c;
-      c = g_list_delete_link(c, c))
-  {
-    if(!is_changed && DT_IS_BAUHAUS_WIDGET(c->data) && gtk_widget_get_visible(c->data))
-    {
-      dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
-      if(!b->field) continue;
-      if(b->type == DT_BAUHAUS_SLIDER)
-      {
-        dt_bauhaus_slider_data_t *d = &b->slider;
-        is_changed = fabsf(d->pos - d->curve((d->defpos - d->min) / (d->max - d->min),
-                                             DT_BAUHAUS_SET)) > 0.001f;
-      }
-      else if(b->type == DT_BAUHAUS_TOGGLE)
-        is_changed = b->toggle.active != b->toggle.defpos;
-      else
-        is_changed = b->combobox.entries->len
-          && b->combobox.active != b->combobox.defpos;
-    }
-  }
-
-  GtkWidget *label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), w);
-
-  if(is_changed)
-    dt_gui_add_class(label, "changed");
-  else
-    dt_gui_remove_class(label, "changed");
 }
 
 static void _toggle_set(dt_bauhaus_widget_t *w,
@@ -1506,8 +1487,6 @@ static void _toggle_set(dt_bauhaus_widget_t *w,
       dt_print(DT_DEBUG_ALWAYS, "[_toggle_set] unsupported toggle data type");
   }
 
-  _highlight_changed_notebook_tab(GTK_WIDGET(w),
-                                  GINT_TO_POINTER(d->active != d->defpos));
   g_signal_emit(G_OBJECT(w),
                 darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
 }
@@ -1517,7 +1496,6 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   gpointer params,
                                   gpointer blend_params)
 {
-  GtkWidget *notebook = NULL;
   for(GSList *w = widget ? &(GSList){} : module->widget_list_bh; w; w = w->next)
   {
     dt_action_target_t *at = w->data;
@@ -1591,18 +1569,7 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
           (DT_DEBUG_ALWAYS,
            "[dt_bauhaus_update_from_field] invalid bauhaus widget type encountered");
     }
-
-    // if DT_IN_GUI_UPDATE() then notebook tab highlights were not yet changed
-    if(!notebook && DT_IN_GUI_UPDATE()
-       && (notebook = gtk_widget_get_parent(widget))
-       && (notebook = gtk_widget_get_parent(notebook))
-       && !GTK_IS_NOTEBOOK(notebook))
-      notebook = NULL;
   }
-
-  if(notebook)
-    gtk_container_foreach(GTK_CONTAINER(notebook),
-                          _highlight_changed_notebook_tab, NULL);
 }
 
 // make this quad a toggle button:
@@ -2153,8 +2120,6 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
           dt_print(DT_DEBUG_ALWAYS, "[_combobox_set] unsupported combo data type");
       }
     }
-    _highlight_changed_notebook_tab(GTK_WIDGET(w),
-                                    GINT_TO_POINTER(d->active != d->defpos));
     g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
   }
 }
@@ -3890,7 +3855,6 @@ static void _slider_value_change(dt_bauhaus_widget_t *w)
       }
     }
 
-    _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
     g_signal_emit(G_OBJECT(w),
                   darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
     d->is_changed = 0;

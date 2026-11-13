@@ -3787,7 +3787,8 @@ void gui_init(dt_iop_module_t *self)
 
   // Simple view
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("simple"), NULL);
+  GtkWidget *simple_page = self->widget =
+    dt_ui_notebook_page(g->notebook, N_("simple"), NULL);
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
   dt_bauhaus_slider_set_format(g->noise, _(" EV"));
@@ -3829,6 +3830,11 @@ void gui_init(dt_iop_module_t *self)
   // Advanced view
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
+
+  // the graph edits the bands the simple page has sliders for, and the curve
+  // smoothing slider carries no field
+  dt_iop_page_bind_widgets(self->widget, simple_page);
+  dt_iop_page_bind_field(self->widget, self, "smoothing", -1);
 
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *wrapper = dt_gui_vbox(g->area);
