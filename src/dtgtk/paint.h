@@ -383,6 +383,13 @@ void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint 
 /** Paint an icon for snapshots restore button */
 void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
+/** Paint an icon for comparing with another edit state: a frame split in two */
+void dtgtk_cairo_paint_compare(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
+/** Paint the way a comparison is shown: two frames side by side, or one with
+    its left half filled for an overlay with a split line. CPF_ACTIVE: side by side */
+void dtgtk_cairo_paint_compare_mode(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
 G_END_DECLS
 
 // clang-format off

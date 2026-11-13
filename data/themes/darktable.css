@@ -1865,15 +1865,6 @@ progressbar progress
   margin: 0.14em;
 }
 
-/* then the switches */
-.dt_history_switch:disabled /* state of those switch is always disabled */
-{
-  color: @plugin_label_color;
-  font-size: 0.75em;
-  margin-left: 0.42em;
-  border: 0;
-}
-
 /* and the history number */
 #history-number
 {
@@ -1886,10 +1877,10 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
-/* history on/off button */
-.dt_history_switch_off:disabled
+/* modules that cannot be switched off */
+.dt_history_required
 {
-  color: shade(@disabled_fg_color, 0.9);
+  font-weight: bold;
 }
 
 #dt-metadata-changed
