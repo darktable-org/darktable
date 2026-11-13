@@ -32,9 +32,11 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
+
 #ifdef HAVE_LIBJXL
 #include "imageio/imageio_jpegxl.h"
 #endif
+
 #include "imageio/imageio_tiff.h"
 
 #ifdef HAVE_LIBAVIF
@@ -2367,6 +2369,7 @@ void reload_defaults(dt_iop_module_t *self)
       g_free(tooltip_part_profile_dirs);
       if(bufsize)
         free(iccCopyr);
+      cmsCloseProfile(cmsprofile);
     }
 
     // Make a generic tooltip if there is no ICC profile in the current image,
