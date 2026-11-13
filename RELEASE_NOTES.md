@@ -144,6 +144,12 @@ changes (where available).
   toolbar turn the view, and the comparison ends when an edit discards
   the compared step.
 
+- Added a "commit to history" button and action to the history module.
+  The next change then starts a new history item instead of merging
+  into the current one, so a long series of edits to one module can be
+  saved in increments. The button stays lit until that change is made,
+  and pressing it again cancels.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
