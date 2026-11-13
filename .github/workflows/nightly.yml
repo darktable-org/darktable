@@ -368,6 +368,11 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
+      # Picked up by the packaging scripts to sign the bundle and the disk image.
+      # Secrets are not exposed to forks or pull requests, so this is empty there
+      # and the packaging scripts fall back to ad-hoc signing as before. Every
+      # signing step below is gated on it, so the unsigned build path is unchanged.
+      CODECERT: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
     steps:
       - name: Checkout darktable master branch
         run: |
@@ -404,12 +409,52 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
+      - name: Import signing certificate
+        if: env.CODECERT != ''
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERT_PATH="${RUNNER_TEMP}/certificate.p12"
+          KEYCHAIN_PATH="${RUNNER_TEMP}/signing.keychain-db"
+          echo -n "$MACOS_CERTIFICATE" | base64 --decode > "$CERT_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          # Without this codesign blocks on a GUI authorization prompt that a
+          # headless runner can never answer, and the job hangs until it times out
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          rm -f "$CERT_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+      - name: Set up notarization credentials
+        if: env.CODECERT != ''
+        env:
+          NOTARY_API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER: ${{ secrets.NOTARY_API_ISSUER }}
+        run: |
+          KEY_PATH="${RUNNER_TEMP}/notary_key.p8"
+          echo -n "$NOTARY_API_KEY" | base64 --decode > "$KEY_PATH"
+          echo "NOTARYARGS=--key ${KEY_PATH} --key-id ${NOTARY_API_KEY_ID} --issuer ${NOTARY_API_ISSUER}" >> "$GITHUB_ENV"
       - name: Build macOS package
         run: |
           ./src/packaging/macosx/3_make_hb_darktable_package.sh
       - name: Create DMG file
         run: |
           ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
+      - name: Verify notarization
+        if: env.CODECERT != ''
+        run: |
+          xcrun stapler validate "${INSTALL_PREFIX}"/darktable-*.dmg
+          spctl -a -vvv -t open --context context:primary-signature "${INSTALL_PREFIX}"/darktable-*.dmg
+      - name: Clean up signing credentials
+        if: always()
+        run: |
+          security delete-keychain "${RUNNER_TEMP}/signing.keychain-db" 2>/dev/null || true
+          rm -f "${RUNNER_TEMP}/notary_key.p8" "${RUNNER_TEMP}/certificate.p12"
       - name: Get version info
         run: |
           cd ${SRC_DIR}
