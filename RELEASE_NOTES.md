@@ -546,6 +546,9 @@ changes (where available).
 - The LibRaw loader now supports X-Trans sensors. Previously, RAFs
   routed to LibRaw via the libraw_extensions setting came out red.
 
+- Darktable no longer strips the time zone offset from the capture data in the
+  XMP sidecars and exports when the date itself is unchanged.
+
 - White balance set to "as shot" or "camera reference" now uses the
   edited image's own multipliers when it is pasted from another image,
   or applied through a style or preset, instead of the multipliers of
