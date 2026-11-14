@@ -307,8 +307,10 @@ static void _blur_channel(float *const buf,
 {
   if(sigma < 1e-6f) return;
   const size_t npix = (size_t)w * h;
+  DT_OMP_FOR()
   for(size_t i = 0; i < npix; i++) plane[i] = buf[i * 3 + c];
   _blur_flat_inplace(plane, w, h, sigma, trans, exact_only);
+  DT_OMP_FOR()
   for(size_t i = 0; i < npix; i++) buf[i * 3 + c] = plane[i];
 }
 
@@ -582,6 +584,7 @@ void sf_multiplicative_unsharp_mask3(float *const buf,
   sf_blur_plane3(buf, w, h, sigma, work);
   const float eps = 1e-6f;
   const float ratio_max = 4.0f;
+  DT_OMP_FOR()
   for(size_t i = 0; i < nn; i++)
   {
     const float d0 = floor_d[i % 3];
@@ -616,6 +619,7 @@ void sf_unsharp_mask3(float *const buf,
   dt_iop_image_copy(orig, buf, nn);
   sf_blur_plane3(buf, w, h, sigma, work);
   /* fma-pinned, matching spektrafilm_scan_usm */
+  DT_OMP_FOR()
   for(size_t i = 0; i < nn; i++) buf[i] = fmaf(amount, orig[i] - buf[i], orig[i]);
 }
 
@@ -842,6 +846,7 @@ void sf_halation(float *const raw,
           lt[c] = fmaxf((float)(tail_rat[g] * (sc_tail[c] * scl / pixel_um)), 1e-6f);
         _blur_per_channel(comp, w, h, lt, plane, trans);
         const float amp_g = (float)tail_amp[g];
+        DT_OMP_FOR()
         for(size_t i = 0; i < nn; i++) tail[i] = fmaf(amp_g, comp[i], tail[i]);
       }
       float *const core = comp;
@@ -852,6 +857,7 @@ void sf_halation(float *const raw,
       /* float and fma-pinned, matching spektrafilm_scatter_combine */
       const float s_f = (float)s_amount;
       const float ws[3] = { (float)w_s[0], (float)w_s[1], (float)w_s[2] };
+      DT_OMP_FOR()
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
@@ -888,9 +894,11 @@ void sf_halation(float *const raw,
         else
           _blur_per_channel(comp, w, h, sig3, plane, trans);
         const float wk = decay[k - 1];
+        DT_OMP_FOR()
         for(size_t i = 0; i < nn; i++) blur[i] = fmaf(wk, comp[i], blur[i]);
       }
       /* float and fma-pinned, matching spektrafilm_halation_apply */
+      DT_OMP_FOR()
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
@@ -1163,6 +1171,7 @@ void sf_diffusion_filter(float *const raw,
     else
       for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans, /*exact_only=*/0);
     const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
+    DT_OMP_FOR()
     for(size_t i = 0; i < npix; i++)
     {
       acc[i * 3 + 0] = fmaf(wr, comp[i * 3 + 0], acc[i * 3 + 0]);
@@ -1173,6 +1182,7 @@ void sf_diffusion_filter(float *const raw,
 
   /* fma-pinned, matching spektrafilm_diffusion_accum / _mix */
   const float ps = plan.p_s;
+  DT_OMP_FOR()
   for(size_t i = 0; i < nn; i++) raw[i] = fmaf(ps, acc[i], (1.0f - ps) * raw[i]);
 
   dt_free_align(acc);

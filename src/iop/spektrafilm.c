@@ -2371,6 +2371,7 @@ void process(dt_iop_module_t *self,
         const float wbase = 1.0f - (float)ctail_w;
         memcpy(tmp, corr, sizeof(float) * npix * 3);
         if(csigma > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, csigma, scratch);
+        DT_OMP_FOR()
         for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * tmp[i];
         for(int g3 = 0; g3 < 3; g3++)
         {
@@ -2379,6 +2380,7 @@ void process(dt_iop_module_t *self,
           if(ts > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, ts, scratch);
           const float wk = (float)ctail_w * amp[g3];
           /* fma-pinned, matching spektrafilm_diffusion_accum */
+          DT_OMP_FOR()
           for(size_t i = 0; i < npix * 3; i++) mix[i] = fmaf(wk, tmp[i], mix[i]);
         }
         dt_free_align(corr);
