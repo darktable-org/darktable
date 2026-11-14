@@ -1067,6 +1067,22 @@ changes (where available).
   misplaced after switching away from the "overlays block on mouse hover"
   mode, and the local copy indicator showing in "no overlays" mode.
 
+- Fixed white balance on edits made with darktable 4.7 or older whose
+  multipliers match one of the camera's presets: "settings" was empty
+  and the finetune slider had no effect.
+
+- Fixed a crash when opening an image from a Canon PowerShot A630 in the
+  darkroom, if its white balance was the camera's "daylight" preset.
+
+- Fixed the finetune slider of a white balance camera preset showing the
+  tuning of another preset with the same multipliers, for example
+  "cloudy" showing +10 mired on a Nikon D3400. Moving the slider then
+  jumped to the other preset's settings.
+
+- Fixed images from 4-color sensors (CYGM, RGBE) rendering as a flat
+  colored field when an edit made with darktable 4.7 or older had white
+  balance at the camera's as-shot or reference multipliers.
+
 ## Lua
 
 ### API Version
