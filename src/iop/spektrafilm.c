@@ -610,12 +610,12 @@ typedef struct dt_iop_spektrafilm_data_t
 typedef struct dt_iop_spektrafilm_global_data_t
 {
   int kernel_expose, kernel_lograw, kernel_develop_corr, kernel_develop;
-  int kernel_grain_gen_raw_sl, kernel_grain_accumulate_1c, kernel_grain_finalize_channel,
+  int kernel_grain_gen_raw_sl, kernel_grain_accumulate, kernel_grain_finalize,
       kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
   int kernel_crop_out, kernel_scan_usm, kernel_glare_gen;
   int kernel_scatter_combine, kernel_halation_apply;
-  int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
+  int kernel_gauss_row_4c, kernel_gauss_col_4c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_col_4c_accum, kernel_gauss_col_4c_accum;
   int kernel_wide_rows, kernel_wide_down, kernel_wide_up, kernel_wide_up_accum;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
@@ -673,9 +673,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_develop_corr = dt_opencl_create_kernel(program, "spektrafilm_develop_corr");
   gd->kernel_develop = dt_opencl_create_kernel(program, "spektrafilm_develop");
   gd->kernel_grain_gen_raw_sl = dt_opencl_create_kernel(program, "spektrafilm_grain_gen_raw_sl");
-  gd->kernel_grain_accumulate_1c = dt_opencl_create_kernel(program, "spektrafilm_grain_accumulate_1c");
-  gd->kernel_grain_finalize_channel
-      = dt_opencl_create_kernel(program, "spektrafilm_grain_finalize_channel");
+  gd->kernel_grain_accumulate = dt_opencl_create_kernel(program, "spektrafilm_grain_accumulate");
+  gd->kernel_grain_finalize = dt_opencl_create_kernel(program, "spektrafilm_grain_finalize");
   gd->kernel_grain_add = dt_opencl_create_kernel(program, "spektrafilm_grain_add");
   gd->kernel_grain_usm = dt_opencl_create_kernel(program, "spektrafilm_grain_usm");
   gd->kernel_print_expose = dt_opencl_create_kernel(program, "spektrafilm_print_expose");
@@ -697,8 +696,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_wide_up_accum = dt_opencl_create_kernel(program, "spektrafilm_wide_up_accum");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
-  gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
-  gd->kernel_gauss_col_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_1c");
   gd->kernel_halation_apply = dt_opencl_create_kernel(program, "spektrafilm_halation_apply");
   gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");
   gd->kernel_diffusion_accum = dt_opencl_create_kernel(program, "spektrafilm_diffusion_accum");
@@ -717,8 +714,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_develop_corr);
     dt_opencl_free_kernel(gd->kernel_develop);
     dt_opencl_free_kernel(gd->kernel_grain_gen_raw_sl);
-    dt_opencl_free_kernel(gd->kernel_grain_accumulate_1c);
-    dt_opencl_free_kernel(gd->kernel_grain_finalize_channel);
+    dt_opencl_free_kernel(gd->kernel_grain_accumulate);
+    dt_opencl_free_kernel(gd->kernel_grain_finalize);
     dt_opencl_free_kernel(gd->kernel_grain_add);
     dt_opencl_free_kernel(gd->kernel_grain_usm);
     dt_opencl_free_kernel(gd->kernel_print_expose);
@@ -739,8 +736,6 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_wide_up_accum);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c);
-    dt_opencl_free_kernel(gd->kernel_gauss_row_1c);
-    dt_opencl_free_kernel(gd->kernel_gauss_col_1c);
     dt_opencl_free_kernel(gd->kernel_halation_apply);
     dt_opencl_free_kernel(gd->kernel_boost);
     dt_opencl_free_kernel(gd->kernel_diffusion_accum);
@@ -2180,8 +2175,7 @@ void tiling_callback(dt_iop_module_t *self,
      sub-layer count. The stages run one after another, so grain sets the peak
      at 5.75.
      OpenCL: input + output plus five float4 buffers (plane, plane2, tmpa, acc,
-     gtmp4) and a single-channel one (gtmp1), a 7.25 baseline; the
-     grain stage adds an accumulator and one buffer per sub-layer, up to 2.25.
+     gtmp4), 7.0 for every stage; factor_cl leaves room above that.
      Understating these lets the tiler pick tiles that then fail to allocate,
      and the CPU path answers an allocation failure with a passthrough of that
      tile -- unprocessed rectangles inside an otherwise processed frame, not a
@@ -2673,6 +2667,35 @@ static int _sf_gauss_kernel4(const float sigma[3],
   return radius;
 }
 
+/* Taps for the dye-cloud blur of one grain sub-layer, as _sf_gauss_kernel4()
+   builds them, for a float4 buffer of raw samples. A channel whose sigma is
+   not above 1e-6 has no dye-cloud blur and gets the single tap 1.0 at the
+   centre, which passes a sample through as it is. Returns the radius, or -1
+   when no channel is blurred. */
+static int _sf_dye_kernel4(const float sigma[3],
+                           float *kw4)
+{
+  float kw[2 * SF_GAUSS_MAX_RADIUS + 1];
+  int radius = -1;
+  for(int c = 0; c < 3; c++)
+    if(sigma[c] > 1e-6f)
+      radius = MAX(radius, dt_gaussian_kernel_1d(sigma[c], kw, SF_GAUSS_MAX_RADIUS));
+  if(radius < 0) return -1;
+  memset(kw4, 0, sizeof(float) * 4 * (2 * radius + 1));
+  kw4[4 * radius + 3] = 1.0f;
+  for(int c = 0; c < 3; c++)
+  {
+    if(sigma[c] > 1e-6f)
+    {
+      const int kr = dt_gaussian_kernel_1d(sigma[c], kw, SF_GAUSS_MAX_RADIUS);
+      for(int i = 0; i <= 2 * kr; i++) kw4[4 * (i + radius - kr) + c] = kw[i];
+    }
+    else
+      kw4[4 * radius + c] = 1.0f;
+  }
+  return radius;
+}
+
 /* The scatter stage blurs every color channel with its own sigma. One float4
    pass takes all three, as long as they agree on the method and, for the
    recursion, on the number of passes: this is 0 for the exact kernel and the
@@ -3061,13 +3084,12 @@ int process_cl(dt_iop_module_t *self,
      below: dedicated buffers, distinct from every buffer a blur might be
      called on in place, so the row pass never aliases its own input. */
   cl_mem gtmp4 = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
-  cl_mem gtmp1 = dt_opencl_alloc_device_buffer(devid, npix * f);
   /* kernel weights (2*SF_GAUSS_MAX_RADIUS+1 taps, built host-side by
      dt_gaussian_kernel_1d and rewritten before each blur dispatch below) */
   cl_mem gauss_w
       = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * (2 * SF_GAUSS_MAX_RADIUS + 1));
   if(!mats_cl || !tc_cl || !cn_cl || !cb_cl || !sl_cl || !sx_cl || !sy_cl || !sz_cl || !sn_cl
-     || !sm_cl || !cm_cl || !plane || !plane2 || !tmpa || !acc || !gtmp4 || !gtmp1
+     || !sm_cl || !cm_cl || !plane || !plane2 || !tmpa || !acc || !gtmp4
      || !gauss_w
      || (g->has_print && (!el_cl || !ex_cl || !ey_cl || !ez_cl || !en_cl || !em_cl || !pc_cl)))
   {
@@ -3132,27 +3154,6 @@ int process_cl(dt_iop_module_t *self,
       } \
     } \
     SF_CL_STEP(label); \
-  } while(0)
-/* Exact-kernel-only single-channel blur, the GPU twin of sf_blur_plane1():
-   that function passes exact_only=1 unconditionally, so its call sites must
-   NOT fall back to the recursive approximation at large sigma. Used by the
-   grain dye-cloud blur. */
-#define SF_GAUSS_BLUR1_EXACT(buf, _sg) do { \
-    if(err == CL_SUCCESS) \
-    { \
-      float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-      const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
-      err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
-                                             sizeof(float) * (2 * _kr + 1), TRUE); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_1c, w, h, \
-                                               CLARG(buf), CLARG(gtmp1), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_1c, w, h, \
-                                               CLARG(gtmp1), CLARG(buf), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
-    } \
   } while(0)
 
   /* ---- 1) expose: input image -> linear film raw exposure ---------------- */
@@ -3486,58 +3487,54 @@ int process_cl(dt_iop_module_t *self,
                            * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
         }
 
-      cl_mem raw_buf[SF_GRAIN_MAX_SUBLAYERS] = { NULL };
-      cl_mem acc_buf = dt_opencl_alloc_device_buffer(devid, npix * f);
-      gboolean raw_ok = acc_buf != NULL;
-      for(int sl = 0; sl < nsub; sl++)
+      /* tmpa takes the raw samples of one sub-layer, all channels at once,
+         and acc their sum over the sub-layers; both are free here, as the
+         correction field they held went into development. The achromatic
+         draw is in .x and uses channel 1's sigma. */
+      const float *const unif = g->grain_uniformity;
+      for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
       {
-        raw_buf[sl] = dt_opencl_alloc_device_buffer(devid, npix * f);
-        if(!raw_buf[sl]) raw_ok = FALSE;
-      }
-      if(!raw_ok)
-        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      else
-      {
-        const int n_out_ch = mono ? 1 : 3;
-        for(int oc = 0; oc < n_out_ch && err == CL_SUCCESS; oc++)
+        const int reset = sl == 0;
+        err = dt_opencl_enqueue_kernel_2d_args(
+            devid, gd->kernel_grain_gen_raw_sl, w, h, CLARG(plane2), CLARG(tmpa), CLARG(w),
+            CLARG(h), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(sl), CLARG(nle),
+            CLARG(maxsub), CLARG(unif[0]), CLARG(unif[1]), CLARG(unif[2]), CLARG(npart_scale),
+            CLARG(salt), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
+            CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
+        if(err != CL_SUCCESS) break;
+        const float dsig[3] = { dye_sigma[mono ? 1 : 0][sl], dye_sigma[1][sl],
+                                dye_sigma[mono ? 1 : 2][sl] };
+        /* exact-only: the CPU twin is sf_blur_plane1(), which never takes the
+           recursive path and leaves a sub-layer alone at a sigma not above
+           1e-6 */
+        float kw[4 * (2 * SF_GAUSS_MAX_RADIUS + 1)];
+        const int kr = _sf_dye_kernel4(dsig, kw);
+        if(kr < 0)
         {
-          const int channel_idx = mono ? 1 : oc;
-          const int seed_ch = mono ? 0 : oc;
-          const float unif_ch = g->grain_uniformity[channel_idx];
-          for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
-          {
-            err = dt_opencl_enqueue_kernel_2d_args(
-                devid, gd->kernel_grain_gen_raw_sl, w, h, CLARG(plane2), CLARG(raw_buf[sl]),
-                CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(channel_idx),
-                CLARG(seed_ch), CLARG(sl), CLARG(nle), CLARG(maxsub), CLARG(unif_ch),
-                CLARG(npart_scale), CLARG(salt), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
-                CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
-            if(err == CL_SUCCESS && dye_sigma[channel_idx][sl] > 1e-6f)
-              /* exact-only: the CPU twin is sf_blur_plane1(), which never takes
-                 the recursive path (see SF_GAUSS_BLUR1_EXACT) */
-              SF_GAUSS_BLUR1_EXACT(raw_buf[sl], dye_sigma[channel_idx][sl]);
-          }
-          for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
-          {
-            const int reset = sl == 0;
-            err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_accumulate_1c, w, h,
-                                                   CLARG(acc_buf), CLARG(raw_buf[sl]), CLARG(w),
-                                                   CLARG(h), CLARG(reset));
-          }
-          if(err == CL_SUCCESS)
-          {
-            const float dmin_ch = g->grain_dmin[channel_idx];
-            err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_finalize_channel, w, h,
-                                                   CLARG(tmpa), CLARG(acc_buf), CLARG(plane2),
-                                                   CLARG(w), CLARG(h), CLARG(mono),
-                                                   CLARG(channel_idx), CLARG(oc), CLARG(dmin_ch),
-                                                   CLARG(amount));
-          }
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_accumulate, w, h,
+                                                 CLARG(acc), CLARG(tmpa), CLARG(w), CLARG(h),
+                                                 CLARG(reset));
+          continue;
         }
+        const float one = 1.0f;
+        err = dt_opencl_write_buffer_to_device(devid, kw, gauss_w, 0,
+                                               sizeof(float) * 4 * (2 * kr + 1), TRUE);
+        if(err == CL_SUCCESS)
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, w, h,
+                                                 CLARG(tmpa), CLARG(gtmp4), CLARG(w), CLARG(h),
+                                                 CLARG(gauss_w), CLARG(kr));
+        if(err == CL_SUCCESS)
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c_accum, w, h,
+                                                 CLARG(gtmp4), CLARG(acc), CLARG(w), CLARG(h),
+                                                 CLARG(gauss_w), CLARG(kr), CLARG(one),
+                                                 CLARG(one), CLARG(one), CLARG(reset));
       }
-      for(int sl = 0; sl < nsub; sl++)
-        if(raw_buf[sl]) dt_opencl_release_mem_object(raw_buf[sl]);
-      if(acc_buf) dt_opencl_release_mem_object(acc_buf);
+      if(err == CL_SUCCESS)
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_finalize, w, h,
+                                               CLARG(acc), CLARG(plane2), CLARG(w), CLARG(h),
+                                               CLARG(mono), CLARG(g->grain_dmin[0]),
+                                               CLARG(g->grain_dmin[1]), CLARG(g->grain_dmin[2]),
+                                               CLARG(amount));
     }
     SF_CL_STEP("grain gen");
     /* No DC-centring reduction, matching the CPU path: the Poisson sampler is
@@ -3548,7 +3545,7 @@ int process_cl(dt_iop_module_t *self,
        process(), see the long comment there for why the blur and the unsharp
        mask that follows it only make sense as a pair. */
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
-                                           CLARG(tmpa), CLARG(w), CLARG(h));
+                                           CLARG(acc), CLARG(w), CLARG(h));
     SF_CL_STEP("grain add");
     /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
        there for the empirical validation. */
@@ -3722,7 +3719,6 @@ cleanup:
   dt_opencl_release_mem_object(tmpa);
   dt_opencl_release_mem_object(acc);
   dt_opencl_release_mem_object(gtmp4);
-  dt_opencl_release_mem_object(gtmp1);
   dt_opencl_release_mem_object(gauss_w);
   return err;
 }
