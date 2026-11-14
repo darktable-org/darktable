@@ -1058,13 +1058,10 @@ __kernel void spektrafilm_wide_down(__global const float4 *rows, __global float4
 /* Bilinear interpolation of the low-resolution field back to w x h at block
    centres: u = (2 * (x + ox) + 1 - k) / (2k), with 1/(2k) passed in from the
    host. Clamped to the outermost block centres. */
-__kernel void spektrafilm_wide_up(__global const float4 *low, __global float4 *out,
-                                  const int w, const int h, const int k,
-                                  const int lw, const int lh, const int ox, const int oy,
-                                  const float inv2k)
+static inline float4 sf_wide_up(__global const float4 *low, const int x, const int y,
+                                const int k, const int lw, const int lh, const int ox,
+                                const int oy, const float inv2k)
 {
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
   const float v = (float)(2 * (y + oy) + 1 - k) * inv2k;
   int j0 = (int)floor(v), j1;
   float fy;
@@ -1081,7 +1078,33 @@ __kernel void spektrafilm_wide_up(__global const float4 *low, __global float4 *o
   const float4 p10 = low[(size_t)j1 * lw + i0], p11 = low[(size_t)j1 * lw + i1];
   const float4 top = fma((float4)(fx), p01 - p00, p00);
   const float4 bot = fma((float4)(fx), p11 - p10, p10);
-  out[(size_t)y * w + x] = fma((float4)(fy), bot - top, top);
+  return fma((float4)(fy), bot - top, top);
+}
+
+__kernel void spektrafilm_wide_up(__global const float4 *low, __global float4 *out,
+                                  const int w, const int h, const int k,
+                                  const int lw, const int lh, const int ox, const int oy,
+                                  const float inv2k)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  out[(size_t)y * w + x] = sf_wide_up(low, x, y, k, lw, lh, ox, oy, inv2k);
+}
+
+/* spektrafilm_wide_up followed by spektrafilm_diffusion_accum, without
+   storing the interpolated value in between */
+__kernel void spektrafilm_wide_up_accum(__global const float4 *low, __global float4 *acc,
+                                        const int w, const int h, const int k,
+                                        const int lw, const int lh, const int ox, const int oy,
+                                        const float inv2k, const float wr, const float wg,
+                                        const float wb, const int reset)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const float4 b = sf_wide_up(low, x, y, k, lw, lh, ox, oy, inv2k);
+  const size_t i = (size_t)y * w + x;
+  const float4 a = reset ? (float4)(0.f, 0.f, 0.f, 0.f) : acc[i];
+  acc[i] = (float4)(fma(wr, b.x, a.x), fma(wg, b.y, a.y), fma(wb, b.z, a.z), b.w);
 }
 
 __kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global float4 *dst,
@@ -1185,20 +1208,6 @@ __kernel void spektrafilm_scatter_combine(__global const float4 *raw, __global c
   o.z = fma(s_amount, fma(ws_b, t.z, (1.f - ws_b) * c.z) - r.z, r.z);
   o.w = r.w;
   out[k] = o;
-}
-
-__kernel void spektrafilm_accum(__global const float4 *blurred, __global float4 *acc, const int w,
-                                const int h, const float wk, const int reset)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  size_t k = (size_t)y * w + x;
-  float4 b = blurred[k];
-  float4 a = reset ? (float4)(0.f) : acc[k];
-  a.x = fma(wk, b.x, a.x);
-  a.y = fma(wk, b.y, a.y);
-  a.z = fma(wk, b.z, a.z);
-  acc[k] = a;
 }
 
 __kernel void spektrafilm_halation_apply(__global float4 *raw, __global const float4 *blur,
