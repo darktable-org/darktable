@@ -53,15 +53,20 @@
 #include "spektra_core.h"
 
 /* ------------------------------------------------------------------------ */
-/* Row-major Gaussian blur with transpose                                  */
+/* Separable Gaussian blur                                                  */
 /* ------------------------------------------------------------------------ */
-/* A naive column pass has stride = width*4 bytes per pixel access, striding
-   beyond cache-line reach at any realistic resolution. Instead:
-   1. Row-pass (direct convolution) — good stride, stays in cache
-   2. Cache-blocked transpose — temp → scratch, sequential access both ways
-   3. Row-pass again on transposed data — second dimension, also good stride
-   4. Transpose back
-   The transpose itself is tiled so it stays in L2. */
+/* Rows first, then columns, on one channel or on three interleaved channels
+   at once. Neither pass strides through memory: a row pass walks its rows,
+   and a column pass takes SF_BLUR_CHUNK neighbouring floats of a row together,
+   so its inner loop runs along the row and keeps one accumulator or one filter
+   state per column.
+
+   A blur reads its source in the row pass only, which writes a scratch
+   buffer, so the source and the destination may be the same buffer or
+   different ones. The column pass hands every result to _sf_blur_emit(),
+   which stores it, adds it to an accumulator or applies an unsharp mask with
+   it; a caller that combines the blurred image with something else does not
+   get it written out first. */
 
 /* Maximum kernel half-width: see SF_GAUSS_MAX_RADIUS in spektra_core.h. */
 
@@ -87,7 +92,7 @@ void sf_gauss_yvv_coeffs(const float sigma_req,
                          float out[4])
 {
   /* The clamp is this module's, not the recursion's: the CPU dispatch in
-     _blur_flat_inplace and _sf_yvv_blur_cl on the GPU both come through here,
+     _sf_blur and _sf_yvv_blur_cl on the GPU both come through here,
      so neither can end up filtering at a different sigma than the other. See
      SF_GAUSS_MAX_IIR_SIGMA. */
   dt_gaussian_yvv_coeffs(fminf(sigma_req, SF_GAUSS_MAX_IIR_SIGMA), out);
@@ -107,8 +112,10 @@ int sf_gauss_iir_passes(const float sigma,
   return n;
 }
 
-/* Forward then backward sweep over `len` stride-1 elements. Both sweeps seed
- * their state by replicating the edge sample, as the reference does.
+/* One step of the recursion: the output for input sample `x`, given the three
+ * previous outputs w1, w2, w3 (most recent first). A line is filtered by a
+ * forward and then a backward sweep of this step, and both sweeps seed their
+ * state by replicating the edge sample, as the reference does.
  *
  * The recursion v = B*x + B1*w1 + B2*w2 + B3*w3 is evaluated as an increment
  * on the previous output, using B1 = 1 - B - B2 - B3:
@@ -139,220 +146,463 @@ int sf_gauss_iir_passes(const float sigma,
  * correctly rounded on both sides. The differences and the final add are
  * single correctly rounded operations, and B3 * (w3 - w1) is a bare multiply,
  * so every operation in the step is fully specified. */
-static void _sf_gauss_iir_1d(const float *const in,
-                             float *const out,
-                             const int len,
-                             const float B,
-                             const float B2,
-                             const float B3)
+static inline float _sf_gauss_iir_step(const float x,
+                                       const float w1,
+                                       const float w2,
+                                       const float w3,
+                                       const float B,
+                                       const float B2,
+                                       const float B3)
 {
-  float w1 = in[0], w2 = in[0], w3 = in[0];
-  for(int i = 0; i < len; i++)
-  {
-    const float v = w1 + fmaf(B, in[i] - w1, fmaf(B2, w2 - w1, B3 * (w3 - w1)));
-    out[i] = v;
-    w3 = w2;
-    w2 = w1;
-    w1 = v;
-  }
-  float y1 = out[len - 1], y2 = y1, y3 = y1;
-  for(int i = len - 1; i >= 0; i--)
-  {
-    const float v = y1 + fmaf(B, out[i] - y1, fmaf(B2, y2 - y1, B3 * (y3 - y1)));
-    out[i] = v;
-    y3 = y2;
-    y2 = y1;
-    y1 = v;
-  }
+  return w1 + fmaf(B, x - w1, fmaf(B2, w2 - w1, B3 * (w3 - w1)));
 }
 
-/* Direct 1D convolution along stride-1 elements, clamp-to-edge boundary (a
-   plain "hold the edge value" extension -- the exact boundary rule matters
-   far less than the kernel itself once the kernel is exact). `in` and
-   `out` must NOT alias. */
-static void _sf_gauss_convolve_1d(const float *const in,
-                                  float *const out,
-                                  const int len,
-                                  const float *const kernel,
-                                  const int radius)
+/* Floats of one row a column pass takes together. A multiple of 3, so a chunk
+   of an interleaved 3-channel row holds whole pixels. */
+#define SF_BLUR_CHUNK 1536
+
+/* What the column pass does with a blurred value v and the destination d. */
+typedef enum sf_blur_emit_t
 {
-  for(int x = 0; x < len; x++)
+  SF_EMIT_STORE = 0, /* d = v */
+  SF_EMIT_ACCUM,     /* d = fmaf(wt, v, d), or fmaf(wt, v, 0) with `reset` */
+  SF_EMIT_USM,       /* d = fmaf(amount, d - v, d), see sf_unsharp_mask3() */
+  SF_EMIT_MUSM       /* see sf_multiplicative_unsharp_mask3() */
+} sf_blur_emit_t;
+
+typedef struct sf_blur_out_t
+{
+  sf_blur_emit_t mode;
+  float *dst;   /* w*h pixels of `ds` floats; the result goes to the channels
+                   from `doff` on */
+  int ds, doff;
+  float wt[3];  /* per channel. ACCUM: the weight; MUSM: the density floor */
+  int reset;    /* ACCUM */
+  float amount; /* USM, MUSM */
+} sf_blur_out_t;
+
+/* Hands `len` blurred floats of row `y` to the destination. They are `n` per
+   pixel and start at float i0 of the row, a multiple of `n`. `v` may be the
+   destination itself. */
+static inline void _sf_blur_emit(const sf_blur_out_t *const o,
+                                 const int w,
+                                 const int n,
+                                 const int y,
+                                 const int i0,
+                                 const float *const v,
+                                 const int len)
+{
+  const int npx = len / n;
+  const int ds = o->ds;
+  float *const d = o->dst + ((size_t)y * w + i0 / n) * ds + o->doff;
+  switch(o->mode)
   {
-    float acc = 0.0f;
-    for(int k = -radius; k <= radius; k++)
+    case SF_EMIT_STORE:
+      if(ds == n)
+      {
+        if(d != v) memcpy(d, v, sizeof(float) * len);
+      }
+      else
+        for(int x = 0; x < npx; x++)
+          for(int c = 0; c < n; c++) d[x * ds + c] = v[x * n + c];
+      break;
+    case SF_EMIT_ACCUM:
+      /* fma-pinned, matching spektrafilm_diffusion_accum */
+      for(int x = 0; x < npx; x++)
+        for(int c = 0; c < n; c++)
+        {
+          const float a = o->reset ? 0.0f : d[x * ds + c];
+          d[x * ds + c] = fmaf(o->wt[c], v[x * n + c], a);
+        }
+      break;
+    case SF_EMIT_USM:
+      /* fma-pinned, matching spektrafilm_scan_usm */
+      for(int x = 0; x < npx; x++)
+        for(int c = 0; c < n; c++)
+        {
+          const float D = d[x * ds + c];
+          d[x * ds + c] = fmaf(o->amount, D - v[x * n + c], D);
+        }
+      break;
+    case SF_EMIT_MUSM:
     {
-      int xx = x + k;
-      xx = xx < 0 ? 0 : (xx >= len ? len - 1 : xx);
-      /* fma-pinned, matching spektrafilm_gauss_row/col_*c */
-      acc = fmaf(kernel[k + radius], in[xx], acc);
+      const float eps = 1e-6f;
+      const float ratio_max = 4.0f;
+      for(int x = 0; x < npx; x++)
+        for(int c = 0; c < n; c++)
+        {
+          const float d0 = o->wt[c];
+          const float D = fmaxf(d[x * ds + c] + d0, 0.0f);
+          const float blur = fmaxf(v[x * n + c] + d0, eps);
+          const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
+          /* fma-pinned, matching spektrafilm_grain_usm. D >= 0 and the power
+             term is positive, so the result is bounded below by -d0: the
+             absolute density stays non-negative while the density relative to
+             the floor may go negative, as in the reference. Clamping at 0 here
+             would rectify the grain below the floor and add density wherever
+             grain is strong relative to the local density. */
+          d[x * ds + c] = fmaf(D, powf(ratio, o->amount), -d0);
+        }
+      break;
     }
-    out[x] = acc;
   }
 }
 
-/* Cache-blocked transpose of a width×height float buffer to height×width.
-   Using BLOCK=64 keeps read/write working sets in L1/L2 during the pass. */
-#define SF_TRANSPOSE_BLOCK 64
-static void _sf_transpose(const float *const src,
-                          float *const dst,
-                          const int w,
-                          const int h)
+/* The unblurred source through _sf_blur_emit(): what a blur at a sigma below
+   its cut delivers. Source layout as for _sf_blur(). */
+static void _sf_blur_emit_source(const float *const src,
+                                 const int ss,
+                                 const int so,
+                                 const int n,
+                                 const int w,
+                                 const int h,
+                                 const sf_blur_out_t *const out)
 {
+  const int W = w * n;
   DT_OMP_FOR()
-  for(int j0 = 0; j0 < h; j0 += SF_TRANSPOSE_BLOCK)
+  for(int y = 0; y < h; y++)
   {
-    const int jlim = (j0 + SF_TRANSPOSE_BLOCK < h) ? j0 + SF_TRANSPOSE_BLOCK : h;
-    for(int i0 = 0; i0 < w; i0 += SF_TRANSPOSE_BLOCK)
-    {
-      const int ilim = (i0 + SF_TRANSPOSE_BLOCK < w) ? i0 + SF_TRANSPOSE_BLOCK : w;
-      for(int j = j0; j < jlim; j++)
-        for(int i = i0; i < ilim; i++)
-          dst[(size_t)i * h + j] = src[(size_t)j * w + i];
-    }
-  }
-}
-
-/* Single-channel exact Gaussian blur with cache-blocked transpose. `trans`
-   is a w*h intermediate buffer for the transpose (may be NULL: the row/col
-   passes then operate directly without the transpose, which is fine for
-   small buffers where cache locality matters less). */
-static void _blur_flat_inplace(float *const plane,
-                               const int w,
-                               const int h,
-                               const float sigma,
-                               float *const trans,
-                               const int exact_only)
-{
-  const int use_iir = !exact_only && sigma >= SF_GAUSS_EXACT_MAX_SIGMA;
-  float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
-  int radius = 0;
-  int passes = 1;
-  float yvv[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  if(use_iir)
-  {
-    float pass_sigma = sigma;
-    passes = sf_gauss_iir_passes(sigma, &pass_sigma);
-    sf_gauss_yvv_coeffs(pass_sigma, yvv);
-  }
-  else radius = dt_gaussian_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
-
-  for(int pass = 0; pass < passes; pass++)
-  {
-    if(trans && w >= 16 && h >= 16)
-    {
-      float *const temp = trans;
-      /* Pass 1: row-major on each row -> temp */
-      DT_OMP_FOR()
-      for(int j = 0; j < h; j++)
-      {
-        const size_t off = (size_t)j * w;
-        if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, w, yvv[0], yvv[2], yvv[3]);
-        else _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
-      }
-      /* Transpose temp (w×h) -> plane (h×w) */
-      _sf_transpose(temp, plane, w, h);
-      /* Pass 2: row-major on transposed data -> temp */
-      DT_OMP_FOR()
-      for(int j = 0; j < w; j++)
-      {
-        const size_t off = (size_t)j * h;
-        if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, h, yvv[0], yvv[2], yvv[3]);
-        else _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
-      }
-      /* Transpose back temp (h×w) -> plane (w×h) */
-      _sf_transpose(temp, plane, h, w);
-    }
+    const float *const s = src + (size_t)y * w * ss + so;
+    if(ss == n)
+      _sf_blur_emit(out, w, n, y, 0, s, W);
     else
     {
-      /* small buffer: skip the cache-blocking transpose, convolve directly */
-      float *const row_tmp = dt_alloc_align_float((size_t)MAX(w, h));
-      if(row_tmp)
+      float v[SF_BLUR_CHUNK];
+      for(int i0 = 0; i0 < W; i0 += SF_BLUR_CHUNK)
       {
-        for(int j = 0; j < h; j++)
-        {
-          if(use_iir)
-            _sf_gauss_iir_1d(plane + (size_t)j * w, row_tmp, w, yvv[0], yvv[2], yvv[3]);
-          else
-            _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
-          memcpy(plane + (size_t)j * w, row_tmp, sizeof(float) * w);
-        }
-        float *const col_in = dt_alloc_align_float((size_t)h);
-        float *const col_out = dt_alloc_align_float((size_t)h);
-        if(col_in && col_out)
-        {
-          for(int i = 0; i < w; i++)
-          {
-            for(int j = 0; j < h; j++) col_in[j] = plane[(size_t)j * w + i];
-            if(use_iir) _sf_gauss_iir_1d(col_in, col_out, h, yvv[0], yvv[2], yvv[3]);
-            else _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
-            for(int j = 0; j < h; j++) plane[(size_t)j * w + i] = col_out[j];
-          }
-        }
-        dt_free_align(col_in);
-        dt_free_align(col_out);
+        const int len = MIN(SF_BLUR_CHUNK, W - i0);
+        for(int i = 0; i < len; i++) v[i] = s[(size_t)(i0 + i) * ss];
+        _sf_blur_emit(out, w, n, y, i0, v, len);
       }
-      dt_free_align(row_tmp);
     }
   }
 }
 
-static void _blur_channel(float *const buf,
-                          const int w,
-                          const int h,
-                          const int c,
-                          const float sigma,
-                          float *const plane,
-                          float *const trans,
-                          const int exact_only)
+/* Direct convolution of one row, clamp-to-edge boundary (a plain "hold the
+   edge value" extension -- the exact boundary rule matters far less than the
+   kernel itself once the kernel is exact). `s` has `ss` floats per pixel and
+   `d` has `n`, the channels that are convolved; ss is n, or n is 1.
+
+   Every output takes its taps in the same order, first to last, into an
+   accumulator that starts at zero. Away from the two edges the tap loop is
+   the outer one, so the inner loop runs over the outputs and vectorises. */
+static void _sf_gauss_convolve_row(const float *const s,
+                                   const int ss,
+                                   float *const d,
+                                   const int n,
+                                   const int w,
+                                   const float *const kernel,
+                                   const int radius)
 {
-  if(sigma < 1e-6f) return;
-  const size_t npix = (size_t)w * h;
-  DT_OMP_FOR()
-  for(size_t i = 0; i < npix; i++) plane[i] = buf[i * 3 + c];
-  _blur_flat_inplace(plane, w, h, sigma, trans, exact_only);
-  DT_OMP_FOR()
-  for(size_t i = 0; i < npix; i++) buf[i * 3 + c] = plane[i];
+  const int xa = MIN(radius, w), xb = MAX(xa, w - radius);
+  for(int x = 0; x < w; x++)
+  {
+    if(x == xa) x = xb;
+    if(x >= w) break;
+    for(int c = 0; c < n; c++)
+    {
+      float acc = 0.0f;
+      for(int k = -radius; k <= radius; k++)
+      {
+        int xx = x + k;
+        xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
+        /* fma-pinned, matching spektrafilm_gauss_row/col_*c */
+        acc = fmaf(kernel[k + radius], s[(size_t)xx * ss + c], acc);
+      }
+      d[x * n + c] = acc;
+    }
+  }
+  for(int i0 = xa * n; i0 < xb * n; i0 += SF_BLUR_CHUNK)
+  {
+    const int len = MIN(SF_BLUR_CHUNK, xb * n - i0);
+    float *const dd = d + i0;
+    for(int i = 0; i < len; i++) dd[i] = 0.0f;
+    for(int k = 0; k <= 2 * radius; k++)
+    {
+      const float kk = kernel[k];
+      if(ss == n)
+      {
+        const float *const p = s + i0 + (k - radius) * n;
+        DT_OMP_SIMD()
+        for(int i = 0; i < len; i++) dd[i] = fmaf(kk, p[i], dd[i]);
+      }
+      else
+      {
+        const float *const p = s + (ptrdiff_t)(i0 + k - radius) * ss;
+        DT_OMP_SIMD()
+        for(int i = 0; i < len; i++) dd[i] = fmaf(kk, p[(size_t)i * ss], dd[i]);
+      }
+    }
+  }
 }
 
-/* Blur all three channels with the same sigma (grain clumps). Always uses
-   the exact kernel regardless of sigma: the fast IIR path has a known
+/* Direct convolution along the columns of `tmp`, h rows of W floats, each
+   result handed to `out`. Same tap order and boundary as the row pass. */
+static void _sf_gauss_convolve_cols(const float *const tmp,
+                                    const int w,
+                                    const int h,
+                                    const int n,
+                                    const float *const kernel,
+                                    const int radius,
+                                    const sf_blur_out_t *const out)
+{
+  const int W = w * n;
+  DT_OMP_FOR()
+  for(int y = 0; y < h; y++)
+  {
+    float v[SF_BLUR_CHUNK];
+    for(int i0 = 0; i0 < W; i0 += SF_BLUR_CHUNK)
+    {
+      const int len = MIN(SF_BLUR_CHUNK, W - i0);
+      for(int i = 0; i < len; i++) v[i] = 0.0f;
+      for(int k = -radius; k <= radius; k++)
+      {
+        const int yy = CLAMP(y + k, 0, h - 1);
+        const float *const p = tmp + (size_t)yy * W + i0;
+        const float kk = kernel[k + radius];
+        DT_OMP_SIMD()
+        for(int i = 0; i < len; i++) v[i] = fmaf(kk, p[i], v[i]);
+      }
+      _sf_blur_emit(out, w, n, y, i0, v, len);
+    }
+  }
+}
+
+/* Lanes of the recursive row pass: `rows` neighbouring rows of `n` channels
+   each run through the recursion side by side. A row is one serial chain of
+   steps, each waiting for the one before; the lanes are independent chains, so
+   they share the time of one. */
+#define SF_IIR_MAX_LANES 12
+
+/* Forward and backward sweep along `rows` neighbouring rows. `in` has `ss`
+   floats per pixel and `out` has `n`; they may be the same buffer when ss is
+   n. Inlined into _sf_gauss_iir_rows() with `n` and `rows` constant. */
+static inline void _sf_gauss_iir_rows_lanes(const float *const in,
+                                            const int ss,
+                                            float *const out,
+                                            const int n,
+                                            const int rows,
+                                            const int w,
+                                            const float B,
+                                            const float B2,
+                                            const float B3)
+{
+  const int lanes = rows * n;
+  const size_t ip = (size_t)w * ss, op = (size_t)w * n;
+  float w1[SF_IIR_MAX_LANES], w2[SF_IIR_MAX_LANES], w3[SF_IIR_MAX_LANES], x[SF_IIR_MAX_LANES];
+  for(int r = 0; r < rows; r++)
+    for(int c = 0; c < n; c++) w1[r * n + c] = w2[r * n + c] = w3[r * n + c] = in[r * ip + c];
+  for(int i = 0; i < w; i++)
+  {
+    for(int r = 0; r < rows; r++)
+      for(int c = 0; c < n; c++) x[r * n + c] = in[r * ip + (size_t)i * ss + c];
+    for(int l = 0; l < lanes; l++)
+    {
+      const float v = _sf_gauss_iir_step(x[l], w1[l], w2[l], w3[l], B, B2, B3);
+      w3[l] = w2[l];
+      w2[l] = w1[l];
+      w1[l] = v;
+    }
+    for(int r = 0; r < rows; r++)
+      for(int c = 0; c < n; c++) out[r * op + (size_t)i * n + c] = w1[r * n + c];
+  }
+  for(int r = 0; r < rows; r++)
+    for(int c = 0; c < n; c++)
+      w1[r * n + c] = w2[r * n + c] = w3[r * n + c] = out[r * op + (size_t)(w - 1) * n + c];
+  for(int i = w - 1; i >= 0; i--)
+  {
+    for(int r = 0; r < rows; r++)
+      for(int c = 0; c < n; c++) x[r * n + c] = out[r * op + (size_t)i * n + c];
+    for(int l = 0; l < lanes; l++)
+    {
+      const float v = _sf_gauss_iir_step(x[l], w1[l], w2[l], w3[l], B, B2, B3);
+      w3[l] = w2[l];
+      w2[l] = w1[l];
+      w1[l] = v;
+    }
+    for(int r = 0; r < rows; r++)
+      for(int c = 0; c < n; c++) out[r * op + (size_t)i * n + c] = w1[r * n + c];
+  }
+}
+
+/* Recursive row pass over all rows: 4 rows of 3 channels or 8 rows of one
+   channel at a time, and the rows left over one by one. `src` as for
+   _sf_blur(); `tmp` has `n` floats per pixel. */
+static void _sf_gauss_iir_rows(const float *const src,
+                               const int ss,
+                               const int so,
+                               float *const tmp,
+                               const int n,
+                               const int w,
+                               const int h,
+                               const float B,
+                               const float B2,
+                               const float B3)
+{
+  const int rows = (n == 3) ? 4 : 8;
+  const int nblocks = (h + rows - 1) / rows;
+  DT_OMP_FOR()
+  for(int b = 0; b < nblocks; b++)
+  {
+    const int y0 = b * rows;
+    const float *const in = src + (size_t)y0 * w * ss + so;
+    float *const out = tmp + (size_t)y0 * w * n;
+    if(y0 + rows <= h)
+    {
+      if(n == 3) _sf_gauss_iir_rows_lanes(in, ss, out, 3, 4, w, B, B2, B3);
+      else _sf_gauss_iir_rows_lanes(in, ss, out, 1, 8, w, B, B2, B3);
+    }
+    else
+      for(int y = y0; y < h; y++)
+      {
+        const float *const in1 = src + (size_t)y * w * ss + so;
+        float *const out1 = tmp + (size_t)y * w * n;
+        if(n == 3) _sf_gauss_iir_rows_lanes(in1, ss, out1, 3, 1, w, B, B2, B3);
+        else _sf_gauss_iir_rows_lanes(in1, ss, out1, 1, 1, w, B, B2, B3);
+      }
+  }
+}
+
+/* Recursive column pass on `tmp`, h rows of W floats. The forward sweep runs
+   in place. The backward sweep hands its results to `out`, or with out NULL
+   leaves them in `tmp`. The three state rows of a chunk rotate, the oldest
+   taking the new outputs. */
+static void _sf_gauss_iir_cols(float *const tmp,
+                               const int w,
+                               const int h,
+                               const int n,
+                               const float B,
+                               const float B2,
+                               const float B3,
+                               const sf_blur_out_t *const out)
+{
+  const int W = w * n;
+  DT_OMP_FOR()
+  for(int i0 = 0; i0 < W; i0 += SF_BLUR_CHUNK)
+  {
+    const int len = MIN(SF_BLUR_CHUNK, W - i0);
+    float sa[SF_BLUR_CHUNK], sb[SF_BLUR_CHUNK], sc[SF_BLUR_CHUNK];
+    float *a1 = sa, *a2 = sb, *a3 = sc;
+    const float *const first = tmp + i0;
+    for(int i = 0; i < len; i++) a1[i] = a2[i] = a3[i] = first[i];
+    for(int y = 0; y < h; y++)
+    {
+      float *const row = tmp + (size_t)y * W + i0;
+      DT_OMP_SIMD()
+      for(int i = 0; i < len; i++)
+      {
+        const float v = _sf_gauss_iir_step(row[i], a1[i], a2[i], a3[i], B, B2, B3);
+        a3[i] = v;
+        row[i] = v;
+      }
+      float *const t = a3;
+      a3 = a2;
+      a2 = a1;
+      a1 = t;
+    }
+    const float *const last = tmp + (size_t)(h - 1) * W + i0;
+    for(int i = 0; i < len; i++) a1[i] = a2[i] = a3[i] = last[i];
+    for(int y = h - 1; y >= 0; y--)
+    {
+      float *const row = tmp + (size_t)y * W + i0;
+      DT_OMP_SIMD()
+      for(int i = 0; i < len; i++)
+        a3[i] = _sf_gauss_iir_step(row[i], a1[i], a2[i], a3[i], B, B2, B3);
+      if(out) _sf_blur_emit(out, w, n, y, i0, a3, len);
+      else memcpy(row, a3, sizeof(float) * len);
+      float *const t = a3;
+      a3 = a2;
+      a2 = a1;
+      a1 = t;
+    }
+  }
+}
+
+/* Gaussian blur of `n` channels of `src` at `sigma`, the result handed to
+   `out`. `src` holds w*h pixels of `ss` floats and the channels from `so` on
+   are blurred: n = ss = 3 for an interleaved buffer, n = 1 for one channel of
+   it or for a flat buffer (ss = 1). `tmp` is a scratch of w*h*n floats, none
+   of the other buffers.
+
+   Below `min_sigma` the source goes to `out` unblurred. Below
+   SF_GAUSS_EXACT_MAX_SIGMA, or at any sigma with `exact_only`, the kernel is
+   the direct one; above, the Young-van Vliet recursion, cascaded past
+   SF_GAUSS_MAX_IIR_SIGMA. */
+static void _sf_blur(const float *const src,
+                     const int ss,
+                     const int so,
+                     const int n,
+                     float *const tmp,
+                     const int w,
+                     const int h,
+                     const float sigma,
+                     const float min_sigma,
+                     const int exact_only,
+                     const sf_blur_out_t *const out)
+{
+  if(sigma < min_sigma)
+  {
+    _sf_blur_emit_source(src, ss, so, n, w, h, out);
+    return;
+  }
+  if(exact_only || sigma < SF_GAUSS_EXACT_MAX_SIGMA)
+  {
+    float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
+    const float *const kw = kernel;
+    const int radius = dt_gaussian_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
+    DT_OMP_FOR()
+    for(int y = 0; y < h; y++)
+      _sf_gauss_convolve_row(src + (size_t)y * w * ss + so, ss, tmp + (size_t)y * w * n, n, w,
+                             kw, radius);
+    _sf_gauss_convolve_cols(tmp, w, h, n, kw, radius, out);
+    return;
+  }
+  float pass_sigma = sigma;
+  const int passes = sf_gauss_iir_passes(sigma, &pass_sigma);
+  float yvv[4];
+  sf_gauss_yvv_coeffs(pass_sigma, yvv);
+  for(int pass = 0; pass < passes; pass++)
+  {
+    if(pass == 0) _sf_gauss_iir_rows(src, ss, so, tmp, n, w, h, yvv[0], yvv[2], yvv[3]);
+    else _sf_gauss_iir_rows(tmp, n, 0, tmp, n, w, h, yvv[0], yvv[2], yvv[3]);
+    _sf_gauss_iir_cols(tmp, w, h, n, yvv[0], yvv[2], yvv[3], pass == passes - 1 ? out : NULL);
+  }
+}
+
+/* Blur all three channels with the same sigma (grain clumps), in place. Always
+   uses the exact kernel regardless of sigma: the recursive path has a known
    ~18% effective-width error at the small sigmas grain's clump blur
    typically uses, which would make grain visibly the wrong size relative
-   to upstream's own (exact-shape) Gaussian blur. Allocates trans buffer. */
+   to upstream's own (exact-shape) Gaussian blur. `tmp` is a w*h*3 scratch. */
 void sf_blur_plane3(float *const buf,
                     const int w,
                     const int h,
                     const float sigma,
-                    float *const plane)
+                    float *const tmp)
 {
   if(sigma < SF_GAUSS_MIN_SIGMA) return;
-  float *const trans = dt_alloc_align_float((size_t)w * h);
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/1);
-  dt_free_align(trans);
+  const sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = buf, .ds = 3 };
+  _sf_blur(buf, 3, 0, 3, tmp, w, h, sigma, 0.0f, /*exact_only=*/1, &out);
 }
 
-/* Same exact-kernel blur as sf_blur_plane3, but for one flat w*h buffer
-   already in place -- used for grain's per-sublayer dye-cloud blur, where
-   each (channel, sub-layer) has its own sigma. No 0.3px floor (unlike
-   sf_blur_plane3's guard for the visible clump blur): the dye-cloud sigma
-   is often well under a pixel and still meaningfully softens the raw
-   particle draw, matching upstream's plain `> 0` check. Caller-provided
-   plane IS buf (in place); trans may be NULL for small buffers. */
+/* Same exact-kernel blur as sf_blur_plane3, but for one flat w*h buffer --
+   used for grain's per-sublayer dye-cloud blur, where each (channel,
+   sub-layer) has its own sigma. No 0.3px floor (unlike sf_blur_plane3's guard
+   for the visible clump blur): the dye-cloud sigma is often well under a
+   pixel and still meaningfully softens the raw particle draw, matching
+   upstream's plain `> 0` check. `tmp` is a w*h scratch. */
 void sf_blur_plane1(float *const buf,
                     const int w,
                     const int h,
                     const float sigma,
-                    float *const plane,
-                    float *const trans)
+                    float *const tmp)
 {
   if(sigma < 1e-6f) return;
-  (void)plane; /* kept in the signature for API symmetry with sf_blur_plane3; unused: this
-                  variant blurs buf in place, it doesn't need a separate extract/write-back
-                  staging buffer the way the interleaved 3-channel path does. */
-  _blur_flat_inplace(buf, w, h, sigma, trans, /*exact_only=*/1);
+  const sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = buf, .ds = 1 };
+  _sf_blur(buf, 1, 0, 1, tmp, w, h, sigma, 0.0f, /*exact_only=*/1, &out);
 }
 
-/* Same as sf_blur_plane3, but allows the fast IIR path at large sigma: for
+/* Same as sf_blur_plane3, but takes the recursive path at large sigma: for
    callers with no downstream dependency on the exact kernel's shape (DIR
    coupler correction-field diffusion, unlike grain, isn't renormalizing
    against it -- it's just smoothing a density correction, not restoring a
@@ -361,12 +611,11 @@ void sf_blur_plane3_fast(float *const buf,
                          const int w,
                          const int h,
                          const float sigma,
-                         float *const plane)
+                         float *const tmp)
 {
   if(sigma < SF_GAUSS_MIN_SIGMA) return;
-  float *const trans = dt_alloc_align_float((size_t)w * h);
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/0);
-  dt_free_align(trans);
+  const sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = buf, .ds = 3 };
+  _sf_blur(buf, 3, 0, 3, tmp, w, h, sigma, 0.0f, /*exact_only=*/0, &out);
 }
 
 /* Variance of the reference's Young-van Vliet filter at `sigma`, forward and
@@ -480,10 +729,10 @@ static void _wide_down3(const float *const in,
   }
 }
 
-/* Bilinear interpolation of `low` back to w x h, sampling block centres.
-   Must match spektrafilm_wide_up in spektrafilm.cl operation for operation. */
+/* Bilinear interpolation of `low` back to w x h, sampling block centres, each
+   row handed to `out` in pieces of SF_BLUR_CHUNK floats. Must match
+   spektrafilm_wide_up in spektrafilm.cl operation for operation. */
 static void _wide_up3(const float *const low,
-                      float *const out,
                       const int w,
                       const int h,
                       const int k,
@@ -491,7 +740,8 @@ static void _wide_up3(const float *const low,
                       const int lh,
                       const int ox,
                       const int oy,
-                      const float inv2k)
+                      const float inv2k,
+                      const sf_blur_out_t *const out)
 {
   DT_OMP_FOR()
   for(int y = 0; y < h; y++)
@@ -504,25 +754,70 @@ static void _wide_up3(const float *const low,
     else { j1 = j0 + 1; fy = v - (float)j0; }
     const float *const r0 = low + (size_t)j0 * lw * 3;
     const float *const r1 = low + (size_t)j1 * lw * 3;
-    for(int x = 0; x < w; x++)
+    float o[SF_BLUR_CHUNK];
+    for(int x0 = 0; x0 < w; x0 += SF_BLUR_CHUNK / 3)
     {
-      const float u = (float)(2 * (x + ox) + 1 - k) * inv2k;
-      int i0 = (int)floorf(u), i1;
-      float fx;
-      if(i0 < 0) { i0 = i1 = 0; fx = 0.0f; }
-      else if(i0 >= lw - 1) { i0 = i1 = lw - 1; fx = 0.0f; }
-      else { i1 = i0 + 1; fx = u - (float)i0; }
-      float *const o = out + ((size_t)y * w + x) * 3;
-      for(int c = 0; c < 3; c++)
+      const int npx = MIN(SF_BLUR_CHUNK / 3, w - x0);
+      for(int i = 0; i < npx; i++)
       {
-        const float p00 = r0[i0 * 3 + c], p01 = r0[i1 * 3 + c];
-        const float p10 = r1[i0 * 3 + c], p11 = r1[i1 * 3 + c];
-        const float top = fmaf(fx, p01 - p00, p00);
-        const float bot = fmaf(fx, p11 - p10, p10);
-        o[c] = fmaf(fy, bot - top, top);
+        const int x = x0 + i;
+        const float u = (float)(2 * (x + ox) + 1 - k) * inv2k;
+        int i0 = (int)floorf(u), i1;
+        float fx;
+        if(i0 < 0) { i0 = i1 = 0; fx = 0.0f; }
+        else if(i0 >= lw - 1) { i0 = i1 = lw - 1; fx = 0.0f; }
+        else { i1 = i0 + 1; fx = u - (float)i0; }
+        for(int c = 0; c < 3; c++)
+        {
+          const float p00 = r0[i0 * 3 + c], p01 = r0[i1 * 3 + c];
+          const float p10 = r1[i0 * 3 + c], p11 = r1[i1 * 3 + c];
+          const float top = fmaf(fx, p01 - p00, p00);
+          const float bot = fmaf(fx, p11 - p10, p10);
+          o[i * 3 + c] = fmaf(fy, bot - top, top);
+        }
       }
+      _sf_blur_emit(out, w, 3, y, x0 * 3, o, npx * 3);
     }
   }
+}
+
+/* The decimated blur of an interleaved 3-channel `src`, the result handed to
+   `out`; _sf_blur() on the recursive path where sf_wide_blur_plan() does not
+   decimate. `tmp` is a w*h*3 scratch for that case. */
+static void _sf_blur3_wide(const float *const src,
+                           float *const tmp,
+                           const int w,
+                           const int h,
+                           const int roi_x,
+                           const int roi_y,
+                           const float sigma,
+                           const sf_blur_out_t *const out)
+{
+  int k, lw, lh, ox, oy;
+  float sigma_low;
+  if(!sf_wide_blur_plan(sigma, w, h, roi_x, roi_y, &k, &sigma_low, &lw, &lh, &ox, &oy))
+  {
+    _sf_blur(src, 3, 0, 3, tmp, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/0, out);
+    return;
+  }
+  float *const low = dt_alloc_align_float((size_t)lw * lh * 3);
+  float *const lowtmp = dt_alloc_align_float((size_t)lw * lh * 3);
+  float *const inv = dt_alloc_align_float((size_t)k + 1);
+  if(!low || !lowtmp || !inv)
+  {
+    dt_free_align(low);
+    dt_free_align(lowtmp);
+    dt_free_align(inv);
+    _sf_blur(src, 3, 0, 3, tmp, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/0, out);
+    return;
+  }
+  sf_wide_blur_inv_table(k, inv);
+  _wide_down3(src, low, w, h, k, lw, lh, ox, oy, inv);
+  sf_blur_plane3(low, lw, lh, sigma_low, lowtmp);
+  _wide_up3(low, w, h, k, lw, lh, ox, oy, 1.0f / (float)(2 * k), out);
+  dt_free_align(low);
+  dt_free_align(lowtmp);
+  dt_free_align(inv);
 }
 
 void sf_blur_plane3_wide(float *const buf,
@@ -531,30 +826,31 @@ void sf_blur_plane3_wide(float *const buf,
                          const int roi_x,
                          const int roi_y,
                          const float sigma,
-                         float *const plane)
+                         float *const tmp)
 {
-  int k, lw, lh, ox, oy;
-  float sigma_low;
-  if(!sf_wide_blur_plan(sigma, w, h, roi_x, roi_y, &k, &sigma_low, &lw, &lh, &ox, &oy))
+  const sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = buf, .ds = 3 };
+  _sf_blur3_wide(buf, tmp, w, h, roi_x, roi_y, sigma, &out);
+}
+
+void sf_blur_plane3_wide_accum(const float *const src,
+                               float *const acc,
+                               const int w,
+                               const int h,
+                               const int roi_x,
+                               const int roi_y,
+                               const float sigma,
+                               const float wt[3],
+                               const int reset,
+                               float *const tmp)
+{
+  sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = acc, .ds = 3 };
+  if(wt)
   {
-    sf_blur_plane3_fast(buf, w, h, sigma, plane);
-    return;
+    out.mode = SF_EMIT_ACCUM;
+    for(int c = 0; c < 3; c++) out.wt[c] = wt[c];
+    out.reset = reset;
   }
-  float *const low = dt_alloc_align_float((size_t)lw * lh * 3);
-  float *const inv = dt_alloc_align_float((size_t)k + 1);
-  if(!low || !inv)
-  {
-    dt_free_align(low);
-    dt_free_align(inv);
-    sf_blur_plane3_fast(buf, w, h, sigma, plane);
-    return;
-  }
-  sf_wide_blur_inv_table(k, inv);
-  _wide_down3(buf, low, w, h, k, lw, lh, ox, oy, inv);
-  sf_blur_plane3(low, lw, lh, sigma_low, plane);
-  _wide_up3(low, buf, w, h, k, lw, lh, ox, oy, 1.0f / (float)(2 * k));
-  dt_free_align(low);
-  dt_free_align(inv);
+  _sf_blur3_wide(src, tmp, w, h, roi_x, roi_y, sigma, &out);
 }
 
 /* Multiplicative unsharp mask on density (study b80): out = D * (D / blur(D))^amount.
@@ -575,30 +871,15 @@ void sf_multiplicative_unsharp_mask3(float *const buf,
                                      const float sigma,
                                      const float amount,
                                      const float *const floor_d,
-                                     float *const orig,
-                                     float *const work)
+                                     float *const tmp)
 {
   if(sigma <= 0.0f || amount <= 0.0f) return;
-  const size_t nn = (size_t)w * h * 3;
-  dt_iop_image_copy(orig, buf, nn);
-  sf_blur_plane3(buf, w, h, sigma, work);
-  const float eps = 1e-6f;
-  const float ratio_max = 4.0f;
-  DT_OMP_FOR()
-  for(size_t i = 0; i < nn; i++)
-  {
-    const float d0 = floor_d[i % 3];
-    const float D = fmaxf(orig[i] + d0, 0.0f);
-    const float blur = fmaxf(buf[i] + d0, eps);
-    const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
-    /* fma-pinned, matching spektrafilm_grain_usm. D >= 0 and the power term is
-       positive, so the result is bounded below by -d0: the absolute density
-       stays non-negative while the density relative to the floor may go
-       negative, as in the reference. Clamping at 0 here would rectify the grain
-       below the floor and add density wherever grain is strong relative to the
-       local density. */
-    buf[i] = fmaf(D, powf(ratio, amount), -d0);
-  }
+  /* the mask is applied as the blur's column pass delivers each value, see
+     SF_EMIT_MUSM; below SF_GAUSS_MIN_SIGMA the blurred value is the density
+     itself */
+  const sf_blur_out_t out = { .mode = SF_EMIT_MUSM, .dst = buf, .ds = 3,
+                              .wt = { floor_d[0], floor_d[1], floor_d[2] }, .amount = amount };
+  _sf_blur(buf, 3, 0, 3, tmp, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/1, &out);
 }
 
 /* Additive unsharp mask ([df] apply_unsharp_mask, the scanner's own sharpening
@@ -611,16 +892,11 @@ void sf_unsharp_mask3(float *const buf,
                       const int h,
                       const float sigma,
                       const float amount,
-                      float *const orig,
-                      float *const work)
+                      float *const tmp)
 {
   if(sigma <= 0.0f || amount <= 0.0f) return;
-  const size_t nn = (size_t)w * h * 3;
-  dt_iop_image_copy(orig, buf, nn);
-  sf_blur_plane3(buf, w, h, sigma, work);
-  /* fma-pinned, matching spektrafilm_scan_usm */
-  DT_OMP_FOR()
-  for(size_t i = 0; i < nn; i++) buf[i] = fmaf(amount, orig[i] - buf[i], orig[i]);
+  const sf_blur_out_t out = { .mode = SF_EMIT_USM, .dst = buf, .ds = 3, .amount = amount };
+  _sf_blur(buf, 3, 0, 3, tmp, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/1, &out);
 }
 
 /* Viewing glare field ([gl] compute_random_glare_amount): a lognormal field of
@@ -640,7 +916,8 @@ void sf_glare_field(float *const field,
                     const float blur,
                     const int roi_x,
                     const int roi_y,
-                    const uint32_t salt)
+                    const uint32_t salt,
+                    float *const tmp)
 {
   const float mean = percent * 0.01f;
   const float sigma2 = logf(1.0f + roughness * roughness);
@@ -653,20 +930,7 @@ void sf_glare_field(float *const field,
       const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu, salt);
       field[(size_t)y * w + x] = mean * expf(fmaf(s, grain_normal(seed), bias));
     }
-  float *const trans = dt_alloc_align_float((size_t)w * h);
-  sf_blur_plane1(field, w, h, blur, NULL, trans);
-  dt_free_align(trans);
-}
-
-/* Blur packed buffer with per-channel sigma. `trans` is a w*h intermediate. */
-static void _blur_per_channel(float *const buf,
-                              const int w,
-                              const int h,
-                              const float sigma[3],
-                              float *const plane,
-                              float *const trans)
-{
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma[c], plane, trans, /*exact_only=*/0);
+  sf_blur_plane1(field, w, h, blur, tmp);
 }
 
 /* Apply halation + scatter to a w*h*3 LINEAR plane, in place.
@@ -783,7 +1047,10 @@ void sf_halation(float *const raw,
                  const float halation_amount,
                  const float halation_scale,
                  const double halation_strength[3],
-                 const double halation_first_sigma_um)
+                 const double halation_first_sigma_um,
+                 float *const buf_a,
+                 float *const buf_b,
+                 float *const plane)
 {
   if(scatter_amount <= 0.0f && halation_amount <= 0.0f) return;
 
@@ -817,56 +1084,39 @@ void sf_halation(float *const raw,
   const double hscl = fmax((double)halation_scale, 1e-3);
   const int n_bounces = 3; /* bounce weights decay by 0.5 each, see decay[] below */
 
-  const size_t npix = (size_t)w * h;
-  const size_t nn = npix * 3;
-  float *const plane = dt_alloc_align_float(npix);
-  float *const trans = dt_alloc_align_float(npix);
-  if(!plane || !trans)
-  {
-    dt_free_align(plane);
-    dt_free_align(trans);
-    return;
-  }
+  const size_t nn = (size_t)w * h * 3;
 
   /* --- stage 1: scatter PSF (core + 3-component tail) --- */
   if(s_amount > 0.0)
   {
-    /* raw stays untouched until the final combine, so the core blur runs
-       after the tail loop and reuses comp */
-    float *const tail = dt_alloc_align_float(nn);
-    float *const comp = dt_alloc_align_float(nn);
-    if(tail && comp)
+    /* every channel has its own sigma, so each is blurred on its own, read
+       straight from `raw`, which stays untouched until the combine */
+    float *const tail = buf_a;
+    float *const core = buf_b;
+    for(int g = 0; g < 3; g++)
+      for(int c = 0; c < 3; c++)
+      {
+        const float lt = fmaxf((float)(tail_rat[g] * (sc_tail[c] * scl / pixel_um)), 1e-6f);
+        const sf_blur_out_t out = { .mode = SF_EMIT_ACCUM, .dst = tail, .ds = 3, .doff = c,
+                                    .wt = { (float)tail_amp[g] }, .reset = (g == 0) };
+        _sf_blur(raw, 3, c, 1, plane, w, h, lt, 1e-6f, /*exact_only=*/0, &out);
+      }
+    for(int c = 0; c < 3; c++)
     {
-      memset(tail, 0, sizeof(float) * nn);
-      for(int g = 0; g < 3; g++)
-      {
-        dt_iop_image_copy(comp, raw, nn);
-        float lt[3];
-        for(int c = 0; c < 3; c++)
-          lt[c] = fmaxf((float)(tail_rat[g] * (sc_tail[c] * scl / pixel_um)), 1e-6f);
-        _blur_per_channel(comp, w, h, lt, plane, trans);
-        const float amp_g = (float)tail_amp[g];
-        DT_OMP_FOR()
-        for(size_t i = 0; i < nn; i++) tail[i] = fmaf(amp_g, comp[i], tail[i]);
-      }
-      float *const core = comp;
-      dt_iop_image_copy(core, raw, nn);
-      float sc[3];
-      for(int c = 0; c < 3; c++) sc[c] = fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f);
-      _blur_per_channel(core, w, h, sc, plane, trans);
-      /* float and fma-pinned, matching spektrafilm_scatter_combine */
-      const float s_f = (float)s_amount;
-      const float ws[3] = { (float)w_s[0], (float)w_s[1], (float)w_s[2] };
-      DT_OMP_FOR()
-      for(size_t i = 0; i < nn; i++)
-      {
-        const int c = i % 3;
-        const float scattered = fmaf(ws[c], tail[i], (1.0f - ws[c]) * core[i]);
-        raw[i] = fmaf(s_f, scattered - raw[i], raw[i]);
-      }
+      const float sc = fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f);
+      const sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = core, .ds = 3, .doff = c };
+      _sf_blur(raw, 3, c, 1, plane, w, h, sc, 1e-6f, /*exact_only=*/0, &out);
     }
-    dt_free_align(tail);
-    dt_free_align(comp);
+    /* float and fma-pinned, matching spektrafilm_scatter_combine */
+    const float s_f = (float)s_amount;
+    const float ws[3] = { (float)w_s[0], (float)w_s[1], (float)w_s[2] };
+    DT_OMP_FOR()
+    for(size_t i = 0; i < nn; i++)
+    {
+      const int c = i % 3;
+      const float scattered = fmaf(ws[c], tail[i], (1.0f - ws[c]) * core[i]);
+      raw[i] = fmaf(s_f, scattered - raw[i], raw[i]);
+    }
   }
 
   /* --- stage 2: multi-bounce halation --- */
@@ -877,40 +1127,28 @@ void sf_halation(float *const raw,
     static const float decay[3] = { 1.0f / 1.75f, 0.5f / 1.75f, 0.25f / 1.75f };
     const float a_f[3] = { (float)a_tot[0], (float)a_tot[1], (float)a_tot[2] };
 
-    float *const blur = dt_alloc_align_float(nn);
-    float *const comp = dt_alloc_align_float(nn);
-    if(blur && comp)
+    float *const blur = buf_a;
+    for(int k = 1; k <= n_bounces; k++)
     {
-      memset(blur, 0, sizeof(float) * nn);
-      for(int k = 1; k <= n_bounces; k++)
-      {
-        dt_iop_image_copy(comp, raw, nn);
-        const float sk = fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f);
-        const float sig3[3] = { sk, sk, sk };
-        /* one sigma for all three channels: wide bounces decimate, as
-           spektrafilm.c's GPU bounce loop does from the same threshold */
-        if(sk >= SF_WIDE_BLUR_EFFECT_SIGMA)
-          sf_blur_plane3_wide(comp, w, h, roi_x, roi_y, sk, plane);
-        else
-          _blur_per_channel(comp, w, h, sig3, plane, trans);
-        const float wk = decay[k - 1];
-        DT_OMP_FOR()
-        for(size_t i = 0; i < nn; i++) blur[i] = fmaf(wk, comp[i], blur[i]);
-      }
-      /* float and fma-pinned, matching spektrafilm_halation_apply */
-      DT_OMP_FOR()
-      for(size_t i = 0; i < nn; i++)
-      {
-        const int c = i % 3;
-        raw[i] = fmaf(a_f[c], blur[i], raw[i]) / (1.0f + a_f[c]);
-      }
+      const float sk = fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f);
+      const float wk = decay[k - 1];
+      const sf_blur_out_t out = { .mode = SF_EMIT_ACCUM, .dst = blur, .ds = 3,
+                                  .wt = { wk, wk, wk }, .reset = (k == 1) };
+      /* one sigma for all three channels: wide bounces decimate, as
+         spektrafilm.c's GPU bounce loop does from the same threshold */
+      if(sk >= SF_WIDE_BLUR_EFFECT_SIGMA)
+        _sf_blur3_wide(raw, buf_b, w, h, roi_x, roi_y, sk, &out);
+      else
+        _sf_blur(raw, 3, 0, 3, buf_b, w, h, sk, 1e-6f, /*exact_only=*/0, &out);
     }
-    dt_free_align(blur);
-    dt_free_align(comp);
+    /* float and fma-pinned, matching spektrafilm_halation_apply */
+    DT_OMP_FOR()
+    for(size_t i = 0; i < nn; i++)
+    {
+      const int c = i % 3;
+      raw[i] = fmaf(a_f[c], blur[i], raw[i]) / (1.0f + a_f[c]);
+    }
   }
-
-  dt_free_align(plane);
-  dt_free_align(trans);
 }
 
 /* ---------------- diffusion filter (Black Pro-Mist family) ----------------
@@ -920,7 +1158,7 @@ void sf_halation(float *const raw,
  * where the per-channel PSF K_s is a sum of radial exponentials grouped into
  * core / halo / bloom. Each exponential exp(-r/lambda)/(2*pi*lambda^2) has
  * per-axis sigma lambda*sqrt(3); we approximate each as a Gaussian of that sigma so
- * the whole PSF becomes a weighted bank of Gaussian blurs (_blur_channel, this
+ * the whole PSF becomes a weighted bank of Gaussian blurs (_sf_blur, this
  * file's own exact direct convolution), summed per channel. The strength->p_s
  * table, geometric lambda progressions, group weights and warmth
  * redistribution are ported exactly from spektrafilm; only
@@ -1127,7 +1365,8 @@ int sf_diffusion_build_plan(int family,
   return 1;
 }
 
-/* Apply the diffusion filter in place on a linear w*h*3 plane. */
+/* Apply the diffusion filter in place on a linear w*h*3 plane. `acc` and
+   `tmp` are w*h*3 scratch buffers. */
 void sf_diffusion_filter(float *const raw,
                          const int w,
                          const int h,
@@ -1137,56 +1376,35 @@ void sf_diffusion_filter(float *const raw,
                          const int family,
                          const float strength,
                          const float spatial_scale,
-                         const float halo_warmth)
+                         const float halo_warmth,
+                         float *const acc,
+                         float *const tmp)
 {
   if(strength <= 0.0f || spatial_scale <= 0.0f) return;
   sf_diffusion_plan_t plan;
   if(!sf_diffusion_build_plan(family, strength, halo_warmth, &plan) || plan.p_s <= 0.0f) return;
 
   const double sc = fmax((double)spatial_scale, 1e-6);
-  const size_t npix = (size_t)w * h, nn = npix * 3;
-
-  float *const acc = dt_alloc_align_float(nn);
-  float *const comp = dt_alloc_align_float(nn);
-  float *const plane1 = dt_alloc_align_float(npix);
-  float *const trans = dt_alloc_align_float(npix);
-  if(!acc || !comp || !plane1)
-  {
-    dt_free_align(acc);
-    dt_free_align(comp);
-    dt_free_align(plane1);
-    dt_free_align(trans);
-    return;
-  }
-  memset(acc, 0, sizeof(float) * nn);
+  const size_t nn = (size_t)w * h * 3;
 
   for(int j = 0; j < plan.n; j++)
   {
     const float sigma = (float)(plan.sigma_um[j] * sc / fmax(pixel_um, 1e-3));
-    dt_iop_image_copy(comp, raw, nn);
+    /* fma-pinned in the blur's column pass, matching
+       spektrafilm_diffusion_accum */
+    const sf_blur_out_t out = { .mode = SF_EMIT_ACCUM, .dst = acc, .ds = 3,
+                                .wt = { plan.wr[j], plan.wg[j], plan.wb[j] },
+                                .reset = (j == 0) };
     /* wide components decimate, as spektrafilm.c's GPU bank loop does from
        the same threshold */
     if(sigma >= SF_WIDE_BLUR_EFFECT_SIGMA)
-      sf_blur_plane3_wide(comp, w, h, roi_x, roi_y, sigma, plane1);
+      _sf_blur3_wide(raw, tmp, w, h, roi_x, roi_y, sigma, &out);
     else
-      for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans, /*exact_only=*/0);
-    const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
-    DT_OMP_FOR()
-    for(size_t i = 0; i < npix; i++)
-    {
-      acc[i * 3 + 0] = fmaf(wr, comp[i * 3 + 0], acc[i * 3 + 0]);
-      acc[i * 3 + 1] = fmaf(wg, comp[i * 3 + 1], acc[i * 3 + 1]);
-      acc[i * 3 + 2] = fmaf(wb, comp[i * 3 + 2], acc[i * 3 + 2]);
-    }
+      _sf_blur(raw, 3, 0, 3, tmp, w, h, sigma, 1e-6f, /*exact_only=*/0, &out);
   }
 
-  /* fma-pinned, matching spektrafilm_diffusion_accum / _mix */
+  /* fma-pinned, matching spektrafilm_diffusion_mix */
   const float ps = plan.p_s;
   DT_OMP_FOR()
   for(size_t i = 0; i < nn; i++) raw[i] = fmaf(ps, acc[i], (1.0f - ps) * raw[i]);
-
-  dt_free_align(acc);
-  dt_free_align(comp);
-  dt_free_align(plane1);
-  dt_free_align(trans);
 }

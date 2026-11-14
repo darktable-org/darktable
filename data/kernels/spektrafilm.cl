@@ -883,11 +883,11 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
  * narrower kernel has zero taps at both ends. */
 /* Young-van Vliet order-3 recursive Gaussian, one work-item per line. Same
    coefficients and same edge-replicated seeding as sf_gauss_yvv_coeffs /
-   _sf_gauss_iir_1d on the CPU, so both paths deliver the identical blur above
+   _sf_gauss_iir_step on the CPU, so both paths deliver the identical blur above
    SF_GAUSS_EXACT_MAX_SIGMA. Columns launch with global size (w, 1); rows are
    tiled, see spektrafilm_yvv_row_4c. */
 /* Incremental form and explicit fma(), in the same nesting as
-   _sf_gauss_iir_1d() in spektra_core.c -- see the comment there:
+   _sf_gauss_iir_step() in spektra_core.c -- see the comment there:
    v = w1 + (B*(x - w1) + B2*(w2 - w1) + B3*(w3 - w1)), which uses
    B1 = 1 - B - B2 - B3 and so takes no B1. It has unit DC gain whatever the
    coefficients round to, and no cancelling large terms. The recursion feeds
