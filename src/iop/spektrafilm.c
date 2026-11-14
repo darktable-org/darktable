@@ -2269,6 +2269,104 @@ static uint32_t _grain_salt(const dt_dev_pixelpipe_iop_t *piece)
   return grain_hash(grain_hash((uint32_t)t) ^ (uint32_t)(t >> 32));
 }
 
+/* Radius of the direct Gaussian kernel at `sigma`, as dt_gaussian_kernel_1d()
+   sets it: how far such a blur reaches. */
+static int _sf_kernel_reach(const float sigma)
+{
+  if(!(sigma > 0.0f)) return 0;
+  return CLAMP((int)fminf(3.0f * sigma + 0.5f, (float)SF_GAUSS_MAX_RADIUS), 1,
+               SF_GAUSS_MAX_RADIUS);
+}
+
+/* Reach of the stages from the scan on: the glare veil's blur and the
+   scanner's blur and unsharp mask. */
+static int _sf_scan_reach(const dt_iop_spektrafilm_params_t *const p,
+                          const float preview_scale)
+{
+  int reach = 0;
+  if(!p->scan_film && p->glare_percent > 0.0f)
+    reach += _sf_kernel_reach(SF_GLARE_BLUR_PX * preview_scale);
+  if(p->scan_blur > 0.0f) reach += _sf_kernel_reach(p->scan_blur * preview_scale);
+  if(p->scan_usm_sigma > 0.0f && p->scan_usm_amount > 0.0f)
+    reach += _sf_kernel_reach(p->scan_usm_sigma * preview_scale);
+  return reach;
+}
+
+/* Reach of the grain stage: the widest dye-cloud blur, which process() and
+   process_cl() pass in, the clump blur and the unsharp mask after it. */
+static int _sf_grain_reach(const dt_iop_spektrafilm_params_t *const p,
+                           const float preview_scale,
+                           const float dye_sigma_max)
+{
+  int reach = _sf_kernel_reach(dye_sigma_max);
+  reach += _sf_kernel_reach(p->grain_blur_base * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN)
+                            * preview_scale);
+  if(p->grain_usm_sigma > 0.0f && p->grain_usm_amount > 0.0f)
+    reach += _sf_kernel_reach(p->grain_usm_sigma * preview_scale);
+  return reach;
+}
+
+/* The window of the w x h buffer the stages still to come have to compute:
+   the output window (ox, oy, ow, oh) with `reach` pixels on every side,
+   clipped to the buffer.
+
+   Once the last blur with unbounded reach has run -- the recursive and the
+   decimated ones, which halation, the diffusion filters and the coupler
+   diffusion use -- every stage left is per pixel or blurs with a direct
+   kernel, so an output pixel depends on its neighbours up to the sum of the
+   kernel radii still to come. With that sum as `reach`, the output window
+   comes out of the window as it would out of the whole buffer: where the
+   window ends at the buffer's edge the blurs hold the same edge value, and
+   elsewhere the pixels they get wrong lie in the margin. */
+static void _sf_work_window(const int w,
+                            const int h,
+                            const int ox,
+                            const int oy,
+                            const int ow,
+                            const int oh,
+                            const int reach,
+                            int *x0,
+                            int *y0,
+                            int *ww,
+                            int *wh)
+{
+  *x0 = MAX(ox - reach, 0);
+  *y0 = MAX(oy - reach, 0);
+  *ww = MIN(ox + ow + reach, w) - *x0;
+  *wh = MIN(oy + oh + reach, h) - *y0;
+}
+
+/* Cuts the interleaved 3-channel w x h `plane` down to _sf_work_window() in
+   place and updates the buffer's size and the offset (ox, oy) of the output
+   window in it. (wx, wy), the buffer's origin in the input ROI, moves
+   along. */
+static void _sf_shrink_to_window(float *const plane,
+                                 int *w,
+                                 int *h,
+                                 int *ox,
+                                 int *oy,
+                                 const int ow,
+                                 const int oh,
+                                 const int reach,
+                                 int *wx,
+                                 int *wy)
+{
+  int x0, y0, ww, wh;
+  _sf_work_window(*w, *h, *ox, *oy, ow, oh, reach, &x0, &y0, &ww, &wh);
+  if(ww == *w && wh == *h) return;
+  /* rows move towards the start of the buffer, each one to at or before
+     where it was */
+  for(int y = 0; y < wh; y++)
+    memmove(plane + (size_t)y * ww * 3, plane + ((size_t)(y + y0) * *w + x0) * 3,
+            sizeof(float) * ww * 3);
+  *w = ww;
+  *h = wh;
+  *ox -= x0;
+  *oy -= y0;
+  *wx += x0;
+  *wy += y0;
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -2277,11 +2375,17 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_spektrafilm_data_t *const d = (dt_iop_spektrafilm_data_t *)piece->data;
-  /* process the FULL input ROI (expanded by modify_roi_in), then crop roi_out */
-  const int w = roi_in->width, h = roi_in->height;
+  /* process the FULL input ROI (expanded by modify_roi_in), then crop roi_out.
+     The work buffer is the whole input ROI up to the last blur with unbounded
+     reach and a window of it from there on, see _sf_shrink_to_window(): w, h
+     and npix are its size, (wx, wy) its origin in the input ROI and (ox, oy)
+     the output window's offset in it. */
+  const int iw = roi_in->width;
+  int w = roi_in->width, h = roi_in->height;
   const int ow = roi_out->width, oh = roi_out->height;
-  const int ox = roi_out->x - roi_in->x, oy = roi_out->y - roi_in->y;
-  const size_t npix = (size_t)w * h;
+  int ox = roi_out->x - roi_in->x, oy = roi_out->y - roi_in->y;
+  int wx = 0, wy = 0;
+  size_t npix = (size_t)w * h;
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
 
@@ -2407,13 +2511,30 @@ void process(dt_iop_module_t *self,
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
   dt_free_align(mix);
 
+  /* The print diffusion filter is the one blur with unbounded reach that may
+     still follow. Without it the buffer shrinks here, before grain; with it,
+     after the filter. */
+  sf_diffusion_plan_t pplan;
+  const gboolean print_diffusion
+      = !d->p.scan_film && d->p.print_diffusion_on
+        && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
+                                   d->p.print_diffusion_strength,
+                                   d->p.print_diffusion_warmth, &pplan)
+        && pplan.p_s > 0.0f;
+  const int scan_reach = _sf_scan_reach(&d->p, preview_scale);
+  const gboolean grain = d->p.grain_on && d->p.grain_amount > 0.0f;
+  if(!print_diffusion && !grain)
+  {
+    _sf_shrink_to_window(plane, &w, &h, &ox, &oy, ow, oh, scan_reach, &wx, &wy);
+    npix = (size_t)w * h;
+  }
+
   /* 4) grain on the developed CMY film density: sample a grained density,
         take its difference from the clean one, scale by strength, add it
         back, then clump-blur the combined field and recover acutance with
         the multiplicative unsharp mask (upstream's blur/usm pair) */
-  if(d->p.grain_on && d->p.grain_amount > 0.0f)
+  if(grain)
   {
-    const int roi_x = roi_in->x, roi_y = roi_in->y;
     const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
     const int mono = sf_sim_film_bw(sim); /* B&W: achromatic grain */
@@ -2470,6 +2591,18 @@ void process(dt_iop_module_t *self,
         dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * d->p.grain_dye_cloud
                            * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
       }
+
+    if(!print_diffusion)
+    {
+      float dye_max = 0.0f;
+      for(int c = 0; c < 3; c++)
+        for(int sl = 0; sl < nsub; sl++) dye_max = fmaxf(dye_max, dye_sigma[c][sl]);
+      _sf_shrink_to_window(plane, &w, &h, &ox, &oy, ow, oh,
+                           scan_reach + _sf_grain_reach(&d->p, preview_scale, dye_max), &wx, &wy);
+      npix = (size_t)w * h;
+    }
+    /* image coordinates of the buffer's origin, for the grain seeds */
+    const int roi_x = roi_in->x + wx, roi_y = roi_in->y + wy;
 
     /* the sub-layer buffers set the peak memory use of the module, see
        tiling_callback(); the stages from here on need buf_b only */
@@ -2602,26 +2735,26 @@ void process(dt_iop_module_t *self,
   if(!d->p.scan_film)
   {
     sf_sim_print_expose(sim, plane, plane, npix, 3, 3);
-    sf_diffusion_plan_t pplan;
-    if(d->p.print_diffusion_on
-       && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
-                                  d->p.print_diffusion_strength,
-                                  d->p.print_diffusion_warmth, &pplan)
-       && pplan.p_s > 0.0f
-       && (buf_a || (buf_a = dt_alloc_align_float(npix * 3))))
+    if(print_diffusion && (buf_a || (buf_a = dt_alloc_align_float(npix * 3))))
     {
       /* the filter scatters light, so it runs on linear print exposure, as the
          reference's printing.expose does, and the result goes back to log10
-         with the reference's 1e-10 floor. Same conversions as the
-         spektrafilm_pow10 / spektrafilm_log10 kernels. */
+         with the reference's 1e-10 floor. Same conversions as
+         spektrafilm_print_expose and spektrafilm_diffusion_mix make around
+         the filter. */
       DT_OMP_FOR()
       for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_pow10f(plane[k]);
-      sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
+      sf_diffusion_filter(plane, w, h, roi_in->x + wx, roi_in->y + wy, (double)pixel_um,
                           (int)d->p.print_diffusion_filter_family,
                           d->p.print_diffusion_strength, d->p.print_diffusion_scale,
                           d->p.print_diffusion_warmth, buf_a, buf_b);
       DT_OMP_FOR()
       for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_log10f(fmaxf(plane[k], 0.0f) + 1e-10f);
+    }
+    if(print_diffusion)
+    {
+      _sf_shrink_to_window(plane, &w, &h, &ox, &oy, ow, oh, scan_reach, &wx, &wy);
+      npix = (size_t)w * h;
     }
     sf_sim_print_develop(sim, plane, plane, npix, 3, 3);
   }
@@ -2633,13 +2766,13 @@ void process(dt_iop_module_t *self,
   const gboolean glare = !d->p.scan_film && d->p.glare_percent > 0.0f;
   if(glare)
     sf_glare_field(scratch, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
-                   SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y,
+                   SF_GLARE_BLUR_PX * preview_scale, roi_in->x + wx, roi_in->y + wy,
                    _grain_salt(piece), buf_b);
   sf_sim_scan(sim, plane, glare ? scratch : NULL, plane, npix, 3, 3);
 
-  /* 6b) scanner optics on the scanned RGB over the full padded ROI so the crop
-         below never sees an edge artifact ([sc] ScannerParams lens_blur /
-         unsharp_mask). */
+  /* 6b) scanner optics on the scanned RGB, over the output window and the
+         margin around it, so the crop below never sees an edge artifact
+         ([sc] ScannerParams lens_blur / unsharp_mask). */
   if(d->p.scan_blur > 0.0f)
     sf_blur_plane3(plane, w, h, d->p.scan_blur * preview_scale, buf_b);
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
@@ -2647,19 +2780,20 @@ void process(dt_iop_module_t *self,
                      buf_b);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
-    schedule(static) num_threads(darktable.num_openmp_threads)
+#pragma omp parallel for default(none) shared(plane)                                              \
+    firstprivate(out, in, w, iw, ow, oh, ox, oy, wx, wy) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
   for(int y = 0; y < oh; y++)
     for(int x = 0; x < ow; x++)
     {
-      const size_t ks = (size_t)(y + oy) * w + (x + ox);
-      const float *pl = plane + ks * 3;
+      const float *pl = plane + ((size_t)(y + oy) * w + (x + ox)) * 3;
       float *o = out + ((size_t)y * ow + x) * 4;
       o[0] = pl[0];
       o[1] = pl[1];
       o[2] = pl[2];
-      o[3] = in[ks * 4 + 3];
+      /* alpha from the input ROI, where the output window sits at the
+         buffer's offset plus its origin */
+      o[3] = in[((size_t)(y + oy + wy) * iw + (x + ox + wx)) * 4 + 3];
     }
 
   dt_free_align(plane);
