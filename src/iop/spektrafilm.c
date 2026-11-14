@@ -614,10 +614,10 @@ typedef struct dt_iop_spektrafilm_global_data_t
       kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
   int kernel_crop_out, kernel_scan_usm, kernel_glare_gen;
-  int kernel_scatter_combine, kernel_accum, kernel_halation_apply;
+  int kernel_scatter_combine, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_col_4c_accum, kernel_gauss_col_4c_accum;
-  int kernel_wide_rows, kernel_wide_down, kernel_wide_up;
+  int kernel_wide_rows, kernel_wide_down, kernel_wide_up, kernel_wide_up_accum;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
   int kernel_pow10, kernel_log10;
 } dt_iop_spektrafilm_global_data_t;
@@ -686,7 +686,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_glare_gen = dt_opencl_create_kernel(program, "spektrafilm_glare_gen");
   gd->kernel_passthrough = dt_opencl_create_kernel(program, "spektrafilm_passthrough");
   gd->kernel_scatter_combine = dt_opencl_create_kernel(program, "spektrafilm_scatter_combine");
-  gd->kernel_accum = dt_opencl_create_kernel(program, "spektrafilm_accum");
   gd->kernel_yvv_row_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_4c");
   gd->kernel_yvv_col_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c");
   gd->kernel_yvv_col_4c_accum = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c_accum");
@@ -695,6 +694,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_wide_rows = dt_opencl_create_kernel(program, "spektrafilm_wide_rows");
   gd->kernel_wide_down = dt_opencl_create_kernel(program, "spektrafilm_wide_down");
   gd->kernel_wide_up = dt_opencl_create_kernel(program, "spektrafilm_wide_up");
+  gd->kernel_wide_up_accum = dt_opencl_create_kernel(program, "spektrafilm_wide_up_accum");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
   gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
@@ -729,7 +729,6 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_glare_gen);
     dt_opencl_free_kernel(gd->kernel_passthrough);
     dt_opencl_free_kernel(gd->kernel_scatter_combine);
-    dt_opencl_free_kernel(gd->kernel_accum);
     dt_opencl_free_kernel(gd->kernel_yvv_row_4c);
     dt_opencl_free_kernel(gd->kernel_yvv_col_4c);
     dt_opencl_free_kernel(gd->kernel_yvv_col_4c_accum);
@@ -737,6 +736,7 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_wide_rows);
     dt_opencl_free_kernel(gd->kernel_wide_down);
     dt_opencl_free_kernel(gd->kernel_wide_up);
+    dt_opencl_free_kernel(gd->kernel_wide_up_accum);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_row_1c);
@@ -2768,10 +2768,12 @@ static cl_int _sf_yvv_blur_cl(const int devid,
 }
 
 /* Device half of sf_blur_plane3_wide(): a float4 w*h buffer `src` into
-   `dst`, which may be `src`.
+   `dst`, which may be `src`. With `acc`, `dst` is not used: the interpolation
+   adds the blur to `acc` with the channel weights `wt`, or stores it there
+   with `reset`, as spektrafilm_diffusion_accum would.
    Only for sigmas that sf_wide_blur_plan() decimates, which is all of them
-   from SF_WIDE_BLUR_MIN_SIGMA up: fails on any other, as `dst` would be left
-   unwritten. */
+   from SF_WIDE_BLUR_MIN_SIGMA up: fails on any other, as the destination
+   would be left unwritten. */
 static cl_int _sf_blur_wide_cl(const int devid,
                                dt_iop_spektrafilm_global_data_t *gd,
                                cl_mem src,
@@ -2780,7 +2782,10 @@ static cl_int _sf_blur_wide_cl(const int devid,
                                const int h,
                                const int roi_x,
                                const int roi_y,
-                               const float sigma)
+                               const float sigma,
+                               cl_mem acc,
+                               const float *wt,
+                               const int reset)
 {
   int k, lw, lh, ox, oy;
   float sigma_low;
@@ -2821,7 +2826,13 @@ static cl_int _sf_blur_wide_cl(const int devid,
       e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, lw, lh, CLARG(lowtmp),
                                            CLARG(low), CLARG(lw), CLARG(lh), CLARG(kw_cl),
                                            CLARG(kr));
-    if(e == CL_SUCCESS)
+    if(e == CL_SUCCESS && acc)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_up_accum, w, h, CLARG(low),
+                                           CLARG(acc), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv2k),
+                                           CLARG(wt[0]), CLARG(wt[1]), CLARG(wt[2]),
+                                           CLARG(reset));
+    else if(e == CL_SUCCESS)
       e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_up, w, h, CLARG(low),
                                            CLARG(dst), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
                                            CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv2k));
@@ -2909,35 +2920,29 @@ static cl_int _sf_scatter_blur_cl(const int devid,
   return e;
 }
 
-/* Term j of a diffusion filter bank: `src` blurred at `sigma` and added to
-   `acc` with the plan's channel weights. Decimated from
-   SF_WIDE_BLUR_EFFECT_SIGMA up, as sf_diffusion_filter() is. */
-static cl_int _sf_diffusion_term_cl(const int devid,
-                                    dt_iop_spektrafilm_global_data_t *gd,
-                                    cl_mem src,
-                                    cl_mem acc,
-                                    cl_mem blur,
-                                    cl_mem tmp,
-                                    cl_mem gauss_w,
-                                    const int w,
-                                    const int h,
-                                    const int roi_x,
-                                    const int roi_y,
-                                    const float sigma,
-                                    const sf_diffusion_plan_t *plan,
-                                    const int j)
+/* One term of a halation or diffusion sum: `src` blurred at `sigma` and added
+   to `acc` with the channel weights `wt`, or stored there with `reset`.
+   Decimated from SF_WIDE_BLUR_EFFECT_SIGMA up, as sf_diffusion_filter() and
+   sf_halation()'s bounces are. `blur` and `tmp` are float4 scratch. */
+static cl_int _sf_blur_term_cl(const int devid,
+                               dt_iop_spektrafilm_global_data_t *gd,
+                               cl_mem src,
+                               cl_mem acc,
+                               cl_mem blur,
+                               cl_mem tmp,
+                               cl_mem gauss_w,
+                               const int w,
+                               const int h,
+                               const int roi_x,
+                               const int roi_y,
+                               const float sigma,
+                               const float wt[3],
+                               const int reset)
 {
-  const float wt[3] = { plan->wr[j], plan->wg[j], plan->wb[j] };
-  const int reset = (j == 0);
   if(sigma < SF_WIDE_BLUR_EFFECT_SIGMA)
     return _sf_blur_accum_cl(devid, gd, src, acc, blur, tmp, gauss_w, w, h,
                              (const float[3]){ sigma, sigma, sigma }, wt, reset);
-  cl_int e = _sf_blur_wide_cl(devid, gd, src, blur, w, h, roi_x, roi_y, sigma);
-  if(e == CL_SUCCESS)
-    e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_accum, w, h, CLARG(blur),
-                                         CLARG(acc), CLARG(w), CLARG(h), CLARG(wt[0]),
-                                         CLARG(wt[1]), CLARG(wt[2]), CLARG(reset));
-  return e;
+  return _sf_blur_wide_cl(devid, gd, src, NULL, w, h, roi_x, roi_y, sigma, acc, wt, reset);
 }
 
 /* GPU path: mirrors process(). Per-pixel stages run as kernels on the
@@ -3127,45 +3132,6 @@ int process_cl(dt_iop_module_t *self,
     } \
     SF_CL_STEP(label); \
   } while(0)
-/* loop-safe variant: sets err, caller checks err/breaks; src/dst may differ
-   (e.g. accumulating several blurred copies of the same source). Falls back
-   to the fast recursive blur above SF_GAUSS_EXACT_MAX_SIGMA, same rationale
-   as SF_GAUSS_BLUR4_FAST -- none of this macro's callers (halation bounce,
-   coupler tail, both diffusion filters) renormalize against the exact
-   kernel's shape. */
-#define SF_GAUSS_BLUR4_OP_L(src, dst, _sg) do { \
-    if(err == CL_SUCCESS) \
-    { \
-      if((_sg) >= SF_GAUSS_EXACT_MAX_SIGMA) \
-        err = _sf_yvv_blur_cl(devid, gd, (src), (dst), gtmp4, w, h, \
-                              (const float[3]){ (_sg), (_sg), (_sg) }, NULL, NULL, 0); \
-      else \
-      { \
-        float _kw[4 * (2 * SF_GAUSS_MAX_RADIUS + 1)]; \
-        const int _kr = _sf_gauss_kernel4((const float[3]){ (_sg), (_sg), (_sg) }, _kw); \
-        err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
-                                               sizeof(float) * 4 * (2 * _kr + 1), TRUE); \
-        if(err == CL_SUCCESS) \
-          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, w, h, \
-                                                 CLARG(src), CLARG(gtmp4), CLARG(w), CLARG(h), \
-                                                 CLARG(gauss_w), CLARG(_kr)); \
-        if(err == CL_SUCCESS) \
-          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, w, h, \
-                                                 CLARG(gtmp4), CLARG(dst), CLARG(w), CLARG(h), \
-                                                 CLARG(gauss_w), CLARG(_kr)); \
-      } \
-    } \
-  } while(0)
-/* SF_GAUSS_BLUR4_OP_L, decimated from SF_WIDE_BLUR_EFFECT_SIGMA up: the
-   device twin of sf_diffusion_filter() and sf_halation()'s bounces, which call
-   sf_blur_plane3_wide() from the same threshold. */
-#define SF_BLUR4_WIDE_OP_L(src, dst, _sg) do { \
-    const float _ws = (_sg); \
-    if(err == CL_SUCCESS && _ws >= SF_WIDE_BLUR_EFFECT_SIGMA) \
-      err = _sf_blur_wide_cl(devid, gd, (src), (dst), w, h, roi_in->x, roi_in->y, _ws); \
-    else \
-      SF_GAUSS_BLUR4_OP_L(src, dst, _ws); \
-  } while(0)
 /* Exact-kernel-only single-channel blur, the GPU twin of sf_blur_plane1():
    that function passes exact_only=1 unconditionally, so its call sites must
    NOT fall back to the recursive approximation at large sigma. Used by the
@@ -3229,8 +3195,9 @@ int process_cl(dt_iop_module_t *self,
       {
         const float sigma
             = (float)((double)plan.sigma_um[j] * dsc / fmax((double)pixel_um, 1e-3));
-        err = _sf_diffusion_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
-                                    roi_in->x, roi_in->y, sigma, &plan, j);
+        err = _sf_blur_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
+                               roi_in->x, roi_in->y, sigma,
+                               (const float[3]){ plan.wr[j], plan.wg[j], plan.wb[j] }, j == 0);
         if(err != CL_SUCCESS) break;
       }
       if(err == CL_SUCCESS)
@@ -3342,14 +3309,11 @@ int process_cl(dt_iop_module_t *self,
            the sim's double rather than sf_sim_gpu_t's float mirror, double
            arithmetic throughout, sqrt() and not sqrtf(), the divide before the
            sqrt factor, and the CPU's 1e-6f floor. */
-        SF_BLUR4_WIDE_OP_L(plane, plane2,
-                           fmaxf((float)((cl_hal_sigma_um * (double)hscl
-                                          / (double)pixel_um) * sqrt((double)k)), 1e-6f));
-        SF_CL_STEP("halation bounce blur");
-        const int reset = (k == 1);
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
-                                               CLARG(acc), CLARG(w), CLARG(h), CLARG(dec[k - 1]),
-                                               CLARG(reset));
+        const float sk = fmaxf((float)((cl_hal_sigma_um * (double)hscl
+                                        / (double)pixel_um) * sqrt((double)k)), 1e-6f);
+        const float wk = dec[k - 1];
+        err = _sf_blur_term_cl(devid, gd, plane, acc, plane2, gtmp4, gauss_w, w, h,
+                               roi_in->x, roi_in->y, sk, (const float[3]){ wk, wk, wk }, k == 1);
         SF_CL_STEP("halation bounce accum");
       }
       /* halation_amount is a direct linear multiplier on strength, matching
@@ -3407,28 +3371,18 @@ int process_cl(dt_iop_module_t *self,
            the unblurred correction below SF_GAUSS_MIN_SIGMA, which is what
            the else branch below does. */
         const int reset = (g3 == 0);
-        if(sig[g3] >= SF_GAUSS_MIN_SIGMA && sig[g3] < SF_WIDE_BLUR_MIN_SIGMA)
-        {
-          err = _sf_blur_accum_cl(devid, gd, acc, tmpa, plane2, gtmp4, gauss_w, w, h,
-                                  (const float[3]){ sig[g3], sig[g3], sig[g3] },
-                                  (const float[3]){ amp[g3], amp[g3], amp[g3] }, reset);
-          SF_CL_STEP("coupler tail accum");
-          continue;
-        }
+        const float wt[3] = { amp[g3], amp[g3], amp[g3] };
         if(sig[g3] >= SF_WIDE_BLUR_MIN_SIGMA)
-        {
-          err = _sf_blur_wide_cl(devid, gd, acc, plane2, w, h, roi_in->x, roi_in->y, sig[g3]);
-          SF_CL_STEP("coupler tail blur");
-        }
+          err = _sf_blur_wide_cl(devid, gd, acc, NULL, w, h, roi_in->x, roi_in->y, sig[g3], tmpa,
+                                 wt, reset);
+        else if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
+          err = _sf_blur_accum_cl(devid, gd, acc, tmpa, plane2, gtmp4, gauss_w, w, h,
+                                  (const float[3]){ sig[g3], sig[g3], sig[g3] }, wt, reset);
         else
-        {
-          err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, acc, plane2, 0, 0, npix * f * 4);
-          SF_CL_STEP("coupler tail copy");
-        }
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_accum, w, h,
-                                               CLARG(plane2), CLARG(tmpa), CLARG(w), CLARG(h),
-                                               CLARG(amp[g3]), CLARG(amp[g3]), CLARG(amp[g3]),
-                                               CLARG(reset));
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_accum, w, h,
+                                                 CLARG(acc), CLARG(tmpa), CLARG(w), CLARG(h),
+                                                 CLARG(amp[g3]), CLARG(amp[g3]), CLARG(amp[g3]),
+                                                 CLARG(reset));
         SF_CL_STEP("coupler tail accum");
       }
     }
@@ -3440,7 +3394,8 @@ int process_cl(dt_iop_module_t *self,
          cuts here. */
       if(csigma >= SF_WIDE_BLUR_MIN_SIGMA)
       {
-        err = _sf_blur_wide_cl(devid, gd, acc, acc, w, h, roi_in->x, roi_in->y, csigma);
+        err = _sf_blur_wide_cl(devid, gd, acc, acc, w, h, roi_in->x, roi_in->y, csigma, NULL,
+                               NULL, 0);
         SF_CL_STEP("coupler blur");
       }
       else if(csigma >= SF_GAUSS_MIN_SIGMA)
@@ -3651,8 +3606,10 @@ int process_cl(dt_iop_module_t *self,
         {
           const float sigma
               = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
-          err = _sf_diffusion_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
-                                      roi_in->x, roi_in->y, sigma, &pplan, j);
+          err = _sf_blur_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
+                                 roi_in->x, roi_in->y, sigma,
+                                 (const float[3]){ pplan.wr[j], pplan.wg[j], pplan.wb[j] },
+                                 j == 0);
           if(err != CL_SUCCESS) break;
         }
         if(err == CL_SUCCESS)
