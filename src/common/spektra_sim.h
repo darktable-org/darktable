@@ -659,7 +659,7 @@ double sf_sim_film_dmax(const sf_sim_t *sim,
  * channels 0..2 are read/written, remaining channels are left untouched.
  * In-place operation (in == out) is allowed for every stage. */
 
-/* linear input RGB -> linear film raw exposure (includes 2^ev) */
+/* linear input RGB -> linear film raw exposure (includes 2^ev), floored at 0 */
 void sf_sim_expose(const sf_sim_t *sim,
                    const float *rgb_in,
                    float *raw,

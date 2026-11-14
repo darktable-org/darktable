@@ -4799,7 +4799,13 @@ void sf_sim_expose(const sf_sim_t *sim,
     float *out = raw + px * nch_out;
     float r[3];
     expose_pixel_f(sim->m_in_f, sim->tc_lut_f, sim->tc_n, in, r);
-    for(int c = 0; c < 3; c++) out[c] = r[c] * sim->ev_scale_f;
+    /* negative exposure is not light: the pre-film blurs would spread it as a
+       dark halo over its neighbours, so a single outlier from upstream
+       becomes a black disc the size of the diffusion or halation kernel.
+       Development floors exposure at 0 per pixel anyway (sf_sim_lograw), so
+       pixels no blur reaches are unchanged. Twin of the clamp in
+       spektrafilm_expose. */
+    for(int c = 0; c < 3; c++) out[c] = fmaxf(r[c] * sim->ev_scale_f, 0.0f);
   }
 }
 
