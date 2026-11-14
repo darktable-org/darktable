@@ -1663,7 +1663,7 @@ static inline float calcBlendFactor(float val, float threshold)
     // sigmoid function
     // result is in ]0;1] range
     // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + dt_fast_expf(16.0f - threshold * val));
+    return fp32_div(1.0f, 1.0f + dt_fast_expf(16.0f - threshold * val));
 }
 
 __kernel void calc_Y0_mask(global float *mask,

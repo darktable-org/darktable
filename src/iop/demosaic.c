@@ -899,7 +899,7 @@ void process(dt_iop_module_t *self,
 
   const float procmax = dt_iop_get_processed_maximum(piece);
   const float procmin = dt_iop_get_processed_minimum(piece);
-  const int exif_iso = img->exif_iso;
+  const float exif_iso = img->exif_iso;
 
   if(do_capture)
   {
