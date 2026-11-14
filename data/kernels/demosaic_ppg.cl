@@ -18,23 +18,6 @@
 
 #include "common.h"
 
-
-
-// FC return values are either 0/1/2/3 = G/M/C/Y or 0/1/2/3 = R/G1/B/G2
-#define FCV(val, col) ((col == 0) ? val.x : ((col & 1) ? val.y : val.z) )
-
-int2
-backtransformi (float2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
-{
-  return (int2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
-}
-
-float2
-backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
-{
-  return (float2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
-}
-
 kernel void
 green_equilibration_lavg(read_only image2d_t in,
                          write_only image2d_t out,
