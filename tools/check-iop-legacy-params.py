@@ -34,7 +34,7 @@ import sys
 import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from dwarf_types import TypeSizes # noqa: E402
+from dwarf_types import TypeSizes, have_objdump # noqa: E402
 
 HISTORY_ENTRY = re.compile(r"<rdf:li[^>]*?/>", re.S)
 ATTR = {name: re.compile(r'%s="([^"]*)"' % name)
@@ -95,6 +95,9 @@ def main():
         sys.stderr.write(
             "error: no XMP corpus at %s\n"
             "       git submodule update --init src/tests/integration\n" % xmp_dir)
+        return 2
+    if not have_objdump():
+        sys.stderr.write("error: objdump not found, install binutils\n")
         return 2
 
     print("build : %s" % build_dir)

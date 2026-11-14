@@ -33,7 +33,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from dwarf_types import TypeSizes # noqa: E402
+from dwarf_types import TypeSizes, have_objdump # noqa: E402
 
 INTROSPECTION = re.compile(
     r"DT_MODULE_INTROSPECTION\(\s*\d+\s*,\s*(dt_iop_[A-Za-z0-9_]+_params_t)\s*\)")
@@ -74,6 +74,9 @@ def main():
             "usage: %s [build-dir]   (needs a tree built with debug info)\n"
             % (build_dir, os.path.basename(sys.argv[0])))
         return 2
+    if not have_objdump():
+        sys.stderr.write("error: objdump not found, install binutils\n")
+        return 2
 
     print("source: %s" % os.path.normpath(source_dir))
     print("build : %s\n" % build_dir)
@@ -82,7 +85,7 @@ def main():
     if not plugins:
         sys.stderr.write(
             "error: no plugins under %s -- that is not a built darktable tree.\n"
-            "       Pass the build directory, e.g. build-sanitize.\n" % build_dir)
+            "       Pass the build directory, e.g. build.\n" % build_dir)
         return 2
 
     violations, checked, skipped = [], 0, []
@@ -154,8 +157,8 @@ def main():
     if not checked:
         sys.stderr.write(
             "\nerror: no module could be checked. Either %s is not a darktable\n"
-            "       build, or its plugins carry no debug info -- build with\n"
-            "       -DCMAKE_BUILD_TYPE=RelWithDebInfo.\n" % build_dir)
+            "       build, or its plugins carry no debug info: they were\n"
+            "       stripped, or CUSTOM_CFLAGS left out -g.\n" % build_dir)
         return 2
 
     return 1 if violations else 0

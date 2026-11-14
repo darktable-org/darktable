@@ -9,15 +9,18 @@ Why not pyelftools: objdump ships with binutils, which is already needed to
 build darktable, and following DW_AT_type by offset is all the resolution
 required here -- no new dependency for the callers.
 
-Needs a build with debug info; RelWithDebInfo is enough.
+Needs unstripped plugins. Every darktable build compiles with -g
+(src/CMakeLists.txt), unless CUSTOM_CFLAGS replaces the flags.
 """
 
 import re
+import shutil
 import subprocess
 
 _DIE = re.compile(r"^\s*<\d+><([0-9a-f]+)>:.*\((DW_TAG_\w+)\)")
-# The name is either an indirect string ("...offset: 0x1234): foo") or inline.
-_NAME = re.compile(r"DW_AT_name\s*:\s*(?:\(indirect string[^)]*\):\s*)?(\S+)\s*$")
+# The name is inline, or a string table reference: "(indirect string, offset:
+# 0x1234): foo" from GCC, "(indexed string: 0x3): foo" from clang's DWARF 5.
+_NAME = re.compile(r"DW_AT_name\s*:\s*(?:\((?:indirect|indexed) string[^)]*\):\s*)?(\S+)\s*$")
 _SIZE = re.compile(r"DW_AT_byte_size\s*:\s*(\d+)")
 _TYPE = re.compile(r"DW_AT_type\s*:\s*<0x([0-9a-f]+)>")
 
@@ -27,6 +30,12 @@ _CARRIERS = ("DW_TAG_structure_type", "DW_TAG_typedef",
              "DW_TAG_const_type", "DW_TAG_volatile_type")
 
 MAX_CHAIN = 16
+
+
+def have_objdump():
+    """TypeSizes reads nothing without objdump, which looks like missing
+    debug info. Callers check this first to say what is actually wrong."""
+    return shutil.which("objdump") is not None
 
 
 class TypeSizes:
