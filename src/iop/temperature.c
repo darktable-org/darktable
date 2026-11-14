@@ -571,6 +571,23 @@ static const double *_own_coeffs(const int preset,
   }
 }
 
+// the mode that decides which multipliers params p apply, in the pipe and the
+// GUI alike. Legacy params have none: they take "as shot" or "camera reference"
+// if their multipliers are the image's own for that mode. A saved mode is kept
+// even where its multipliers equal those, or it would ignore them from then on
+static int _params_mode(const dt_iop_temperature_params_t *p,
+                        const double *const as_shot,
+                        const double *const D65coeffs)
+{
+  if(p->preset != DT_IOP_TEMP_UNKNOWN)
+    return p->preset;
+  if(dt_dev_equal_chroma((const float *)p, as_shot))
+    return DT_IOP_TEMP_AS_SHOT;
+  if(dt_dev_equal_chroma((const float *)p, D65coeffs))
+    return DT_IOP_TEMP_D65;
+  return DT_IOP_TEMP_UNKNOWN;
+}
+
 // the WB that temperature applies with params p, for the modules that
 // complete the correction: pipe->wb at commit time, and color calibration's
 // GUI before any pipe has committed. as_shot and D65coeffs are the image's
@@ -586,7 +603,8 @@ static void _wb_from_params(const dt_iop_temperature_params_t *p,
   // image; nothing is applied there, whatever enabled says
   const gboolean applied = enabled && !true_monochrome;
   const float *const pcoeffs = (const float *)p;
-  const double *const own = _own_coeffs(p->preset, as_shot, D65coeffs);
+  const int mode = _params_mode(p, as_shot, D65coeffs);
+  const double *const own = _own_coeffs(mode, as_shot, D65coeffs);
 
   for_four_channels(k)
   {
@@ -594,7 +612,7 @@ static void _wb_from_params(const dt_iop_temperature_params_t *p,
     wb->coeffs[k] = applied ? coeff : 1.0f;
     wb->D65coeffs[k] = D65coeffs[k];
   }
-  wb->camera_reference = applied && p->preset == DT_IOP_TEMP_D65;
+  wb->camera_reference = applied && mode == DT_IOP_TEMP_D65;
   // no late correction in 'camera reference' mode; if not applied,
   // nothing for a later module to finish
   wb->late_correction = applied && !wb->camera_reference && p->late_correction;
@@ -1340,17 +1358,9 @@ void gui_update(dt_iop_module_t *self)
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
 
-  // only legacy params, which have no saved mode, are matched against the
-  // image's own multipliers. A saved mode is never relabeled "as shot" or
-  // "camera reference", even where its stored multipliers equal those: it
-  // would then ignore them from the next history item on
-  if(p->preset == DT_IOP_TEMP_UNKNOWN)
-  {
-    if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
-      p->preset = DT_IOP_TEMP_AS_SHOT;
-    else if(dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
-      p->preset = DT_IOP_TEMP_D65;
-  }
+  // the pipe already processes legacy params in this mode (_wb_from_params());
+  // stored here, it labels them, and the next history item saves it
+  p->preset = _params_mode(p, chr->as_shot, chr->wb.D65coeffs);
 
   // "as shot" and "camera reference" show the image's own multipliers, which
   // processing applies (_own_coeffs()), and a slider edit starts from them.
