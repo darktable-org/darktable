@@ -33,16 +33,18 @@
 
 /* Spatial effects implemented in spektra_core.c (they need dt_alloc_align_float
    and OpenMP linkage; everything else in this header is inline). */
+/* Both blur an interleaved 3-channel w*h buffer in place; `tmp` is a w*h*3
+   scratch. */
 void sf_blur_plane3(float *buf,
                     int w,
                     int h,
                     float sigma,
-                    float *plane);
+                    float *tmp);
 void sf_blur_plane3_fast(float *buf,
                          int w,
                          int h,
                          float sigma,
-                         float *plane);
+                         float *tmp);
 
 /* Wide Gaussian by decimation, for sigmas where even the recursive filter
    is too imprecise in float32 to give the same result on two devices: its
@@ -91,7 +93,7 @@ int sf_wide_blur_plan(float sigma,
 void sf_wide_blur_inv_table(int k,
                             float *inv);
 /* In place on an interleaved 3-channel w*h buffer. Falls back to
-   sf_blur_plane3_fast below SF_WIDE_BLUR_MIN_SIGMA. `plane` is a w*h
+   sf_blur_plane3_fast below SF_WIDE_BLUR_MIN_SIGMA. `tmp` is a w*h*3
    scratch as for sf_blur_plane3_fast. */
 void sf_blur_plane3_wide(float *buf,
                          int w,
@@ -99,7 +101,21 @@ void sf_blur_plane3_wide(float *buf,
                          int roi_x,
                          int roi_y,
                          float sigma,
-                         float *plane);
+                         float *tmp);
+/* The same blur of `src`, which is left alone, added to `acc` with the
+   channel weights `wt` as acc = fmaf(wt, blurred, acc); with `reset`, acc is
+   taken as zero. With wt NULL the blur is stored in `acc`. Below
+   SF_GAUSS_MIN_SIGMA the unblurred `src` takes the place of the blur. */
+void sf_blur_plane3_wide_accum(const float *src,
+                               float *acc,
+                               int w,
+                               int h,
+                               int roi_x,
+                               int roi_y,
+                               float sigma,
+                               const float wt[3],
+                               int reset,
+                               float *tmp);
 /* Same exact-kernel blur as sf_blur_plane3, but operating directly on a
    single flat w*h buffer (no 3-channel interleave) -- used for the
    per-sublayer dye-cloud blur inside grain generation, where each
@@ -107,28 +123,27 @@ void sf_blur_plane3_wide(float *buf,
    will not do. No lower sigma cutoff
    (unlike sf_blur_plane3's 0.3px guard for the visible clump blur): the
    dye-cloud sigma is often well under a pixel and still meaningfully
-   softens the raw particle draw, matching upstream's plain `> 0` check. */
+   softens the raw particle draw, matching upstream's plain `> 0` check.
+   `tmp` is a w*h scratch. */
 void sf_blur_plane1(float *buf,
                     int w,
                     int h,
                     float sigma,
-                    float *plane,
-                    float *trans);
+                    float *tmp);
 /* Additive unsharp mask on the scanned RGB ([df] apply_unsharp_mask):
-   out = D + amount * (D - blur(D)). `orig` and `work` are w*h*3 and w*h
-   scratch buffers supplied by the caller. */
+   out = D + amount * (D - blur(D)). `tmp` is a w*h*3 scratch buffer supplied
+   by the caller. */
 void sf_unsharp_mask3(float *buf,
                       int w,
                       int h,
                       float sigma,
                       float amount,
-                      float *orig,
-                      float *work);
+                      float *tmp);
 /* Viewing-glare field ([gl] compute_random_glare_amount): fills the w*h
    buffer `field` with a blurred lognormal of mean percent/100 (relative std
    `roughness`), for sf_sim_scan to add as the viewing illuminant. roi_x/roi_y
    are absolute image coordinates so the veil is stable under pan and zoom;
-   salt is the per-image grain seed salt. */
+   salt is the per-image grain seed salt. `tmp` is a w*h scratch. */
 void sf_glare_field(float *field,
                     int w,
                     int h,
@@ -137,16 +152,17 @@ void sf_glare_field(float *field,
                     float blur,
                     int roi_x,
                     int roi_y,
-                    uint32_t salt);
+                    uint32_t salt,
+                    float *tmp);
 
+/* `floor_d` is the density floor per channel; `tmp` is a w*h*3 scratch. */
 void sf_multiplicative_unsharp_mask3(float *buf,
                                      int w,
                                      int h,
                                      float sigma,
                                      float amount,
                                      const float *floor_d,
-                                     float *orig,
-                                     float *work);
+                                     float *tmp);
 /* Two independently-controllable stages, matching upstream's HalationParams:
  *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
  *   halation_amount / halation_scale -- stage 2, back-reflection multi-bounce
@@ -160,7 +176,8 @@ void sf_multiplicative_unsharp_mask3(float *buf,
    micrometres on film, and the core/tail mix weight. Already collapsed to one
    value per channel for a single-emulsion stock, and already clamped by the
    caller to what the ROI padding covers. roi_x/roi_y are the buffer's origin
-   in image coordinates, for sf_blur_plane3_wide()'s block grid. */
+   in image coordinates, for sf_blur_plane3_wide()'s block grid. `buf_a` and
+   `buf_b` are w*h*3 scratch buffers and `plane` a w*h one. */
 void sf_halation(float *raw,
                  int w,
                  int h,
@@ -175,7 +192,10 @@ void sf_halation(float *raw,
                  float halation_amount,
                  float halation_scale,
                  const double halation_strength[3],
-                 double halation_first_sigma_um);
+                 double halation_first_sigma_um,
+                 float *buf_a,
+                 float *buf_b,
+                 float *plane);
 /* Stops of headroom above the protect threshold over which the boost is spread.
    The reference spreads it from the threshold up to the frame's own peak; that
    peak is a whole-image reduction, which a per-ROI/per-tile pixelpipe cannot
@@ -212,7 +232,8 @@ void sf_boost_highlights(float *raw,
                          float boost_ev,
                          float boost_range,
                          float protect_ev);
-/* roi_x/roi_y as for sf_halation(). */
+/* roi_x/roi_y as for sf_halation(). `acc` and `tmp` are w*h*3 scratch
+   buffers. */
 void sf_diffusion_filter(float *raw,
                          int w,
                          int h,
@@ -222,7 +243,9 @@ void sf_diffusion_filter(float *raw,
                          int family,
                          float strength,
                          float spatial_scale,
-                         float halo_warmth);
+                         float halo_warmth,
+                         float *acc,
+                         float *tmp);
 
 /* Diffusion-filter Gaussian bank, built host-side and consumed by the GPU path
    (the CPU path builds it internally). Each entry is one Gaussian blur of the
@@ -276,7 +299,7 @@ int sf_diffusion_build_plan(int family,
 /* Widest sigma the recursive filter is asked for. Above this its float32
    coefficients stop describing the filter we want: B falls towards 1e-7 while
    B2 and B3 stay near -3 and 1, and their rounding moves the poles. The
-   incremental evaluation in _sf_gauss_iir_1d keeps the DC gain at exactly 1
+   incremental evaluation in _sf_gauss_iir_step keeps the DC gain at exactly 1
    whatever the coefficients round to, but the width still drifts. Measured
    effective vs requested sigma, single pass, float32, impulse response:
 

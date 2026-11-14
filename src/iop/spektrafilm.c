@@ -2173,12 +2173,12 @@ void tiling_callback(dt_iop_module_t *self,
     = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
   /* Peak simultaneous buffers, in multiples of one RGBA tile.
-     CPU: input + output (2.0) plus plane at 3 channels and the 1-channel
-     blur scratch (1.0), a 3.0 baseline. Halation and the diffusion filter
-     each add two 1-channel and two 3-channel buffers (2.0), for 5.0. From
-     development on, corr at 3 channels is live too (3.75); the coupler tail
-     adds 1.5 and grain up to 2.0 at the maximum sub-layer count. The stages
-     run one after another, so grain sets the peak at 5.75.
+     CPU: input + output (2.0) plus plane and two work buffers at 3 channels
+     and the 1-channel scratch (2.5), a 4.5 baseline that covers halation and
+     the diffusion filters. The coupler tail adds one 3-channel buffer (5.25).
+     Grain releases one work buffer and adds up to 2.0 at the maximum
+     sub-layer count. The stages run one after another, so grain sets the peak
+     at 5.75.
      OpenCL: input + output plus five float4 buffers (plane, plane2, tmpa, acc,
      gtmp4) and a single-channel one (gtmp1), a 7.25 baseline; the
      grain stage adds an accumulator and one buffer per sub-layer, up to 2.25.
@@ -2285,11 +2285,18 @@ void process(dt_iop_module_t *self,
   const float preview_scale = fminf(roi_in->scale, 1.0f);
 
   float *plane = dt_alloc_align_float(npix * 3);  /* raw / lograw / cmy, in place */
-  float *scratch = dt_alloc_align_float(npix);    /* 1ch blur scratch */
-  if(!plane || !scratch)
+  float *scratch = dt_alloc_align_float(npix);    /* 1ch blur scratch, grain's and the glare field */
+  /* two 3-channel work buffers for the spatial stages: the scratch of a blur
+     and the accumulator of a bank of them. buf_a also holds the DIR coupler
+     correction field. */
+  float *buf_a = dt_alloc_align_float(npix * 3);
+  float *buf_b = dt_alloc_align_float(npix * 3);
+  if(!plane || !scratch || !buf_a || !buf_b)
   {
     dt_free_align(plane);
     dt_free_align(scratch);
+    dt_free_align(buf_a);
+    dt_free_align(buf_b);
     _passthrough(in, out, w, oh, ow, ox, oy);
     return;
   }
@@ -2312,7 +2319,8 @@ void process(dt_iop_module_t *self,
   if(d->p.diffusion_on)
     sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
                         (int)d->p.diffusion_filter_family,
-                        d->p.diffusion_strength, d->p.diffusion_scale, d->p.diffusion_warmth);
+                        d->p.diffusion_strength, d->p.diffusion_scale, d->p.diffusion_warmth,
+                        buf_a, buf_b);
   if(d->p.halation_on && (d->p.scatter_amount > 0.0f || d->p.halation_amount > 0.0f))
   {
     double hal_strength[3], hal_sigma_um;
@@ -2331,20 +2339,13 @@ void process(dt_iop_module_t *self,
     }
     sf_halation(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um, sc_core, sc_tail, sc_w,
                 d->p.scatter_amount, d->p.scatter_scale, d->p.halation_amount,
-                d->p.halation_scale, hal_strength, hal_sigma_um);
+                d->p.halation_scale, hal_strength, hal_sigma_um, buf_a, buf_b, scratch);
   }
 
-  /* DIR coupler correction field, later the grain delta and unsharp-mask
-     buffer; first needed in development, so it is not live during the
-     pre-film spatial effects above */
-  float *corr = dt_alloc_align_float(npix * 3);
-  if(!corr)
-  {
-    dt_free_align(plane);
-    dt_free_align(scratch);
-    _passthrough(in, out, w, oh, ow, ox, oy);
-    return;
-  }
+  /* DIR coupler correction field; `mix` takes its place when the correction
+     has a tail */
+  float *corr = buf_a;
+  float *mix = NULL;
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
         field diffuses in the emulsion: gaussian, sigma 20 um as in the
@@ -2364,38 +2365,34 @@ void process(dt_iop_module_t *self,
       const float amp[3] = { SF_EXPTAIL_A0, SF_EXPTAIL_A1, SF_EXPTAIL_A2 };
       const float rat[3] = { SF_EXPTAIL_R0, SF_EXPTAIL_R1, SF_EXPTAIL_R2 };
       const float tail_px = (float)ctail_um / fmaxf(pixel_um, 1e-3f);
-      float *mix = dt_alloc_align_float(npix * 3);
-      float *tmp = dt_alloc_align_float(npix * 3);
-      if(mix && tmp)
+      mix = dt_alloc_align_float(npix * 3);
+      if(mix)
       {
+        /* every term blurs `corr` itself, which a blur leaves alone, and
+           sf_blur_plane3_wide_accum() passes it on unblurred below
+           SF_GAUSS_MIN_SIGMA */
         const float wbase = 1.0f - (float)ctail_w;
-        memcpy(tmp, corr, sizeof(float) * npix * 3);
-        if(csigma > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, csigma, scratch);
+        sf_blur_plane3_wide_accum(corr, mix, w, h, roi_in->x, roi_in->y, csigma, NULL, 0, buf_b);
         DT_OMP_FOR()
-        for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * tmp[i];
+        for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * mix[i];
         for(int g3 = 0; g3 < 3; g3++)
         {
-          memcpy(tmp, corr, sizeof(float) * npix * 3);
           const float ts = rat[g3] * tail_px;
-          if(ts > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, ts, scratch);
           const float wk = (float)ctail_w * amp[g3];
-          /* fma-pinned, matching spektrafilm_diffusion_accum */
-          DT_OMP_FOR()
-          for(size_t i = 0; i < npix * 3; i++) mix[i] = fmaf(wk, tmp[i], mix[i]);
+          /* fma-pinned in the blur, matching spektrafilm_diffusion_accum */
+          sf_blur_plane3_wide_accum(corr, mix, w, h, roi_in->x, roi_in->y, ts,
+                                    (const float[3]){ wk, wk, wk }, 0, buf_b);
         }
-        dt_free_align(corr);
         corr = mix;
-        mix = NULL;
       }
       else if(csigma > 0.1f)
-        sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch); /* alloc failed: core only */
-      dt_free_align(mix);
-      dt_free_align(tmp);
+        sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, buf_b); /* alloc failed: core only */
     }
     else if(csigma > 0.1f)
-      sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch);
+      sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, buf_b);
   }
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
+  dt_free_align(mix);
 
   /* 4) grain on the developed CMY film density: sample a grained density,
         take its difference from the clean one, scale by strength, add it
@@ -2403,7 +2400,6 @@ void process(dt_iop_module_t *self,
         the multiplicative unsharp mask (upstream's blur/usm pair) */
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
-    float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
     const int roi_x = roi_in->x, roi_y = roi_in->y;
     const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
@@ -2462,6 +2458,10 @@ void process(dt_iop_module_t *self,
                            * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
       }
 
+    /* the sub-layer buffers set the peak memory use of the module, see
+       tiling_callback(); the stages from here on need buf_b only */
+    dt_free_align(buf_a);
+    buf_a = NULL;
     float *raw[SF_GRAIN_MAX_SUBLAYERS] = { 0 };
     gboolean raw_ok = TRUE;
     for(int sl = 0; sl < nsub; sl++)
@@ -2470,9 +2470,7 @@ void process(dt_iop_module_t *self,
       if(!raw[sl]) raw_ok = FALSE;
     }
 
-    if(!raw_ok)
-      memset(gbuf, 0, npix * 3 * sizeof(float)); /* allocation failed: skip grain gracefully */
-    else
+    if(raw_ok) /* else the allocation failed: skip grain gracefully */
     {
       const int n_out_ch = mono ? 1 : 3;
       for(int oc = 0; oc < n_out_ch; oc++)
@@ -2502,11 +2500,14 @@ void process(dt_iop_module_t *self,
            restoration (matching upstream: layer_particle_model doesn't
            renormalize after its blur_particle pass either). */
         for(int sl = 0; sl < nsub; sl++)
-          sf_blur_plane1(raw[sl], w, h, dye_sigma[channel_idx][sl], NULL, scratch);
+          sf_blur_plane1(raw[sl], w, h, dye_sigma[channel_idx][sl], scratch);
         /* combine: sum sub-layers, subtract the density floor and the
-           original clean density, scale by strength. */
+           original clean density, scale by strength, and add the delta onto
+           the density. A color channel's draw reads its own channel of
+           `plane` only, and the achromatic one writes all three at once, so
+           the delta goes straight in. */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, gbuf, raw)                                  \
+#pragma omp parallel for default(none) shared(plane, raw)                                        \
     firstprivate(npix, nsub, channel_idx, mono, oc, amount, gdmin) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
         for(size_t k = 0; k < npix; k++)
@@ -2518,8 +2519,10 @@ void process(dt_iop_module_t *self,
                                            / 3.0f
                                      : plane[k * 3 + channel_idx];
           const float delta = (g - density) * amount;
-          if(mono) gbuf[k * 3 + 0] = gbuf[k * 3 + 1] = gbuf[k * 3 + 2] = delta;
-          else gbuf[k * 3 + oc] = delta;
+          if(mono)
+            for(int c = 0; c < 3; c++) plane[k * 3 + c] += delta;
+          else
+            plane[k * 3 + oc] = density + delta;
         }
       }
     }
@@ -2531,8 +2534,8 @@ void process(dt_iop_module_t *self,
        sf_sim_grain_dmin_total(). The subtracted term must be that sum;
        grain_density_min in its place leaves a constant +(sum - density_min)
        per unit strength. */
-    /* Add the still-UNBLURRED delta onto the clean density first, so the clump
-       blur below runs on the grained ABSOLUTE density -- image detail and grain
+    /* The combine above adds the still-UNBLURRED delta onto the clean density, so
+       the clump blur below runs on the grained ABSOLUTE density -- image detail and grain
        together -- which is what upstream blurs (_finalize_grain in grain.py
        smooths density_cmy_out itself, not a separate grain layer).
 
@@ -2546,11 +2549,6 @@ void process(dt_iop_module_t *self,
        and reads as crunchy, over-defined edges on fine high-contrast texture.
        Softening genuine detail here is intended, not a side effect -- it is
        what the emulsion does, and what upstream's own output shows. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix)              \
-    schedule(static) num_threads(darktable.num_openmp_threads)
-#endif
-    for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k];
     /* Upstream's grain blur (GrainParams.blur, params_schema.py) is a
        literal FIXED pixel sigma (0.8), independent of pixel_um/resolution/
        film_format_mm -- confirmed empirically: measuring the real
@@ -2571,7 +2569,7 @@ void process(dt_iop_module_t *self,
        optical clumping. Restoring full pre-blur variance would make grain
        higher-contrast, and therefore visually coarser, than upstream at any
        matching sigma. */
-    sf_blur_plane3(plane, w, h, sigma, scratch);
+    sf_blur_plane3(plane, w, h, sigma, buf_b);
     /* Acutance recovery for the blur above, and only meaningful because of it:
        these two are tuned together (defaults sigma 0.7 / amount 1.5). */
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
@@ -2583,7 +2581,7 @@ void process(dt_iop_module_t *self,
          ratio is ill-conditioned in the deepest shadows and the USM
          amplifies shadow noise the reference never does. */
       sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma * preview_scale,
-                                       d->p.grain_usm_amount, gdmin, corr, scratch);
+                                       d->p.grain_usm_amount, gdmin, buf_b);
   }
 
   /* 5) print exposure + development (skipped in scan-film mode) */
@@ -2595,7 +2593,8 @@ void process(dt_iop_module_t *self,
        && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
                                   d->p.print_diffusion_strength,
                                   d->p.print_diffusion_warmth, &pplan)
-       && pplan.p_s > 0.0f)
+       && pplan.p_s > 0.0f
+       && (buf_a || (buf_a = dt_alloc_align_float(npix * 3))))
     {
       /* the filter scatters light, so it runs on linear print exposure, as the
          reference's printing.expose does, and the result goes back to log10
@@ -2606,7 +2605,7 @@ void process(dt_iop_module_t *self,
       sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
                           (int)d->p.print_diffusion_filter_family,
                           d->p.print_diffusion_strength, d->p.print_diffusion_scale,
-                          d->p.print_diffusion_warmth);
+                          d->p.print_diffusion_warmth, buf_a, buf_b);
       DT_OMP_FOR()
       for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_log10f(fmaxf(plane[k], 0.0f) + 1e-10f);
     }
@@ -2616,22 +2615,22 @@ void process(dt_iop_module_t *self,
   /* 6) scanning: viewing light through the print/film -> XYZ, plus the viewing
         glare veil in XYZ ([gl] add_glare, skipped when the film itself is
         scanned), -> work RGB with OkLCh gamut compression. `scratch` carries
-        the glare field into the scan and is free again afterwards. */
+        the glare field into the scan. */
   const gboolean glare = !d->p.scan_film && d->p.glare_percent > 0.0f;
   if(glare)
     sf_glare_field(scratch, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
                    SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y,
-                   _grain_salt(piece));
+                   _grain_salt(piece), buf_b);
   sf_sim_scan(sim, plane, glare ? scratch : NULL, plane, npix, 3, 3);
 
   /* 6b) scanner optics on the scanned RGB over the full padded ROI so the crop
          below never sees an edge artifact ([sc] ScannerParams lens_blur /
          unsharp_mask). */
   if(d->p.scan_blur > 0.0f)
-    sf_blur_plane3(plane, w, h, d->p.scan_blur * preview_scale, scratch);
+    sf_blur_plane3(plane, w, h, d->p.scan_blur * preview_scale, buf_b);
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
     sf_unsharp_mask3(plane, w, h, d->p.scan_usm_sigma * preview_scale, d->p.scan_usm_amount,
-                     corr, scratch);
+                     buf_b);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
@@ -2650,8 +2649,9 @@ void process(dt_iop_module_t *self,
     }
 
   dt_free_align(plane);
-  dt_free_align(corr);
   dt_free_align(scratch);
+  dt_free_align(buf_a);
+  dt_free_align(buf_b);
 }
 
 #ifdef HAVE_OPENCL
@@ -2691,7 +2691,7 @@ static int _sf_blur_rounds(const float sigma)
 }
 
 /* Separable Young-van Vliet pass on the device, the GPU half of
-   sf_gauss_yvv_coeffs / _sf_gauss_iir_1d. `tmp` is a scratch buffer of the same
+   sf_gauss_yvv_coeffs / _sf_gauss_iir_step. `tmp` is a scratch buffer of the same
    shape as `src`; `dst` may be `src`. `sigma` holds one sigma per color
    channel, and all three have to take the same number of passes.
 
@@ -3409,13 +3409,10 @@ int process_cl(dt_iop_module_t *self,
       const float sig[4] = { csigma, er[0] * tail_px, er[1] * tail_px, er[2] * tail_px };
       for(int g3 = 0; g3 < 4; g3++)
       {
-        /* >= SF_GAUSS_MIN_SIGMA, not > 0.1f: the CPU twin guards with
-           `if(ts > 0.1f) sf_blur_plane3_wide(...)`, which decimates from
-           SF_WIDE_BLUR_MIN_SIGMA up and below that hands over to
-           sf_blur_plane3_fast, which returns without touching the buffer below
-           SF_GAUSS_MIN_SIGMA -- so the CPU blurs iff the sigma clears 0.3.
-           Between 0.1 and 0.3 it copies the unblurred correction, which is
-           what the else branch below does. */
+        /* the CPU twin is sf_blur_plane3_wide_accum(), which decimates from
+           SF_WIDE_BLUR_MIN_SIGMA up, runs the plain blur below that and takes
+           the unblurred correction below SF_GAUSS_MIN_SIGMA, which is what
+           the else branch below does. */
         const int reset = (g3 == 0);
         if(sig[g3] >= SF_GAUSS_MIN_SIGMA && sig[g3] < SF_WIDE_BLUR_MIN_SIGMA)
         {
