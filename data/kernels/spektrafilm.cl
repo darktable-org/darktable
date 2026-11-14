@@ -339,11 +339,38 @@ static float sf_cmax_lookup(__global const float *table, const int nl, const int
 /* per-pixel stage kernels                                                  */
 /* ======================================================================== */
 
+/* Highlight boost; the constants come from sf_boost_build_plan() on the host,
+   and the per-value expression matches sf_boost_highlights() term for term,
+   including the tangent continuation above xmax. */
+static inline float3 sf_boost(const float3 p, const float raw_x0, const float xmax,
+                              const float inv_max, const float a, const float a_log2e,
+                              const float scale, const float ext, const float slope)
+{
+  float v[3] = { p.x, p.y, p.z };
+  for(int c = 0; c < 3; c++)
+  {
+    const float xv = v[c];
+    if(xv <= raw_x0) continue;
+    if(xv <= xmax)
+    {
+      const float dx = (xv - raw_x0) * inv_max;
+      const float t = a * dx;
+      v[c] = fma(scale, (grain_exp2f(a_log2e * dx) - t) - 1.0f, xv);
+    }
+    else
+      v[c] = fma(slope, xv - xmax, xv + ext);
+  }
+  return (float3)(v[0], v[1], v[2]);
+}
+
 /* stage 1: input image -> linear film raw exposure (spektra_sim: sf_sim_expose) */
 __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plane,
                                  const int w, const int h, __constant float *mats,
                                  __global const float *tc_lut, const int tc_n,
-                                 const float ev_scale)
+                                 const float ev_scale, const int boost_on,
+                                 const float raw_x0, const float xmax, const float inv_max,
+                                 const float a, const float a_log2e, const float scale_b,
+                                 const float ext, const float slope)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -364,6 +391,8 @@ __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plan
   raw = (raw * bb) * ev_scale;
   /* no negative exposure into the pre-film blurs, see sf_sim_expose() */
   raw = fmax(raw, 0.0f);
+  /* the highlight boost of the pre-film stage, on the stored exposure */
+  if(boost_on) raw = sf_boost(raw, raw_x0, xmax, inv_max, a, a_log2e, scale_b, ext, slope);
   plane[(size_t)y * w + x] = (float4)(raw.x, raw.y, raw.z, px.w);
 }
 
@@ -679,19 +708,14 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
 }
 
 /* stage 5a: CMY film density -> print log exposure (sf_sim_print_expose) */
-__kernel void spektrafilm_print_expose(__global const float4 *cmy, __global float4 *loge,
-                                       const int w, const int h,
-                                       __global const float *lut, __global const float *sx,
-                                       __global const float *sy, __global const float *sz,
-                                       __global const float *cmn, __global const float *cmx,
-                                       const int steps, const float lo0, const float lo1,
-                                       const float lo2, const float inv0, const float inv1,
-                                       const float inv2, const float log10_print_exposure)
+static inline float3 sf_print_loge(const float4 in,
+                                   __global const float *lut, __global const float *sx,
+                                   __global const float *sy, __global const float *sz,
+                                   __global const float *cmn, __global const float *cmx,
+                                   const int steps, const float lo0, const float lo1,
+                                   const float lo2, const float inv0, const float inv1,
+                                   const float inv2, const float log10_print_exposure)
 {
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  const float4 in = cmy[k];
   const float scale = (float)(steps - 1);
   /* inv0/inv1/inv2 are the host's sim->enl_inv_range[c] (1/(hi-lo), rounded
      once from a double-precision subtraction) -- NOT computed here as
@@ -710,44 +734,54 @@ __kernel void spektrafilm_print_expose(__global const float4 *cmy, __global floa
   float3 l1 = sf_pchip3d(lut, sx, sy, sz, cmn, cmx, steps, r, g, b);
   /* [st] raw = 10^l1 * print_exposure, back to log10 -- but done as the exact
      identity log10(10^l1 * pe) == l1 + log10(pe), which is what
-     sf_sim_print_expose does on the CPU. The old round trip through
-     exp10()/log10() was not the same computation: OpenCL only specs those to
-     3 ULP each, and more importantly the + SF_LOG_EPS floored the result at
-     log10(1e-10) == -10 while the CPU floors at -30, so the two paths gave
-     visibly different values for any pixel dark enough to reach the floor.
-     One add, no library calls, no epsilon, and the same -30 guard the CPU
-     uses against -inf from degenerate inputs. */
+     sf_sim_print_expose does on the CPU. A round trip through
+     exp10()/log10() is not the same computation: OpenCL only specs those to
+     3 ULP each, and a + SF_LOG_EPS would floor the result at
+     log10(1e-10) == -10 while the CPU floors at -30, so the two paths would
+     give visibly different values for any pixel dark enough to reach the
+     floor. One add, no library calls, no epsilon, and the same -30 guard the
+     CPU uses against -inf from degenerate inputs. */
   float3 out;
   out.x = fmax(l1.x + log10_print_exposure, -30.0f);
   out.y = fmax(l1.y + log10_print_exposure, -30.0f);
   out.z = fmax(l1.z + log10_print_exposure, -30.0f);
-  loge[k] = (float4)(out.x, out.y, out.z, in.w);
-}
-
-/* print diffusion runs on linear print exposure, as the reference's
-   printing.expose does: these two convert the log plane there and back, with
-   the same 1e-10 floor the reference applies on the way back */
-__kernel void spektrafilm_pow10(__global float4 *plane, const int w, const int h)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  const float4 p = plane[k];
-  plane[k] = (float4)(sf_pow10f(p.x), sf_pow10f(p.y), sf_pow10f(p.z), p.w);
-}
-
-__kernel void spektrafilm_log10(__global float4 *plane, const int w, const int h)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  const float4 p = plane[k];
-  plane[k] = (float4)(sf_log10f(fmax(p.x, 0.0f) + SF_LOG_EPS),
-                      sf_log10f(fmax(p.y, 0.0f) + SF_LOG_EPS),
-                      sf_log10f(fmax(p.z, 0.0f) + SF_LOG_EPS), p.w);
+  return out;
 }
 
 /* stage 5b: print log exposure -> print CMY density (sf_sim_print_develop) */
+static inline float3 sf_print_density(const float3 loge, __global const float *print_curves,
+                                      const float le0, const float inv_le_step)
+{
+  return (float3)(sf_curve(print_curves, loge.x, le0, inv_le_step, 0),
+                  sf_curve(print_curves, loge.y, le0, inv_le_step, 1),
+                  sf_curve(print_curves, loge.z, le0, inv_le_step, 2));
+}
+
+/* The two print kernels run only around the print diffusion filter, which
+   works on linear print exposure, as the reference's printing.expose does:
+   with `linear`, spektrafilm_print_expose writes 10^loge for it, and
+   spektrafilm_diffusion_mix takes the filtered plane back to log10. Without
+   the filter, spektrafilm_scan runs both print stages itself. */
+__kernel void spektrafilm_print_expose(__global const float4 *cmy, __global float4 *loge,
+                                       const int w, const int h,
+                                       __global const float *lut, __global const float *sx,
+                                       __global const float *sy, __global const float *sz,
+                                       __global const float *cmn, __global const float *cmx,
+                                       const int steps, const float lo0, const float lo1,
+                                       const float lo2, const float inv0, const float inv1,
+                                       const float inv2, const float log10_print_exposure,
+                                       const int linear)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 in = cmy[k];
+  float3 out = sf_print_loge(in, lut, sx, sy, sz, cmn, cmx, steps, lo0, lo1, lo2, inv0, inv1,
+                             inv2, log10_print_exposure);
+  if(linear) out = (float3)(sf_pow10f(out.x), sf_pow10f(out.y), sf_pow10f(out.z));
+  loge[k] = (float4)(out.x, out.y, out.z, in.w);
+}
+
 __kernel void spektrafilm_print_develop(__global const float4 *loge, __global float4 *cmy,
                                         const int w, const int h,
                                         __global const float *print_curves, const float le0,
@@ -757,11 +791,9 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 in = loge[k];
-  const float lgv[3] = { in.x, in.y, in.z };
-  float out[3];
-  for(int c = 0; c < 3; c++)
-    out[c] = sf_curve(print_curves, lgv[c], le0, inv_le_step, c);
-  cmy[k] = (float4)(out[0], out[1], out[2], in.w);
+  const float3 out = sf_print_density((float3)(in.x, in.y, in.z), print_curves, le0,
+                                      inv_le_step);
+  cmy[k] = (float4)(out.x, out.y, out.z, in.w);
 }
 
 /* stage 6: scan — CMY density -> log XYZ (PCHIP) -> XYZ -> work RGB with
@@ -770,9 +802,21 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
    input image (spektra_sim: sf_sim_scan). */
 /* Scans the full padded ROI into a buffer: the scanner optics run after this
    on the scanned RGB, and they need the padding. spektrafilm_crop_out does the
-   crop. `glare` holds the viewing-glare field in .x when glare_on. */
+   crop. `glare` holds the viewing-glare field in .x when glare_on. With
+   print_on, `cmy` holds the film density and the two print stages run first,
+   on the tables and constants spektrafilm_print_expose and
+   spektrafilm_print_develop take. */
 __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_out,
                                const int w, const int h,
+                               const int print_on,
+                               __global const float *plut, __global const float *psx,
+                               __global const float *psy, __global const float *psz,
+                               __global const float *pcmn, __global const float *pcmx,
+                               const float plo0, const float plo1, const float plo2,
+                               const float pinv0, const float pinv1, const float pinv2,
+                               const float log10_print_exposure,
+                               __global const float *print_curves, const float le0,
+                               const float inv_le_step,
                                __global const float *lut, __global const float *sx,
                                __global const float *sy, __global const float *sz,
                                __global const float *cmn, __global const float *cmx,
@@ -790,9 +834,16 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
-  const float4 c4 = cmy[k];
+  float4 c4 = cmy[k];
+  if(print_on)
+  {
+    const float3 loge = sf_print_loge(c4, plut, psx, psy, psz, pcmn, pcmx, steps, plo0, plo1,
+                                      plo2, pinv0, pinv1, pinv2, log10_print_exposure);
+    const float3 pd = sf_print_density(loge, print_curves, le0, inv_le_step);
+    c4 = (float4)(pd.x, pd.y, pd.z, c4.w);
+  }
   const float scale = (float)(steps - 1);
-  /* inv0/inv1/inv2 = host's sim->scan_inv_range[c]; see spektrafilm_print_expose
+  /* inv0/inv1/inv2 = host's sim->scan_inv_range[c]; see sf_print_loge
      above for why this must not be recomputed as 1/(hi-lo) on-device. */
   const float r = (c4.x - lo0) * inv0 * scale;
   const float g = (c4.y - lo1) * inv1 * scale;
@@ -1220,36 +1271,6 @@ __kernel void spektrafilm_halation_apply(__global float4 *raw, __global const fl
   raw[k] = r;
 }
 
-/* Highlight boost; the constants come from sf_boost_build_plan() on the host,
-   and the per-value expression matches sf_boost_highlights() term for term,
-   including the tangent continuation above xmax. */
-__kernel void spektrafilm_boost(__global float4 *plane, const int w, const int h,
-                                const float raw_x0, const float xmax, const float inv_max,
-                                const float a, const float a_log2e, const float scale,
-                                const float ext, const float slope)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-
-  float4 p = plane[k];
-  float v[3] = { p.x, p.y, p.z };
-  for(int c = 0; c < 3; c++)
-  {
-    const float xv = v[c];
-    if(xv <= raw_x0) continue;
-    if(xv <= xmax)
-    {
-      const float dx = (xv - raw_x0) * inv_max;
-      const float t = a * dx;
-      v[c] = fma(scale, (grain_exp2f(a_log2e * dx) - t) - 1.0f, xv);
-    }
-    else
-      v[c] = fma(slope, xv - xmax, xv + ext);
-  }
-  plane[k] = (float4)(v[0], v[1], v[2], p.w);
-}
-
 __kernel void spektrafilm_diffusion_accum(__global const float4 *blurred, __global float4 *acc,
                                           const int w, const int h, const float wr, const float wg,
                                           const float wb, const int reset)
@@ -1262,13 +1283,20 @@ __kernel void spektrafilm_diffusion_accum(__global const float4 *blurred, __glob
   acc[k] = (float4)(fma(wr, b.x, a.x), fma(wg, b.y, a.y), fma(wb, b.z, a.z), b.w);
 }
 
+/* With to_log, the mixed plane is linear print exposure and goes back to
+   log10, with the 1e-10 floor the reference applies on the way back. */
 __kernel void spektrafilm_diffusion_mix(__global float4 *plane, __global const float4 *acc,
-                                        const int w, const int h, const float p_s)
+                                        const int w, const int h, const float p_s,
+                                        const int to_log)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const int k = y * w + x;
   float4 e = plane[k], s = acc[k];
-  plane[k] = (float4)(fma(p_s, s.x, (1.f - p_s) * e.x), fma(p_s, s.y, (1.f - p_s) * e.y),
+  float4 m = (float4)(fma(p_s, s.x, (1.f - p_s) * e.x), fma(p_s, s.y, (1.f - p_s) * e.y),
                       fma(p_s, s.z, (1.f - p_s) * e.z), e.w);
+  if(to_log)
+    m = (float4)(sf_log10f(fmax(m.x, 0.0f) + SF_LOG_EPS), sf_log10f(fmax(m.y, 0.0f) + SF_LOG_EPS),
+                 sf_log10f(fmax(m.z, 0.0f) + SF_LOG_EPS), m.w);
+  plane[k] = m;
 }
