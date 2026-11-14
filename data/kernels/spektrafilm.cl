@@ -495,28 +495,50 @@ static float sf_cl_grain_curve_sample(__global const float *arr, int n, int stri
   return fma(arr[(i0 + 1) * stride], frac, arr[i0 * stride] * (1.0f - frac));
 }
 
-/* stage 4: grain. Restructured into three kernels (raw sub-layer sample,
-   accumulate, finalize) instead of one that directly produced the final
-   combined delta, so upstream's per-sub-layer dye-cloud blur
+/* stage 4: grain, in three kernels (raw sub-layer sample, accumulate,
+   finalize), so upstream's per-sub-layer dye-cloud blur
    (layer_particle_model's blur_particle, grain.py) can run on each raw
-   sub-layer buffer independently between sampling and combining -- see
-   the matching comment in process()'s CPU path for the full rationale.
-   channel_idx is 1 for mono (matching the old kernels' convention of
-   using channel 1's curve/params for the achromatic draw) or 0/1/2 for
-   color; seed_ch is 0 for mono (so seeding stays sl*10, not 1+sl*10) or
-   the real channel index for color. layer_curve is [nle][max_sub][3]
-   row-major, layer_curve_total is [nle][3]; max_sub (SF_GRAIN_MAX_SUBLAYERS
-   host-side) is the table's fixed stride regardless of how many
-   sub-layers n_sub actually uses. Outputs the RAW (un-combined,
-   pre-dmin-subtraction) sample for ONE sub-layer into a flat w*h buffer --
-   called once per sub-layer, unlike the old kernels which looped every
-   sub-layer internally in one dispatch. */
-__kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global float *raw_out,
+   sub-layer independently between sampling and combining -- see the matching
+   comment in process()'s CPU path for the full rationale. All three color
+   channels travel in one float4 buffer; the achromatic draw uses .x only.
+
+   The RAW (un-combined, pre-dmin-subtraction) sample of sub-layer sl_idx for
+   one channel's density at the image position (gx, gy). channel_idx is 1 for
+   mono (channel 1's curve/params stand for the achromatic draw) or 0/1/2 for
+   color; seed_ch is 0 for mono (so seeding stays sl*10, not 1+sl*10) or the
+   real channel index for color. layer_curve is [nle][max_sub][3] row-major,
+   layer_curve_total is [nle][3]; max_sub (SF_GRAIN_MAX_SUBLAYERS host-side)
+   is the table's fixed stride regardless of how many sub-layers n_sub
+   actually uses. */
+static inline float sf_cl_grain_sample(const float density, const int gx, const int gy,
+                                       const int channel_idx, const int seed_ch,
+                                       const int sl_idx, const int nle, const int max_sub,
+                                       const float unif_ch, const float npart_scale,
+                                       const uint salt,
+                                       __global const float *layer_dmax,
+                                       __global const float *layer_npart,
+                                       __global const float *layer_dmin,
+                                       __global const float *layer_curve_total,
+                                       __global const float *layer_curve)
+{
+  const int lstride = max_sub * 3;
+  const int idx = sl_idx * 3 + channel_idx;
+  const float pos = sf_cl_grain_curve_inverse(layer_curve_total + channel_idx, nle, 3, density);
+  const float raw = sf_cl_grain_curve_sample(layer_curve + idx, nle, lstride, pos);
+  const float d_abs = raw + layer_dmin[idx];
+  const uint seed = grain_pixel_seed((uint)gx, (uint)gy, (uint)(seed_ch + sl_idx * 10), salt);
+  return grain_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale, unif_ch,
+                              seed);
+}
+
+/* The raw samples of ONE sub-layer for all channels -- called once per
+   sub-layer. unif holds the uniformity of the three channels. */
+__kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global float4 *raw_out,
                                            const int w, const int h,
                                            const int roi_x, const int roi_y, const int mono,
-                                           const int channel_idx, const int seed_ch,
                                            const int sl_idx, const int nle, const int max_sub,
-                                           const float unif_ch, const float npart_scale,
+                                           const float unif0, const float unif1,
+                                           const float unif2, const float npart_scale,
                                            const uint salt,
                                            __global const float *layer_dmax,
                                            __global const float *layer_npart,
@@ -528,25 +550,31 @@ __kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 d4 = dens[k];
-  const float density = mono ? (d4.x + d4.y + d4.z) / 3.0f
-                             : (channel_idx == 0 ? d4.x : (channel_idx == 1 ? d4.y : d4.z));
-  const int lstride = max_sub * 3;
-  const int idx = sl_idx * 3 + channel_idx;
-  const float pos = sf_cl_grain_curve_inverse(layer_curve_total + channel_idx, nle, 3, density);
-  const float raw = sf_cl_grain_curve_sample(layer_curve + idx, nle, lstride, pos);
-  const float d_abs = raw + layer_dmin[idx];
-  const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
-                                  (uint)(seed_ch + sl_idx * 10), salt);
-  raw_out[k] = grain_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale,
-                                 unif_ch, seed);
+  const int gx = x + roi_x, gy = y + roi_y;
+  float4 r = (float4)(0.f, 0.f, 0.f, 0.f);
+  if(mono)
+    r.x = sf_cl_grain_sample((d4.x + d4.y + d4.z) / 3.0f, gx, gy, 1, 0, sl_idx, nle, max_sub,
+                             unif1, npart_scale, salt, layer_dmax, layer_npart, layer_dmin,
+                             layer_curve_total, layer_curve);
+  else
+  {
+    r.x = sf_cl_grain_sample(d4.x, gx, gy, 0, 0, sl_idx, nle, max_sub, unif0, npart_scale, salt,
+                             layer_dmax, layer_npart, layer_dmin, layer_curve_total, layer_curve);
+    r.y = sf_cl_grain_sample(d4.y, gx, gy, 1, 1, sl_idx, nle, max_sub, unif1, npart_scale, salt,
+                             layer_dmax, layer_npart, layer_dmin, layer_curve_total, layer_curve);
+    r.z = sf_cl_grain_sample(d4.z, gx, gy, 2, 2, sl_idx, nle, max_sub, unif2, npart_scale, salt,
+                             layer_dmax, layer_npart, layer_dmin, layer_curve_total, layer_curve);
+  }
+  raw_out[k] = r;
 }
 
-/* Sums sub-layer buffers (each already dye-cloud-blurred by the host) into
-   a single accumulator, one sub-layer at a time: reset=1 initializes the
-   accumulator with the first sub-layer instead of requiring a separate
-   zero-fill dispatch, reset=0 adds subsequent ones. */
-__kernel void spektrafilm_grain_accumulate_1c(__global float *acc, __global const float *src,
-                                              const int w, const int h, const int reset)
+/* Sums the sub-layers that have no dye-cloud blur into the accumulator, one
+   sub-layer at a time: reset=1 initializes the accumulator with the first
+   sub-layer instead of requiring a separate zero-fill dispatch, reset=0 adds
+   subsequent ones. A blurred sub-layer is summed by the last pass of its
+   blur, spektrafilm_gauss_col_4c_accum with unit weights. */
+__kernel void spektrafilm_grain_accumulate(__global float4 *acc, __global const float4 *src,
+                                           const int w, const int h, const int reset)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -556,32 +584,32 @@ __kernel void spektrafilm_grain_accumulate_1c(__global float *acc, __global cons
 }
 
 /* Subtracts the density floor and the original clean density from the
-   summed (already dye-blurred) sub-layers, scales by grain strength, and
-   writes into grain_buf's out_ch component (mono broadcasts to all
-   three). grain_buf is read-modify-write: for color, this kernel runs
-   once per output channel with the SAME buffer, each call only touching
-   its own component. */
-__kernel void spektrafilm_grain_finalize_channel(__global float4 *grain_buf,
-                                                 __global const float *acc,
-                                                 __global const float4 *dens,
-                                                 const int w, const int h, const int mono,
-                                                 const int channel_idx, const int out_ch,
-                                                 const float dmin_ch, const float amount)
+   summed (already dye-blurred) sub-layers in `grain`, scales by grain
+   strength, and leaves the delta there (mono broadcasts .x to all three).
+   dmin holds the floor per channel; mono uses channel 1's. */
+__kernel void spektrafilm_grain_finalize(__global float4 *grain,
+                                         __global const float4 *dens,
+                                         const int w, const int h, const int mono,
+                                         const float dmin0, const float dmin1,
+                                         const float dmin2, const float amount)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 d4 = dens[k];
-  const float density = mono ? (d4.x + d4.y + d4.z) / 3.0f
-                             : (channel_idx == 0 ? d4.x : (channel_idx == 1 ? d4.y : d4.z));
-  const float g = acc[k] - dmin_ch;
-  const float delta = (g - density) * amount;
-  float4 gv = mono || out_ch == 0 ? (float4)(0.f, 0.f, 0.f, 0.f) : grain_buf[k];
-  if(mono) gv = (float4)(delta, delta, delta, 0.f);
-  else if(out_ch == 0) gv.x = delta;
-  else if(out_ch == 1) gv.y = delta;
-  else gv.z = delta;
-  grain_buf[k] = gv;
+  const float4 a = grain[k];
+  if(mono)
+  {
+    const float density = (d4.x + d4.y + d4.z) / 3.0f;
+    const float g = a.x - dmin1;
+    const float delta = (g - density) * amount;
+    grain[k] = (float4)(delta, delta, delta, 0.f);
+  }
+  else
+  {
+    const float gx = a.x - dmin0, gy = a.y - dmin1, gz = a.z - dmin2;
+    grain[k] = (float4)((gx - d4.x) * amount, (gy - d4.y) * amount, (gz - d4.z) * amount, 0.f);
+  }
 }
 
 /* Add the raw, still-unblurred grain delta onto the CMY density. The clump
@@ -1159,38 +1187,6 @@ __kernel void spektrafilm_gauss_col_4c_accum(__global const float4 *src, __globa
   const size_t i = (size_t)y * w + x;
   const float4 a = reset ? (float4)(0.f, 0.f, 0.f, 0.f) : acc[i];
   acc[i] = (float4)(fma(wr, b.x, a.x), fma(wg, b.y, a.y), fma(wb, b.z, a.z), b.w);
-}
-
-__kernel void spektrafilm_gauss_row_1c(__global const float *src, __global float *dst,
-                                       const int w, const int h,
-                                       __global const float *weights, const int radius)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  float acc = 0.0f;
-  for(int k = -radius; k <= radius; k++)
-  {
-    int xx = x + k;
-    xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
-    acc = fma(weights[k + radius], src[(size_t)y * w + xx], acc);
-  }
-  dst[(size_t)y * w + x] = acc;
-}
-
-__kernel void spektrafilm_gauss_col_1c(__global const float *src, __global float *dst,
-                                       const int w, const int h,
-                                       __global const float *weights, const int radius)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  float acc = 0.0f;
-  for(int k = -radius; k <= radius; k++)
-  {
-    int yy = y + k;
-    yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
-    acc = fma(weights[k + radius], src[(size_t)yy * w + x], acc);
-  }
-  dst[(size_t)y * w + x] = acc;
 }
 
 __kernel void spektrafilm_scatter_combine(__global const float4 *raw, __global const float4 *core,
