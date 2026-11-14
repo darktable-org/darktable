@@ -2199,17 +2199,20 @@ void tiling_callback(dt_iop_module_t *self,
   /* Peak simultaneous buffers, in multiples of one RGBA tile.
      CPU: input + output (2.0) plus plane and two work buffers at 3 channels
      and the 1-channel scratch (2.5), 4.5 for every stage; one work buffer is
-     the output buffer itself where that is large enough. factor leaves room
-     above that.
+     the output buffer itself where that is large enough, which the estimate
+     does not count on. A decimated blur adds its low-resolution field twice
+     at 3 channels, 0.375 at the smallest block size of 2, for 4.875, which
+     factor rounds up.
      OpenCL: input + output plus four float4 buffers, 6.0 for every stage. A
      decimated blur adds its low-resolution field twice, half a buffer at the
-     smallest block size of 2; factor_cl leaves room above that.
+     smallest block size of 2, plus the few pixels its grid overhangs the
+     tile, for 6.75.
      Understating these lets the tiler pick tiles that then fail to allocate,
      and the CPU path answers an allocation failure with a passthrough of that
      tile -- unprocessed rectangles inside an otherwise processed frame, not a
      clean skip -- so the estimate has to be an upper bound. */
-  tiling->factor = 5.75f;
-  tiling->factor_cl = 9.5f;
+  tiling->factor = 5.0f;
+  tiling->factor_cl = 6.75f;
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
   /* Constant tables uploaded once per run and independent of tile size: the
