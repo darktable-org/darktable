@@ -2198,7 +2198,8 @@ void tiling_callback(dt_iop_module_t *self,
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
   /* Peak simultaneous buffers, in multiples of one RGBA tile.
      CPU: input + output (2.0) plus plane and two work buffers at 3 channels
-     and the 1-channel scratch (2.5), 4.5 for every stage. factor leaves room
+     and the 1-channel scratch (2.5), 4.5 for every stage; one work buffer is
+     the output buffer itself where that is large enough. factor leaves room
      above that.
      OpenCL: input + output plus four float4 buffers, 6.0 for every stage. A
      decimated blur adds its low-resolution field twice, half a buffer at the
@@ -2413,15 +2414,18 @@ void process(dt_iop_module_t *self,
   float *scratch = dt_alloc_align_float(npix);    /* 1ch blur scratch and the glare field */
   /* two 3-channel work buffers for the spatial stages: the scratch of a blur
      and the accumulator of a bank of them. buf_a also holds the DIR coupler
-     correction field and then grain's flat buffers. */
+     correction field and then grain's flat buffers. The output buffer is
+     not written before the final crop, so it serves as buf_b where it is
+     large enough, which it is whenever the input ROI has little padding. */
+  const gboolean out_is_buf_b = (size_t)ow * oh * 4 >= npix * 3;
   float *buf_a = dt_alloc_align_float(npix * 3);
-  float *buf_b = dt_alloc_align_float(npix * 3);
+  float *buf_b = out_is_buf_b ? out : dt_alloc_align_float(npix * 3);
   if(!plane || !scratch || !buf_a || !buf_b)
   {
     dt_free_align(plane);
     dt_free_align(scratch);
     dt_free_align(buf_a);
-    dt_free_align(buf_b);
+    if(!out_is_buf_b) dt_free_align(buf_b);
     _passthrough(in, out, w, oh, ow, ox, oy);
     return;
   }
@@ -2797,7 +2801,7 @@ void process(dt_iop_module_t *self,
   dt_free_align(plane);
   dt_free_align(scratch);
   dt_free_align(buf_a);
-  dt_free_align(buf_b);
+  if(!out_is_buf_b) dt_free_align(buf_b);
 }
 
 #ifdef HAVE_OPENCL
