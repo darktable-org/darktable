@@ -646,7 +646,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_scatter_combine, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_col_4c_accum, kernel_gauss_col_4c_accum;
-  int kernel_wide_rows, kernel_wide_down, kernel_wide_up, kernel_wide_up_accum;
+  int kernel_wide_rows, kernel_wide_down, kernel_wide_block, kernel_wide_up, kernel_wide_up_accum;
   int kernel_diffusion_accum, kernel_diffusion_mix;
 } dt_iop_spektrafilm_global_data_t;
 
@@ -720,6 +720,7 @@ void init_global(dt_iop_module_so_t *self)
     = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c_accum");
   gd->kernel_wide_rows = dt_opencl_create_kernel(program, "spektrafilm_wide_rows");
   gd->kernel_wide_down = dt_opencl_create_kernel(program, "spektrafilm_wide_down");
+  gd->kernel_wide_block = dt_opencl_create_kernel(program, "spektrafilm_wide_block");
   gd->kernel_wide_up = dt_opencl_create_kernel(program, "spektrafilm_wide_up");
   gd->kernel_wide_up_accum = dt_opencl_create_kernel(program, "spektrafilm_wide_up_accum");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
@@ -757,6 +758,7 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c_accum);
     dt_opencl_free_kernel(gd->kernel_wide_rows);
     dt_opencl_free_kernel(gd->kernel_wide_down);
+    dt_opencl_free_kernel(gd->kernel_wide_block);
     dt_opencl_free_kernel(gd->kernel_wide_up);
     dt_opencl_free_kernel(gd->kernel_wide_up_accum);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
@@ -2978,13 +2980,17 @@ static cl_int _sf_blur_wide_cl(const int devid,
   float *inv = dt_alloc_align_float((size_t)k + 1);
   float kw[4 * (2 * SF_GAUSS_MAX_RADIUS + 1)];
   const int kr = _sf_gauss_kernel4((const float[3]){ sigma_low, sigma_low, sigma_low }, kw);
-  cl_mem rows = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * h);
+  /* up to this block size one kernel averages a block, without the buffer of
+     row sums, which is 1/k of the frame; see spektrafilm_wide_block */
+  const gboolean one_kernel = k <= 4;
+  cl_mem rows
+      = one_kernel ? NULL : dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * h);
   cl_mem low = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
   cl_mem lowtmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
   cl_mem inv_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (k + 1));
   cl_mem kw_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * (2 * kr + 1));
   cl_int e = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  if(inv && rows && low && lowtmp && inv_cl && kw_cl)
+  if(inv && (rows || one_kernel) && low && lowtmp && inv_cl && kw_cl)
   {
     sf_wide_blur_inv_table(k, inv);
     const float inv2k = 1.0f / (float)(2 * k);
@@ -2992,11 +2998,15 @@ static cl_int _sf_blur_wide_cl(const int devid,
     if(e == CL_SUCCESS)
       e = dt_opencl_write_buffer_to_device(devid, kw, kw_cl, 0, sizeof(float) * 4 * (2 * kr + 1),
                                            TRUE);
-    if(e == CL_SUCCESS)
+    if(e == CL_SUCCESS && one_kernel)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_block, lw, lh, CLARG(src),
+                                           CLARG(low), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv_cl));
+    if(e == CL_SUCCESS && !one_kernel)
       e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_rows, lw, h, CLARG(src),
                                            CLARG(rows), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
                                            CLARG(ox));
-    if(e == CL_SUCCESS)
+    if(e == CL_SUCCESS && !one_kernel)
       e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(rows),
                                            CLARG(low), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
                                            CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv_cl));

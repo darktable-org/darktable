@@ -1116,7 +1116,12 @@ __kernel void spektrafilm_yvv_col_4c_accum(__global const float4 *src, __global 
    more for the diffusion bank, and one item per block would leave a few
    thousand items each reading k^2 pixels. spektrafilm_wide_rows sums each
    block row, one item per (block column, image row); spektrafilm_wide_down
-   folds those sums, one item per block. */
+   folds those sums, one item per block.
+
+   At a small k it is the other way round: a block is a handful of pixels and
+   the row sums are a buffer of 1/k of the frame. spektrafilm_wide_block does
+   both steps there, one item per block, with the same sums in the same
+   order. */
 __kernel void spektrafilm_wide_rows(__global const float4 *in, __global float4 *rows,
                                     const int w, const int h, const int k,
                                     const int lw, const int ox)
@@ -1141,6 +1146,25 @@ __kernel void spektrafilm_wide_down(__global const float4 *rows, __global float4
   const float ix = inv[x1 - x0];
   float4 lo = (float4)(0.0f);
   for(int y = y0; y < y1; y++) lo = fma(rows[(size_t)y * lw + X], (float4)(ix), lo);
+  low[(size_t)Y * lw + X] = lo * inv[y1 - y0];
+}
+__kernel void spektrafilm_wide_block(__global const float4 *in, __global float4 *low,
+                                     const int w, const int h, const int k,
+                                     const int lw, const int lh, const int ox, const int oy,
+                                     __global const float *inv)
+{
+  const int X = get_global_id(0), Y = get_global_id(1);
+  if(X >= lw || Y >= lh) return;
+  const int x0 = max(X * k - ox, 0), x1 = min((X + 1) * k - ox, w);
+  const int y0 = max(Y * k - oy, 0), y1 = min((Y + 1) * k - oy, h);
+  const float ix = inv[x1 - x0];
+  float4 lo = (float4)(0.0f);
+  for(int y = y0; y < y1; y++)
+  {
+    float4 rs = (float4)(0.0f);
+    for(int x = x0; x < x1; x++) rs += in[(size_t)y * w + x];
+    lo = fma(rs, (float4)(ix), lo);
+  }
   low[(size_t)Y * lw + X] = lo * inv[y1 - y0];
 }
 
