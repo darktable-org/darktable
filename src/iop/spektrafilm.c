@@ -2203,8 +2203,9 @@ void tiling_callback(dt_iop_module_t *self,
      Grain releases one work buffer and adds up to 2.0 at the maximum
      sub-layer count. The stages run one after another, so grain sets the peak
      at 5.75.
-     OpenCL: input + output plus five float4 buffers (plane, plane2, tmpa, acc,
-     gtmp4), 7.0 for every stage; factor_cl leaves room above that.
+     OpenCL: input + output plus four float4 buffers, 6.0 for every stage. A
+     decimated blur adds its low-resolution field twice, half a buffer at the
+     smallest block size of 2; factor_cl leaves room above that.
      Understating these lets the tiler pick tiles that then fail to allocate,
      and the CPU path answers an allocation failure with a passthrough of that
      tile -- unprocessed rectangles inside an otherwise processed frame, not a
@@ -2874,9 +2875,11 @@ static int _sf_blur_rounds(const float sigma)
    shape as `src`; `dst` may be `src`. `sigma` holds one sigma per color
    channel, and all three have to take the same number of passes.
 
-   With `acc`, the blur is not left in `dst`, which is then scratch: the last
-   column pass adds it to `acc` with the channel weights `wt`, or stores it
-   there with `reset`, as spektrafilm_diffusion_accum would.
+   With `acc`, the blur is not left in `dst`: the last column pass sweeps
+   forward within `tmp` and adds the result to `acc` with the channel weights
+   `wt`, or stores it there with `reset`, as spektrafilm_diffusion_accum
+   would. `dst` is then scratch for the passes before the last and may be
+   NULL for a sigma that takes a single pass; a cascade without it fails.
 
    Both paths must run this same recursion: a blur of a different shape produces
    a different halo width for the same sigma, and every spatial radius in the
@@ -2910,6 +2913,7 @@ static cl_int _sf_yvv_blur_cl(const int devid,
   B[3] = B[0];
   B2[3] = B2[0];
   B3[3] = B3[0];
+  if(!dst && (!acc || passes > 1)) return DT_OPENCL_DEFAULT_ERROR;
   const int krow = gd->kernel_yvv_row_4c;
   const int kcol = gd->kernel_yvv_col_4c;
   /* the row kernels work on tiles of sizex x sizey items, up to 8 x 16, and
@@ -2936,7 +2940,7 @@ static cl_int _sf_yvv_blur_cl(const int devid,
                                                CLARG(B3), CLLOCAL(tile_bytes));
     if(e == CL_SUCCESS && acc && pass == passes - 1)
       e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_yvv_col_4c_accum, w, 1,
-                                           CLARG(tmp), CLARG(dst), CLARG(acc), CLARG(w),
+                                           CLARG(tmp), CLARG(acc), CLARG(w),
                                            CLARG(h), CLARG(B), CLARG(B2), CLARG(B3),
                                            CLARG(wt[0]), CLARG(wt[1]), CLARG(wt[2]),
                                            CLARG(reset));
@@ -3042,9 +3046,11 @@ static cl_int _sf_blur_wide_cl(const int devid,
 
 /* Blurs the color channels of `src` with one sigma each and adds the result
    to `acc` with the channel weights `wt`, or stores it there with `reset`.
-   The sigmas have to agree on _sf_blur_rounds(). `blur` and `tmp` are float4
-   scratch, `gauss_w` takes the taps. The last column pass accumulates, so the
-   blurred image is never written out and read back. */
+   The sigmas have to agree on _sf_blur_rounds(). `tmp` is float4 scratch and
+   `gauss_w` takes the taps. `blur` is a second float4 scratch that only a
+   sigma past SF_GAUSS_MAX_IIR_SIGMA needs, for its cascade, and may be NULL
+   below that. The last column pass accumulates, so the blurred image is
+   never written out and read back. */
 static cl_int _sf_blur_accum_cl(const int devid,
                                 dt_iop_spektrafilm_global_data_t *gd,
                                 cl_mem src,
@@ -3117,12 +3123,12 @@ static cl_int _sf_scatter_blur_cl(const int devid,
 /* One term of a halation or diffusion sum: `src` blurred at `sigma` and added
    to `acc` with the channel weights `wt`, or stored there with `reset`.
    Decimated from SF_WIDE_BLUR_EFFECT_SIGMA up, as sf_diffusion_filter() and
-   sf_halation()'s bounces are. `blur` and `tmp` are float4 scratch. */
+   sf_halation()'s bounces are, which is below where the recursion would
+   cascade, so one float4 scratch `tmp` is all it takes. */
 static cl_int _sf_blur_term_cl(const int devid,
                                dt_iop_spektrafilm_global_data_t *gd,
                                cl_mem src,
                                cl_mem acc,
-                               cl_mem blur,
                                cl_mem tmp,
                                cl_mem gauss_w,
                                const int w,
@@ -3134,7 +3140,7 @@ static cl_int _sf_blur_term_cl(const int devid,
                                const int reset)
 {
   if(sigma < SF_WIDE_BLUR_EFFECT_SIGMA)
-    return _sf_blur_accum_cl(devid, gd, src, acc, blur, tmp, gauss_w, w, h,
+    return _sf_blur_accum_cl(devid, gd, src, acc, NULL, tmp, gauss_w, w, h,
                              (const float[3]){ sigma, sigma, sigma }, wt, reset);
   return _sf_blur_wide_cl(devid, gd, src, NULL, w, h, roi_x, roi_y, sigma, acc, wt, reset);
 }
@@ -3324,19 +3330,24 @@ int process_cl(dt_iop_module_t *self,
   cl_mem sn_cl = d->cl_tab[SF_CL_TAB_SCAN_CMIN], sm_cl = d->cl_tab[SF_CL_TAB_SCAN_CMAX];
   cl_mem cm_cl = d->cl_tab[SF_CL_TAB_CMAX];
 
-  cl_mem plane = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
-  cl_mem plane2 = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
-  cl_mem tmpa = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
-  cl_mem acc = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
+  /* Four float4 work buffers. Up to development `plane` holds the exposure
+     and then its logarithm, and tmpa and acc take what the spatial stages
+     blur into and the coupler correction. Development hands the three out
+     anew, see there: plane2 is the density from then on, and tmpa and acc
+     are the two it leaves free. */
+  cl_mem buf[4] = { NULL };
+  for(int i = 0; i < 4; i++) buf[i] = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
+  cl_mem plane = buf[0], tmpa = buf[1], acc = buf[2];
   /* row-pass intermediates for the direct (exact) separable convolution
-     below: dedicated buffers, distinct from every buffer a blur might be
-     called on in place, so the row pass never aliases its own input. */
-  cl_mem gtmp4 = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
+     below and for the recursive one: a dedicated buffer, distinct from every
+     buffer a blur might be called on in place, so the row pass never aliases
+     its own input. */
+  cl_mem gtmp4 = buf[3];
   /* kernel weights (2*SF_GAUSS_MAX_RADIUS+1 taps, built host-side by
      dt_gaussian_kernel_1d and rewritten before each blur dispatch below) */
   cl_mem gauss_w
       = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * (2 * SF_GAUSS_MAX_RADIUS + 1));
-  if(!plane || !plane2 || !tmpa || !acc || !gtmp4 || !gauss_w)
+  if(!plane || !tmpa || !acc || !gtmp4 || !gauss_w)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
@@ -3439,7 +3450,7 @@ int process_cl(dt_iop_module_t *self,
       {
         const float sigma
             = (float)((double)plan.sigma_um[j] * dsc / fmax((double)pixel_um, 1e-3));
-        err = _sf_blur_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
+        err = _sf_blur_term_cl(devid, gd, plane, acc, gtmp4, gauss_w, w, h,
                                roi_in->x, roi_in->y, sigma,
                                (const float[3]){ plan.wr[j], plan.wg[j], plan.wb[j] }, j == 0);
         if(err != CL_SUCCESS) break;
@@ -3504,22 +3515,24 @@ int process_cl(dt_iop_module_t *self,
          mirrors, which rounds once more than the CPU does. */
       const float amp[3] = { 0.1633f, 0.6496f, 0.1870f }, rat[3] = { 0.5360f, 1.5236f, 2.7684f };
       float sigma[3];
-      /* CPU: fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f) */
-      for(int c = 0; c < 3; c++)
-        sigma[c] = fmaxf((float)(cl_sc_core[c] * (double)sscl / (double)pixel_um), 1e-6f);
-      err = _sf_scatter_blur_cl(devid, gd, plane, tmpa, plane2, gtmp4, gauss_w, w, h, sigma,
-                                1.0f, 1);
-      SF_CL_STEP("scatter core blur");
+      /* the tail first, into acc: tmpa is still free then and serves a tail
+         wide enough to cascade as its second scratch */
       for(int g3 = 0; g3 < 3; g3++)
       {
         /* CPU associates as rat * (tail * scl / pixel_um), in double */
         for(int c = 0; c < 3; c++)
           sigma[c] = fmaxf((float)((double)rat[g3]
                                    * (cl_sc_tail[c] * (double)sscl / (double)pixel_um)), 1e-6f);
-        err = _sf_scatter_blur_cl(devid, gd, plane, acc, plane2, gtmp4, gauss_w, w, h, sigma,
+        err = _sf_scatter_blur_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h, sigma,
                                   amp[g3], g3 == 0);
         SF_CL_STEP("scatter tail accum");
       }
+      /* the core into tmpa. CPU: fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f) */
+      for(int c = 0; c < 3; c++)
+        sigma[c] = fmaxf((float)(cl_sc_core[c] * (double)sscl / (double)pixel_um), 1e-6f);
+      err = _sf_scatter_blur_cl(devid, gd, plane, tmpa, NULL, gtmp4, gauss_w, w, h, sigma,
+                                1.0f, 1);
+      SF_CL_STEP("scatter core blur");
       /* CPU: sf_halation() rounds the sim's double w_s[] to float once and
          blends with the same fma nesting as spektrafilm_scatter_combine.
          Rounded from the same double here, not read from sf_sim_gpu_t's
@@ -3557,7 +3570,7 @@ int process_cl(dt_iop_module_t *self,
         const float sk = fmaxf((float)((cl_hal_sigma_um * (double)hscl
                                         / (double)pixel_um) * sqrt((double)k)), 1e-6f);
         const float wk = dec[k - 1];
-        err = _sf_blur_term_cl(devid, gd, plane, acc, plane2, gtmp4, gauss_w, w, h,
+        err = _sf_blur_term_cl(devid, gd, plane, acc, gtmp4, gauss_w, w, h,
                                roi_in->x, roi_in->y, sk, (const float[3]){ wk, wk, wk }, k == 1);
         SF_CL_STEP("halation bounce accum");
       }
@@ -3621,7 +3634,7 @@ int process_cl(dt_iop_module_t *self,
           err = _sf_blur_wide_cl(devid, gd, acc, NULL, w, h, roi_in->x, roi_in->y, sig[g3], tmpa,
                                  wt, reset);
         else if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
-          err = _sf_blur_accum_cl(devid, gd, acc, tmpa, plane2, gtmp4, gauss_w, w, h,
+          err = _sf_blur_accum_cl(devid, gd, acc, tmpa, NULL, gtmp4, gauss_w, w, h,
                                   (const float[3]){ sig[g3], sig[g3], sig[g3] }, wt, reset);
         else
           err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_accum, w, h,
@@ -3647,7 +3660,10 @@ int process_cl(dt_iop_module_t *self,
         SF_GAUSS_BLUR4_FAST(acc, csigma, "coupler blur");
     }
   }
+  /* the correction is in tmpa with a tail and in acc without one; the
+     density goes to the other of the two */
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
+  cl_mem plane2 = (g->coupler_tail_w > 0.0f) ? acc : tmpa;
   /* The print diffusion filter is the one blur with unbounded reach that may
      still follow. Without it development writes the work window the later
      stages need, see _sf_work_window(); with it, the print development after
@@ -3686,6 +3702,10 @@ int process_cl(dt_iop_module_t *self,
     wx += x0;
     wy += y0;
   }
+  /* the log exposure and the correction are spent: their buffers are the two
+     work buffers of the stages from here on */
+  tmpa = plane;
+  acc = corr_buf;
 
   /* ---- 4) grain on the developed CMY density ----------------------------- */
   if(grain)
@@ -3724,9 +3744,8 @@ int process_cl(dt_iop_module_t *self,
           dye_sigma[c][sl] = _sf_cl_dye_sigma(g, &d->p, pixel_um, preview_scale, c, sl);
 
       /* tmpa takes the raw samples of one sub-layer, all channels at once,
-         and acc their sum over the sub-layers; both are free here, as the
-         correction field they held went into development. The achromatic
-         draw is in .x and uses channel 1's sigma. */
+         and acc their sum over the sub-layers; both are free here. The
+         achromatic draw is in .x and uses channel 1's sigma. */
       const float *const unif = g->grain_uniformity;
       for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
       {
@@ -3821,15 +3840,15 @@ int process_cl(dt_iop_module_t *self,
   /* ---- 5) print ----------------------------------------------------------- */
   /* Without the print diffusion filter both print stages are per pixel and
      run inside the scan kernel, straight from the film density in plane2.
-     With it, they run here around the filter and leave the print density in
-     plane2. */
+     With it, they run here around the filter, on the print exposure in tmpa,
+     and leave the print density in plane2. */
   const int print_in_scan = g->has_print && !print_diffusion;
   if(print_diffusion)
   {
     /* linear print exposure, see process() */
     const int linear = 1;
     err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_print_expose, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
+        devid, gd->kernel_print_expose, w, h, CLARG(plane2), CLARG(tmpa), CLARG(w), CLARG(h),
         CLARG(el_cl), CLARG(ex_cl), CLARG(ey_cl), CLARG(ez_cl), CLARG(en_cl), CLARG(em_cl),
         CLARG(steps), CLARG(g->enl_lo[0]), CLARG(g->enl_lo[1]), CLARG(g->enl_lo[2]),
         CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
@@ -3841,7 +3860,7 @@ int process_cl(dt_iop_module_t *self,
     {
       const float sigma
           = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
-      err = _sf_blur_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
+      err = _sf_blur_term_cl(devid, gd, tmpa, acc, gtmp4, gauss_w, w, h,
                              roi_in->x, roi_in->y, sigma,
                              (const float[3]){ pplan.wr[j], pplan.wg[j], pplan.wb[j] },
                              j == 0);
@@ -3853,7 +3872,7 @@ int process_cl(dt_iop_module_t *self,
       const float ps = pplan.p_s;
       const int to_log = 1;
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_mix, w, h,
-                                              CLARG(plane), CLARG(acc), CLARG(w), CLARG(h),
+                                              CLARG(tmpa), CLARG(acc), CLARG(w), CLARG(h),
                                               CLARG(ps), CLARG(to_log));
     }
     SF_CL_STEP("print_diffusion");
@@ -3862,7 +3881,7 @@ int process_cl(dt_iop_module_t *self,
     int x0, y0, ww, wh;
     _sf_work_window(w, h, ox, oy, ow, oh, scan_reach, &x0, &y0, &ww, &wh);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, ww, wh,
-                                           CLARG(plane), CLARG(plane2), CLARG(ww), CLARG(wh),
+                                           CLARG(tmpa), CLARG(plane2), CLARG(ww), CLARG(wh),
                                            CLARG(w), CLARG(x0), CLARG(y0), CLARG(pc_cl),
                                            CLARG(g->le0), CLARG(g->inv_le_step));
     SF_CL_STEP("print_develop");
@@ -3874,9 +3893,9 @@ int process_cl(dt_iop_module_t *self,
     wy += y0;
   }
 
-  /* ---- 6) scan over the work window into `plane` (free since print) -------- */
+  /* ---- 6) scan over the work window into `acc` ------------------------------ */
   /* viewing glare field into tmpa, added in XYZ inside the scan (mirrors
-     process()); tmpa is free since development */
+     process()); tmpa is free since the print stage */
   const int glare_on = !d->p.scan_film && d->p.glare_percent > 0.0f;
   if(glare_on)
   {
@@ -3898,7 +3917,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem p_cmn = g->has_print ? en_cl : sn_cl, p_cmx = g->has_print ? em_cl : sm_cl;
   cl_mem p_curves = g->has_print ? pc_cl : cn_cl;
   err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_scan, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
+      devid, gd->kernel_scan, w, h, CLARG(plane2), CLARG(acc), CLARG(w), CLARG(h),
       CLARG(print_in_scan), CLARG(p_lut), CLARG(p_sx), CLARG(p_sy), CLARG(p_sz), CLARG(p_cmn),
       CLARG(p_cmx), CLARG(g->enl_lo[0]), CLARG(g->enl_lo[1]), CLARG(g->enl_lo[2]),
       CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
@@ -3919,39 +3938,36 @@ int process_cl(dt_iop_module_t *self,
   {
     /* CPU twin is sf_blur_plane3(); mirror its SF_GAUSS_MIN_SIGMA cut */
     if(d->p.scan_blur * preview_scale >= SF_GAUSS_MIN_SIGMA)
-      SF_GAUSS_BLUR4(plane, d->p.scan_blur * preview_scale, "scanner blur");
+      SF_GAUSS_BLUR4(acc, d->p.scan_blur * preview_scale, "scanner blur");
   }
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
   {
     /* sf_unsharp_mask3() blurs with the exact kernel only, not _FAST, and
        below SF_GAUSS_MIN_SIGMA takes the image itself for the blurred one.
-       `acc` gets the blurred image, plane keeps the sharp one. */
+       plane2, free since the scan, gets the blurred image, `acc` keeps the
+       sharp one. */
     if(d->p.scan_usm_sigma * preview_scale >= SF_GAUSS_MIN_SIGMA)
-      SF_GAUSS_BLUR4_OP(plane, acc, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
+      SF_GAUSS_BLUR4_OP(acc, plane2, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
     else
     {
-      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0,
+      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, acc, plane2, 0, 0,
                                                     (size_t)w * h * f * 4);
       SF_CL_STEP("scanner USM copy");
     }
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scan_usm, w, h, CLARG(plane),
-                                           CLARG(acc), CLARG(w), CLARG(h),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scan_usm, w, h, CLARG(acc),
+                                           CLARG(plane2), CLARG(w), CLARG(h),
                                            CLARG(d->p.scan_usm_amount));
     SF_CL_STEP("scanner USM");
   }
 
   /* ---- 7) crop the roi_out window into dev_out ----------------------------- */
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_crop_out, ow, oh, CLARG(plane),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_crop_out, ow, oh, CLARG(acc),
                                          CLARG(dev_in), CLARG(dev_out), CLARG(w), CLARG(ow),
                                          CLARG(oh), CLARG(ox), CLARG(oy), CLARG(ix), CLARG(iy));
   SF_CL_STEP("crop out");
 
 cleanup:
-  dt_opencl_release_mem_object(plane);
-  dt_opencl_release_mem_object(plane2);
-  dt_opencl_release_mem_object(tmpa);
-  dt_opencl_release_mem_object(acc);
-  dt_opencl_release_mem_object(gtmp4);
+  for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(buf[i]);
   dt_opencl_release_mem_object(gauss_w);
   return err;
 }

@@ -1078,7 +1078,7 @@ __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4
 /* spektrafilm_yvv_col_4c with spektrafilm_diffusion_accum folded into its
    backward sweep: the blurred value goes into `acc` with the weights
    (wr, wg, wb) and is not stored. `dst` is scratch for the forward sweep. */
-__kernel void spektrafilm_yvv_col_4c_accum(__global const float4 *src, __global float4 *dst,
+__kernel void spektrafilm_yvv_col_4c_accum(__global float4 *buf,
                                            __global float4 *acc, const int w, const int h,
                                            const float4 B, const float4 B2, const float4 B3,
                                            const float wr, const float wg, const float wb,
@@ -1086,18 +1086,18 @@ __kernel void spektrafilm_yvv_col_4c_accum(__global const float4 *src, __global 
 {
   const int col = get_global_id(0);
   if(col >= w || get_global_id(1) != 0) return;
-  float4 w1 = src[col], w2 = w1, w3 = w1;
+  float4 w1 = buf[col], w2 = w1, w3 = w1;
   for(int i = 0; i < h; i++)
   {
     const size_t k = (size_t)i * w + col;
-    const float4 v = w1 + fma(B, src[k] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
-    dst[k] = v; w3 = w2; w2 = w1; w1 = v;
+    const float4 v = w1 + fma(B, buf[k] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
+    buf[k] = v; w3 = w2; w2 = w1; w1 = v;
   }
-  float4 v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
+  float4 v1 = buf[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
   for(int i = h - 1; i >= 0; i--)
   {
     const size_t k = (size_t)i * w + col;
-    const float4 v = v1 + fma(B, dst[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
+    const float4 v = v1 + fma(B, buf[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
     const float4 a = reset ? (float4)(0.f, 0.f, 0.f, 0.f) : acc[k];
     acc[k] = (float4)(fma(wr, v.x, a.x), fma(wg, v.y, a.y), fma(wb, v.z, a.z), v.w);
     v3 = v2; v2 = v1; v1 = v;
