@@ -3076,13 +3076,13 @@ int process_cl(dt_iop_module_t *self,
   }
 /* Direct (exact) separable Gaussian blur: builds the exact kernel
    host-side (the same dt_gaussian_kernel_1d() the CPU path convolves with),
-   uploads it, then dispatches a row pass into a dedicated scratch buffer
-   followed by a col pass into `dst` -- safe even when dst==buf (in-place),
-   since the row pass fully consumes buf into scratch before the col pass
-   writes buf. No sigma-correction factor: unlike a recursive/IIR
+   uploads it, then dispatches a row pass of `src` into a dedicated scratch
+   buffer followed by a col pass into `dst` -- safe even when dst==src
+   (in-place), since the row pass fully consumes src into scratch before the
+   col pass writes dst. No sigma-correction factor: unlike a recursive/IIR
    approximation, a direct truncated kernel has no sigma-dependent error to
    correct for in the first place. */
-#define SF_GAUSS_BLUR4(buf, _sg, label) do { \
+#define SF_GAUSS_BLUR4_OP(src, dst, _sg, label) do { \
     if(err == CL_SUCCESS) \
     { \
       float _kw[4 * (2 * SF_GAUSS_MAX_RADIUS + 1)]; \
@@ -3091,15 +3091,16 @@ int process_cl(dt_iop_module_t *self,
                                              sizeof(float) * 4 * (2 * _kr + 1), TRUE); \
       if(err == CL_SUCCESS) \
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, w, h, \
-                                               CLARG(buf), CLARG(gtmp4), CLARG(w), CLARG(h), \
+                                               CLARG(src), CLARG(gtmp4), CLARG(w), CLARG(h), \
                                                CLARG(gauss_w), CLARG(_kr)); \
       if(err == CL_SUCCESS) \
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, w, h, \
-                                               CLARG(gtmp4), CLARG(buf), CLARG(w), CLARG(h), \
+                                               CLARG(gtmp4), CLARG(dst), CLARG(w), CLARG(h), \
                                                CLARG(gauss_w), CLARG(_kr)); \
     } \
     SF_CL_STEP(label); \
   } while(0)
+#define SF_GAUSS_BLUR4(buf, _sg, label) SF_GAUSS_BLUR4_OP(buf, buf, _sg, label)
 /* Same as SF_GAUSS_BLUR4, but above SF_GAUSS_EXACT_MAX_SIGMA falls back to
    the shared Young-van Vliet recursion (_sf_yvv_blur_cl above)
    instead of the exact row/col kernels: for callers with no downstream
@@ -3561,13 +3562,18 @@ int process_cl(dt_iop_module_t *self,
       SF_GAUSS_BLUR4(plane2, gsigma, "grain blur");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
     {
-      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
-      if(err != CL_SUCCESS) goto cleanup;
       const float usig = d->p.grain_usm_sigma * preview_scale;
-      /* sf_multiplicative_unsharp_mask3() blurs via sf_blur_plane3(), so this
-         is exact-only and skipped below SF_GAUSS_MIN_SIGMA -- not _FAST. */
+      /* sf_multiplicative_unsharp_mask3() blurs with the exact kernel only,
+         not _FAST, and below SF_GAUSS_MIN_SIGMA takes the density itself for
+         the blurred one. `acc` gets the blurred density, plane2 keeps the
+         sharp one. */
       if(usig >= SF_GAUSS_MIN_SIGMA)
-        SF_GAUSS_BLUR4(plane2, usig, "grain USM blur");
+        SF_GAUSS_BLUR4_OP(plane2, acc, usig, "grain USM blur");
+      else
+      {
+        err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
+        SF_CL_STEP("grain USM copy");
+      }
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_usm, w, h, CLARG(plane2),
                                              CLARG(acc), CLARG(w), CLARG(h),
                                              CLARG(d->p.grain_usm_amount),
@@ -3670,12 +3676,16 @@ int process_cl(dt_iop_module_t *self,
   }
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
   {
-    err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0, npix * f * 4);
-    if(err != CL_SUCCESS) goto cleanup;
-    /* sf_unsharp_mask3() blurs via sf_blur_plane3(): exact-only, and skipped
-       below SF_GAUSS_MIN_SIGMA -- not _FAST. */
+    /* sf_unsharp_mask3() blurs with the exact kernel only, not _FAST, and
+       below SF_GAUSS_MIN_SIGMA takes the image itself for the blurred one.
+       `acc` gets the blurred image, plane keeps the sharp one. */
     if(d->p.scan_usm_sigma * preview_scale >= SF_GAUSS_MIN_SIGMA)
-      SF_GAUSS_BLUR4(plane, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
+      SF_GAUSS_BLUR4_OP(plane, acc, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
+    else
+    {
+      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0, npix * f * 4);
+      SF_CL_STEP("scanner USM copy");
+    }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scan_usm, w, h, CLARG(plane),
                                            CLARG(acc), CLARG(w), CLARG(h),
                                            CLARG(d->p.scan_usm_amount));
