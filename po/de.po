@@ -29691,7 +29691,7 @@ msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>Knoten hinzufügen</b>: Strg+Klick - <b>Pfad entfernen<b>: Rechtsklick\n"
+"<b>Knoten hinzufügen</b>: Strg+Klick - <b>Pfad entfernen</b>: Rechtsklick\n"
 "<b>Wechsel Linie/Kurve</b>: Strg+Alt+Klick"
 
 #: ../src/iop/liquify.c:3694
