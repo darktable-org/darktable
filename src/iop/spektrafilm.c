@@ -3212,6 +3212,26 @@ static gboolean _sf_cl_tables_ensure(dt_iop_spektrafilm_data_t *d,
   return TRUE;
 }
 
+/* Sigma in pixels of the dye-cloud blur of grain sub-layer `sl`, channel `c`
+   (layer_particle_model's blur_particle, grain.py): it depends only on that
+   sub-layer's own per-particle optical density (dmax/npart), which is
+   constant across the whole image, so it is computed here on the host, as on
+   the CPU path. layer_npart is precomputed at sf_sim_build time against the
+   fixed SF_GRAIN_REF_UM reference scale and rescaled to the real pixel_um. */
+static float _sf_cl_dye_sigma(const sf_sim_gpu_t *g,
+                              const dt_iop_spektrafilm_params_t *p,
+                              const float pixel_um,
+                              const float preview_scale,
+                              const int c,
+                              const int sl)
+{
+  const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+  const float npart_c = g->grain_layer_npart[sl][c] * npart_scale;
+  const float od_particle = g->grain_layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
+  return SF_GRAIN_DYE_BLUR_UM * p->grain_dye_cloud * sqrtf(fmaxf(od_particle, 0.0f))
+         * preview_scale;
+}
+
 /* GPU path: mirrors process(). Per-pixel stages run as kernels on the
    validated float tables from sf_sim_gpu_export() (POCL-checked to ~1e-6 vs
    the CPU engine); the Gaussian blurs (diffusion bank, halation bounces,
@@ -3229,9 +3249,16 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_spektrafilm_data_t *const d = (dt_iop_spektrafilm_data_t *)piece->data;
   dt_iop_spektrafilm_global_data_t *gd = (dt_iop_spektrafilm_global_data_t *)self->global_data;
   const int devid = piece->pipe->devid;
-  const int w = roi_in->width, h = roi_in->height;
+  /* The stages run on the whole input ROI up to the last blur with unbounded
+     reach and on a window of it from there on, as in process(): w and h are
+     the size of that work area, packed at the start of the buffers, (wx, wy)
+     its origin in the input ROI and (ox, oy) the output window's offset in
+     it. npix stays the size the buffers are allocated for. */
+  int w = roi_in->width, h = roi_in->height;
   const int ow = roi_out->width, oh = roi_out->height;
-  const int ox = roi_out->x - roi_in->x, oy = roi_out->y - roi_in->y;
+  const int ix = roi_out->x - roi_in->x, iy = roi_out->y - roi_in->y;
+  int ox = ix, oy = iy;
+  int wx = 0, wy = 0;
   const size_t npix = (size_t)w * h;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 #define SF_CL_STEP(label)                                                                          \
@@ -3611,16 +3638,50 @@ int process_cl(dt_iop_module_t *self,
     }
   }
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, w, h, CLARG(plane),
-                                         CLARG(corr_buf), CLARG(use_corr), CLARG(plane2), CLARG(w),
-                                         CLARG(h), CLARG(cb_cl), CLARG(mats_cl), CLARG(g->le0),
-                                         CLARG(g->inv_le_step), CLARG(g->couplers_recv_lm));
-  SF_CL_STEP("develop");
+  /* The print diffusion filter is the one blur with unbounded reach that may
+     still follow. Without it development writes the work window the later
+     stages need, see _sf_work_window(); with it, the print development after
+     the filter does. */
+  sf_diffusion_plan_t pplan;
+  const gboolean print_diffusion
+      = g->has_print && d->p.print_diffusion_on
+        && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
+                                   d->p.print_diffusion_strength,
+                                   d->p.print_diffusion_warmth, &pplan)
+        && pplan.p_s > 0.0f;
+  const gboolean grain = d->p.grain_on && d->p.grain_amount > 0.0f;
+  const int scan_reach = _sf_scan_reach(&d->p, preview_scale);
+  {
+    int x0 = 0, y0 = 0, ww = w, wh = h;
+    if(!print_diffusion)
+    {
+      float dye_max = 0.0f;
+      for(int c = 0; c < 3 && grain; c++)
+        for(int sl = 0; sl < g->grain_n_sublayers; sl++)
+          dye_max = fmaxf(dye_max, _sf_cl_dye_sigma(g, &d->p, pixel_um, preview_scale, c, sl));
+      const int reach
+          = scan_reach + (grain ? _sf_grain_reach(&d->p, preview_scale, dye_max) : 0);
+      _sf_work_window(w, h, ox, oy, ow, oh, reach, &x0, &y0, &ww, &wh);
+    }
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, ww, wh, CLARG(plane),
+                                           CLARG(corr_buf), CLARG(use_corr), CLARG(plane2),
+                                           CLARG(ww), CLARG(wh), CLARG(w), CLARG(x0), CLARG(y0),
+                                           CLARG(cb_cl), CLARG(mats_cl), CLARG(g->le0),
+                                           CLARG(g->inv_le_step), CLARG(g->couplers_recv_lm));
+    SF_CL_STEP("develop");
+    w = ww;
+    h = wh;
+    ox -= x0;
+    oy -= y0;
+    wx += x0;
+    wy += y0;
+  }
 
   /* ---- 4) grain on the developed CMY density ----------------------------- */
-  if(d->p.grain_on && d->p.grain_amount > 0.0f)
+  if(grain)
   {
-    const int roi_x = roi_in->x, roi_y = roi_in->y;
+    /* image coordinates of the work window's origin, for the grain seeds */
+    const int roi_x = roi_in->x + wx, roi_y = roi_in->y + wy;
     const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
@@ -3650,12 +3711,7 @@ int process_cl(dt_iop_module_t *self,
       float dye_sigma[3][SF_GRAIN_MAX_SUBLAYERS];
       for(int c = 0; c < 3; c++)
         for(int sl = 0; sl < nsub; sl++)
-        {
-          const float npart_c = g->grain_layer_npart[sl][c] * npart_scale;
-          const float od_particle = g->grain_layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * d->p.grain_dye_cloud
-                           * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
-        }
+          dye_sigma[c][sl] = _sf_cl_dye_sigma(g, &d->p, pixel_um, preview_scale, c, sl);
 
       /* tmpa takes the raw samples of one sub-layer, all channels at once,
          and acc their sum over the sub-layers; both are free here, as the
@@ -3739,7 +3795,8 @@ int process_cl(dt_iop_module_t *self,
         SF_GAUSS_BLUR4_OP(plane2, acc, usig, "grain USM blur");
       else
       {
-        err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
+        err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0,
+                                                      (size_t)w * h * f * 4);
         SF_CL_STEP("grain USM copy");
       }
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_usm, w, h, CLARG(plane2),
@@ -3756,13 +3813,6 @@ int process_cl(dt_iop_module_t *self,
      run inside the scan kernel, straight from the film density in plane2.
      With it, they run here around the filter and leave the print density in
      plane2. */
-  sf_diffusion_plan_t pplan;
-  const gboolean print_diffusion
-      = g->has_print && d->p.print_diffusion_on
-        && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
-                                   d->p.print_diffusion_strength,
-                                   d->p.print_diffusion_warmth, &pplan)
-        && pplan.p_s > 0.0f;
   const int print_in_scan = g->has_print && !print_diffusion;
   if(print_diffusion)
   {
@@ -3797,13 +3847,24 @@ int process_cl(dt_iop_module_t *self,
                                               CLARG(ps), CLARG(to_log));
     }
     SF_CL_STEP("print_diffusion");
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, w, h, CLARG(plane),
-                                           CLARG(plane2), CLARG(w), CLARG(h), CLARG(pc_cl),
+    /* the filter was the last blur with unbounded reach: the print density
+       is written for the work window of the scan stages only */
+    int x0, y0, ww, wh;
+    _sf_work_window(w, h, ox, oy, ow, oh, scan_reach, &x0, &y0, &ww, &wh);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, ww, wh,
+                                           CLARG(plane), CLARG(plane2), CLARG(ww), CLARG(wh),
+                                           CLARG(w), CLARG(x0), CLARG(y0), CLARG(pc_cl),
                                            CLARG(g->le0), CLARG(g->inv_le_step));
     SF_CL_STEP("print_develop");
+    w = ww;
+    h = wh;
+    ox -= x0;
+    oy -= y0;
+    wx += x0;
+    wy += y0;
   }
 
-  /* ---- 6) scan over the full padded ROI into `plane` (free since print) ---- */
+  /* ---- 6) scan over the work window into `plane` (free since print) -------- */
   /* viewing glare field into tmpa, added in XYZ inside the scan (mirrors
      process()); tmpa is free since development */
   const int glare_on = !d->p.scan_film && d->p.glare_percent > 0.0f;
@@ -3812,7 +3873,7 @@ int process_cl(dt_iop_module_t *self,
     const float gmean = d->p.glare_percent * 0.01f;
     const float sigma2 = logf(1.0f + SF_GLARE_ROUGHNESS * SF_GLARE_ROUGHNESS);
     const float gs = sqrtf(sigma2), gbias = -0.5f * sigma2;
-    const int roi_x = roi_in->x, roi_y = roi_in->y;
+    const int roi_x = roi_in->x + wx, roi_y = roi_in->y + wy;
     const uint32_t salt = _grain_salt(piece);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_gen, w, h, CLARG(tmpa),
                                            CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y),
@@ -3859,7 +3920,8 @@ int process_cl(dt_iop_module_t *self,
       SF_GAUSS_BLUR4_OP(plane, acc, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
     else
     {
-      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0, npix * f * 4);
+      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0,
+                                                    (size_t)w * h * f * 4);
       SF_CL_STEP("scanner USM copy");
     }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scan_usm, w, h, CLARG(plane),
@@ -3871,7 +3933,7 @@ int process_cl(dt_iop_module_t *self,
   /* ---- 7) crop the roi_out window into dev_out ----------------------------- */
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_crop_out, ow, oh, CLARG(plane),
                                          CLARG(dev_in), CLARG(dev_out), CLARG(w), CLARG(ow),
-                                         CLARG(oh), CLARG(ox), CLARG(oy));
+                                         CLARG(oh), CLARG(ox), CLARG(oy), CLARG(ix), CLARG(iy));
   SF_CL_STEP("crop out");
 
 cleanup:

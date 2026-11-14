@@ -458,17 +458,22 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
 
 /* stage 3c: develop to CMY film density (spektra_sim: sf_sim_develop).
    `curves` is curves_before when couplers are on, curves_norm otherwise. */
+/* Writes the w x h window of the sw-wide source buffers that starts at
+   (sx, sy), packed, into `cmy`: the stages after development run on the
+   window, see _sf_work_window() on the host. */
 __kernel void spektrafilm_develop(__global const float4 *lograw, __global const float4 *corr,
                                   const int use_corr, __global float4 *cmy, const int w,
-                                  const int h, __global const float *curves,
+                                  const int h, const int sw, const int sx, const int sy,
+                                  __global const float *curves,
                                   __constant float *mats, const float le0,
                                   const float inv_le_step, const int recv_lm)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
-  const float4 lg = lograw[k];
-  float4 cr = use_corr ? corr[k] : (float4)(0.0f);
+  const size_t ks = (size_t)(y + sy) * sw + (x + sx);
+  const float4 lg = lograw[ks];
+  float4 cr = use_corr ? corr[ks] : (float4)(0.0f);
   /* receiver-side Langmuir on the ARRIVED (post-diffusion) inhibitor. Gated
      on use_corr && recv_lm, matching sf_sim_develop()'s
      `if(cr && sim->couplers_recv_lm)`. See the donor-side comment in
@@ -782,15 +787,17 @@ __kernel void spektrafilm_print_expose(__global const float4 *cmy, __global floa
   loge[k] = (float4)(out.x, out.y, out.z, in.w);
 }
 
+/* Source window as for spektrafilm_develop. */
 __kernel void spektrafilm_print_develop(__global const float4 *loge, __global float4 *cmy,
-                                        const int w, const int h,
+                                        const int w, const int h, const int sw, const int sx,
+                                        const int sy,
                                         __global const float *print_curves, const float le0,
                                         const float inv_le_step)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
-  const float4 in = loge[k];
+  const float4 in = loge[(size_t)(y + sy) * sw + (x + sx)];
   const float3 out = sf_print_density((float3)(in.x, in.y, in.z), print_curves, le0,
                                       inv_le_step);
   cmy[k] = (float4)(out.x, out.y, out.z, in.w);
@@ -800,8 +807,8 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
    OkLCh (mode 1) / ACES RGC (mode 2) gamut compression. Runs on the OUTPUT
    grid, cropping (ox, oy) from the full-ROI plane and taking alpha from the
    input image (spektra_sim: sf_sim_scan). */
-/* Scans the full padded ROI into a buffer: the scanner optics run after this
-   on the scanned RGB, and they need the padding. spektrafilm_crop_out does the
+/* Scans the work window into a buffer: the scanner optics run after this
+   on the scanned RGB, and they need its margin. spektrafilm_crop_out does the
    crop. `glare` holds the viewing-glare field in .x when glare_on. With
    print_on, `cmy` holds the film density and the two print stages run first,
    on the tables and constants spektrafilm_print_expose and
@@ -897,15 +904,18 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
   rgb_out[k] = (float4)(rgb.x, rgb.y, rgb.z, 0.0f);
 }
 
-/* Crop the padded ROI down to roi_out and carry the input alpha through. */
+/* Crop the work window down to roi_out and carry the input alpha through.
+   (ox, oy) is roi_out's offset in the w-wide work window, (ix, iy) its offset
+   in the input image. */
 __kernel void spektrafilm_crop_out(__global const float4 *rgb, __read_only image2d_t in,
                                    __write_only image2d_t out, const int w, const int ow,
-                                   const int oh, const int ox, const int oy)
+                                   const int oh, const int ox, const int oy, const int ix,
+                                   const int iy)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= ow || y >= oh) return;
   const float4 v = rgb[(size_t)(y + oy) * w + (x + ox)];
-  const float4 px = readpixel(in, x + ox, y + oy);
+  const float4 px = readpixel(in, x + ix, y + iy);
   write_ipixel(out, (int2)(x, y), (float4)(v.x, v.y, v.z, px.w));
 }
 
