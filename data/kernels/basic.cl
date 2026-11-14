@@ -375,7 +375,7 @@ static float _calc_refavg(read_only image2d_t in,
   }
 
   for(int c = 0; c < 3; c++)
-    mean[c] = cnt[c] > 0 ? cbrt((correction[c] * mean[c]) / (float)cnt[c]) : 0.0f;
+    mean[c] = cnt[c] > 0 ? cbrt(fp32_div(correction[c] * mean[c], (float)cnt[c])) : 0.0f;
 
   float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   int color = fcol(row, col, filters, xtrans);
@@ -1279,8 +1279,8 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, constant float
   // path to linear unbounded (does not clip x at 1)
   if(a[0] >= 0.0f)
   {
-    const float ar = 1.0f/a[0];
-    const float al = 1.0f - 1.0f/a[3];
+    const float ar = fp32_div(1.0f, a[0]);
+    const float al = 1.0f - fp32_div(1.0f, a[3]);
     if(x < ar && x >= al)
     {
       // lut lookup
@@ -1357,7 +1357,7 @@ static float4 _lookup_hsm(const float4 hsv,
 
 static float _srgb_to_linear(const float x)
 {
-  return x <= 0.04045f ? x / 12.92f : dtcl_pow((x + 0.055f) / 1.055f, 2.4f);
+  return x <= 0.04045f ? fp32_div(x, 12.92f) : dtcl_pow(fp32_div(x + 0.055f, 1.055f), 2.4f);
 }
 static float _linear_to_srgb(const float x)
 {
@@ -1402,14 +1402,14 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
     if(YY > 0.0f)
     {
       // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-      const float zz = cam[2] / YY;
+      const float zz = fp32_div(cam[2], YY);
       // lower amount and higher bound_z make the effect smaller.
       // the effect is weakened the darker input values are, saturating at bound_Y
       const float bound_z = 0.5f, bound_Y = 0.8f;
       const float amount = 0.11f;
       if (zz > bound_z)
       {
-        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        const float t = fp32_div(zz - bound_z, 1.0f - bound_z) * fmin(1.0f, fp32_div(YY, bound_Y));
         cam[1] += t * amount;
         cam[2] -= t * amount;
       }
@@ -1438,7 +1438,7 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
     hsv_for_lookup.z = v_encoded;
     float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
 
-    hsv.x += correction.x / 360.0f;
+    hsv.x += fp32_div(correction.x, 360.0f);
     hsv.x -= floor(hsv.x); // stay within the 360° hue circle
     hsv.y = clipf(hsv.y * correction.y);
 
@@ -1509,14 +1509,14 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
     if(YY > 0.0f)
     {
       // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-      const float zz = cam[2] / YY;
+      const float zz = fp32_div(cam[2], YY);
       // lower amount and higher bound_z make the effect smaller.
       // the effect is weakened the darker input values are, saturating at bound_Y
       const float bound_z = 0.5f, bound_Y = 0.8f;
       const float amount = 0.11f;
       if (zz > bound_z)
       {
-        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        const float t = fp32_div(zz - bound_z, 1.0f - bound_z) * fmin(1.0f, fp32_div(YY, bound_Y));
         cam[1] += t * amount;
         cam[2] -= t * amount;
       }
@@ -1556,7 +1556,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
     hsv_for_lookup.z = v_encoded;
     float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
 
-    hsv.x += correction.x / 360.0f;
+    hsv.x += fp32_div(correction.x, 360.0f);
     hsv.x -= floor(hsv.x); // stay within the 360° hue circle
     hsv.y = clipf(hsv.y * correction.y);
 
@@ -1623,14 +1623,14 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
     if(YY > 0.0f)
     {
       // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-      const float zz = cam[2] / YY;
+      const float zz = fp32_div(cam[2], YY);
       // lower amount and higher bound_z make the effect smaller.
       // the effect is weakened the darker input values are, saturating at bound_Y
       const float bound_z = 0.5f, bound_Y = 0.5f;
       const float amount = 0.11f;
       if(zz > bound_z)
       {
-        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        const float t = fp32_div(zz - bound_z, 1.0f - bound_z) * fmin(1.0f, fp32_div(YY, bound_Y));
         cam[1] += t * amount;
         cam[2] -= t * amount;
       }
@@ -1663,7 +1663,7 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
     hsv_for_lookup.z = v_encoded;
     float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
 
-    hsv.x += correction.x / 360.0f;
+    hsv.x += fp32_div(correction.x, 360.0f);
     hsv.x -= floor(hsv.x); // stay within the 360° hue circle
     hsv.y = clipf(hsv.y * correction.y);
 
@@ -1934,7 +1934,7 @@ static inline float4 _interpolation_pixel4(read_only image2d_t in,
     pixel += kv[i] * h;
   }
 
-  return pixel * (1.0f / (normh * normv));
+  return pixel * fp32_div(1.0f, normh * normv);
 }
 
 // rotate pixels: one output pixel at the back transformed position
@@ -3558,7 +3558,7 @@ colorout_clut(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   const float4 Lab = readpixel(in, x, y);
-  const float4 coord = clip4((float4)(Lab.x / 100.0f, (Lab.y + 128.0f) / 255.0f, (Lab.z + 128.0f) / 255.0f, 0.0f));
+  const float4 coord = clip4((float4)(fp32_div(Lab.x, 100.0f), fp32_div(Lab.y + 128.0f, 255.0f), fp32_div(Lab.z + 128.0f, 255.0f), 0.0f));
   float4 pixel = dt_lut3d_tetrahedral(coord, clut, level);
   pixel.w = Lab.w;
 
