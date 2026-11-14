@@ -618,8 +618,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_gauss_row_4c, kernel_gauss_col_4c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_col_4c_accum, kernel_gauss_col_4c_accum;
   int kernel_wide_rows, kernel_wide_down, kernel_wide_up, kernel_wide_up_accum;
-  int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
-  int kernel_pow10, kernel_log10;
+  int kernel_diffusion_accum, kernel_diffusion_mix;
 } dt_iop_spektrafilm_global_data_t;
 
 /* the data pack is large (spectra LUT ~12 MB) and shared by all pieces;
@@ -697,11 +696,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
   gd->kernel_halation_apply = dt_opencl_create_kernel(program, "spektrafilm_halation_apply");
-  gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");
   gd->kernel_diffusion_accum = dt_opencl_create_kernel(program, "spektrafilm_diffusion_accum");
   gd->kernel_diffusion_mix = dt_opencl_create_kernel(program, "spektrafilm_diffusion_mix");
-  gd->kernel_pow10 = dt_opencl_create_kernel(program, "spektrafilm_pow10");
-  gd->kernel_log10 = dt_opencl_create_kernel(program, "spektrafilm_log10");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -737,11 +733,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c);
     dt_opencl_free_kernel(gd->kernel_halation_apply);
-    dt_opencl_free_kernel(gd->kernel_boost);
     dt_opencl_free_kernel(gd->kernel_diffusion_accum);
     dt_opencl_free_kernel(gd->kernel_diffusion_mix);
-    dt_opencl_free_kernel(gd->kernel_pow10);
-    dt_opencl_free_kernel(gd->kernel_log10);
     free(self->data);
     self->data = NULL;
   }
@@ -3156,28 +3149,25 @@ int process_cl(dt_iop_module_t *self,
     SF_CL_STEP(label); \
   } while(0)
 
-  /* ---- 1) expose: input image -> linear film raw exposure ---------------- */
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_expose, w, h, CLARG(dev_in),
-                                         CLARG(plane), CLARG(w), CLARG(h), CLARG(mats_cl),
-                                         CLARG(tc_cl), CLARG(g->tc_n), CLARG(g->ev_scale));
-  SF_CL_STEP("expose");
-
-  /* ---- 2) pre-film spatial effects on linear exposure -------------------- */
+  /* ---- 1) expose: input image -> linear film raw exposure, and the
+          highlight boost of the pre-film stage on it ----------------------- */
   {
     /* The curve is anchored to the exposure scale, not to a frame maximum, so
        the boost agrees between the preview pipe, the export pipe and every
        tile. A frame maximum would differ per ROI. */
-    sf_boost_plan_t bp;
-    if(sf_boost_build_plan(d->p.boost_ev, d->p.boost_range, d->p.protect_ev, &bp))
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
-                                             CLARG(w), CLARG(h), CLARG(bp.raw_x0),
-                                             CLARG(bp.xmax), CLARG(bp.inv_max), CLARG(bp.a),
-                                             CLARG(bp.a_log2e), CLARG(bp.scale),
-                                             CLARG(bp.ext), CLARG(bp.slope));
-      SF_CL_STEP("boost");
-    }
+    sf_boost_plan_t bp = { 0 };
+    const int boost_on
+        = sf_boost_build_plan(d->p.boost_ev, d->p.boost_range, d->p.protect_ev, &bp) ? 1 : 0;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_expose, w, h, CLARG(dev_in),
+                                           CLARG(plane), CLARG(w), CLARG(h), CLARG(mats_cl),
+                                           CLARG(tc_cl), CLARG(g->tc_n), CLARG(g->ev_scale),
+                                           CLARG(boost_on), CLARG(bp.raw_x0), CLARG(bp.xmax),
+                                           CLARG(bp.inv_max), CLARG(bp.a), CLARG(bp.a_log2e),
+                                           CLARG(bp.scale), CLARG(bp.ext), CLARG(bp.slope));
+    SF_CL_STEP("expose");
   }
+
+  /* ---- 2) pre-film spatial effects on linear exposure -------------------- */
 
   if(d->p.diffusion_on)
   {
@@ -3205,9 +3195,10 @@ int process_cl(dt_iop_module_t *self,
       if(err == CL_SUCCESS)
       {
         const float ps = plan.p_s;
+        const int to_log = 0;
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_mix, w, h,
                                                CLARG(plane), CLARG(acc), CLARG(w), CLARG(h),
-                                               CLARG(ps));
+                                               CLARG(ps), CLARG(to_log));
       }
       SF_CL_STEP("diffusion");
     }
@@ -3581,53 +3572,51 @@ int process_cl(dt_iop_module_t *self,
   }
 
   /* ---- 5) print ----------------------------------------------------------- */
-  if(g->has_print)
+  /* Without the print diffusion filter both print stages are per pixel and
+     run inside the scan kernel, straight from the film density in plane2.
+     With it, they run here around the filter and leave the print density in
+     plane2. */
+  sf_diffusion_plan_t pplan;
+  const gboolean print_diffusion
+      = g->has_print && d->p.print_diffusion_on
+        && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
+                                   d->p.print_diffusion_strength,
+                                   d->p.print_diffusion_warmth, &pplan)
+        && pplan.p_s > 0.0f;
+  const int print_in_scan = g->has_print && !print_diffusion;
+  if(print_diffusion)
   {
+    /* linear print exposure, see process() */
+    const int linear = 1;
     err = dt_opencl_enqueue_kernel_2d_args(
         devid, gd->kernel_print_expose, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
         CLARG(el_cl), CLARG(ex_cl), CLARG(ey_cl), CLARG(ez_cl), CLARG(en_cl), CLARG(em_cl),
         CLARG(steps), CLARG(g->enl_lo[0]), CLARG(g->enl_lo[1]), CLARG(g->enl_lo[2]),
         CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
-        CLARG(g->log10_print_exposure));
+        CLARG(g->log10_print_exposure), CLARG(linear));
     SF_CL_STEP("print_expose");
-    /* ---- print diffusion (optional, on linear print exposure) ---- */
-    if(d->p.print_diffusion_on)
+    /* see the pre-film diffusion above for why this is in double */
+    const double pdsc = fmax((double)d->p.print_diffusion_scale, 1e-6);
+    for(int j = 0; j < pplan.n; j++)
     {
-      sf_diffusion_plan_t pplan;
-      if(sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
-                                 d->p.print_diffusion_strength,
-                                 d->p.print_diffusion_warmth, &pplan)
-         && pplan.p_s > 0.0f)
-      {
-        /* linear print exposure, see process() */
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_pow10, w, h, CLARG(plane),
-                                               CLARG(w), CLARG(h));
-        SF_CL_STEP("print_diffusion pow10");
-        /* see the pre-film diffusion above for why this is in double */
-        const double pdsc = fmax((double)d->p.print_diffusion_scale, 1e-6);
-        for(int j = 0; j < pplan.n; j++)
-        {
-          const float sigma
-              = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
-          err = _sf_blur_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
-                                 roi_in->x, roi_in->y, sigma,
-                                 (const float[3]){ pplan.wr[j], pplan.wg[j], pplan.wb[j] },
-                                 j == 0);
-          if(err != CL_SUCCESS) break;
-        }
-        if(err == CL_SUCCESS)
-        {
-          const float ps = pplan.p_s;
-          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_mix, w, h,
-                                                  CLARG(plane), CLARG(acc), CLARG(w), CLARG(h),
-                                                  CLARG(ps));
-        }
-        SF_CL_STEP("print_diffusion");
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_log10, w, h, CLARG(plane),
-                                               CLARG(w), CLARG(h));
-        SF_CL_STEP("print_diffusion log10");
-      }
+      const float sigma
+          = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
+      err = _sf_blur_term_cl(devid, gd, plane, acc, tmpa, gtmp4, gauss_w, w, h,
+                             roi_in->x, roi_in->y, sigma,
+                             (const float[3]){ pplan.wr[j], pplan.wg[j], pplan.wb[j] },
+                             j == 0);
+      if(err != CL_SUCCESS) break;
     }
+    if(err == CL_SUCCESS)
+    {
+      /* mixed, and back to log10 print exposure */
+      const float ps = pplan.p_s;
+      const int to_log = 1;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffusion_mix, w, h,
+                                              CLARG(plane), CLARG(acc), CLARG(w), CLARG(h),
+                                              CLARG(ps), CLARG(to_log));
+    }
+    SF_CL_STEP("print_diffusion");
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, w, h, CLARG(plane),
                                            CLARG(plane2), CLARG(w), CLARG(h), CLARG(pc_cl),
                                            CLARG(g->le0), CLARG(g->inv_le_step));
@@ -3651,8 +3640,18 @@ int process_cl(dt_iop_module_t *self,
     SF_CL_STEP("glare gen");
     SF_GAUSS_BLUR4(tmpa, SF_GLARE_BLUR_PX * preview_scale, "glare blur");
   }
+  /* a stock without a print stage has no print tables; the kernel does not
+     read them then, and takes the scan's in their place */
+  cl_mem p_lut = g->has_print ? el_cl : sl_cl, p_sx = g->has_print ? ex_cl : sx_cl;
+  cl_mem p_sy = g->has_print ? ey_cl : sy_cl, p_sz = g->has_print ? ez_cl : sz_cl;
+  cl_mem p_cmn = g->has_print ? en_cl : sn_cl, p_cmx = g->has_print ? em_cl : sm_cl;
+  cl_mem p_curves = g->has_print ? pc_cl : cn_cl;
   err = dt_opencl_enqueue_kernel_2d_args(
       devid, gd->kernel_scan, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
+      CLARG(print_in_scan), CLARG(p_lut), CLARG(p_sx), CLARG(p_sy), CLARG(p_sz), CLARG(p_cmn),
+      CLARG(p_cmx), CLARG(g->enl_lo[0]), CLARG(g->enl_lo[1]), CLARG(g->enl_lo[2]),
+      CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
+      CLARG(g->log10_print_exposure), CLARG(p_curves), CLARG(g->le0), CLARG(g->inv_le_step),
       CLARG(sl_cl), CLARG(sx_cl), CLARG(sy_cl),
       CLARG(sz_cl), CLARG(sn_cl), CLARG(sm_cl), CLARG(steps), CLARG(g->scan_lo[0]),
       CLARG(g->scan_lo[1]), CLARG(g->scan_lo[2]), CLARG(g->scan_inv_range[0]),
