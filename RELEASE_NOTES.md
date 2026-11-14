@@ -541,7 +541,9 @@ changes (where available).
   ARW 6.0 compressed and compressed (HQ) files. Bayer DNGs RawSpeed can't
   decode are loaded with LibRaw as well, e.g. lossless JPEG with
   unsupported predictors or uncompressed files with inconsistent strip
-  sizes as written by some DJI drones. All other files are still loaded with RawSpeed.
+  sizes as written by some DJI drones. This includes CinemaDNG lossless
+  (Blackmagic, DJI) and lossy (Blackmagic) files. All other files are
+  still loaded with RawSpeed.
 
 - The LibRaw loader now supports X-Trans sensors. Previously, RAFs
   routed to LibRaw via the libraw_extensions setting came out red.
@@ -1157,7 +1159,6 @@ changes (where available).
 ### Missing Compression Mode Support
 
 - Apple ProRAW DNGs
-- CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
 - Nikon high efficiency NEFs, except from the Z6 III, Z8, Z9 and Z f
   with LibRaw 0.23 or newer
