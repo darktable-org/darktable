@@ -790,26 +790,6 @@ static void _get_point(const dt_iop_module_t *self,
   *y = pts[1];
 }
 
-static float _luminance_from_module_buffer(const dt_iop_module_t *self)
-{
-  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-
-  const size_t c_x = g->cursor_pos_x;
-  const size_t c_y = g->cursor_pos_y;
-
-  // get buffer x,y given the cursor position
-  int b_x = 0;
-  int b_y = 0;
-
-  _get_point(self, c_x, c_y, &b_x, &b_y);
-
-  return get_luminance_from_buffer(g->pd.buf,
-                                   g->pd.width,
-                                   g->pd.height,
-                                   b_x,
-                                   b_y);
-}
-
 /***
  * Exposure compensation computation
  *
@@ -2750,10 +2730,18 @@ int mouse_moved(dt_iop_module_t *self,
 
   const int x_pointer = pzx * wd;
   const int y_pointer = pzy * ht;
+  const gboolean inside = x_pointer >= 0 && x_pointer < wd && y_pointer >= 0 && y_pointer < ht;
+
+  // get buffer x,y given the cursor position
+  int b_x = 0;
+  int b_y = 0;
+
+  if(inside)
+    _get_point(self, x_pointer, y_pointer, &b_x, &b_y);
 
   dt_iop_gui_enter_critical_section(self);
   // Cursor is valid if it's inside the picture frame
-  if(x_pointer >= 0 && x_pointer < wd && y_pointer >= 0 && y_pointer < ht)
+  if(inside)
   {
     g->cursor_valid = TRUE;
     g->cursor_pos_x = x_pointer;
@@ -2768,7 +2756,7 @@ int mouse_moved(dt_iop_module_t *self,
 
   // store the actual exposure too, to spare I/O op
   if(g->cursor_valid && !dt_pipe_processing(dev->full.pipe) && g->luminance_valid)
-    g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
+    g->cursor_exposure = log2f(get_luminance_from_buffer(g->pd.buf, g->pd.width, g->pd.height, b_x, b_y));
   dt_iop_gui_leave_critical_section(self);
 
   switch_cursors(self);
@@ -2885,15 +2873,19 @@ int scrolled(dt_iop_module_t *self,
                      || !g->user_param_valid
                      || dt_pipe_processing(dev->full.pipe)
                      || !g->has_focus;
-
+  const size_t c_x = g->cursor_pos_x;
+  const size_t c_y = g->cursor_pos_y;
   dt_iop_gui_leave_critical_section(self);
   if(fail) return 1;
 
+  int b_x = 0;
+  int b_y = 0;
+  _get_point(self, c_x, c_y, &b_x, &b_y);
+
   // re-read the exposure in case it has changed
   // keep critical section as short as possible and avoid mutex locking
-  const float lum = log2f(_luminance_from_module_buffer(self));
   dt_iop_gui_enter_critical_section(self);
-  g->cursor_exposure = lum;
+  g->cursor_exposure = log2f(get_luminance_from_buffer(g->pd.buf, g->pd.width, g->pd.height, b_x, b_y));
   dt_iop_gui_leave_critical_section(self);
 
   // Set the correction from mouse scroll input
@@ -2973,19 +2965,23 @@ void gui_post_expose(dt_iop_module_t *self,
                      || !g->interpolation_valid
                      || !g->has_focus;
   gboolean luminance_valid = g->luminance_valid;
-  float cursor_exposure = g->cursor_exposure;
+  const size_t c_x = g->cursor_pos_x;
+  const size_t c_y = g->cursor_pos_y;
   dt_iop_gui_leave_critical_section(self);
 
   if(fail) return;
 
+  int b_x = 0;
+  int b_y = 0;
+  _get_point(self, c_x, c_y, &b_x, &b_y);
+
   // Re-read the exposure in case it has changed.  While the pipe is busy
   // the module buffer may be mid-recompute, so keep the last value and
   // stay drawing the indicator (no blinking cursor during reprocess).
-  if(luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
-    cursor_exposure = log2f(_luminance_from_module_buffer(self));
-
   dt_iop_gui_enter_critical_section(self);
-  g->cursor_exposure = cursor_exposure;
+  if(luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
+    g->cursor_exposure = log2f(get_luminance_from_buffer(g->pd.buf, g->pd.width, g->pd.height, b_x, b_y));
+
   // Get coordinates
   const float x_pointer = g->cursor_pos_x;
   const float y_pointer = g->cursor_pos_y;
