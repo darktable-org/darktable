@@ -564,6 +564,35 @@ static void _populate_format_combo(dt_iop_module_t *self)
 /* per-piece data: parameter snapshot + a lazily (re)built simulation.
    The sim depends on the pipe's work profile, which is only reliably known in
    process(), so the build happens there guarded by a mutex. */
+/* the device tables process_cl() caches in dt_iop_spektrafilm_data_t */
+typedef enum dt_iop_spektrafilm_cl_table_t
+{
+  SF_CL_TAB_MATS = 0,     /* packed matrix block, SF_M_* layout in spektrafilm.cl */
+  SF_CL_TAB_TC,           /* tri2quad spectral LUT of the exposure */
+  SF_CL_TAB_CURVES,       /* density curves */
+  SF_CL_TAB_CURVES_CORR,  /* density curves before couplers, where they are active */
+  SF_CL_TAB_ENL_LUT,      /* print exposure PCHIP tables; NULL without a print stage */
+  SF_CL_TAB_ENL_SX,
+  SF_CL_TAB_ENL_SY,
+  SF_CL_TAB_ENL_SZ,
+  SF_CL_TAB_ENL_CMIN,
+  SF_CL_TAB_ENL_CMAX,
+  SF_CL_TAB_PRINT_CURVES,
+  SF_CL_TAB_SCAN_LUT,     /* scan PCHIP tables */
+  SF_CL_TAB_SCAN_SX,
+  SF_CL_TAB_SCAN_SY,
+  SF_CL_TAB_SCAN_SZ,
+  SF_CL_TAB_SCAN_CMIN,
+  SF_CL_TAB_SCAN_CMAX,
+  SF_CL_TAB_CMAX,         /* OkLCh gamut boundary; a stand-in in the other modes */
+  SF_CL_TAB_GRAIN_DMAX,   /* multi-sublayer grain tables */
+  SF_CL_TAB_GRAIN_NPART,
+  SF_CL_TAB_GRAIN_DMIN,
+  SF_CL_TAB_GRAIN_TOTAL,
+  SF_CL_TAB_GRAIN_CURVE,
+  SF_CL_TAB_COUNT
+} dt_iop_spektrafilm_cl_table_t;
+
 typedef struct dt_iop_spektrafilm_data_t
 {
   dt_iop_spektrafilm_params_t p;
@@ -583,9 +612,9 @@ typedef struct dt_iop_spektrafilm_data_t
      Letting every pipe write would have them racing over the same buffers for
      no gain -- they all reach the same verdict from the same params. */
   dt_iop_module_t *self;
-  /* multi-sublayer grain GPU constant buffers (see process_cl's grain
-     stage): built from d->gpu's grain_layer_* tables, which only change
-     when d->gpu itself is rebuilt (a new film/paper choice), never
+  /* the constant tables of process_cl() on the device, indexed by
+     dt_iop_spektrafilm_cl_table_t: built from d->gpu, whose tables only
+     change when d->gpu itself is rebuilt (a new film/paper choice), never
      per-tile. Cached here and keyed on the `gpu` pointer they were built
      from AND on the device they were built on, so they survive across
      process_cl() calls -- tiled processing calls process_cl() once per tile,
@@ -600,10 +629,10 @@ typedef struct dt_iop_spektrafilm_data_t
      on another. The handles are still valid, just foreign, and clSetKernelArg
      dereferences them inside the driver: it segfaults there rather than
      returning an error, so there is nothing to check after the fact. */
-  const sf_sim_gpu_t *grain_cl_built_for;
-  int grain_cl_devid;
+  const sf_sim_gpu_t *cl_tab_built_for;
+  int cl_tab_devid;
 #ifdef HAVE_OPENCL
-  cl_mem grain_cl_dmax, grain_cl_npart, grain_cl_dmin, grain_cl_total, grain_cl_curve;
+  cl_mem cl_tab[SF_CL_TAB_COUNT];
 #endif
 } dt_iop_spektrafilm_data_t;
 
@@ -1448,6 +1477,21 @@ void init_pipe(dt_iop_module_t *self,
   piece->data = d;
 }
 
+#ifdef HAVE_OPENCL
+/* Releases the cached device tables, so the next process_cl() uploads them
+   again. */
+static void _sf_cl_tables_release(dt_iop_spektrafilm_data_t *d)
+{
+  for(int i = 0; i < SF_CL_TAB_COUNT; i++)
+    if(d->cl_tab[i])
+    {
+      dt_opencl_release_mem_object(d->cl_tab[i]);
+      d->cl_tab[i] = NULL;
+    }
+  d->cl_tab_built_for = NULL;
+}
+#endif
+
 void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
@@ -1458,11 +1502,7 @@ void cleanup_pipe(dt_iop_module_t *self,
     if(d->gpu) sf_sim_gpu_free(d->gpu);
     if(d->sim) sf_sim_free(d->sim);
 #ifdef HAVE_OPENCL
-    if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
-    if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
-    if(d->grain_cl_dmin) dt_opencl_release_mem_object(d->grain_cl_dmin);
-    if(d->grain_cl_total) dt_opencl_release_mem_object(d->grain_cl_total);
-    if(d->grain_cl_curve) dt_opencl_release_mem_object(d->grain_cl_curve);
+    _sf_cl_tables_release(d);
 #endif
     dt_pthread_mutex_destroy(&d->lock);
   }
@@ -1655,16 +1695,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   {
     sf_sim_gpu_free(d->gpu);
     d->gpu = NULL;
-    /* these were uploaded from this gpu's grain_layer_* tables; release them
-       now so process_cl() re-uploads fresh ones from the new gpu instead of
-       reusing now-stale content. */
+    /* the device tables were uploaded from this gpu; release them now so
+       process_cl() uploads the new gpu's instead of reusing stale content. */
 #ifdef HAVE_OPENCL
-    if(d->grain_cl_dmax) { dt_opencl_release_mem_object(d->grain_cl_dmax); d->grain_cl_dmax = NULL; }
-    if(d->grain_cl_npart) { dt_opencl_release_mem_object(d->grain_cl_npart); d->grain_cl_npart = NULL; }
-    if(d->grain_cl_dmin) { dt_opencl_release_mem_object(d->grain_cl_dmin); d->grain_cl_dmin = NULL; }
-    if(d->grain_cl_total) { dt_opencl_release_mem_object(d->grain_cl_total); d->grain_cl_total = NULL; }
-    if(d->grain_cl_curve) { dt_opencl_release_mem_object(d->grain_cl_curve); d->grain_cl_curve = NULL; }
-    d->grain_cl_built_for = NULL;
+    _sf_cl_tables_release(d);
 #endif
   }
   if(d->sim)
@@ -2961,6 +2995,89 @@ static cl_int _sf_blur_term_cl(const int devid,
   return _sf_blur_wide_cl(devid, gd, src, NULL, w, h, roi_x, roi_y, sigma, acc, wt, reset);
 }
 
+/* Uploads the constant tables of `g` to `devid` unless d->cl_tab already
+   holds them for this `g` and device. FALSE when an upload failed. */
+static gboolean _sf_cl_tables_ensure(dt_iop_spektrafilm_data_t *d,
+                                     const sf_sim_gpu_t *g,
+                                     const int devid)
+{
+  if(d->cl_tab_built_for == g && d->cl_tab_devid == devid) return TRUE;
+  _sf_cl_tables_release(d);
+
+  /* packed matrix block: layout must match the SF_M_* offsets in the .cl */
+  float mats[93];
+  memcpy(mats + 0, g->m_in, 9 * sizeof(float));
+  memcpy(mats + 9, g->m_out, 9 * sizeof(float));
+  memcpy(mats + 18, g->couplers_M, 9 * sizeof(float));
+  memcpy(mats + 27, g->out_rgb2xyz, 9 * sizeof(float));
+  memcpy(mats + 36, g->out_xyz2rgb, 9 * sizeof(float));
+  memcpy(mats + 45, g->oklab_m1, 9 * sizeof(float));
+  memcpy(mats + 54, g->oklab_m2, 9 * sizeof(float));
+  memcpy(mats + 63, g->oklab_m1inv, 9 * sizeof(float));
+  memcpy(mats + 72, g->oklab_m2inv, 9 * sizeof(float));
+  memcpy(mats + 81, g->couplers_donor_K, 3 * sizeof(float));
+  memcpy(mats + 84, g->couplers_donor_Dref, 3 * sizeof(float));
+  memcpy(mats + 87, g->couplers_recv_Kr, 3 * sizeof(float));
+  memcpy(mats + 90, g->couplers_recv_cref, 3 * sizeof(float));
+
+  const int steps = g->steps;
+  const size_t n3 = (size_t)steps * steps * steps * 3;
+  const size_t m3 = (size_t)(steps - 1) * (steps - 1) * (steps - 1) * 3;
+  const size_t f = sizeof(float);
+  const size_t maxsub = SF_GRAIN_MAX_SUBLAYERS, nle = SF_NLE;
+  cl_mem *const t = d->cl_tab;
+#define SF_CL_UPLOAD(idx, size, host) \
+  t[idx] = dt_opencl_copy_host_to_device_constant(devid, (size), (void *)(host))
+  SF_CL_UPLOAD(SF_CL_TAB_MATS, 93 * f, mats);
+  SF_CL_UPLOAD(SF_CL_TAB_TC, (size_t)g->tc_n * g->tc_n * 3 * f, g->tc_lut);
+  SF_CL_UPLOAD(SF_CL_TAB_CURVES, 256 * 3 * f, g->curves_norm);
+  SF_CL_UPLOAD(SF_CL_TAB_CURVES_CORR, 256 * 3 * f,
+               g->couplers_active ? g->curves_before : g->curves_norm);
+  if(g->has_print)
+  {
+    SF_CL_UPLOAD(SF_CL_TAB_ENL_LUT, n3 * f, g->enl_lut);
+    SF_CL_UPLOAD(SF_CL_TAB_ENL_SX, n3 * f, g->enl_sx);
+    SF_CL_UPLOAD(SF_CL_TAB_ENL_SY, n3 * f, g->enl_sy);
+    SF_CL_UPLOAD(SF_CL_TAB_ENL_SZ, n3 * f, g->enl_sz);
+    SF_CL_UPLOAD(SF_CL_TAB_ENL_CMIN, m3 * f, g->enl_cmin);
+    SF_CL_UPLOAD(SF_CL_TAB_ENL_CMAX, m3 * f, g->enl_cmax);
+    SF_CL_UPLOAD(SF_CL_TAB_PRINT_CURVES, 256 * 3 * f, g->print_curves);
+  }
+  SF_CL_UPLOAD(SF_CL_TAB_SCAN_LUT, n3 * f, g->scan_lut);
+  SF_CL_UPLOAD(SF_CL_TAB_SCAN_SX, n3 * f, g->scan_sx);
+  SF_CL_UPLOAD(SF_CL_TAB_SCAN_SY, n3 * f, g->scan_sy);
+  SF_CL_UPLOAD(SF_CL_TAB_SCAN_SZ, n3 * f, g->scan_sz);
+  SF_CL_UPLOAD(SF_CL_TAB_SCAN_CMIN, m3 * f, g->scan_cmin);
+  SF_CL_UPLOAD(SF_CL_TAB_SCAN_CMAX, m3 * f, g->scan_cmax);
+  /* cmax_table is only used in oklch mode but the kernel arg must be valid */
+  SF_CL_UPLOAD(SF_CL_TAB_CMAX, (g->cmax_table ? (size_t)g->cmax_nl * g->cmax_nh : 1) * f,
+               g->cmax_table ? (const void *)g->cmax_table : (const void *)mats);
+  SF_CL_UPLOAD(SF_CL_TAB_GRAIN_DMAX, maxsub * 3 * f, g->grain_layer_dmax);
+  SF_CL_UPLOAD(SF_CL_TAB_GRAIN_NPART, maxsub * 3 * f, g->grain_layer_npart);
+  SF_CL_UPLOAD(SF_CL_TAB_GRAIN_DMIN, maxsub * 3 * f, g->grain_layer_dmin);
+  SF_CL_UPLOAD(SF_CL_TAB_GRAIN_TOTAL, nle * 3 * f, g->grain_layer_curve_total);
+  SF_CL_UPLOAD(SF_CL_TAB_GRAIN_CURVE, nle * maxsub * 3 * f, g->grain_layer_curve);
+#undef SF_CL_UPLOAD
+
+  /* Claim the cache only once every upload landed. With the key recorded
+     before this test, a partial failure would be permanent for this
+     simulation and device: the guard above would skip the rebuild and the
+     OpenCL path would stay unavailable until the simulation itself was
+     rebuilt. */
+  for(int i = 0; i < SF_CL_TAB_COUNT; i++)
+  {
+    const gboolean print_table = i >= SF_CL_TAB_ENL_LUT && i <= SF_CL_TAB_PRINT_CURVES;
+    if(!t[i] && (g->has_print || !print_table))
+    {
+      _sf_cl_tables_release(d);
+      return FALSE;
+    }
+  }
+  d->cl_tab_built_for = g;
+  d->cl_tab_devid = devid;
+  return TRUE;
+}
+
 /* GPU path: mirrors process(). Per-pixel stages run as kernels on the
    validated float tables from sf_sim_gpu_export() (POCL-checked to ~1e-6 vs
    the CPU engine); the Gaussian blurs (diffusion bank, halation bounces,
@@ -3018,56 +3135,23 @@ int process_cl(dt_iop_module_t *self,
      preview pipe's reduced resolution, but never grow past 1:1 */
   const float preview_scale = fminf(roi_in->scale, 1.0f);
 
-  /* ---- table uploads (read-only buffers) -------------------------------- */
-  /* packed matrix block: layout must match the SF_M_* offsets in the .cl */
-  float mats[93]; /* SF_M_* layout in spektrafilm.cl */
-  memcpy(mats + 0, g->m_in, 9 * sizeof(float));
-  memcpy(mats + 9, g->m_out, 9 * sizeof(float));
-  memcpy(mats + 18, g->couplers_M, 9 * sizeof(float));
-  memcpy(mats + 27, g->out_rgb2xyz, 9 * sizeof(float));
-  memcpy(mats + 36, g->out_xyz2rgb, 9 * sizeof(float));
-  memcpy(mats + 45, g->oklab_m1, 9 * sizeof(float));
-  memcpy(mats + 54, g->oklab_m2, 9 * sizeof(float));
-  memcpy(mats + 63, g->oklab_m1inv, 9 * sizeof(float));
-  memcpy(mats + 72, g->oklab_m2inv, 9 * sizeof(float));
-  memcpy(mats + 81, g->couplers_donor_K, 3 * sizeof(float));
-  memcpy(mats + 84, g->couplers_donor_Dref, 3 * sizeof(float));
-  memcpy(mats + 87, g->couplers_recv_Kr, 3 * sizeof(float));
-  memcpy(mats + 90, g->couplers_recv_cref, 3 * sizeof(float));
-
+  /* ---- constant tables (read-only buffers) ------------------------------- */
+  /* Uploaded once per d->gpu and device rather than once per process_cl()
+     call: tiled processing calls this once per tile, and the tables are
+     identical across every tile of the same image. */
+  if(!_sf_cl_tables_ensure(d, g, devid)) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const int steps = g->steps;
-  const size_t n3 = (size_t)steps * steps * steps * 3;
-  const size_t m3 = (size_t)(steps - 1) * (steps - 1) * (steps - 1) * 3;
   const size_t f = sizeof(float);
-  cl_mem mats_cl = dt_opencl_copy_host_to_device_constant(devid, 93 * f, mats);
-  cl_mem tc_cl = dt_opencl_copy_host_to_device_constant(
-      devid, (size_t)g->tc_n * g->tc_n * 3 * f, g->tc_lut);
-  cl_mem cn_cl = dt_opencl_copy_host_to_device_constant(devid, 256 * 3 * f, g->curves_norm);
-  cl_mem cb_cl = dt_opencl_copy_host_to_device_constant(devid, 256 * 3 * f,
-                                                        g->couplers_active ? g->curves_before
-                                                                           : g->curves_norm);
-  cl_mem el_cl = NULL, ex_cl = NULL, ey_cl = NULL, ez_cl = NULL, en_cl = NULL, em_cl = NULL;
-  cl_mem pc_cl = NULL;
-  if(g->has_print)
-  {
-    el_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->enl_lut);
-    ex_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->enl_sx);
-    ey_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->enl_sy);
-    ez_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->enl_sz);
-    en_cl = dt_opencl_copy_host_to_device_constant(devid, m3 * f, g->enl_cmin);
-    em_cl = dt_opencl_copy_host_to_device_constant(devid, m3 * f, g->enl_cmax);
-    pc_cl = dt_opencl_copy_host_to_device_constant(devid, 256 * 3 * f, g->print_curves);
-  }
-  cl_mem sl_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->scan_lut);
-  cl_mem sx_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->scan_sx);
-  cl_mem sy_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->scan_sy);
-  cl_mem sz_cl = dt_opencl_copy_host_to_device_constant(devid, n3 * f, g->scan_sz);
-  cl_mem sn_cl = dt_opencl_copy_host_to_device_constant(devid, m3 * f, g->scan_cmin);
-  cl_mem sm_cl = dt_opencl_copy_host_to_device_constant(devid, m3 * f, g->scan_cmax);
-  /* cmax_table is only used in oklch mode but the kernel arg must be valid */
-  cl_mem cm_cl = dt_opencl_copy_host_to_device_constant(
-      devid, (g->cmax_table ? (size_t)g->cmax_nl * g->cmax_nh : 1) * f,
-      g->cmax_table ? (void *)g->cmax_table : (void *)mats);
+  cl_mem mats_cl = d->cl_tab[SF_CL_TAB_MATS], tc_cl = d->cl_tab[SF_CL_TAB_TC];
+  cl_mem cn_cl = d->cl_tab[SF_CL_TAB_CURVES], cb_cl = d->cl_tab[SF_CL_TAB_CURVES_CORR];
+  cl_mem el_cl = d->cl_tab[SF_CL_TAB_ENL_LUT], ex_cl = d->cl_tab[SF_CL_TAB_ENL_SX];
+  cl_mem ey_cl = d->cl_tab[SF_CL_TAB_ENL_SY], ez_cl = d->cl_tab[SF_CL_TAB_ENL_SZ];
+  cl_mem en_cl = d->cl_tab[SF_CL_TAB_ENL_CMIN], em_cl = d->cl_tab[SF_CL_TAB_ENL_CMAX];
+  cl_mem pc_cl = d->cl_tab[SF_CL_TAB_PRINT_CURVES];
+  cl_mem sl_cl = d->cl_tab[SF_CL_TAB_SCAN_LUT], sx_cl = d->cl_tab[SF_CL_TAB_SCAN_SX];
+  cl_mem sy_cl = d->cl_tab[SF_CL_TAB_SCAN_SY], sz_cl = d->cl_tab[SF_CL_TAB_SCAN_SZ];
+  cl_mem sn_cl = d->cl_tab[SF_CL_TAB_SCAN_CMIN], sm_cl = d->cl_tab[SF_CL_TAB_SCAN_CMAX];
+  cl_mem cm_cl = d->cl_tab[SF_CL_TAB_CMAX];
 
   cl_mem plane = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
   cl_mem plane2 = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
@@ -3081,10 +3165,7 @@ int process_cl(dt_iop_module_t *self,
      dt_gaussian_kernel_1d and rewritten before each blur dispatch below) */
   cl_mem gauss_w
       = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * (2 * SF_GAUSS_MAX_RADIUS + 1));
-  if(!mats_cl || !tc_cl || !cn_cl || !cb_cl || !sl_cl || !sx_cl || !sy_cl || !sz_cl || !sn_cl
-     || !sm_cl || !cm_cl || !plane || !plane2 || !tmpa || !acc || !gtmp4
-     || !gauss_w
-     || (g->has_print && (!el_cl || !ex_cl || !ey_cl || !ez_cl || !en_cl || !em_cl || !pc_cl)))
+  if(!plane || !plane2 || !tmpa || !acc || !gtmp4 || !gauss_w)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
@@ -3420,44 +3501,8 @@ int process_cl(dt_iop_module_t *self,
     /* Unified through the multi-sublayer table for every stock (nsub can be
        1); there is no separate single-layer kernel -- see the matching comment
        in process()'s CPU path for why that is valid: the build-time layer
-       table already carries correct n==1 data for single-layer stocks.
-       Uploaded once per d->gpu (see d->grain_cl_built_for above) rather than
-       once per process_cl() call: tiled processing calls this once per tile,
-       and the tables are identical across every tile of the same image. */
+       table already carries correct n==1 data for single-layer stocks. */
     const int nsub = g->grain_n_sublayers, nle = SF_NLE, maxsub = SF_GRAIN_MAX_SUBLAYERS;
-    if(d->grain_cl_built_for != g || d->grain_cl_devid != devid)
-    {
-      if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
-      if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
-      if(d->grain_cl_dmin) dt_opencl_release_mem_object(d->grain_cl_dmin);
-      if(d->grain_cl_total) dt_opencl_release_mem_object(d->grain_cl_total);
-      if(d->grain_cl_curve) dt_opencl_release_mem_object(d->grain_cl_curve);
-      d->grain_cl_dmax = dt_opencl_copy_host_to_device_constant(
-          devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmax);
-      d->grain_cl_npart = dt_opencl_copy_host_to_device_constant(
-          devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_npart);
-      d->grain_cl_dmin = dt_opencl_copy_host_to_device_constant(
-          devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmin);
-      d->grain_cl_total = dt_opencl_copy_host_to_device_constant(
-          devid, (size_t)nle * 3 * f, (void *)g->grain_layer_curve_total);
-      d->grain_cl_curve = dt_opencl_copy_host_to_device_constant(
-          devid, (size_t)nle * maxsub * 3 * f, (void *)g->grain_layer_curve);
-      /* Claim the cache only once every upload landed. If the key were
-         recorded before this test, a partial failure would be permanent for
-         this simulation and device: the guard above would skip the rebuild, the
-         check below would fail on the same NULL, and the OpenCL path would stay
-         unavailable until the simulation itself was rebuilt. */
-      if(d->grain_cl_dmax && d->grain_cl_npart && d->grain_cl_dmin && d->grain_cl_total
-         && d->grain_cl_curve)
-      {
-        d->grain_cl_built_for = g;
-        d->grain_cl_devid = devid;
-      }
-    }
-    if(!d->grain_cl_dmax || !d->grain_cl_npart || !d->grain_cl_dmin || !d->grain_cl_total
-       || !d->grain_cl_curve)
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    else
     {
       /* layer_npart (uploaded above) is precomputed at sf_sim_build time
          against the fixed SF_GRAIN_REF_UM reference scale; rescale it live
@@ -3490,8 +3535,9 @@ int process_cl(dt_iop_module_t *self,
             devid, gd->kernel_grain_gen_raw_sl, w, h, CLARG(plane2), CLARG(tmpa), CLARG(w),
             CLARG(h), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(sl), CLARG(nle),
             CLARG(maxsub), CLARG(unif[0]), CLARG(unif[1]), CLARG(unif[2]), CLARG(npart_scale),
-            CLARG(salt), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
-            CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
+            CLARG(salt), CLARG(d->cl_tab[SF_CL_TAB_GRAIN_DMAX]),
+            CLARG(d->cl_tab[SF_CL_TAB_GRAIN_NPART]), CLARG(d->cl_tab[SF_CL_TAB_GRAIN_DMIN]),
+            CLARG(d->cl_tab[SF_CL_TAB_GRAIN_TOTAL]), CLARG(d->cl_tab[SF_CL_TAB_GRAIN_CURVE]));
         if(err != CL_SUCCESS) break;
         const float dsig[3] = { dye_sigma[mono ? 1 : 0][sl], dye_sigma[1][sl],
                                 dye_sigma[mono ? 1 : 2][sl] };
@@ -3695,24 +3741,6 @@ int process_cl(dt_iop_module_t *self,
   SF_CL_STEP("crop out");
 
 cleanup:
-  dt_opencl_release_mem_object(mats_cl);
-  dt_opencl_release_mem_object(tc_cl);
-  dt_opencl_release_mem_object(cn_cl);
-  dt_opencl_release_mem_object(cb_cl);
-  dt_opencl_release_mem_object(el_cl);
-  dt_opencl_release_mem_object(ex_cl);
-  dt_opencl_release_mem_object(ey_cl);
-  dt_opencl_release_mem_object(ez_cl);
-  dt_opencl_release_mem_object(en_cl);
-  dt_opencl_release_mem_object(em_cl);
-  dt_opencl_release_mem_object(pc_cl);
-  dt_opencl_release_mem_object(sl_cl);
-  dt_opencl_release_mem_object(sx_cl);
-  dt_opencl_release_mem_object(sy_cl);
-  dt_opencl_release_mem_object(sz_cl);
-  dt_opencl_release_mem_object(sn_cl);
-  dt_opencl_release_mem_object(sm_cl);
-  dt_opencl_release_mem_object(cm_cl);
   dt_opencl_release_mem_object(plane);
   dt_opencl_release_mem_object(plane2);
   dt_opencl_release_mem_object(tmpa);
