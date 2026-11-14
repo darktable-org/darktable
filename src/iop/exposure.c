@@ -357,7 +357,9 @@ void reload_defaults(dt_iop_module_t *self)
   if(scene_raw && self->multi_priority == 0)
   {
     const gboolean mono = dt_image_is_monochrome(&self->dev->image_storage);
-    d->exposure = mono ? 0.0f : 0.7f;
+    // DNG BaselineExposure states how much the raw data has to be pushed
+    // relative to a typical camera, so it adds to the generic boost
+    d->exposure = (mono ? 0.0f : 0.7f) + self->dev->image_storage.dng_baseline_exposure;
     d->black =    mono ? 0.0f : -0.000244140625f;
     d->compensate_exposure_bias = TRUE;
   }
