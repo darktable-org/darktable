@@ -2482,20 +2482,21 @@ void process(dt_iop_module_t *self,
         const float unif_ch = gunif[channel_idx];
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                          \
-    shared(plane, raw, layers) firstprivate(w, npix, roi_x, roi_y, mono, channel_idx, seed_ch,   \
+    shared(plane, raw, layers) firstprivate(w, h, roi_x, roi_y, mono, channel_idx, seed_ch,      \
                                             unif_ch, npart_scale, nsub, salt) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
-        for(size_t k = 0; k < npix; k++)
-        {
-          const int x = (int)(k % (size_t)w), y = (int)(k / (size_t)w);
-          const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
-                                           / 3.0f
-                                     : plane[k * 3 + channel_idx];
-          float samp[SF_GRAIN_MAX_SUBLAYERS];
-          sf_grain_raw_samples_ml(&layers, density, channel_idx, seed_ch, (uint32_t)(x + roi_x),
-                                  (uint32_t)(y + roi_y), unif_ch, npart_scale, salt, samp);
-          for(int sl = 0; sl < nsub; sl++) raw[sl][k] = samp[sl];
-        }
+        for(int y = 0; y < h; y++)
+          for(int x = 0; x < w; x++)
+          {
+            const size_t k = (size_t)y * w + x;
+            const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
+                                             / 3.0f
+                                       : plane[k * 3 + channel_idx];
+            float samp[SF_GRAIN_MAX_SUBLAYERS];
+            sf_grain_raw_samples_ml(&layers, density, channel_idx, seed_ch, (uint32_t)(x + roi_x),
+                                    (uint32_t)(y + roi_y), unif_ch, npart_scale, salt, samp);
+            for(int sl = 0; sl < nsub; sl++) raw[sl][k] = samp[sl];
+          }
         /* dye-cloud blur: each sub-layer independently, no variance
            restoration (matching upstream: layer_particle_model doesn't
            renormalize after its blur_particle pass either). */
