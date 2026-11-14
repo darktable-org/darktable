@@ -608,8 +608,8 @@ __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const fl
 
 /* Multiplicative unsharp mask after grain blur (study b80), recovering the
    acutance that blur removed from the combined image-plus-grain density.
-   cmy = orig * (orig / G_sigma(orig))^amount. Caller saved orig in `orig`
-   buffer and blurred `cmy` in place before launching this kernel.
+   cmy = orig * (orig / G_sigma(orig))^amount. `cmy` holds orig on entry and
+   `blur` its blurred copy.
    Runs on the ABSOLUTE density: the grain floor (dmin, the sum of the
    per-sublayer floors) is added back before the ratio and removed from the
    result, matching the reference (_finalize_grain: blur -> USM ->
@@ -617,7 +617,7 @@ __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const fl
    ill-conditioned in the deepest shadows and shadow noise gets amplified
    the way the reference never does. The result is bounded below by -dmin,
    not by 0, so grain below the floor is kept rather than rectified. */
-__kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 *orig,
+__kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 *blurred,
                                      const int w, const int h, const float amount,
                                      const float dmin0, const float dmin1, const float dmin2)
 {
@@ -630,8 +630,8 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
      it both as the ratio numerator and as the outer multiplier. Without the
      clamp a negative D flips the sign of the whole term here instead of
      collapsing it -- a behavioural difference, not a rounding one. */
-  const float4 D = fmax(orig[k] + dmin, 0.0f);
-  const float4 blur = cmy[k] + dmin;
+  const float4 D = fmax(cmy[k] + dmin, 0.0f);
+  const float4 blur = blurred[k] + dmin;
   const float eps = 1e-6f;
   const float ratmax = 4.0f, ratmin = 1.0f / ratmax;
   /* NOTE: pow() below is only spec'd to 16 ULP in OpenCL, against a host
@@ -831,14 +831,14 @@ __kernel void spektrafilm_crop_out(__global const float4 *rgb, __read_only image
 }
 
 /* Additive unsharp mask on the scanned RGB (sf_unsharp_mask3): `rgb` holds the
-   blurred copy on entry, `orig` the unblurred one. */
-__kernel void spektrafilm_scan_usm(__global float4 *rgb, __global const float4 *orig,
+   image on entry, `blurred` its blurred copy. */
+__kernel void spektrafilm_scan_usm(__global float4 *rgb, __global const float4 *blurred,
                                    const int w, const int h, const float amount)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
-  const float4 D = orig[k], blur = rgb[k];
+  const float4 D = rgb[k], blur = blurred[k];
   /* fma-pinned, matching sf_unsharp_mask3() */
   rgb[k] = (float4)(fma(amount, D.x - blur.x, D.x), fma(amount, D.y - blur.y, D.y),
                     fma(amount, D.z - blur.z, D.z), D.w);
