@@ -602,6 +602,23 @@ void sf_blur_plane1(float *const buf,
   _sf_blur(buf, 1, 0, 1, tmp, w, h, sigma, 0.0f, /*exact_only=*/1, &out);
 }
 
+/* sf_blur_plane1() of the flat buffer `src`, which is left alone, added to
+   the flat buffer `acc`; with `reset`, acc is taken as zero. A sigma
+   sf_blur_plane1() does not blur at adds `src` itself. `tmp` is a w*h
+   scratch. */
+void sf_blur_plane1_accum(const float *const src,
+                          float *const acc,
+                          const int w,
+                          const int h,
+                          const float sigma,
+                          const int reset,
+                          float *const tmp)
+{
+  const sf_blur_out_t out = { .mode = SF_EMIT_ACCUM, .dst = acc, .ds = 1,
+                              .wt = { 1.0f }, .reset = reset };
+  _sf_blur(src, 1, 0, 1, tmp, w, h, sigma, 1e-6f, /*exact_only=*/1, &out);
+}
+
 /* Same as sf_blur_plane3, but takes the recursive path at large sigma: for
    callers with no downstream dependency on the exact kernel's shape (DIR
    coupler correction-field diffusion, unlike grain, isn't renormalizing
@@ -781,11 +798,40 @@ static void _wide_up3(const float *const low,
   }
 }
 
+/* _sf_blur() of an interleaved 3-channel `src` through a scratch of w*h*3
+   floats, `tmp3`, or with tmp3 NULL one channel after the other through one
+   of w*h floats, `tmp1`. The channels do not mix in a blur, so both deliver
+   the same values. */
+static void _sf_blur3(const float *const src,
+                      float *const tmp3,
+                      float *const tmp1,
+                      const int w,
+                      const int h,
+                      const float sigma,
+                      const float min_sigma,
+                      const int exact_only,
+                      const sf_blur_out_t *const out)
+{
+  if(tmp3)
+  {
+    _sf_blur(src, 3, 0, 3, tmp3, w, h, sigma, min_sigma, exact_only, out);
+    return;
+  }
+  for(int c = 0; c < 3; c++)
+  {
+    sf_blur_out_t o = *out;
+    o.doff = out->doff + c;
+    o.wt[0] = out->wt[c];
+    _sf_blur(src, 3, c, 1, tmp1, w, h, sigma, min_sigma, exact_only, &o);
+  }
+}
+
 /* The decimated blur of an interleaved 3-channel `src`, the result handed to
-   `out`; _sf_blur() on the recursive path where sf_wide_blur_plan() does not
-   decimate. `tmp` is a w*h*3 scratch for that case. */
+   `out`; _sf_blur3() on the recursive path where sf_wide_blur_plan() does not
+   decimate, with `tmp3` or `tmp1` as its scratch. */
 static void _sf_blur3_wide(const float *const src,
-                           float *const tmp,
+                           float *const tmp3,
+                           float *const tmp1,
                            const int w,
                            const int h,
                            const int roi_x,
@@ -797,7 +843,7 @@ static void _sf_blur3_wide(const float *const src,
   float sigma_low;
   if(!sf_wide_blur_plan(sigma, w, h, roi_x, roi_y, &k, &sigma_low, &lw, &lh, &ox, &oy))
   {
-    _sf_blur(src, 3, 0, 3, tmp, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/0, out);
+    _sf_blur3(src, tmp3, tmp1, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/0, out);
     return;
   }
   float *const low = dt_alloc_align_float((size_t)lw * lh * 3);
@@ -808,7 +854,7 @@ static void _sf_blur3_wide(const float *const src,
     dt_free_align(low);
     dt_free_align(lowtmp);
     dt_free_align(inv);
-    _sf_blur(src, 3, 0, 3, tmp, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/0, out);
+    _sf_blur3(src, tmp3, tmp1, w, h, sigma, SF_GAUSS_MIN_SIGMA, /*exact_only=*/0, out);
     return;
   }
   sf_wide_blur_inv_table(k, inv);
@@ -829,7 +875,7 @@ void sf_blur_plane3_wide(float *const buf,
                          float *const tmp)
 {
   const sf_blur_out_t out = { .mode = SF_EMIT_STORE, .dst = buf, .ds = 3 };
-  _sf_blur3_wide(buf, tmp, w, h, roi_x, roi_y, sigma, &out);
+  _sf_blur3_wide(buf, tmp, NULL, w, h, roi_x, roi_y, sigma, &out);
 }
 
 void sf_blur_plane3_wide_accum(const float *const src,
@@ -850,7 +896,7 @@ void sf_blur_plane3_wide_accum(const float *const src,
     for(int c = 0; c < 3; c++) out.wt[c] = wt[c];
     out.reset = reset;
   }
-  _sf_blur3_wide(src, tmp, w, h, roi_x, roi_y, sigma, &out);
+  _sf_blur3_wide(src, NULL, tmp, w, h, roi_x, roi_y, sigma, &out);
 }
 
 /* Multiplicative unsharp mask on density (study b80): out = D * (D / blur(D))^amount.
@@ -1137,7 +1183,7 @@ void sf_halation(float *const raw,
       /* one sigma for all three channels: wide bounces decimate, as
          spektrafilm.c's GPU bounce loop does from the same threshold */
       if(sk >= SF_WIDE_BLUR_EFFECT_SIGMA)
-        _sf_blur3_wide(raw, buf_b, w, h, roi_x, roi_y, sk, &out);
+        _sf_blur3_wide(raw, buf_b, NULL, w, h, roi_x, roi_y, sk, &out);
       else
         _sf_blur(raw, 3, 0, 3, buf_b, w, h, sk, 1e-6f, /*exact_only=*/0, &out);
     }
@@ -1398,7 +1444,7 @@ void sf_diffusion_filter(float *const raw,
     /* wide components decimate, as spektrafilm.c's GPU bank loop does from
        the same threshold */
     if(sigma >= SF_WIDE_BLUR_EFFECT_SIGMA)
-      _sf_blur3_wide(raw, tmp, w, h, roi_x, roi_y, sigma, &out);
+      _sf_blur3_wide(raw, tmp, NULL, w, h, roi_x, roi_y, sigma, &out);
     else
       _sf_blur(raw, 3, 0, 3, tmp, w, h, sigma, 1e-6f, /*exact_only=*/0, &out);
   }

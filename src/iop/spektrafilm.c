@@ -2198,11 +2198,8 @@ void tiling_callback(dt_iop_module_t *self,
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
   /* Peak simultaneous buffers, in multiples of one RGBA tile.
      CPU: input + output (2.0) plus plane and two work buffers at 3 channels
-     and the 1-channel scratch (2.5), a 4.5 baseline that covers halation and
-     the diffusion filters. The coupler tail adds one 3-channel buffer (5.25).
-     Grain releases one work buffer and adds up to 2.0 at the maximum
-     sub-layer count. The stages run one after another, so grain sets the peak
-     at 5.75.
+     and the 1-channel scratch (2.5), 4.5 for every stage. factor leaves room
+     above that.
      OpenCL: input + output plus four float4 buffers, 6.0 for every stage. A
      decimated blur adds its low-resolution field twice, half a buffer at the
      smallest block size of 2; factor_cl leaves room above that.
@@ -2413,10 +2410,10 @@ void process(dt_iop_module_t *self,
   const float preview_scale = fminf(roi_in->scale, 1.0f);
 
   float *plane = dt_alloc_align_float(npix * 3);  /* raw / lograw / cmy, in place */
-  float *scratch = dt_alloc_align_float(npix);    /* 1ch blur scratch, grain's and the glare field */
+  float *scratch = dt_alloc_align_float(npix);    /* 1ch blur scratch and the glare field */
   /* two 3-channel work buffers for the spatial stages: the scratch of a blur
      and the accumulator of a bank of them. buf_a also holds the DIR coupler
-     correction field. */
+     correction field and then grain's flat buffers. */
   float *buf_a = dt_alloc_align_float(npix * 3);
   float *buf_b = dt_alloc_align_float(npix * 3);
   if(!plane || !scratch || !buf_a || !buf_b)
@@ -2462,10 +2459,8 @@ void process(dt_iop_module_t *self,
                 d->p.halation_scale, hal_strength, hal_sigma_um, buf_a, buf_b, scratch);
   }
 
-  /* DIR coupler correction field; `mix` takes its place when the correction
-     has a tail */
+  /* DIR coupler correction field: in buf_a, or with a tail mixed in buf_b */
   float *corr = buf_a;
-  float *mix = NULL;
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
         field diffuses in the emulsion: gaussian, sigma 20 um as in the
@@ -2485,34 +2480,29 @@ void process(dt_iop_module_t *self,
       const float amp[3] = { SF_EXPTAIL_A0, SF_EXPTAIL_A1, SF_EXPTAIL_A2 };
       const float rat[3] = { SF_EXPTAIL_R0, SF_EXPTAIL_R1, SF_EXPTAIL_R2 };
       const float tail_px = (float)ctail_um / fmaxf(pixel_um, 1e-3f);
-      mix = dt_alloc_align_float(npix * 3);
-      if(mix)
+      /* every term blurs `corr` itself, which a blur leaves alone, and
+         sf_blur_plane3_wide_accum() passes it on unblurred below
+         SF_GAUSS_MIN_SIGMA. The terms that are not decimated go one channel
+         at a time through `scratch`, so buf_b is free to take the mix. */
+      float *const mix = buf_b;
+      const float wbase = 1.0f - (float)ctail_w;
+      sf_blur_plane3_wide_accum(corr, mix, w, h, roi_in->x, roi_in->y, csigma, NULL, 0, scratch);
+      DT_OMP_FOR()
+      for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * mix[i];
+      for(int g3 = 0; g3 < 3; g3++)
       {
-        /* every term blurs `corr` itself, which a blur leaves alone, and
-           sf_blur_plane3_wide_accum() passes it on unblurred below
-           SF_GAUSS_MIN_SIGMA */
-        const float wbase = 1.0f - (float)ctail_w;
-        sf_blur_plane3_wide_accum(corr, mix, w, h, roi_in->x, roi_in->y, csigma, NULL, 0, buf_b);
-        DT_OMP_FOR()
-        for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * mix[i];
-        for(int g3 = 0; g3 < 3; g3++)
-        {
-          const float ts = rat[g3] * tail_px;
-          const float wk = (float)ctail_w * amp[g3];
-          /* fma-pinned in the blur, matching spektrafilm_diffusion_accum */
-          sf_blur_plane3_wide_accum(corr, mix, w, h, roi_in->x, roi_in->y, ts,
-                                    (const float[3]){ wk, wk, wk }, 0, buf_b);
-        }
-        corr = mix;
+        const float ts = rat[g3] * tail_px;
+        const float wk = (float)ctail_w * amp[g3];
+        /* fma-pinned in the blur, matching spektrafilm_diffusion_accum */
+        sf_blur_plane3_wide_accum(corr, mix, w, h, roi_in->x, roi_in->y, ts,
+                                  (const float[3]){ wk, wk, wk }, 0, scratch);
       }
-      else if(csigma > 0.1f)
-        sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, buf_b); /* alloc failed: core only */
+      corr = mix;
     }
     else if(csigma > 0.1f)
       sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, buf_b);
   }
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
-  dt_free_align(mix);
 
   /* The print diffusion filter is the one blur with unbounded reach that may
      still follow. Without it the buffer shrinks here, before grain; with it,
@@ -2607,77 +2597,82 @@ void process(dt_iop_module_t *self,
     /* image coordinates of the buffer's origin, for the grain seeds */
     const int roi_x = roi_in->x + wx, roi_y = roi_in->y + wy;
 
-    /* the sub-layer buffers set the peak memory use of the module, see
-       tiling_callback(); the stages from here on need buf_b only */
-    dt_free_align(buf_a);
-    buf_a = NULL;
-    float *raw[SF_GRAIN_MAX_SUBLAYERS] = { 0 };
-    gboolean raw_ok = TRUE;
-    for(int sl = 0; sl < nsub; sl++)
+    /* buf_a is free since development and holds three flat buffers here: the
+       samples of one sub-layer, their dye-blurred sum over the sub-layers,
+       and each pixel's position on the channel's total curve, which the
+       sub-layers share */
+    float *const raw = buf_a, *const sum = buf_a + npix, *const pos = buf_a + 2 * npix;
+    const int n_out_ch = mono ? 1 : 3;
+    for(int oc = 0; oc < n_out_ch; oc++)
     {
-      raw[sl] = dt_alloc_align_float(npix);
-      if(!raw[sl]) raw_ok = FALSE;
-    }
-
-    if(raw_ok) /* else the allocation failed: skip grain gracefully */
-    {
-      const int n_out_ch = mono ? 1 : 3;
-      for(int oc = 0; oc < n_out_ch; oc++)
-      {
-        const int channel_idx = mono ? 1 : oc; /* mono uses channel 1's curve/params for the
-                                                    achromatic draw, matching sf_grain_delta_ml */
-        const int seed_ch = mono ? 0 : oc; /* mono seeds as sl*10 (no channel term), matching
-                                               sf_grain_delta_ml's own convention exactly */
-        const float unif_ch = gunif[channel_idx];
+      const int channel_idx = mono ? 1 : oc; /* mono uses channel 1's curve/params for the
+                                                  achromatic draw, matching sf_grain_delta_ml */
+      const int seed_ch = mono ? 0 : oc; /* mono seeds as sl*10 (no channel term), matching
+                                             sf_grain_delta_ml's own convention exactly */
+      const float unif_ch = gunif[channel_idx];
 #ifdef _OPENMP
-#pragma omp parallel for default(none)                                                          \
-    shared(plane, raw, layers) firstprivate(w, h, roi_x, roi_y, mono, channel_idx, seed_ch,      \
-                                            unif_ch, npart_scale, nsub, salt) schedule(static) num_threads(darktable.num_openmp_threads)
+#pragma omp parallel for default(none) shared(plane, layers)                                    \
+    firstprivate(pos, npix, mono, channel_idx) schedule(static) num_threads(darktable.num_openmp_threads)
+#endif
+      for(size_t k = 0; k < npix; k++)
+      {
+        const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
+                                         / 3.0f
+                                   : plane[k * 3 + channel_idx];
+        pos[k] = sf_grain_curve_pos(&layers, density, channel_idx);
+      }
+      for(int sl = 0; sl < nsub; sl++)
+      {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(layers)                                           \
+    firstprivate(raw, pos, w, h, roi_x, roi_y, channel_idx, seed_ch, sl, unif_ch, npart_scale,   \
+                 salt) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
         for(int y = 0; y < h; y++)
           for(int x = 0; x < w; x++)
           {
             const size_t k = (size_t)y * w + x;
-            const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
-                                             / 3.0f
-                                       : plane[k * 3 + channel_idx];
-            float samp[SF_GRAIN_MAX_SUBLAYERS];
-            sf_grain_raw_samples_ml(&layers, density, channel_idx, seed_ch, (uint32_t)(x + roi_x),
-                                    (uint32_t)(y + roi_y), unif_ch, npart_scale, salt, samp);
-            for(int sl = 0; sl < nsub; sl++) raw[sl][k] = samp[sl];
+            raw[k] = sf_grain_raw_sample_sl(&layers, pos[k], channel_idx, seed_ch, sl,
+                                            (uint32_t)(x + roi_x), (uint32_t)(y + roi_y),
+                                            unif_ch, npart_scale, salt);
           }
         /* dye-cloud blur: each sub-layer independently, no variance
            restoration (matching upstream: layer_particle_model doesn't
-           renormalize after its blur_particle pass either). */
-        for(int sl = 0; sl < nsub; sl++)
-          sf_blur_plane1(raw[sl], w, h, dye_sigma[channel_idx][sl], scratch);
-        /* combine: sum sub-layers, subtract the density floor and the
-           original clean density, scale by strength, and add the delta onto
-           the density. A color channel's draw reads its own channel of
-           `plane` only, and the achromatic one writes all three at once, so
-           the delta goes straight in. */
+           renormalize after its blur_particle pass either). The blur adds
+           the sub-layer to the sum as it delivers it. */
+        sf_blur_plane1_accum(raw, sum, w, h, dye_sigma[channel_idx][sl], sl == 0, scratch);
+      }
+      /* combine: subtract the density floor and the original clean density
+         from the summed sub-layers, scale by strength, and add the delta
+         onto the density. A color channel's draw reads its own channel of
+         `plane` only, and the achromatic one writes all three at once, so
+         the delta goes straight in.
+         The floor comes off in a pass of its own: this file is built with
+         -ffast-math on GCC, which in one expression is free to add the floor
+         and the density first and subtract their sum, and does so where it
+         vectorizes the loop. */
+      const float floor_d = gdmin[channel_idx];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, raw)                                        \
-    firstprivate(npix, nsub, channel_idx, mono, oc, amount, gdmin) schedule(static) num_threads(darktable.num_openmp_threads)
+#pragma omp parallel for default(none)                                                           \
+    firstprivate(sum, npix, floor_d) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
-        for(size_t k = 0; k < npix; k++)
-        {
-          float total = 0.0f;
-          for(int sl = 0; sl < nsub; sl++) total += raw[sl][k];
-          const float g = total - gdmin[channel_idx];
-          const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
-                                           / 3.0f
-                                     : plane[k * 3 + channel_idx];
-          const float delta = (g - density) * amount;
-          if(mono)
-            for(int c = 0; c < 3; c++) plane[k * 3 + c] += delta;
-          else
-            plane[k * 3 + oc] = density + delta;
-        }
+      for(size_t k = 0; k < npix; k++) sum[k] -= floor_d;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(plane)                                             \
+    firstprivate(sum, npix, channel_idx, mono, oc, amount) schedule(static) num_threads(darktable.num_openmp_threads)
+#endif
+      for(size_t k = 0; k < npix; k++)
+      {
+        const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
+                                         / 3.0f
+                                   : plane[k * 3 + channel_idx];
+        const float delta = (sum[k] - density) * amount;
+        if(mono)
+          for(int c = 0; c < 3; c++) plane[k * 3 + c] += delta;
+        else
+          plane[k * 3 + oc] = density + delta;
       }
     }
-    for(int sl = 0; sl < nsub; sl++)
-      if(raw[sl]) dt_free_align(raw[sl]);
     /* No DC-centring pass, because the delta is zero-mean by construction: the
        sampler draws an unbiased Poisson (spektra_core.h) and the combine above
        takes back exactly the floors the sampler added -- see
@@ -2738,7 +2733,7 @@ void process(dt_iop_module_t *self,
   if(!d->p.scan_film)
   {
     sf_sim_print_expose(sim, plane, plane, npix, 3, 3);
-    if(print_diffusion && (buf_a || (buf_a = dt_alloc_align_float(npix * 3))))
+    if(print_diffusion)
     {
       /* the filter scatters light, so it runs on linear print exposure, as the
          reference's printing.expose does, and the result goes back to log10

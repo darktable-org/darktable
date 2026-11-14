@@ -105,7 +105,9 @@ void sf_blur_plane3_wide(float *buf,
 /* The same blur of `src`, which is left alone, added to `acc` with the
    channel weights `wt` as acc = fmaf(wt, blurred, acc); with `reset`, acc is
    taken as zero. With wt NULL the blur is stored in `acc`. Below
-   SF_GAUSS_MIN_SIGMA the unblurred `src` takes the place of the blur. */
+   SF_GAUSS_MIN_SIGMA the unblurred `src` takes the place of the blur.
+   `tmp` is a w*h scratch: a sigma that is not decimated is blurred one
+   channel after the other through it. */
 void sf_blur_plane3_wide_accum(const float *src,
                                float *acc,
                                int w,
@@ -130,6 +132,16 @@ void sf_blur_plane1(float *buf,
                     int h,
                     float sigma,
                     float *tmp);
+/* The same blur of the flat buffer `src`, which is left alone, added to the
+   flat buffer `acc`; with `reset`, acc is taken as zero. `tmp` is a w*h
+   scratch. */
+void sf_blur_plane1_accum(const float *src,
+                          float *acc,
+                          int w,
+                          int h,
+                          float sigma,
+                          int reset,
+                          float *tmp);
 /* Additive unsharp mask on the scanned RGB ([df] apply_unsharp_mask):
    out = D + amount * (D - blur(D)). `tmp` is a w*h*3 scratch buffer supplied
    by the caller. */

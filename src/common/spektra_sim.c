@@ -5456,44 +5456,45 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
   }
 }
 
-/* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
- * sub-layer's RAW absolute sample (before dmin subtraction, before
- * summing across sub-layers) into raw_out[0..layers->n-1], so the caller
- * can run the per-sub-layer dye-cloud blur (upstream's
- * layer_particle_model blur_particle) on each one independently before
- * combining -- a spatial blur needs a whole-image buffer per sub-layer,
- * which this single-pixel function can't do itself, so it just hands
- * back the un-combined per-sub-layer values for the caller to buffer,
- * blur, and combine afterward. channel_idx is 1 for mono (matching
- * sf_grain_delta_ml's own convention of using channel 1's curve/params
- * for the achromatic draw) or 0/1/2 for color; seed_ch is the seed
- * component sf_grain_delta_ml adds on top of sl*10 (0 for mono, the
- * real channel index for color) -- kept as a separate parameter rather
- * than reusing channel_idx so the mono case still seeds like sl*10, not
- * (1 + sl*10), matching sf_grain_delta_ml exactly. */
-void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
-                             float density,
+/* Same per-sub-layer sampling as sf_grain_delta_ml, split in two so the
+ * caller can run the per-sub-layer dye-cloud blur (upstream's
+ * layer_particle_model blur_particle) on each sub-layer independently before
+ * combining -- a spatial blur needs a whole-image buffer of a sub-layer's
+ * samples, which a single-pixel function can't hold itself.
+ * sf_grain_curve_pos() is the position of `density` on the channel's total
+ * curve, which all sub-layers of a pixel share; sf_grain_raw_sample_sl() is
+ * sub-layer sl's RAW absolute sample at that position (before dmin
+ * subtraction, before summing across sub-layers).
+ * channel_idx is 1 for mono (matching sf_grain_delta_ml's own convention of
+ * using channel 1's curve/params for the achromatic draw) or 0/1/2 for
+ * color; seed_ch is the seed component sf_grain_delta_ml adds on top of
+ * sl*10 (0 for mono, the real channel index for color) -- kept as a separate
+ * parameter rather than reusing channel_idx so the mono case still seeds
+ * like sl*10, not (1 + sl*10), matching sf_grain_delta_ml exactly. */
+float sf_grain_curve_pos(const sf_grain_layers_t *layers,
+                         float density,
+                         int channel_idx)
+{
+  return _sf_grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], SF_NLE, 3, density);
+}
+
+float sf_grain_raw_sample_sl(const sf_grain_layers_t *layers,
+                             float pos,
                              int channel_idx,
                              int seed_ch,
+                             int sl,
                              uint32_t xi,
                              uint32_t yi,
                              float unif_c,
                              float npart_scale,
-                             uint32_t salt,
-                             float *raw_out)
+                             uint32_t salt)
 {
-  const int nsub = layers->n;
   const int nle = SF_NLE;
   const int lstride = SF_GRAIN_MAX_SUBLAYERS * 3;
-  const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], nle, 3,
-                                            density);
-  for(int sl = 0; sl < nsub; sl++)
-  {
-    const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
-                                             lstride, pos);
-    const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
-    raw_out[sl] = grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
-                                    (float)layers->layer_npart[sl][channel_idx] * npart_scale,
-                                    unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10), salt));
-  }
+  const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
+                                           lstride, pos);
+  const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
+  return grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
+                              (float)layers->layer_npart[sl][channel_idx] * npart_scale,
+                              unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10), salt));
 }
