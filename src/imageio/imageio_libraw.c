@@ -407,10 +407,12 @@ static const dt_libraw_fallback_t _fallbacks[] =
     LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
     "Fujifilm compressed (lossy)" },
   // DNGs RawSpeed fails on; regular DNGs stay with RawSpeed:
-  // lossless JPEG with predictors RawSpeed doesn't support (e.g. 7)
+  // JPEG compressed: lossless JPEG with predictors RawSpeed doesn't
+  // support (e.g. 6 in Blackmagic and DJI CinemaDNG, 7) and Blackmagic
+  // lossy 12-bit JPEG (3:1, 4:1), LibRaw decodes both with this decoder
   { "lossless_dng_load_raw()",
     LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
-    "DNG lossless JPEG" },
+    "DNG JPEG (lossless or Blackmagic lossy)" },
   // uncompressed with inconsistent strip sizes (e.g. DJI Mavic 3)
   { "packed_dng_load_raw()",
     LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
