@@ -44,7 +44,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_halation_params_t)
 
 typedef struct dt_iop_halation_params_t
 {
-  float strength;  // $MIN: 0.0 $MAX: 50.0 $DEFAULT: 5.0 $DESCRIPTION: "strength"
+  float strength;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 5.0 $DESCRIPTION: "strength"
   float threshold; // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "threshold"
   float size;      // $MIN: 0.0005 $MAX: 0.1 $DEFAULT: 0.01 $DESCRIPTION: "size"
   float spread;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 60.0 $DESCRIPTION: "chromatic spread"
@@ -116,6 +116,16 @@ static void _channel_gains(const dt_iop_halation_data_t *const d,
   gain[0] = 1.0f;
   gain[1] = 1.0f - 0.45f * s;
   gain[2] = 1.0f - 0.70f * s;
+}
+
+/* the share of the light above the threshold that scatters. preserving
+   energy takes it out of the source, and past half of it a small light
+   loses nearly all its red to the halo and turns dim and cyan. added on
+   top instead, the source stays whole at any strength */
+static float _amount(const dt_iop_halation_data_t *const d)
+{
+  const float amount = d->strength * 0.01f;
+  return d->preserve ? fminf(amount, 0.5f) : amount;
 }
 
 /* per-channel radii in pixels. red spreads furthest, blue least; at spread 0
@@ -217,7 +227,7 @@ void process(dt_iop_module_t *self,
   _channel_radii(d, piece, roi_in->scale / piece->iscale, radius);
   _channel_gains(d, gain);
 
-  const float amount = d->strength * 0.01f;
+  const float amount = _amount(d);
   /* only strong light penetrates the emulsion far enough to reflect off the
      base. without this the blur of the whole frame is mixed back in and the
      result is a veiling haze rather than a halo. the knee is soft, so there is
@@ -366,7 +376,7 @@ int process_cl(dt_iop_module_t *self,
   _channel_radii(d, piece, roi_in->scale / piece->iscale, radius);
   _channel_gains(d, gain3);
 
-  const float amount = d->strength * 0.01f;
+  const float amount = _amount(d);
   const float knee = 0.1845f * exp2f(d->threshold);
   const float knee2 = knee * knee;
   const float keep = d->preserve ? 1.0f - amount : 1.0f;
@@ -574,6 +584,37 @@ void init_presets(dt_iop_module_so_t *self)
      sizeof(dt_iop_halation_params_t), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
+{
+  dt_iop_halation_gui_data_t *g = self->gui_data;
+  dt_iop_halation_params_t *p = self->params;
+
+  /* _amount() stops strength at 50% while energy is preserved, so end the
+     slider there rather than show values that change nothing */
+  if(w == g->preserve && p->preserve && p->strength > 50.0f)
+    p->strength = 50.0f;
+
+  if(!w || w == g->preserve)
+  {
+    const float soft_max = p->preserve
+      ? 50.0f
+      : dt_bauhaus_slider_get_hard_max(g->strength);
+    /* the value first: set_soft_max() re-applies the current value, and an old
+       80 would otherwise keep the range open past 50 */
+    DT_ENTER_GUI_UPDATE();
+    dt_bauhaus_slider_set(g->strength, p->strength);
+    dt_bauhaus_slider_set_soft_max(g->strength, soft_max);
+    DT_LEAVE_GUI_UPDATE();
+  }
+}
+
+void gui_update(dt_iop_module_t *self)
+{
+  gui_changed(self, NULL, NULL);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_halation_gui_data_t *g = IOP_GUI_ALLOC(halation);
@@ -603,7 +644,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->preserve = dt_bauhaus_toggle_from_params(self, "preserve");
   gtk_widget_set_tooltip_text(g->preserve, _("take the halated light out of the highlights\n"
-                                             "instead of adding it on top"));
+                                             "instead of adding it on top.\n"
+                                             "turn off for a stronger halo"));
 }
 
 // clang-format off
