@@ -414,7 +414,6 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
-    GtkWidget *display_intent_widget, *display2_intent_widget;    // TODO (#18559): remove gtk stuff from here
   } profile;
 
   GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
@@ -722,25 +721,27 @@ void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
 /*
- * develop an image and returns the buf and processed width / height.
- * this is done as in the context of the darkroom, meaning that the
- * final processed sizes will align perfectly on the darkroom view.
+ * develop an image and returns the frame it published, NULL if nothing was
+ * rendered: fit into width x height, or else as in the context of the
+ * darkroom, meaning that the final processed sizes will align perfectly
+ * on the darkroom view.
+ * output is the sink: the frame is rendered for its image encoding, or
+ * stays in the pipe's working RGB if that is DT_COLORSPACE_NONE and
+ * colorout is filtered out, and is made in its format. the frame's
+ * encoding says what its values are: output's profile, the sRGB colorout
+ * replaced it with, or the working RGB.
  * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
-void dt_dev_image(const dt_imgid_t imgid,
-                  const size_t width,
-                  const size_t height,
-                  const int history_end,
-                  uint8_t **buf,
-                  float *scale,
-                  size_t *buf_width,
-                  size_t *buf_height,
-                  dt_dev_zoom_pos_t zoom_pos,
-                  const int32_t snapshot_id,
-                  GList *module_filter_out,
-                  const int devid,
-                  const gboolean finalscale,
-                  const gboolean want_float);
+struct dt_frame_t *dt_dev_image(const dt_imgid_t imgid,
+                                const size_t width,
+                                const size_t height,
+                                const gboolean fit,
+                                const int history_end,
+                                const int32_t snapshot_id,
+                                GList *module_filter_out,
+                                const int devid,
+                                const gboolean finalscale,
+                                const dt_display_output_t *output);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

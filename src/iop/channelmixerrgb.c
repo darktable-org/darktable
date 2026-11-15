@@ -2799,7 +2799,7 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float zoom_scale)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile =
-    dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
+    dt_ioppr_get_gui_profile_info(self->dev);
   if(work_profile == NULL) return;
 
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
