@@ -553,9 +553,6 @@ typedef struct dt_iop_gui_blend_data_t
   // own is (_select_mask_group_if_none), so it is never INVALID while the mask
   // has a group
   dt_mask_id_t panel_selected_group_cid;
-  // the element under the cursor on the canvas. The selection panel shows it
-  // in place of the selection, which it leaves alone; INVALID = none
-  dt_mask_id_t canvas_hovered_formid;
   // where dt_masks_group_insert_point puts the next element, while
   // insert_active: after the point insert_after_fid, the group's top member,
   // or its marker for an empty group
