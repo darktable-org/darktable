@@ -91,11 +91,12 @@ chosen, and a pasted history, a style or a module preset can bring them to anoth
   coefficients until the next white balance history item, which renders the same.
 - `_preset_tune_callback()`, when the user selects one of the two modes.
 
-The other modes apply the stored coefficients. So does `DT_IOP_TEMP_UNKNOWN`, the mode of params
-from before darktable stored one. `gui_update()` infers "as shot" or camera reference by matching
-coefficients only for `DT_IOP_TEMP_UNKNOWN`. No saved mode is relabeled "as shot" or camera
-reference, even when its stored coefficients equal the image's own: relabeled, it would ignore
-them from the next history item on.
+The other modes apply the stored coefficients. `DT_IOP_TEMP_UNKNOWN` is the mode of params from
+before darktable stored one. For those, `_params_mode()` infers "as shot" or camera reference
+when the stored coefficients equal the image's own, for both `_wb_from_params()` and
+`gui_update()`, so the pipe and the GUI agree; unmatched, they apply the stored coefficients. No
+saved mode is relabeled "as shot" or camera reference, even when its stored coefficients equal
+the image's own: relabeled, it would ignore them from the next history item on.
 
 ---
 
@@ -439,6 +440,7 @@ would let later modules read the previous image's `pipe->wb`.
 | `temperature.reload_defaults` | temperature.c | Writes `dev->chroma.as_shot[]` and `dev->chroma.wb.D65coeffs[]` |
 | `temperature.commit_params` | temperature.c | Fills `pipe->wb` through `_wb_from_params()`; copies its `coeffs[]` and `late_correction` into `dev->chroma.wb`; writes `dev->chroma.temperature` |
 | `_wb_from_params` | temperature.c | Computes the `dt_dev_wb_t` that white balance applies with the given params; used by `commit_params()` and `_gui_wb_proxy()` |
+| `_params_mode` | temperature.c | The mode that decides which coefficients the params apply and whether `camera_reference` is set: the saved mode, or for `DT_IOP_TEMP_UNKNOWN` "as shot" or camera reference if the stored coefficients match the image's own; used by `_wb_from_params()`, and by `gui_update()` as the starting label, which it can still change for modes that apply the stored coefficients (a camera preset match, "user modified") |
 | `_own_coeffs` | temperature.c | The image's own coefficients in "as shot" and camera reference mode, `NULL` in the modes that apply the stored ones; used by `_wb_from_params()`, `gui_update()`, and `_preset_tune_callback()` |
 | `_gui_wb_proxy` | temperature.c | The proxy that white balance's `gui_init()` registers; returns `_wb_from_params()` for the instance's current params |
 | `dt_dev_get_gui_wb` | develop.c | GUI: asks the white balance instance in `dev->iop`, through `dev->proxy.gui_wb`; copies `dev->chroma.wb` if no instance answers |
