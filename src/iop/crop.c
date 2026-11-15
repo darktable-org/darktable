@@ -1567,6 +1567,11 @@ static _grab_region_t _gui_get_grab(float pzx,
 }
 
 // draw guides and handles over the image
+gboolean canvas_overlay_active(dt_iop_module_t *self)
+{
+  return TRUE;
+}
+
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const float wd,
