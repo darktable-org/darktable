@@ -4237,15 +4237,10 @@ static void _development_widget_update(GtkWidget *w,
     gtk_widget_set_tooltip_text(w, tip);
   }
   else
-    gtk_widget_set_tooltip_text(w,
-                                _("development time. this stock is characterized at a "
-                                  "single\n"
-                                  "development, so there is nothing to choose.\n"
-                                  "\n"
-                                  "the stocks that carry a family of times are "
-                                  "Double-X and print film 2302:\n"
-                                  "Double-X at 4/5/6.5/9/12 min, print film 2302 at "
-                                  "2/3.5/5/7/9 min."));
+    gtk_widget_set_tooltip_text(
+        w,
+        _("development time. this stock is characterized at a single\n"
+          "development, so there is nothing to choose."));
 }
 
 /* Film and print are separate chemistries developed for separate times, so they
@@ -5950,9 +5945,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->paper = dt_bauhaus_combobox_new(self);
   gtk_widget_set_tooltip_text(
-      g->paper, _("print paper. \"none\" views the developed film directly, with no\n"
-                  "print stage, which is the natural mode for positive and reversal\n"
-                  "stocks; \"auto\" uses the paper named in the film stock's profile."));
+      g->paper,
+      _("print paper. \"none\" views the developed film directly;\n"
+        "\"auto\" uses the paper named in the film stock's profile."));
   dt_bauhaus_widget_set_label(g->paper, NULL, N_("print paper"));
   g_signal_connect(G_OBJECT(g->paper), "value-changed", G_CALLBACK(_paper_changed), self);
   dt_gui_box_add(header_box, g->paper);
@@ -5962,14 +5957,10 @@ void gui_init(dt_iop_module_t *self)
 
   g->film_format_combo = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film_format_combo, NULL, N_("format"));
-  gtk_widget_set_tooltip_text(g->film_format_combo,
-                              _("common film/sensor gate presets; picking one sets the "
-                                "frame long\n"
-                                "edge slider below (pick \"custom\" to dial in an exact "
-                                "value). the\n"
-                                "preset names a film gauge (35mm) while the slider is the "
-                                "frame's\n"
-                                "long edge (36mm). both describe the same format."));
+  gtk_widget_set_tooltip_text(
+      g->film_format_combo,
+      _("film format preset; sets the frame long edge slider below.\n"
+        "presets name the film gauge (35mm), the slider the frame's long edge (36mm)."));
   _populate_format_combo(self);
   g_signal_connect(G_OBJECT(g->film_format_combo), "value-changed",
                    G_CALLBACK(_format_changed), self);
@@ -5980,14 +5971,10 @@ void gui_init(dt_iop_module_t *self)
   /* the hard range spans every format preset, Super 8 to 8x10; dragging
      covers the common still and cine gauges */
   dt_bauhaus_slider_set_soft_range(g->film_format_mm_slider, 8.0f, 130.0f);
-  gtk_widget_set_tooltip_text(g->film_format_mm_slider,
-                              _("physical frame size, long edge. sets the scale that "
-                                "grain, scatter,\n"
-                                "halation, diffusion and the coupler spread are all "
-                                "computed at, so\n"
-                                "a smaller format shows every one of them proportionally "
-                                "larger for\n"
-                                "the same print size."));
+  gtk_widget_set_tooltip_text(
+      g->film_format_mm_slider,
+      _("long edge of the film frame. a smaller format shows grain,\n"
+        "halation and diffusion larger at the same print size."));
 
   /* restore main widget for the notebook */
   self->widget = sf_main_box;
@@ -6011,23 +5998,15 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->exposure_ev, -4.0f, 4.0f);
   dt_bauhaus_slider_set_format(g->exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(
-      g->exposure_ev, _("film exposure compensation; with auto print exposure enabled, "
-                        "print\n"
-                        "exposure follows automatically so this has no net brightness "
-                        "effect\n"
-                        "(except when the film is scanned directly, with no print "
-                        "stage)."));
+      g->exposure_ev,
+      _("film exposure compensation. with auto print exposure on, the print\n"
+        "compensates, so brightness only changes when there is no print stage."));
   g->push_pull_stops = dt_bauhaus_slider_from_params(self, "push_pull_stops");
   dt_bauhaus_slider_set_format(g->push_pull_stops, _(" stops"));
   gtk_widget_set_tooltip_text(
       g->push_pull_stops,
-      _("push (positive) or pull (negative) processing: shoot at an effective\n"
-        "ISO different from box speed, then under- or over-develop to\n"
-        "compensate. combines an exposure shift with a derived contrast\n"
-        "increase/decrease (approximate: the exact relationship depends on\n"
-        "the specific film/developer combination, which isn't modeled here).\n"
-        "stacks with the granular gamma controls below for\n"
-        "further fine-tuning."));
+      _("push (positive) or pull (negative) processing: an exposure shift\n"
+        "compensated in development, which raises or lowers contrast."));
 
   _section_add(self, C_("section", "chemistry"), "plugins/darkroom/spektrafilm/expand_film_chemistry");
 
@@ -6043,17 +6022,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
   gtk_widget_set_tooltip_text(
       g->film_gamma_factor,
-      _("overall development contrast (morphs the film's density curves).\n"
-        "extended or reduced development time, as in push/pull processing;\n"
-        "1.0 = normal development."));
+      _("overall development contrast (1.0 = normal development)"));
 
   g->film_gamma_factor_fast = dt_bauhaus_slider_from_params(self, "film_gamma_factor_fast");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_fast, 0.25f, 2.0f);
   gtk_widget_set_tooltip_text(
       g->film_gamma_factor_fast,
-      _("contrast of the fastest (most light-sensitive) emulsion sub-layer\n"
-        "only, independent of the slow layer, since push/pull processing\n"
-        "doesn't always affect every sub-layer equally."));
+      _("contrast of the fastest (most light-sensitive) emulsion sub-layer only"));
 
   g->film_gamma_factor_slow = dt_bauhaus_slider_from_params(self, "film_gamma_factor_slow");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_slow, 0.25f, 2.0f);
@@ -6064,10 +6039,8 @@ void gui_init(dt_iop_module_t *self)
   g->film_developer_exhaustion = dt_bauhaus_slider_from_params(self, "film_developer_exhaustion");
   gtk_widget_set_tooltip_text(
       g->film_developer_exhaustion,
-      _("developer depletion in dense (highly-exposed) areas, modelled as a\n"
-        "change to the density curve rather than a spatial effect: blends\n"
-        "the highlight shoulder toward a self-limiting rolloff without\n"
-        "shifting midgray (0 = off)."));
+      _("developer depletion in dense areas: rolls off the highlight\n"
+        "shoulder without shifting mid-gray (0 = off)."));
 
   /* One mechanism, six controls, and the two spread values read as sharpening
      rather than as colour -- enough of a group, and enough of a surprise, to
@@ -6087,35 +6060,25 @@ void gui_init(dt_iop_module_t *self)
                                 "flattens contrast within each channel."));
 
   g->couplers_inhibition_inter = dt_bauhaus_slider_from_params(self, "couplers_inhibition_inter");
-  gtk_widget_set_tooltip_text(g->couplers_inhibition_inter,
-                              _("how strongly each layer inhibits the other two. this is "
-                                "the part\n"
-                                "that produces the saturation couplers are known for; at 0 "
-                                "the\n"
-                                "channels develop independently."));
+  gtk_widget_set_tooltip_text(
+      g->couplers_inhibition_inter,
+      _("how strongly each layer inhibits the other two. this is what\n"
+        "produces the saturation couplers are known for."));
 
   g->couplers_diffusion_um = dt_bauhaus_slider_from_params(self, "couplers_diffusion_um");
   dt_bauhaus_slider_set_format(g->couplers_diffusion_um, _(" \302\265m"));
   gtk_widget_set_tooltip_text(
       g->couplers_diffusion_um,
-      _("how far the released inhibitor spreads through the emulsion.\n"
-        "\n"
-        "this is what turns the couplers into an edge effect: a wide spread\n"
-        "lets a bright area hold back development well beyond its own edge,\n"
-        "which reads as added clarity or sharpening. shorten it for a softer,\n"
-        "more purely tonal coupler response.\n"
-        "\n"
-        "resetting returns it to the loaded film stock's own value."));
+      _("how far the released inhibitor spreads. a wide spread adds an edge\n"
+        "effect that reads as clarity; a short one keeps the response tonal.\n"
+        "resets to the film stock's own value."));
 
   g->couplers_tail_um = dt_bauhaus_slider_from_params(self, "couplers_tail_um");
   dt_bauhaus_slider_set_format(g->couplers_tail_um, _(" \302\265m"));
   gtk_widget_set_tooltip_text(
       g->couplers_tail_um,
-      _("length of the long, faint tail on the spread above, which carries\n"
-        "the inhibitor much further at low weight.\n"
-        "\n"
-        "it is what gives large bright areas a broad, gentle falloff. set the\n"
-        "weight to 0 to drop it entirely."));
+      _("length of the long, faint tail of the inhibitor spread, which gives\n"
+        "large bright areas a broad, gentle falloff."));
 
   g->couplers_tail_weight = dt_bauhaus_slider_from_params(self, "couplers_tail_weight");
   gtk_widget_set_tooltip_text(g->couplers_tail_weight,
@@ -6136,10 +6099,9 @@ void gui_init(dt_iop_module_t *self)
   g->diffusion_filter_family = dt_bauhaus_combobox_from_params(self, "diffusion_filter_family");
   gtk_widget_set_tooltip_text(
       g->diffusion_filter_family,
-      _("diffusion filter type: black pro-mist (concentrated, punchy halo,\n"
-        "deep blacks) / glimmerglass (tight, subtle, sharp-preserving) /\n"
-        "pro-mist (broader, pastel, atmospheric) / cinebloom (frame-wide,\n"
-        "slow-decaying veil)."));
+      _("diffusion filter type: black pro-mist (punchy halo, deep blacks),\n"
+        "glimmerglass (tight, subtle), pro-mist (broad, pastel),\n"
+        "cinebloom (frame-wide veil)."));
 
   g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
   /* Diffusion filters are sold in stops, and the deflected-light table this
@@ -6151,21 +6113,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->diffusion_strength, 3);
   gtk_widget_set_tooltip_text(
       g->diffusion_strength,
-      _("how much light is diverted into the diffusion halo (0 = off).\n"
-        "\n"
-        "these filters are sold in stops: 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
-        "then 1 and 2. scrolling and the arrow keys move an eighth at a time.\n"
-        "\n"
-        "the diverted light is taken from the direct image and spread into\n"
-        "the halo, so raising this lifts shadows and lowers contrast as well\n"
-        "as glowing the highlights."));
+      _("light diverted into the diffusion halo, in filter stops (1/8 = 0.125;\n"
+        "0 = off). glows the highlights, lifts shadows and lowers contrast."));
 
   g->diffusion_scale = dt_bauhaus_slider_from_params(self, "diffusion_scale");
   gtk_widget_set_tooltip_text(
       g->diffusion_scale,
-      _("scales the radius of the diffusion halo. the amount of light is\n"
-        "unchanged; it is spread further from each highlight. use diffusion\n"
-        "strength to change the amount."));
+      _("radius of the diffusion halo. the amount of light is unchanged."));
 
   g->diffusion_warmth = dt_bauhaus_slider_from_params(self, "diffusion_warmth");
   gtk_widget_set_tooltip_text(g->diffusion_warmth,
@@ -6185,11 +6139,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->upsampling, NULL, N_("spectral upsampling"));
   gtk_widget_set_tooltip_text(
       g->upsampling,
-      _("how a pixel's color is turned into the spectrum the film is exposed\n"
-        "to.\n"
-        "\n"
-        "only methods from your installed data packs are listed. if there\n"
-        "is just one, it is used and there is nothing to choose."));
+      _("how a pixel's color is turned into the spectrum the film is exposed to.\n"
+        "lists the methods of the installed data packs."));
 
   g_signal_connect(G_OBJECT(g->upsampling), "value-changed",
                    G_CALLBACK(_upsampling_changed), self);
@@ -6198,41 +6149,22 @@ void gui_init(dt_iop_module_t *self)
   g->adaptation_bandwidth = dt_bauhaus_toggle_from_params(self, "adaptation_bandwidth");
   gtk_widget_set_tooltip_text(
       g->adaptation_bandwidth,
-      _("first half of the film's sensitivity adaptation: a spectral bandpass\n"
-        "applied to the stock's own sensitivities, rolling off the UV and IR\n"
-        "ends of each channel while preserving white balance. on by default,\n"
-        "and best left on: it is part of how the stock is characterized. no\n"
-        "effect on stocks whose profile carries no bandpass."));
+      _("rolls off the UV and IR ends of the film's sensitivities, as the\n"
+        "stock is characterized. best left on."));
 
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
 
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
-      _("second half of the film's sensitivity adaptation: a per-color\n"
-        "exposure correction of up to two stops, zero at the film's own white\n"
-        "point and growing with distance from it. off by default: it shifts\n"
-        "saturated colors substantially. no effect on stocks whose profile\n"
-        "carries no surface (the monochrome films and every print paper)."));
+      _("per-color exposure correction, growing with distance from the film's\n"
+        "white point. shifts saturated colors substantially."));
 
   g->gamut_compress = dt_bauhaus_toggle_from_params(self, "gamut_compress");
   gtk_widget_set_tooltip_text(
       g->gamut_compress,
-      _("compress what the output profile cannot hold, with two knees:\n"
-        "chroma towards the profile's boundary, and lightness from the\n"
-        "upper midtones up, which rolls the highlights off towards white.\n"
-        "both also act on colors inside the profile: saturated colors near\n"
-        "its edge are pulled in a little, and the brightest in-range tones\n"
-        "are compressed.\n"
-        "\n"
-        "switching it off shows where the film is producing colors the\n"
-        "profile has no room for: they leave the range, so darktable's\n"
-        "clipping indicator marks them and the raw extent of the overshoot\n"
-        "is visible. the highlights also stop rolling off and keep their\n"
-        "full range, since the lightness knee goes away with the rest.\n"
-        "\n"
-        "leave it on for an image you intend to keep. off, saturated colors\n"
-        "are clipped by whatever comes next in the pipeline, which loses the\n"
-        "separation between them and can shift their hue."));
+      _("compress the colors and highlights the output profile cannot hold.\n"
+        "switch off to see where the film exceeds the profile; those colors\n"
+        "are then clipped later in the pipeline."));
   /* last in the section: housekeeping, and the only control here that talks to
      the network rather than changing the render */
   g->update_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
@@ -6276,17 +6208,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(
       g->print_exposure_ev,
-      _("enlarger exposure. more exposure prints denser, so positive values\n"
-        "darken the print. with auto print exposure on, this offsets the\n"
-        "automatic exposure rather than replacing it."));
+      _("enlarger exposure; positive values darken the print.\n"
+        "offsets the automatic exposure when that is on."));
 
   g->print_auto_exposure = dt_bauhaus_toggle_from_params(self, "print_auto_exposure");
   gtk_widget_set_tooltip_text(
       g->print_auto_exposure,
-      _("automatically compensate print exposure for film exposure changes,\n"
-        "as a real printer would print to a fixed density; disable for film\n"
-        "exposure to affect brightness directly, same as a fixed enlarger\n"
-        "exposure time."));
+      _("compensate print exposure for film exposure changes, printing to a\n"
+        "fixed density. disable to let film exposure change brightness."));
 
   g->print_contrast = dt_bauhaus_slider_from_params(self, "print_contrast");
   gtk_widget_set_tooltip_text(g->print_contrast,
@@ -6306,13 +6235,8 @@ void gui_init(dt_iop_module_t *self)
   g->print_gamma_r = dt_bauhaus_slider_from_params(self, "print_gamma_r");
   gtk_widget_set_tooltip_text(
       g->print_gamma_r,
-      _("gamma of the paper's red-sensitive (cyan-forming) layer alone, on\n"
-        "top of the overall print gamma.\n"
-        "\n"
-        "splitting gamma per channel grades out crossover -- a negative\n"
-        "whose layers developed to different gammas, which filtration\n"
-        "cannot fix because it shifts every tone equally while crossover\n"
-        "shifts shadows one way and highlights the other."));
+      _("gamma of the paper's red-sensitive (cyan-forming) layer alone, on top\n"
+        "of the overall print gamma. grades out crossover, which filtration cannot."));
 
   g->print_gamma_g = dt_bauhaus_slider_from_params(self, "print_gamma_g");
   gtk_widget_set_tooltip_text(
@@ -6351,26 +6275,20 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->preflash_exposure, 0.0f, 0.5f);
   gtk_widget_set_tooltip_text(
       g->preflash_exposure,
-      _("preflash exposure: a brief, uniform pre-exposure of the print\n"
-        "through the film's base density, before the main print exposure.\n"
-        "adds density where the main exposure is weakest, so it tones the\n"
-        "print's highlights and reduces contrast (0 = off)."));
+      _("brief, uniform pre-exposure of the paper before the main print\n"
+        "exposure. tones the highlights and reduces contrast (0 = off)."));
 
   g->preflash_m_shift = dt_bauhaus_slider_from_params(self, "preflash_m_shift");
   dt_bauhaus_slider_set_format(g->preflash_m_shift, _(" CC"));
-  gtk_widget_set_tooltip_text(g->preflash_m_shift,
-                              _("magenta filtration for the preflash exposure only, Kodak "
-                                "CC units\n"
-                                "from neutral, independent of the main enlarger filtration "
-                                "above."));
+  gtk_widget_set_tooltip_text(
+      g->preflash_m_shift,
+      _("magenta filtration for the preflash only, Kodak CC units from neutral"));
 
   g->preflash_y_shift = dt_bauhaus_slider_from_params(self, "preflash_y_shift");
   dt_bauhaus_slider_set_format(g->preflash_y_shift, _(" CC"));
-  gtk_widget_set_tooltip_text(g->preflash_y_shift,
-                              _("yellow filtration for the preflash exposure only, Kodak "
-                                "CC units\n"
-                                "from neutral, independent of the main enlarger filtration "
-                                "above."));
+  gtk_widget_set_tooltip_text(
+      g->preflash_y_shift,
+      _("yellow filtration for the preflash only, Kodak CC units from neutral"));
 
   /* the enlarger-side diffusion filter, alongside the rest of the print stage */
   _section_add(self, C_("section", "diffusion"),
@@ -6391,30 +6309,19 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->print_diffusion_strength, 3);
   gtk_widget_set_tooltip_text(
       g->print_diffusion_strength,
-      _("how much light is diverted into the print diffusion halo (0 = off).\n"
-        "\n"
-        "these filters are sold in stops: 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
-        "then 1 and 2. scrolling and the arrow keys move an eighth at a time.\n"
-        "\n"
-        "acts at the enlarger, on the light passing through the negative, so\n"
-        "it spreads the print's dark areas into its lighter ones."));
+      _("light diverted into the print diffusion halo, in filter stops\n"
+        "(1/8 = 0.125; 0 = off). spreads the print's dark areas into lighter ones."));
 
   g->print_diffusion_scale = dt_bauhaus_slider_from_params(self, "print_diffusion_scale");
   gtk_widget_set_tooltip_text(
       g->print_diffusion_scale,
-      _("scales the radius of the print diffusion halo. the amount of light\n"
-        "is unchanged; it is spread further from each bright area of the\n"
-        "enlarger light, which are the print's dark areas. use print\n"
-        "diffusion strength to change the amount."));
+      _("radius of the print diffusion halo. the amount of light is unchanged."));
 
   g->print_diffusion_warmth = dt_bauhaus_slider_from_params(self, "print_diffusion_warmth");
-  gtk_widget_set_tooltip_text(g->print_diffusion_warmth,
-                              _("print diffusion halo warmth, on the enlarger light: >0 "
-                                "adds red to\n"
-                                "the outer halo, which prints as cyan, <0 adds blue, which "
-                                "prints as\n"
-                                "yellow (added on top of the selected filter's own warmth "
-                                "bias)."));
+  gtk_widget_set_tooltip_text(
+      g->print_diffusion_warmth,
+      _("print diffusion halo warmth: >0 adds red to the halo, which prints\n"
+        "as cyan, <0 adds blue, which prints as yellow."));
 
 
   /* ---- tab 3: grain ---- */
@@ -6431,43 +6338,28 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->grain_granularity, 0.25f, 2.5f);
   gtk_widget_set_tooltip_text(
       g->grain_granularity,
-      _("how coarse the film's crystals are, relative to this stock's own\n"
-        "measured granularity. 1.0 is the datasheet figure.\n"
-        "\n"
-        "this is the physical size control: the particles grow, there are\n"
-        "fewer of them, and the grain becomes stronger as well as coarser,\n"
-        "the same way a faster film differs from a slower one. it rebuilds\n"
-        "the emulsion, where grain strength only scales the drawn result."));
+      _("crystal size, relative to the stock's measured granularity (1.0).\n"
+        "higher gives coarser and stronger grain, like a faster film."));
 
   g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
   dt_bauhaus_slider_set_soft_range(g->grain_amount, 0.0f, 2.0f);
   gtk_widget_set_tooltip_text(
       g->grain_amount,
-      _("how far the grain is allowed to move each pixel. it scales the drawn\n"
-        "result; the emulsion is unchanged. 1.0 is film-accurate, 0 is off.\n"
-        "\n"
-        "note that a negative's grain is amplified again by the print stage,\n"
-        "while a slide is scanned directly with nothing to amplify it, so the\n"
-        "same value reads much weaker on slide film. granularity above is the\n"
-        "control for coarser grain."));
+      _("grain strength (1.0 = film-accurate, 0 = off). scales the drawn\n"
+        "grain only; use granularity for coarser grain."));
 
   g->grain_uniformity = dt_bauhaus_slider_from_params(self, "grain_uniformity");
   dt_bauhaus_slider_set_soft_range(g->grain_uniformity, 0.9f, 1.02f);
   gtk_widget_set_tooltip_text(
       g->grain_uniformity,
-      _("how evenly the crystals are distributed, relative to the stock's own\n"
-        "figure. raising it bends the noise toward a bell: grain that peaks\n"
-        "in the midtones and eases off again in the densest areas. lowering\n"
-        "it lets grain keep growing all the way into the densest areas."));
+      _("how evenly the crystals are distributed. higher lets grain peak in the\n"
+        "midtones; lower lets it keep growing into the densest areas."));
 
   g->grain_sublayer_scale = dt_bauhaus_slider_from_params(self, "grain_sublayer_scale");
   gtk_widget_set_tooltip_text(
       g->grain_sublayer_scale,
-      _("a real emulsion layers coarse crystals over finer ones. this scales\n"
-        "the finer sub-layers against the coarsest. the stock's overall\n"
-        "granularity is held, so lower values make the fine layers finer and\n"
-        "the coarse layer coarser, letting it dominate; at 0 only the\n"
-        "coarsest layer carries grain. no effect on single-layer stocks."));
+      _("scales the finer crystal sub-layers against the coarsest. lower lets\n"
+        "the coarse layer dominate. no effect on single-layer stocks."));
 
   g->grain_density_min = dt_bauhaus_slider_from_params(self, "grain_density_min");
   /* same shape as granularity above: full range is 0-4, but everything useful
@@ -6475,10 +6367,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->grain_density_min, 0.25f, 2.5f);
   gtk_widget_set_tooltip_text(
       g->grain_density_min,
-      _("scales the density each crystal sits at even where the film received\n"
-        "no light, which is why grain does not disappear entirely in clear\n"
-        "areas. 1.0 is the loaded stock's own measured floor, 2.0 twice it.\n"
-        "the floor is per channel, so the balance between channels is kept."));
+      _("density of the crystals where the film received no light, which keeps\n"
+        "grain visible in clear areas. 1.0 is the stock's own value."));
 
   _section_add(self, C_("section", "texture"),
                "plugins/darkroom/spektrafilm/expand_grain_texture");
@@ -6486,38 +6376,27 @@ void gui_init(dt_iop_module_t *self)
   g->grain_blur = dt_bauhaus_slider_from_params(self, "grain_blur");
   gtk_widget_set_tooltip_text(
       g->grain_blur,
-      _("scales the blur applied to the grained density, 1.0 being the\n"
-        "reference radius of 0.89 pixels. it softens the grain and the image\n"
-        "detail under it alike; the crystals themselves are unchanged.\n"
-        "\n"
-        "raise it at high magnification, where one crystal covers several\n"
-        "pixels; lower it for small output. use granularity to make grain\n"
-        "genuinely coarser."));
+      _("blur of the grained density (1.0 = 0.89 pixels). softens grain and\n"
+        "detail alike. raise at high magnification, lower for small output."));
 
   g->grain_dye_cloud = dt_bauhaus_slider_from_params(self, "grain_dye_cloud");
   gtk_widget_set_tooltip_text(
       g->grain_dye_cloud,
-      _("each developed crystal leaves a small cloud of dye. this scales how\n"
-        "far that cloud spreads, measured on the film itself, so it only\n"
-        "becomes visible at magnifications where a single crystal covers more\n"
-        "than a pixel."));
+      _("spread of the dye cloud around each developed crystal.\n"
+        "only visible at high magnification."));
 
   g->grain_usm_sigma = dt_bauhaus_slider_from_params(self, "grain_usm_sigma");
   dt_bauhaus_slider_set_soft_range(g->grain_usm_sigma, 0.0f, 3.0f);
   gtk_widget_set_tooltip_text(
       g->grain_usm_sigma,
-      _("radius of the recovery sharpening, in pixels. 0 switches it off. a\n"
-        "broad radius puts the crispness back in the mid detail range, which\n"
-        "keeps the sampling grid from showing through."));
+      _("radius of the recovery sharpening, in pixels (0 = off)"));
 
   g->grain_usm_amount = dt_bauhaus_slider_from_params(self, "grain_usm_amount");
   dt_bauhaus_slider_set_soft_range(g->grain_usm_amount, 0.0f, 2.0f);
   gtk_widget_set_tooltip_text(
       g->grain_usm_amount,
       _("strength of the recovery sharpening, restoring what the grain blur\n"
-        "softened. it moves density around without adding any, so it is not a\n"
-        "denoiser and cannot invent detail. 0 switches it off; overdo it and\n"
-        "grain starts to look crunchy."));
+        "softened (0 = off). too much makes grain look crunchy."));
 
   /* ---- tab 4: halation ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);
@@ -6534,19 +6413,10 @@ void gui_init(dt_iop_module_t *self)
   _section_add(self, C_("section", "scatter"), NULL);
 
   g->scatter_amount = dt_bauhaus_slider_from_params(self, "scatter_amount");
-  gtk_widget_set_tooltip_text(g->scatter_amount,
-                              _("fraction of light that scatters inside the emulsion, "
-                                "before the\n"
-                                "halation bounce. 1.0 is film-accurate and is also the "
-                                "maximum. it\n"
-                                "means all of it, so nothing of the unscattered image "
-                                "remains.\n"
-                                "\n"
-                                "this is why the whole frame softens: the scatter radius "
-                                "is small (a\n"
-                                "few um on film) but it applies everywhere. lower this if "
-                                "you want a\n"
-                                "sharper result than the film itself would give."));
+  gtk_widget_set_tooltip_text(
+      g->scatter_amount,
+      _("fraction of light scattered inside the emulsion (1.0 = film-accurate\n"
+        "and the maximum). softens the whole frame; lower for a sharper result."));
 
   g->scatter_scale = dt_bauhaus_slider_from_params(self, "scatter_scale");
   /* Upstream fixes scatter_spatial_scale at 1.0 -- it is a schema field with no
@@ -6556,18 +6426,10 @@ void gui_init(dt_iop_module_t *self)
      the effective blur is ~14 px across the whole image, far outside anything
      the reference produces. */
   dt_bauhaus_slider_set_soft_range(g->scatter_scale, 0.2f, 1.5f);
-  gtk_widget_set_tooltip_text(g->scatter_scale,
-                              _("scales the in-emulsion scatter radius. 1.0 is "
-                                "film-accurate: the\n"
-                                "radius the film model itself works at, and not normally "
-                                "something\n"
-                                "to change.\n"
-                                "\n"
-                                "above 1.0 you are past what the film model claims, and "
-                                "the whole\n"
-                                "frame softens quickly: the radius scales with the value, "
-                                "so 4.0 is a\n"
-                                "four times wider blur everywhere."));
+  gtk_widget_set_tooltip_text(
+      g->scatter_scale,
+      _("scales the in-emulsion scatter radius (1.0 = film-accurate).\n"
+        "higher values soften the whole frame quickly."));
 
   _section_add(self, C_("section", "halation"), NULL);
 
@@ -6586,26 +6448,20 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(
       dtgtk_expander_get_header(DTGTK_EXPANDER(boost_section)),
       _("boosts the highlights above the protect threshold before any light\n"
-        "spreads, so they bloom through the film diffusion filter, scatter\n"
-        "and halation.\n"
-        "it is not part of halation: the halation toggle does not switch it\n"
-        "off. set highlight boost to 0 to disable it."));
+        "spreads, so they bloom. independent of the halation toggle."));
 
   g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
   dt_bauhaus_slider_set_format(g->boost_ev, _(" EV"));
-  gtk_widget_set_tooltip_text(g->boost_ev,
-                              _("highlight boost: brightens the highlights above the "
-                                "protect threshold\n"
-                                "so they bloom into halation/diffusion (0 = off).\n"
-                                "\n"
-                                "runs on its own, independent of the halation toggle."));
+  gtk_widget_set_tooltip_text(
+      g->boost_ev,
+      _("brightens the highlights above the protect threshold so they bloom\n"
+        "into halation and diffusion (0 = off)."));
 
   g->boost_range = dt_bauhaus_slider_from_params(self, "boost_range");
   gtk_widget_set_tooltip_text(
       g->boost_range,
-      _("shapes how sharply the boost rises above the protect threshold.\n"
-        "lower confines it to the brightest highlights, higher spreads it\n"
-        "more evenly over everything above the threshold."));
+      _("how sharply the boost rises above the protect threshold.\n"
+        "lower confines it to the brightest highlights."));
 
   g->protect_ev = dt_bauhaus_slider_from_params(self, "protect_ev");
   dt_bauhaus_slider_set_format(g->protect_ev, _(" EV"));
@@ -6625,15 +6481,8 @@ void gui_init(dt_iop_module_t *self)
   g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
   gtk_widget_set_tooltip_text(
       g->output_boost,
-      _("brightens the image, with most of the effect in the midtones and\n"
-        "the highlights rolling off above them. it works before the gamut\n"
-        "compressor, so it cannot place white on its own.\n"
-        "\n"
-        "use it to lift midtones into the rolloff, and post-compression\n"
-        "scale to set where highlights and white land.\n"
-        "\n"
-        "this acts at the END of the module, so the picker measures the\n"
-        "processed image."));
+      _("brightens the midtones before the gamut compressor, with the\n"
+        "highlights rolling off. use post-compression scale to place white."));
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_boost);
   dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
                                      _("pick brightest tone in the selected area and set "
@@ -6644,16 +6493,8 @@ void gui_init(dt_iop_module_t *self)
   g->output_scale = dt_bauhaus_slider_from_params(self, "output_scale");
   gtk_widget_set_tooltip_text(
       g->output_scale,
-      _("scales the finished picture, after the gamut compressor.\n"
-        "\n"
-        "the boost above pushes more light into the compressor, which lifts\n"
-        "the image and desaturates colors that were already near the edge of\n"
-        "the gamut. this only changes the level, leaving the relationship\n"
-        "between the channels alone, the same thing a tone curve does by\n"
-        "moving its white point.\n"
-        "\n"
-        "nothing rolls off behind the compressor, so this can push values\n"
-        "past white for the rest of the pipeline to handle."));
+      _("scales the image after the gamut compressor, like moving a tone\n"
+        "curve's white point. can push values past white."));
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_scale);
   dt_bauhaus_widget_set_quad_tooltip(g->output_scale,
                                      _("pick brightest tone in the selected area and scale "
@@ -6679,12 +6520,10 @@ void gui_init(dt_iop_module_t *self)
   _section_add(self, C_("section", "glare"), NULL);
 
   g->glare_percent = dt_bauhaus_slider_from_params(self, "glare_percent");
-  gtk_widget_set_tooltip_text(g->glare_percent,
-                              _("viewing glare: a faint veil of the viewing light "
-                                "reflected off the\n"
-                                "print surface, in percent. lifts the deepest blacks "
-                                "slightly. not\n"
-                                "applied when scanning the film directly."));
+  gtk_widget_set_tooltip_text(
+      g->glare_percent,
+      _("viewing glare: light reflected off the print surface, in percent.\n"
+        "lifts the deepest blacks. not applied without a print stage."));
 
   _section_add(self, C_("section", "black and white point"),
                "plugins/darkroom/spektrafilm/expand_scan_bw");
@@ -6693,18 +6532,14 @@ void gui_init(dt_iop_module_t *self)
       dt_bauhaus_toggle_from_params(self, "scan_black_correction");
   gtk_widget_set_tooltip_text(
       g->scan_black_correction,
-      _("set the darkest tone of the image with black level below.\n"
-        "off, the shadows stay where the film puts them, which is often\n"
-        "short of black."));
+      _("set the darkest tone with black level below. off, the shadows\n"
+        "stay where the film puts them, often short of black."));
   g->scan_black_level = dt_bauhaus_slider_from_params(self, "scan_black_level");
   dt_bauhaus_slider_set_soft_range(g->scan_black_level, -0.10f, 0.10f);
   dt_bauhaus_slider_set_digits(g->scan_black_level, 3);
   gtk_widget_set_tooltip_text(
       g->scan_black_level,
-      _("lift or crush the shadows.\n"
-        "\n"
-        "0 is true black. higher values lift the blacks and soften the\n"
-        "image; below 0 the deepest shadows are crushed together."));
+      _("lift (above 0) or crush (below 0) the shadows. 0 is true black."));
 
   g->scan_white_correction =
       dt_bauhaus_toggle_from_params(self, "scan_white_correction");
@@ -6717,10 +6552,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->scan_white_level, 3);
   gtk_widget_set_tooltip_text(
       g->scan_white_level,
-      _("brightness of the lightest tone.\n"
-        "\n"
-        "1 is full white. lowering it dims the highlights and, since mid\n"
-        "gray is held in place, darkens the shadows a little too."));
+      _("brightness of the lightest tone (1 = full white). lowering it also\n"
+        "darkens the shadows a little, since mid-gray is held."));
 
   /* restore root widget */
   self->widget = sf_main_box;
