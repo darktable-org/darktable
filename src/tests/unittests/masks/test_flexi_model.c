@@ -1056,10 +1056,13 @@ static void test_controls_follow_the_hover_when_asked(void **state)
   flexi_conf_init();
   flexi_build("u{1,5}");
   flexi_bd.panel_selected_formid = 1;
-  flexi_bd.canvas_hovered_formid = 5;
+  dt_masks_form_gui_t gui;
+  dt_masks_init_form_gui(&gui);
+  flexi_dev.form_gui = &gui;
+  gui.canvas_hover_formid = 5;
   assert_int_equal(dt_masks_model_controls_target(&flexi_bd, TRUE).id, 5);
   assert_int_equal(dt_masks_model_controls_target(&flexi_bd, FALSE).id, 1);
-  flexi_bd.canvas_hovered_formid = INVALID_MASKID;
+  flexi_dev.form_gui = NULL;
 }
 
 // a group selected on its own isolates its members. The mask's own group holds
