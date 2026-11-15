@@ -3233,6 +3233,29 @@ gboolean dt_masks_cancel_creation(void)
   return TRUE;
 }
 
+// the canvas state keeps the module a shape is being drawn for, and the one a
+// ctrl+click keeps re-arming. Left behind when the module goes (history
+// replaced by a dropped xmp, image change), the first would be dereferenced
+// by the next dt_masks_change_form_gui, and the second would also keep the
+// panel halo hidden, as a shape creation never ending
+void dt_masks_forget_module(dt_iop_module_t *module)
+{
+  dt_masks_form_gui_t *gui = module->dev ? module->dev->form_gui : NULL;
+  if(!gui) return;
+
+  if(gui->creation_continuous_module == module)
+  {
+    gui->creation_continuous = FALSE;
+    gui->creation_continuous_module = NULL;
+  }
+  if(gui->creation_module == module)
+  {
+    gui->creation_module = NULL;
+    // nothing is left to finish the shape being drawn
+    if(module->dev == darktable.develop) dt_masks_change_form_gui(NULL);
+  }
+}
+
 void dt_masks_reset_form_gui(void)
 {
   dt_masks_change_form_gui(NULL);

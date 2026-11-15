@@ -1947,6 +1947,8 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
+  dt_masks_forget_module(module);
+
   module->cleanup(module);
 
   free(module->blend_params);
@@ -2510,6 +2512,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
+  dt_masks_forget_module(module);
   if(darktable.develop->header_buttons_module == module)
     darktable.develop->header_buttons_module = NULL;
   g_slist_free_full(module->widget_list, g_free);

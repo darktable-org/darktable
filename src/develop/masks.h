@@ -1163,6 +1163,9 @@ void dt_masks_clear_form_gui(const dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 gboolean dt_masks_cancel_creation(void);
+// drop every reference the mask canvas state holds to `module`, before its GUI
+// or the module itself goes away
+void dt_masks_forget_module(struct dt_iop_module_t *module);
 
 gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
                                      const float x,
