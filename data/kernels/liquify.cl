@@ -140,6 +140,6 @@ warp_kernel (read_only image2d_t in,
       Sxy += Areadpixel(in, sx, sy) * lk[sample_pos.x].x * lk[sample_pos.y].y;
     }
   }
-  Sxy = Sxy / (norm.x * norm.y);
+  Sxy = Sxy * fp32_div(1.0f, norm.x * norm.y);
   write_ipixel(out, pos - roi_out_origin, Sxy);
 }

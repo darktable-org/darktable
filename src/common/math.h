@@ -156,6 +156,31 @@ static inline float Kahan_sum(const float m,
    return t2;
 }
 
+static inline float _radius_hypotf(const float x, const float y)
+{
+  /*
+  This would be the CPU equivalent fro OpenCL code.
+  Tested on various systems and the code gives bit-identical results
+  with libc hypotf() but is much slower ...
+
+  const float ax = fabsf(x), ay = fabsf(y);
+  const float a = fmaxf(ax, ay), b = fminf(ax, ay);
+  if(a == 0.0f) return 0.0f;
+
+  const float aa = a * a;
+  const float bb = b * b;
+  const float s = aa + bb;
+
+  const float e = ((aa - s) + bb)
+                + (fmaf(a, a, -aa) + fmaf(b, b, -bb));
+
+  const float h = sqrtf(s);
+  const float residual = fmaf(-h, h, s) + e;
+  return fmaf(residual, 0.5f / h, h);
+  */
+  return hypotf(x, y);
+}
+
 static inline float Log2(const float x)
 {
   return (x > 0.0f) ? (logf(x) / M_LN2f) : x;

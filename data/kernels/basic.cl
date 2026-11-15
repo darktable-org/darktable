@@ -2430,14 +2430,14 @@ static inline float _get_image_channel(read_only image2d_t in,
 #define MAX_HALF_FILTER_WIDTH 3
 #define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
 
-float interpolation_compute_single(read_only image2d_t in,
-                                   const int itor_mode,
-                                   const int itor_width,
-                                   const float x,
-                                   const float y,
-                                   const int width,
-                                   const int height,
-                                   const int channel)
+static float _compute_single(read_only image2d_t in,
+                             const int itor_mode,
+                             const int itor_width,
+                             const float x,
+                             const float y,
+                             const int width,
+                             const int height,
+                             const int channel)
 {
   float kernelh[MAX_KERNEL_REQ];
   float kernelv[MAX_KERNEL_REQ];
@@ -3236,18 +3236,18 @@ float _calc_vignette_spline(const float radius,
 {
   if(radius >= 1.0f) return spline[splinesize-1];
 
-  const float r = radius * (float)(splinesize-1 - 1);
+  const float r = radius * (float)(splinesize-1);
+  const float frac = r - trunc(r);
   const int i = (int)r;
-  const float frac = r - (float)i;
 
   const float p0 = spline[i];
-  return p0 + (spline[i+1] - p0) * frac;
+  return fma(spline[i+1] - p0, frac, p0);
 }
 
-float _interpolate_linear_spline(global float *xi,
-                                 global float *yi,
-                                 const int ni,
-                                 const float x)
+float _linear_spline(global float *xi,
+                     global float *yi,
+                     const int ni,
+                     const float x)
 {
   if(x < xi[0]) return yi[0];
   for(int i = 1; i < ni; i++)
@@ -3283,8 +3283,7 @@ kernel void md_vignette(read_only image2d_t in,
 
   const float cx = ((float)(roix + x) - w2);
   const float cy = ((float)(roiy + y) - h2);
-  const float4 spline =
-    _interpolate_linear_spline(knots_vig, vig, knots, r * hypot(cx, cy));
+  const float4 spline = _linear_spline(knots_vig, vig, knots, r * _radius_hypotf(cx, cy));
 
   float4 pixel  = Areadpixel(in, x, y);
   float mask = pixel.w;
@@ -3315,7 +3314,7 @@ kernel void lens_man_vignette(read_only image2d_t in,
 
   const float dx = ((float)(roix + x) - w2);
   const float dy = ((float)(roiy + y) - h2);
-  const float radius = hypot(dx, dy) * inv_maxr;
+  const float radius = _radius_hypotf(dx, dy) * inv_maxr;
   const float4 val = fmax(0.0f, intensity * _calc_vignette_spline(radius, spline, splinesize));
 
   float4 pixel  = Areadpixel(in, x, y);
@@ -3379,19 +3378,17 @@ kernel void md_lens_correction(read_only image2d_t in,
   const float iscale = fp32_div(1.0f, scale);
   const float cx = ((float)(roox + x) - w2) * iscale;
   const float cy = ((float)(rooy + y) - h2) * iscale;
-  const float radius = r * hypot(cx, cy);
+  const float radius = r * _radius_hypotf(cx, cy);
   const float limw = (float)iwidth - 1.0f;
   const float limh = (float)iheight - 1.0f;
   float output[4];
   for(int c = 0; c < 4; c++)
   {
     const int plane = (c == 3 || pass_mode) ? 1 : c;
-    const float dr =
-      _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
+    const float dr = _linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
     const float xs = clamp(fma(dr, cx, w2) - roix, 0.0f, limw);
     const float ys = clamp(fma(dr, cy, h2) - roiy, 0.0f, limh);
-    output[c] = interpolation_compute_single(in, itor_mode, itor_width,
-                                             xs, ys, iwidth, iheight, c);
+    output[c] = _compute_single(in, itor_mode, itor_width, xs, ys, iwidth, iheight, c);
   }
 
   float4 pixel = {output[0], output[1], output[2], output[3]};

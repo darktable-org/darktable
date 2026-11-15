@@ -141,6 +141,24 @@ static inline float fp32_div(const float a, const float b)
   return fma(r, y, q);
 }
 
+static inline float _radius_hypotf(const float x, const float y)
+{
+  const float ax = fabs(x), ay = fabs(y);
+  const float a = fmax(ax, ay), b = fmin(ax, ay);
+  if(a == 0.0f) return 0.0f;
+
+  const float aa = a * a;
+  const float bb = b * b;
+  const float s = aa + bb;
+
+  const float e = ((aa - s) + bb)
+                + (fma(a, a, -aa) + fma(b, b, -bb));
+
+  const float h = sqrt(s);
+  const float residual = fma(-h, h, s) + e;
+  return fma(residual, fp32_div(0.5f, h), h);
+}
+
 static inline int
 FC(const int row, const int col, const unsigned int filters)
 {
