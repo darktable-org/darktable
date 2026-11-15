@@ -317,11 +317,24 @@ static void _lib_history_compare_changed(gpointer user_data)
   gtk_widget_queue_draw(d->mode_button);
 }
 
+static void _lib_history_add_mark(GtkWidget *hbox,
+                                  DTGTKCairoPaintIconFunc paint,
+                                  const char *tooltip)
+{
+  GtkWidget *mark = dtgtk_button_new_full(paint, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){ .tooltip = tooltip });
+  // these icons fill their box, see darktable.css
+  dt_gui_add_class(mark, "dt_history_power_mark");
+  gtk_widget_set_sensitive(mark, FALSE);
+  gtk_box_pack_end(GTK_BOX(hbox), mark, FALSE, FALSE, 0);
+}
+
 static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
                                              const int num,
                                              const char *label,
                                              const gboolean enabled,
                                              const gboolean required,
+                                             const gboolean deprecated,
                                              const gboolean selected)
 {
   /* create label */
@@ -342,10 +355,8 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   gtk_label_set_xalign(GTK_LABEL(lab), 0);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_END);
   gtk_label_set_markup (GTK_LABEL (lab), label);
-  // a switched off module is dimmed, a required one (that cannot be switched
-  // off) stands out
+  // a switched off module is dimmed
   if(!enabled) dt_gui_add_class(lab, "dt_history_switch_off");
-  if(required) dt_gui_add_class(lab, "dt_history_required");
   dt_gui_add_class(widget, "dt_history_items");
 
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -376,6 +387,14 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   // found by name rather than by position in the box
   g_object_set_data(G_OBJECT(hbox), "compare", compare);
   gtk_box_pack_end(GTK_BOX(hbox), compare, FALSE, FALSE, 0);
+
+  // marks of the module, only indicators: the row's own button takes the click
+  if(required)
+    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch_on, _("always-on module"));
+  if(deprecated)
+    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch_deprecated, _("deprecated module"));
+  if(!enabled)
+    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch, _("module turned off"));
 
   return hbox;
 }
@@ -1281,14 +1300,6 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
                                       item->multi_name,
                                       TRUE,
                                       item->multi_name_hand_edited);
-
-  // required modules are also bold, see darktable.css
-  if(item && item->module->hide_enable_button)
-  {
-    gchar *marked = g_strconcat(label, " *", NULL);
-    g_free(label);
-    label = marked;
-  }
   return label;
 }
 
@@ -1316,7 +1327,7 @@ void gui_update(dt_lib_module_t *self)
   /* add default which always should be */
   GtkWidget *widget =
     _lib_history_create_button(self, -1, _("original"),
-                               TRUE, FALSE,
+                               TRUE, FALSE, FALSE,
                                darktable.develop->history_end == 0);
   gtk_box_pack_end(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
 
@@ -1335,7 +1346,8 @@ void gui_update(dt_lib_module_t *self)
       _lib_history_create_button
       (self, num, label,
        (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)),
-       hitem->module->hide_enable_button, selected);
+       hitem->module->hide_enable_button,
+       hitem->module->flags() & IOP_FLAGS_DEPRECATED, selected);
 
     g_free(label);
 

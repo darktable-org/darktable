@@ -1877,10 +1877,10 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
-/* modules that cannot be switched off */
-.dt_history_required
+/* the marks of a row fill their box, which is too big for a row */
+.dt_history_power_mark
 {
-  font-weight: bold;
+  font-size: 0.75em;
 }
 
 #dt-metadata-changed
