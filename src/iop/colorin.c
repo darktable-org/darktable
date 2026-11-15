@@ -138,7 +138,20 @@ typedef struct dt_iop_colorin_data_t
   int sat_div;
   int val_div;
   int hsm_encode;
+  float *look;
+  int look_hue_div;
+  int look_sat_div;
+  int look_val_div;
+  int look_encode;
+  float look_exposure;           // linear gain of the DNG BaselineExposure, at which the look table is looked up
+  dt_dng_gain_table_map_t *gtm;
+  float gtm_area[4];             // top, left, height, width of the map's image area in raw pixels
+  float gtm_exposure;            // linear gain of the DNG BaselineExposure, included in the map input
 } dt_iop_colorin_data_t;
+
+// spacing in output pixels of the grid of map positions that is
+// transformed back through the pipeline
+#define GTM_GRID_STEP 16
 
 
 const char *name()
@@ -261,13 +274,208 @@ static inline float _linear_to_srgb(const float x)
 }
 
 // legacy buffers contain Lab; RGB buffers are still linear here so the
-// working profile is encoded only after applying the look
-static void _process_dng_look(float *data,
-                              const size_t width,
-                              const size_t height,
+// working profile is encoded only after applying the DNG profile tables
+static inline void _dng_to_prophoto(const dt_iop_colorin_data_t *d,
+                                    const float *const in,
+                                    dt_aligned_pixel_t prophoto_rgb)
+{
+  if(d->output_rgb)
+  {
+    dt_aligned_pixel_t xyz;
+    dt_apply_transposed_color_matrix(in, d->work_profile->matrix_in_transposed, xyz);
+    dt_XYZ_to_prophotorgb(xyz, prophoto_rgb);
+  }
+  else
+    dt_Lab_to_prophotorgb(in, prophoto_rgb);
+}
+
+static inline void _dng_from_prophoto(const dt_iop_colorin_data_t *d,
+                                      const dt_aligned_pixel_t prophoto_rgb,
+                                      float *const out)
+{
+  const float alpha = out[3];
+  dt_aligned_pixel_t res;
+  if(d->output_rgb)
+  {
+    dt_aligned_pixel_t xyz, linear;
+    dt_prophotorgb_to_XYZ(prophoto_rgb, xyz);
+    dt_apply_transposed_color_matrix(xyz, d->work_profile->matrix_out_transposed, linear);
+    linear[3] = alpha;
+    dt_ioppr_encode_rgb(linear, res, d->work_profile);
+  }
+  else
+    dt_prophotorgb_to_Lab(prophoto_rgb, res);
+  res[3] = alpha;
+  copy_pixel(out, res);
+}
+
+// applies a DNG ProfileHueSatMap or ProfileLookTable to linear ProPhoto RGB,
+// looked up at the values divided by scale
+static inline void _apply_dng_table(dt_aligned_pixel_t prophoto_rgb,
+                                    const float *table,
+                                    const int hue_div,
+                                    const int sat_div,
+                                    const int val_div,
+                                    const int encoding,
+                                    const float scale)
+{
+  dt_aligned_pixel_t hsv;
+  dt_aligned_pixel_t correction;
+
+  dt_vector_div1(prophoto_rgb, prophoto_rgb, scale);
+  dt_RGB_2_HSV(prophoto_rgb, hsv);
+
+  // the lookup clamps value to the table range, the scaled value keeps
+  // its headroom above 1 for the scene-referred pipeline
+  float v_encoded = MAX(hsv[2], 0.0f);
+  if(encoding == 1)  // sRGB
+    v_encoded = _linear_to_srgb(v_encoded);
+
+  dt_aligned_pixel_t hsv_for_lookup = { hsv[0], hsv[1], v_encoded, 0.0f};
+  _lookup_hsm(hsv_for_lookup, correction, hue_div, sat_div, val_div, table);
+
+  hsv[0] += correction[0] / 360.0f;
+  hsv[0] -= floorf(hsv[0]); // stay within the 360° hue circle
+  hsv[1] = CLIP(hsv[1] * correction[1]);
+  float v_corrected = v_encoded * correction[2];
+  if(encoding == 1)  // sRGB
+    v_corrected = _srgb_to_linear(v_corrected);
+  hsv[2] = MAX(v_corrected, 0.0f);
+  dt_HSV_2_RGB(hsv, prophoto_rgb);
+  dt_vector_mul1(prophoto_rgb, prophoto_rgb, scale);
+}
+
+static inline gboolean _has_dng_look(const dt_iop_colorin_data_t *d)
+{
+  return d->hsm || d->gtm || d->look;
+}
+
+// Positions in the gain table map, as (row, column) in map points, of a grid
+// of output pixels GTM_GRID_STEP apart. The map is defined on the raw image,
+// so the grid is transformed back through all geometric modules before this
+// one. Returns NULL when that is not possible.
+static float *_gtm_position_grid(dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_iop_t *piece,
+                                 const dt_iop_colorin_data_t *d,
+                                 const dt_iop_roi_t *roi,
+                                 int *grid_w,
+                                 int *grid_h)
+{
+  const int gw = (roi->width + GTM_GRID_STEP - 1) / GTM_GRID_STEP + 1;
+  const int gh = (roi->height + GTM_GRID_STEP - 1) / GTM_GRID_STEP + 1;
+  float *grid = dt_alloc_align_float((size_t)2 * gw * gh);
+  if(!grid) return NULL;
+
+  for(int j = 0; j < gh; j++)
+    for(int i = 0; i < gw; i++)
+    {
+      const size_t k = 2 * ((size_t)j * gw + i);
+      grid[k] = (roi->x + i * GTM_GRID_STEP + 0.5f) / roi->scale;
+      grid[k + 1] = (roi->y + j * GTM_GRID_STEP + 0.5f) / roi->scale;
+    }
+
+  if(!dt_dev_distort_backtransform_plus(self->dev, piece->pipe, self->iop_order,
+                                        DT_DEV_TRANSFORM_DIR_BACK_EXCL,
+                                        grid, (size_t)gw * gh))
+  {
+    dt_free_align(grid);
+    return NULL;
+  }
+
+  // the pipe's input is the raw buffer scaled like rawprepare scales its crop
+  const dt_dev_pixelpipe_iop_t *first =
+    piece->pipe->nodes ? (dt_dev_pixelpipe_iop_t *)piece->pipe->nodes->data : piece;
+  const float to_raw = first->iscale / first->buf_in.scale;
+
+  const dt_dng_gain_table_map_t *gtm = d->gtm;
+  for(size_t k = 0; k < (size_t)gw * gh; k++)
+  {
+    const float u = (grid[2 * k] * to_raw - d->gtm_area[1]) / d->gtm_area[3];
+    const float v = (grid[2 * k + 1] * to_raw - d->gtm_area[0]) / d->gtm_area[2];
+    grid[2 * k] = (v - gtm->origin_v) / gtm->spacing_v;
+    grid[2 * k + 1] = (u - gtm->origin_h) / gtm->spacing_h;
+  }
+
+  *grid_w = gw;
+  *grid_h = gh;
+  return grid;
+}
+
+// gain of the DNG ProfileGainTableMap at map position (mv, mh) for linear
+// ProPhoto RGB, interpolated between the four neighbouring tables and the two
+// neighbouring table entries
+static inline float _gtm_gain(const dt_dng_gain_table_map_t *gtm,
+                              const float mv,
+                              const float mh,
+                              const dt_aligned_pixel_t rgb)
+{
+  const float mn = fminf(rgb[0], fminf(rgb[1], rgb[2]));
+  const float mx = fmaxf(rgb[0], fmaxf(rgb[1], rgb[2]));
+  float in = gtm->weights[0] * rgb[0] + gtm->weights[1] * rgb[1] + gtm->weights[2] * rgb[2]
+           + gtm->weights[3] * mn + gtm->weights[4] * mx;
+  in = CLIP(in);
+  if(gtm->gamma != 1.0f) in = powf(in, gtm->gamma);
+
+  const int pv = gtm->points_v, ph = gtm->points_h, pn = gtm->points_n;
+  const float fv = CLAMPF(mv, 0.0f, (float)(pv - 1));
+  const float fh = CLAMPF(mh, 0.0f, (float)(ph - 1));
+  // the DNG specification scales the table input by MapPointsN
+  const float fn = CLAMPF(in * pn, 0.0f, (float)(pn - 1));
+  const int v0 = (int)fv, h0 = (int)fh, n0 = (int)fn;
+  const int v1 = MIN(v0 + 1, pv - 1), h1 = MIN(h0 + 1, ph - 1), n1 = MIN(n0 + 1, pn - 1);
+  const float av = fv - v0, ah = fh - h0, an = fn - n0;
+
+#define GTM_AT(v, h) ((1.0f - an) * gtm->gains[((size_t)(v) * ph + (h)) * pn + n0] \
+                      + an * gtm->gains[((size_t)(v) * ph + (h)) * pn + n1])
+  const float top = (1.0f - ah) * GTM_AT(v0, h0) + ah * GTM_AT(v0, h1);
+  const float bottom = (1.0f - ah) * GTM_AT(v1, h0) + ah * GTM_AT(v1, h1);
+#undef GTM_AT
+  return (1.0f - av) * top + av * bottom;
+}
+
+// map position (row, column) of an output pixel, interpolated in the grid
+static inline void _gtm_position(const float *grid,
+                                 const int grid_w,
+                                 const size_t col,
+                                 const size_t row,
+                                 float *mv,
+                                 float *mh)
+{
+  const float gx = (float)col / GTM_GRID_STEP;
+  const float gy = (float)row / GTM_GRID_STEP;
+  const int x0 = (int)gx, y0 = (int)gy;
+  const float ax = gx - x0, ay = gy - y0;
+  const float *g00 = grid + 2 * ((size_t)y0 * grid_w + x0);
+  const float *g10 = g00 + 2 * grid_w;
+  *mv = (1.0f - ay) * ((1.0f - ax) * g00[0] + ax * g00[2])
+      + ay * ((1.0f - ax) * g10[0] + ax * g10[2]);
+  *mh = (1.0f - ay) * ((1.0f - ax) * g00[1] + ax * g00[3])
+      + ay * ((1.0f - ax) * g10[1] + ax * g10[3]);
+}
+
+// the DNG profile applies ProfileHueSatMap, then ProfileGainTableMap and
+// ProfileLookTable on the result. As in the DNG SDK, the input of the gain
+// table map includes BaselineExposure.
+static void _process_dng_look(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              float *data,
+                              const dt_iop_roi_t *roi,
                               const dt_iop_colorin_data_t *d,
                               const float exposure)
 {
+  const size_t width = roi->width;
+  const size_t height = roi->height;
+
+  int grid_w = 0, grid_h = 0;
+  float *grid = NULL;
+  if(d->gtm)
+  {
+    grid = _gtm_position_grid(self, piece, d, roi, &grid_w, &grid_h);
+    if(!grid)
+      dt_print(DT_DEBUG_PIPE, "[colorin] ProfileGainTableMap skipped, positions unavailable");
+  }
+  const float gtm_scale = exposure / d->gtm_exposure;
+
   DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < height; row++)
   {
@@ -276,51 +484,27 @@ static void _process_dng_look(float *data,
       const size_t k = (size_t)4 * (width * row + col);
 
       dt_aligned_pixel_t prophoto_rgb = { 0.0f };
-      dt_aligned_pixel_t hsv;
-      dt_aligned_pixel_t correction;
-      dt_aligned_pixel_t out;
-
-      if(d->output_rgb)
+      _dng_to_prophoto(d, &data[k], prophoto_rgb);
+      if(d->hsm)
+        _apply_dng_table(prophoto_rgb, d->hsm,
+                         d->hue_div, d->sat_div, d->val_div, d->hsm_encode, exposure);
+      if(grid)
       {
-        dt_aligned_pixel_t xyz;
-        dt_apply_transposed_color_matrix(&data[k], d->work_profile->matrix_in_transposed, xyz);
-        dt_XYZ_to_prophotorgb(xyz, prophoto_rgb);
+        float mv, mh;
+        _gtm_position(grid, grid_w, col, row, &mv, &mh);
+        dt_aligned_pixel_t map_in;
+        dt_vector_div1(map_in, prophoto_rgb, gtm_scale);
+        const float gain = _gtm_gain(d->gtm, mv, mh, map_in);
+        dt_vector_mul1(prophoto_rgb, prophoto_rgb, gain);
       }
-      else
-        dt_Lab_to_prophotorgb(&data[k], prophoto_rgb);
-      dt_vector_div1(prophoto_rgb, prophoto_rgb, exposure);
-      dt_RGB_2_HSV(prophoto_rgb, hsv);
-
-      float v_encoded = hsv[2];
-      if(d->hsm_encode == 1)  // sRGB
-        v_encoded = _linear_to_srgb(CLIP(v_encoded));
-
-      dt_aligned_pixel_t hsv_for_lookup = { hsv[0], hsv[1], v_encoded, 0.0f};
-      _lookup_hsm(hsv_for_lookup, correction, d->hue_div, d->sat_div, d->val_div, d->hsm);
-
-      hsv[0] += correction[0] / 360.0f;
-      hsv[0] -= floorf(hsv[0]); // stay within the 360° hue circle
-      hsv[1] = CLIP(hsv[1] * correction[1]);
-      float v_corrected = v_encoded * correction[2];
-      if(d->hsm_encode == 1)  // sRGB
-        v_corrected = _srgb_to_linear(v_corrected);
-      hsv[2] = CLIP(v_corrected);
-      dt_HSV_2_RGB(hsv, prophoto_rgb);
-      dt_vector_mul1(prophoto_rgb, prophoto_rgb, exposure);
-      if(d->output_rgb)
-      {
-        dt_aligned_pixel_t xyz, linear;
-        dt_prophotorgb_to_XYZ(prophoto_rgb, xyz);
-        dt_apply_transposed_color_matrix(xyz, d->work_profile->matrix_out_transposed, linear);
-        linear[3] = data[k+3];
-        dt_ioppr_encode_rgb(linear, out, d->work_profile);
-      }
-      else
-        dt_prophotorgb_to_Lab(prophoto_rgb, out);
-      out[3] = data[k+3]; // copy alpha
-      copy_pixel(&data[k], out);
+      if(d->look)
+        _apply_dng_table(prophoto_rgb, d->look,
+                         d->look_hue_div, d->look_sat_div, d->look_val_div, d->look_encode,
+                         exposure / d->look_exposure);
+      _dng_from_prophoto(d, prophoto_rgb, &data[k]);
     }
   }
+  dt_free_align(grid);
 }
 
 static void _commit_hsm(dt_iop_colorin_data_t *d, const dt_imgid_t imgid)
@@ -360,6 +544,80 @@ static void _commit_hsm(dt_iop_colorin_data_t *d, const dt_imgid_t imgid)
       d->sat_div = img->profile_hsm_sat_div;
       d->val_div = img->profile_hsm_val_div;
       d->hsm_encode = img->profile_hsm_encoding;
+    }
+  }
+  dt_image_cache_read_release(img);
+}
+
+static void _commit_look_table(dt_iop_colorin_data_t *d, const dt_imgid_t imgid)
+{
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  if(img && img->profile_lut_data
+      && img->profile_lut_hue_div >= 1
+      && img->profile_lut_sat_div >= 2
+      && img->profile_lut_val_div >= 1
+      && img->profile_lut_hue_div <= (G_MAXINT / 3 / img->profile_lut_sat_div / img->profile_lut_val_div))
+  {
+    const int count = 3 * img->profile_lut_hue_div
+                        * img->profile_lut_sat_div
+                        * img->profile_lut_val_div;
+    if((size_t)count > img->profile_lut_data_size / sizeof(float))
+    {
+      dt_image_cache_read_release(img);
+      return;
+    }
+    gboolean valid = TRUE;
+    for(int i = 0; i < count; i++)
+    {
+      if(!isfinite(img->profile_lut_data[i])
+         || (i % 3 != 0 && img->profile_lut_data[i] < 0.0f))
+      {
+        valid = FALSE;
+        break;
+      }
+    }
+    if(valid)
+    {
+      d->look = g_malloc_n(count, sizeof(float));
+      memcpy(d->look, img->profile_lut_data, (size_t)count * sizeof(float));
+      d->look_hue_div = img->profile_lut_hue_div;
+      d->look_sat_div = img->profile_lut_sat_div;
+      d->look_val_div = img->profile_lut_val_div;
+      d->look_encode = img->profile_lut_encoding;
+      d->look_exposure = exp2f(img->dng_baseline_exposure);
+    }
+  }
+  dt_image_cache_read_release(img);
+}
+
+static void _commit_gain_table_map(dt_iop_colorin_data_t *d, const dt_imgid_t imgid)
+{
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  if(img && img->profile_gtm
+     && img->profile_gtm_size >= sizeof(dt_dng_gain_table_map_t)
+     && img->width > 0 && img->height > 0)
+  {
+    const dt_dng_gain_table_map_t *src = img->profile_gtm;
+    const size_t count = (size_t)src->points_v * src->points_h * src->points_n;
+    if(count > 0
+       && count <= (img->profile_gtm_size - sizeof(dt_dng_gain_table_map_t)) / sizeof(float))
+    {
+      d->gtm = g_malloc(img->profile_gtm_size);
+      memcpy(d->gtm, src, img->profile_gtm_size);
+      d->gtm_exposure = exp2f(img->dng_baseline_exposure);
+      if(src->area[2] > src->area[0] && src->area[3] > src->area[1])
+      {
+        d->gtm_area[0] = src->area[0];
+        d->gtm_area[1] = src->area[1];
+        d->gtm_area[2] = src->area[2] - src->area[0];
+        d->gtm_area[3] = src->area[3] - src->area[1];
+      }
+      else
+      {
+        d->gtm_area[0] = d->gtm_area[1] = 0.0f;
+        d->gtm_area[2] = img->height;
+        d->gtm_area[3] = img->width;
+      }
     }
   }
   dt_image_cache_read_release(img);
@@ -951,7 +1209,9 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
   cl_mem dev_corr = NULL;
-  cl_mem dev_hsm = NULL, dev_work = NULL, dev_work_lut = NULL;
+  cl_mem dev_hsm = NULL, dev_look = NULL, dev_work = NULL, dev_work_lut = NULL;
+  cl_mem dev_gtm = NULL, dev_gtm_grid = NULL, dev_gtm_params = NULL;
+  float *gtm_grid = NULL;
   dt_colorspaces_iccprofile_info_cl_t *work_cl = NULL;
   cl_float *work_lut = NULL;
 
@@ -1021,6 +1281,49 @@ int process_cl(dt_iop_module_t *self,
                                                   use_hsm ? d->hsm : &dummy_hsm);
   if(dev_hsm == NULL) goto error;
 
+  const int use_look = d->look != NULL;
+  const float look_scale = use_look ? scale / d->look_exposure : scale;
+  float dummy_look = 0.0f;
+  const size_t look_len =
+    use_look ? (size_t)d->look_hue_div * d->look_sat_div * d->look_val_div * 3 : 1;
+  dev_look = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * look_len,
+                                                   use_look ? d->look : &dummy_look);
+  if(dev_look == NULL) goto error;
+
+  int gtm_grid_w = 0, gtm_grid_h = 0;
+  if(d->gtm)
+  {
+    gtm_grid = _gtm_position_grid(self, piece, d, roi_out, &gtm_grid_w, &gtm_grid_h);
+    if(!gtm_grid)
+      dt_print(DT_DEBUG_PIPE, "[colorin] ProfileGainTableMap skipped, positions unavailable");
+  }
+  const int use_gtm = gtm_grid != NULL;
+  float dummy_gtm = 0.0f;
+  // points v, h, n, the five input weights, gamma, grid width, grid step and
+  // the scale of the map input
+  const float gtm_params[12] =
+    { use_gtm ? (float)d->gtm->points_v : 1.0f, use_gtm ? (float)d->gtm->points_h : 1.0f,
+      use_gtm ? (float)d->gtm->points_n : 1.0f,
+      use_gtm ? d->gtm->weights[0] : 0.0f, use_gtm ? d->gtm->weights[1] : 0.0f,
+      use_gtm ? d->gtm->weights[2] : 0.0f, use_gtm ? d->gtm->weights[3] : 0.0f,
+      use_gtm ? d->gtm->weights[4] : 0.0f, use_gtm ? d->gtm->gamma : 1.0f,
+      (float)gtm_grid_w, (float)GTM_GRID_STEP,
+      use_gtm ? scale / d->gtm_exposure : scale };
+  const size_t gtm_len =
+    use_gtm ? (size_t)d->gtm->points_v * d->gtm->points_h * d->gtm->points_n : 1;
+  dev_gtm = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * gtm_len,
+                                                  use_gtm ? d->gtm->gains : &dummy_gtm);
+  dev_gtm_grid = dt_opencl_copy_host_to_device_constant
+    (devid, use_gtm ? sizeof(float) * 2 * gtm_grid_w * gtm_grid_h : sizeof(float),
+     use_gtm ? gtm_grid : &dummy_gtm);
+  dev_gtm_params = dt_opencl_copy_host_to_device_constant(devid, sizeof(gtm_params),
+                                                         (void *)gtm_params);
+  if(dev_gtm == NULL || dev_gtm_grid == NULL || dev_gtm_params == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
+
   if(d->output_rgb)
   {
     const int clipping = d->nrgb != NULL;
@@ -1033,7 +1336,12 @@ int process_cl(dt_iop_module_t *self,
                                          CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr),
                                          CLARG(scale), CLARG(d->hue_div), CLARG(d->sat_div), CLARG(d->val_div),
                                          CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer),
-                                         CLARG(clipping), CLARG(dev_work), CLARG(dev_work_lut), CLARG(lab_input));
+                                         CLARG(clipping), CLARG(dev_work), CLARG(dev_work_lut), CLARG(lab_input),
+                                         CLARG(d->look_hue_div), CLARG(d->look_sat_div), CLARG(d->look_val_div),
+                                         CLARG(dev_look), CLARG(d->look_encode), CLARG(use_look),
+                                         CLARG(look_scale),
+                                         CLARG(dev_gtm), CLARG(dev_gtm_grid), CLARG(dev_gtm_params),
+                                         CLARG(use_gtm));
   }
   else
   {
@@ -1044,7 +1352,12 @@ int process_cl(dt_iop_module_t *self,
                                          CLARG(dev_g), CLARG(dev_b),
                                          CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr),
                                          CLARG(scale), CLARG(d->hue_div), CLARG(d->sat_div), CLARG(d->val_div),
-                                         CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer));
+                                         CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer),
+                                         CLARG(d->look_hue_div), CLARG(d->look_sat_div), CLARG(d->look_val_div),
+                                         CLARG(dev_look), CLARG(d->look_encode), CLARG(use_look),
+                                         CLARG(look_scale),
+                                         CLARG(dev_gtm), CLARG(dev_gtm_grid), CLARG(dev_gtm_params),
+                                         CLARG(use_gtm));
   }
 error:
   dt_ioppr_free_iccprofile_params_cl(&work_cl, &work_lut, &dev_work, &dev_work_lut);
@@ -1056,6 +1369,11 @@ error:
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_corr);
   dt_opencl_release_mem_object(dev_hsm);
+  dt_opencl_release_mem_object(dev_look);
+  dt_opencl_release_mem_object(dev_gtm);
+  dt_opencl_release_mem_object(dev_gtm_grid);
+  dt_opencl_release_mem_object(dev_gtm_params);
+  dt_free_align(gtm_grid);
   return err;
 }
 #endif
@@ -1540,7 +1858,7 @@ static void _process_rgb_matrix(const dt_iop_colorin_data_t *const d,
       copy_pixel(linear, cam);
     }
     linear[3] = in[4*k+3];
-    if(d->hsm)
+    if(_has_dng_look(d))
       copy_pixel(out + 4*k, linear);
     else
       dt_ioppr_encode_rgb(linear, out + 4*k, d->work_profile);
@@ -1631,14 +1949,14 @@ void process(dt_iop_module_t *self,
     DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
-      if(d->hsm) dt_ioppr_decode_rgb(out + 4*k, out + 4*k, d->work_profile);
+      if(_has_dng_look(d)) dt_ioppr_decode_rgb(out + 4*k, out + 4*k, d->work_profile);
       out[4*k+3] = in[4*k+3];
     }
   }
 
-  if(d->hsm)
+  if(_has_dng_look(d))
   {
-    _process_dng_look((float *)ovoid, roi_in->width, roi_in->height, d, dt_iop_get_processed_maximum(piece));
+    _process_dng_look(self, piece, (float *)ovoid, roi_out, d, dt_iop_get_processed_maximum(piece));
   }
 }
 
@@ -1681,6 +1999,13 @@ void commit_params(dt_iop_module_t *self,
   g_free(d->hsm);
   d->hsm = NULL;
   d->hue_div = d->sat_div = d->val_div = d->hsm_encode = 0;
+  g_free(d->look);
+  d->look = NULL;
+  d->look_hue_div = d->look_sat_div = d->look_val_div = d->look_encode = 0;
+  d->look_exposure = 1.0f;
+  g_free(d->gtm);
+  d->gtm = NULL;
+  d->gtm_exposure = 1.0f;
 
   d->blue_mapping = p->blue_mapping;
 
@@ -1784,6 +2109,8 @@ void commit_params(dt_iop_module_t *self,
       d->input = dt_colorspaces_create_xyzmatrix_profile((const float(*)[3])pipe->image.dng_forward_matrix);
       d->clear_input = TRUE;
       _commit_hsm(d, pipe->image.id);
+      _commit_gain_table_map(d, pipe->image.id);
+      _commit_look_table(d, pipe->image.id);
     }
     else
       type = DT_COLORSPACE_EMBEDDED_MATRIX;
@@ -1798,6 +2125,8 @@ void commit_params(dt_iop_module_t *self,
       if(type == DT_COLORSPACE_DNG_LOOK)
       {
         _commit_hsm(d, pipe->image.id);
+        _commit_gain_table_map(d, pipe->image.id);
+        _commit_look_table(d, pipe->image.id);
       }
     }
     else
@@ -2020,7 +2349,7 @@ void commit_params(dt_iop_module_t *self,
   // the GPU runs xform_cam_out as a 3D LUT over RGB input. It has none of
   // the gamut clipping, blue mapping or HDR decoding process_lcms2_proper()
   // and process_lcms2_bm() wrap around the transform, so those stay on the CPU.
-  if(d->xform_cam_out && !d->nrgb && !d->blue_mapping && !d->hdr_transfer && !d->hsm
+  if(d->xform_cam_out && !d->nrgb && !d->blue_mapping && !d->hdr_transfer && !_has_dng_look(d)
      && input_format == TYPE_RGBA_FLT)
     piece->process_cl_ready = TRUE;
 
@@ -2056,6 +2385,10 @@ void init_pipe(dt_iop_module_t *self,
   d->xform_nrgb_out = NULL;
   d->clut = NULL;
   d->hsm = NULL;
+  d->look = NULL;
+  d->look_exposure = 1.0f;
+  d->gtm = NULL;
+  d->gtm_exposure = 1.0f;
 }
 
 void cleanup_pipe(dt_iop_module_t *self,
@@ -2081,6 +2414,8 @@ void cleanup_pipe(dt_iop_module_t *self,
   }
 
   g_free(d->hsm);
+  g_free(d->look);
+  g_free(d->gtm);
   dt_free_align(d->clut);
   dt_free_align(piece->data);
   piece->data = NULL;
@@ -2394,6 +2729,14 @@ corrupted_profile:
     d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
+  // a DNG with a ProfileGainTableMap carries its local tone mapping in the
+  // profile, which only the DNG profiles apply
+  else if(self->dev->image_storage.profile_gtm
+          && dt_is_valid_colormatrix(self->dev->image_storage.dng_forward_matrix[0]))
+    d->type = DT_COLORSPACE_FORWARD_MATRIX;
+  else if(self->dev->image_storage.profile_gtm
+          && dt_is_valid_colormatrix(img->d65_color_matrix[0]))
+    d->type = DT_COLORSPACE_DNG_LOOK;
   else if(dt_is_valid_colormatrix(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
   else if(dt_is_valid_colormatrix(self->dev->image_storage.dng_forward_matrix[0])) // DNG with forward matrix
@@ -2426,7 +2769,8 @@ static void update_profile_list(dt_iop_module_t *self)
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_get(self->dev->image_storage.id, 'r');
-  const gboolean has_dng_look = cimg && cimg->profile_hsm_data;
+  const gboolean has_dng_look =
+    cimg && (cimg->profile_hsm_data || cimg->profile_lut_data || cimg->profile_gtm);
   if(cimg && cimg->profile)
   {
     dt_colorspaces_color_profile_t *prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));

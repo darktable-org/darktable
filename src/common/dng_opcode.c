@@ -19,6 +19,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include "control/control.h"
 #include "debug.h"
 #include "dng_opcode.h"
 #include "common/math.h"
@@ -160,7 +161,35 @@ static gboolean _parse_and_append_gain_map(uint8_t *param,
   return TRUE;
 }
 
-void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_image_t *img)
+static const char *_opcode_name(const uint32_t id)
+{
+  static const char *names[] =
+    { "unknown", "WarpRectilinear", "WarpFisheye", "FixVignetteRadial",
+      "FixBadPixelsConstant", "FixBadPixelsList", "TrimBounds", "MapTable",
+      "MapPolynomial", "GainMap", "DeltaPerRow", "DeltaPerColumn",
+      "ScalePerRow", "ScalePerColumn", "WarpRectilinear2" };
+  return id < G_N_ELEMENTS(names) ? names[id] : names[0];
+}
+
+// an opcode without the optional flag must be applied for a correct rendering,
+// so skipping one is reported to the user and not only in the debug log
+static void _report_unsupported(const dt_image_t *img,
+                                const int list,
+                                const uint32_t opcode_id,
+                                const uint32_t flags)
+{
+  const gboolean optional = flags & 1;
+  dt_print(optional ? DT_DEBUG_IMAGEIO : DT_DEBUG_ALWAYS,
+           "[dng_opcode] `%s' OpcodeList%d has unsupported %s opcode %u (%s)",
+           img->filename, list, optional ? "optional" : "mandatory",
+           opcode_id, _opcode_name(opcode_id));
+  if(!optional)
+    dt_control_log(_("image `%s' needs the unsupported DNG opcode %s, it may not render correctly"),
+                   img->filename, _opcode_name(opcode_id));
+}
+
+void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_image_t *img,
+                                         gboolean loader_applied)
 {
   g_list_free_full(img->dng_gain_maps, g_free);
   img->dng_gain_maps = NULL;
@@ -199,8 +228,11 @@ void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_ima
     }
     else
     {
-      dt_print(DT_DEBUG_IMAGEIO, "[dng_opcode] OpcodeList2 has unsupported %s opcode %d",
-        flags & 1 ? "optional" : "mandatory", opcode_id);
+      // rawspeed implements the pixel opcodes other than GainMap
+      const gboolean by_loader = loader_applied && opcode_id >= 4 && opcode_id <= 13
+                                 && opcode_id != OPCODE_ID_GAINMAP;
+      if(!by_loader)
+        _report_unsupported(img, 2, opcode_id, flags);
     }
 
     offset += OPCODE_HEADER_SIZE + param_size;
@@ -316,8 +348,7 @@ void dt_dng_opcode_process_opcode_list_3(uint8_t *buf, uint32_t buf_size, dt_ima
 
     else
     {
-      dt_print(DT_DEBUG_IMAGEIO, "[dng_opcode] OpcodeList3 has unsupported %s opcode %d",
-        flags & 1 ? "optional" : "mandatory", opcode_id);
+      _report_unsupported(img, 3, opcode_id, flags);
     }
 
     offset += OPCODE_HEADER_SIZE + param_size;

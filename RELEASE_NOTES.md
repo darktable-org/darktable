@@ -472,6 +472,24 @@ changes (where available).
   If one of these new input profiles is selected, the pipe gets its
   data corrected according to DNG specs matching the intended look.
 
+- Improved support for DNGs from smartphones:
+  - The default exposure includes the 'BaselineExposure' of the DNG.
+  - The DNG input profiles interpolate the forward matrix and the
+    'ProfileHueSatMapData' tables for the as-shot white balance, and
+    apply 'ProfileLookTable' and 'ProfileGainTableMap', the local tone
+    mapping of the camera. Images carrying a gain table map use the
+    DNG input profile by default.
+  - The DNG profile tables no longer clip highlights.
+  - In the display-referred workflow, base curve defaults to the
+    'ProfileToneCurve' of the DNG.
+  - Embedded lens correction honours the optical center and the
+    tangential distortion terms of the DNG opcodes.
+  - A single DNG gain map for all photosites is now supported.
+  - Profiled denoise falls back to the 'NoiseProfile' of the DNG when
+    no measured profile is available.
+  - A message is shown when a DNG requires an opcode that darktable
+    does not support.
+
 - darktable now takes the display profile from the system. The
   darkroom's display profile selectors and lighttable's "set display
   profile" button have been removed, and earlier selections are no

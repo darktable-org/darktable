@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/image_cache.h"
 #include "common/imagebuf.h"
 #include "common/math.h"
 #include "common/opencl.h"
@@ -486,6 +487,55 @@ static gboolean _check_camera(dt_iop_basecurve_params_t *d,
   return FALSE;
 }
 
+static float _dng_tone_curve_at(const float *curve, const int points, const float x)
+{
+  if(x <= curve[0]) return curve[1];
+  for(int i = 1; i < points; i++)
+  {
+    const float x0 = curve[2 * (i - 1)], x1 = curve[2 * i];
+    if(x <= x1)
+    {
+      const float t = (x - x0) / (x1 - x0);
+      return curve[2 * (i - 1) + 1] + t * (curve[2 * i + 1] - curve[2 * (i - 1) + 1]);
+    }
+  }
+  return curve[2 * points - 1];
+}
+
+// The DNG ProfileToneCurve maps linear ProPhoto values after BaselineExposure,
+// so the curve is sampled with that exposure folded in. Nodes are spread
+// evenly over the input range that does not saturate.
+static gboolean _check_dng_tone_curve(const dt_imgid_t imgid, dt_iop_basecurve_params_t *d)
+{
+  gboolean found = FALSE;
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  if(img && img->profile_tone_curve && img->profile_tone_curve_points >= 2)
+  {
+    const float *curve = img->profile_tone_curve;
+    const int points = img->profile_tone_curve_points;
+    const float gain = exp2f(img->dng_baseline_exposure);
+    const float xmax = gain > 1.0f ? 1.0f / gain : 1.0f;
+    const int spread = xmax < 1.0f ? MAXNODES - 1 : MAXNODES;
+
+    memset(d, 0, sizeof(*d));
+    for(int i = 0; i < MAXNODES; i++)
+    {
+      const float x = i < spread ? xmax * i / (spread - 1) : 1.0f;
+      d->basecurve[0][i].x = x;
+      d->basecurve[0][i].y = _dng_tone_curve_at(curve, points, MIN(1.0f, x * gain));
+    }
+    d->basecurve_nodes[0] = MAXNODES;
+    d->basecurve_type[0] = d->basecurve_type[1] = d->basecurve_type[2] = MONOTONE_HERMITE;
+    d->exposure_fusion = 0;
+    d->exposure_stops = 1.0f;
+    d->exposure_bias = 1.0f;
+    d->preserve_colors = DT_RGB_NORM_NONE;
+    found = TRUE;
+  }
+  dt_image_cache_read_release(img);
+  return found;
+}
+
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_basecurve_params_t *const d = self->default_params;
@@ -496,14 +546,15 @@ void reload_defaults(dt_iop_module_t *self)
 
     self->default_enabled = FALSE;
 
-    gboolean FOUND = FALSE;
+    // the tone curve of an embedded DNG profile is specific to the file
+    gboolean FOUND = _check_dng_tone_curve(image->id, d);
 
-    // first check for camera specific basecure if needed
+    // then check for camera specific basecure if needed
 
     const gboolean autoapply_percamera =
       dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
 
-    if(autoapply_percamera)
+    if(!FOUND && autoapply_percamera)
     {
       FOUND = _check_camera(d,
                             image->exif_maker, image->exif_model,

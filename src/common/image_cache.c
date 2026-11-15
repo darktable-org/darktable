@@ -120,6 +120,15 @@ static void _image_cache_allocate(void *data,
     g_free(img->profile_hsm_data);
     img->profile_hsm_data = NULL;
     img->profile_hsm_data_size = img->profile_hsm_hue_div = img->profile_hsm_sat_div = img->profile_hsm_val_div = img->profile_hsm_encoding = 0;
+    g_free(img->profile_lut_data);
+    img->profile_lut_data = NULL;
+    img->profile_lut_data_size = img->profile_lut_hue_div = img->profile_lut_sat_div = img->profile_lut_val_div = img->profile_lut_encoding = 0;
+    g_free(img->profile_gtm);
+    img->profile_gtm = NULL;
+    img->profile_gtm_size = 0;
+    g_free(img->profile_tone_curve);
+    img->profile_tone_curve = NULL;
+    img->profile_tone_curve_points = 0;
     img->version = sqlite3_column_int(stmt, 24);
     img->raw_black_level = sqlite3_column_int(stmt, 25);
     for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
@@ -209,6 +218,9 @@ static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
   dt_image_t *img = entry->data;
   g_free(img->profile);
   g_free(img->profile_hsm_data);
+  g_free(img->profile_lut_data);
+  g_free(img->profile_gtm);
+  g_free(img->profile_tone_curve);
   g_list_free_full(img->dng_gain_maps, g_free);
   g_list_free_full(img->dng_gain_maps_opcode3, g_free);
   g_free(img);

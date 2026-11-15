@@ -272,6 +272,19 @@ typedef struct dt_iop_lens_data_t
   float knots_vig[MAXKNOTS];
   float cor_rgb[3][MAXKNOTS];
   float vig[MAXKNOTS];
+  // DNG optical centres and a point at the normalisation radius from them,
+  // as x, y pairs in raw buffer pixels; without them the correction is centred
+  // on the buffer and normalised to its half-diagonal
+  gboolean md_warp_dng;
+  float md_warp_raw[4];
+  gboolean md_vig_dng;
+  float md_vig_raw[4];
+  // DNG WarpRectilinear tangential coefficients per plane, applied to the
+  // normalised radius scaled by md_tan_in and to a result scaled by md_tan_out
+  gboolean md_has_tangential;
+  float md_tangential[3][2];
+  float md_tan_in;
+  float md_tan_out;
   float v_strength;
   float v_radius;
   float v_steepness;
@@ -2876,6 +2889,114 @@ static int _check_corrections_md(dt_iop_lens_data_t *d)
           : 0);
 }
 
+// Transforms points from raw buffer pixels to this module's input: scaled to
+// the pipe's input like rawprepare scales its crop, then passed through
+// distort_transform of every enabled module before this one in the pipe.
+static void _md_transform_to_input(const dt_iop_module_t *self,
+                                   const dt_dev_pixelpipe_iop_t *piece,
+                                   float *points,
+                                   const size_t points_count)
+{
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  GList *pieces = pipe->nodes;
+  if(!pieces) return;
+
+  const dt_dev_pixelpipe_iop_t *first = (dt_dev_pixelpipe_iop_t *)pieces->data;
+  const float to_pipe = first->buf_in.scale / first->iscale;
+  for(size_t i = 0; i < 2 * points_count; i++) points[i] *= to_pipe;
+
+  for(GList *modules = pipe->iop; modules && pieces;
+      modules = g_list_next(modules), pieces = g_list_next(pieces))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    dt_dev_pixelpipe_iop_t *p = (dt_dev_pixelpipe_iop_t *)pieces->data;
+    if(module->iop_order >= self->iop_order)
+      break;
+    if(p->enabled && p->data && module->distort_transform)
+      module->distort_transform(module, p, points, points_count);
+  }
+}
+
+// centre and reciprocal normalisation radius of the embedded metadata
+// correction at the given roi scale
+static inline void _md_geometry(const dt_iop_module_t *self,
+                                const dt_iop_lens_data_t *d,
+                                const dt_dev_pixelpipe_iop_t *piece,
+                                const float scale,
+                                const gboolean vignette,
+                                float *x0,
+                                float *y0,
+                                float *r)
+{
+  if(vignette ? d->md_vig_dng : d->md_warp_dng)
+  {
+    float points[4];
+    memcpy(points, vignette ? d->md_vig_raw : d->md_warp_raw, sizeof(points));
+    _md_transform_to_input(self, piece, points, 2);
+    const float m = hypotf(points[2] - points[0], points[3] - points[1]);
+    if(m > 0.0f)
+    {
+      *x0 = scale * points[0];
+      *y0 = scale * points[1];
+      *r = 1.0f / (scale * m);
+      return;
+    }
+  }
+  *x0 = 0.5f * scale * piece->buf_in.width;
+  *y0 = 0.5f * scale * piece->buf_in.height;
+  *r = 1.0f / hypotf(*x0, *y0);
+}
+
+// tangential displacement of the DNG WarpRectilinear model for an output
+// offset (cx, cy) from the centre
+static inline void _md_tangential(const dt_iop_lens_data_t *d,
+                                  const int plane,
+                                  const float cx,
+                                  const float cy,
+                                  const float r,
+                                  float *tx,
+                                  float *ty)
+{
+  if(!d->md_has_tangential)
+  {
+    *tx = *ty = 0.0f;
+    return;
+  }
+  const float nx = cx * r * d->md_tan_in;
+  const float ny = cy * r * d->md_tan_in;
+  const float rr = nx * nx + ny * ny;
+  const float kt0 = d->md_tangential[plane][0];
+  const float kt1 = d->md_tangential[plane][1];
+  const float k = d->md_tan_out / r;
+  *tx = k * (2.0f * kt0 * nx * ny + kt1 * (rr + 2.0f * nx * nx));
+  *ty = k * (kt0 * (rr + 2.0f * ny * ny) + 2.0f * kt1 * nx * ny);
+}
+
+// optical centre of a DNG opcode and a point at the largest distance from it
+// to a corner of the image area left by the loader's raw crop, which the
+// opcode normalises its radius to, in raw buffer pixels
+static void _md_dng_centre(const dt_image_t *img,
+                           const float centre_rel[2],
+                           float raw[4])
+{
+  const float top = img->crop_y;
+  const float left = img->crop_x;
+  const float bottom = img->height - img->crop_bottom;
+  const float right = img->width - img->crop_right;
+
+  const float cx = left + centre_rel[0] * (right - left);
+  const float cy = top + centre_rel[1] * (bottom - top);
+  const float m = MAX(MAX(hypotf(cx - left, cy - top),
+                          hypotf(right - cx, cy - top)),
+                      MAX(hypotf(cx - left, bottom - cy),
+                          hypotf(right - cx, bottom - cy)));
+
+  raw[0] = cx;
+  raw[1] = cy;
+  raw[2] = cx + m;
+  raw[3] = cy;
+}
+
 static void _commit_params_md(dt_iop_module_t *self,
                               dt_iop_lens_params_t *p,
                               dt_dev_pixelpipe_t *pipe,
@@ -2887,6 +3008,8 @@ static void _commit_params_md(dt_iop_module_t *self,
   const dt_image_t *img = &self->dev->image_storage;
 
   d->nc = 0;
+  d->md_warp_dng = d->md_vig_dng = FALSE;
+  d->md_has_tangential = FALSE;
 
   if(!_have_embedded_metadata(self))
     return;
@@ -2918,6 +3041,45 @@ static void _commit_params_md(dt_iop_module_t *self,
   if((d->scale_md < 0.1f)
      || (d->scale_md > 2.0f)) // reset image scale if unproper data
     d->scale_md = 1.0f;
+
+  if(d->nc && img->exif_correction_type == CORRECTION_TYPE_DNG)
+  {
+    const dt_image_correction_data_t *cd = &img->exif_correction_data;
+    if(cd->dng.has_warp)
+    {
+      _md_dng_centre(img, cd->dng.centre_warp, d->md_warp_raw);
+      d->md_warp_dng = TRUE;
+
+      if(p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          const int plane = cd->dng.planes == 3 ? c : 0;
+          d->md_tangential[c][0] = cd->dng.cwarp[plane][4];
+          d->md_tangential[c][1] = cd->dng.cwarp[plane][5];
+          if(d->md_tangential[c][0] != 0.0f || d->md_tangential[c][1] != 0.0f)
+            d->md_has_tangential = TRUE;
+        }
+        // version 1 scales the radial result, version 2 the radius by the autoscale
+        if(d->md_version == DT_IOP_LENS_EMBEDDED_METADATA_VERSION_1)
+        {
+          d->md_tan_in = 1.0f;
+          d->md_tan_out = p->cor_dist_ft / d->scale_md_v1;
+        }
+        else
+        {
+          const float autoscale = d->knots_dist[d->nc - 1];
+          d->md_tan_in = autoscale > 0.0f ? 1.0f / autoscale : 1.0f;
+          d->md_tan_out = p->cor_dist_ft;
+        }
+      }
+    }
+    if(cd->dng.has_vignette)
+    {
+      _md_dng_centre(img, cd->dng.centre_vig, d->md_vig_raw);
+      d->md_vig_dng = TRUE;
+    }
+  }
 
   if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
@@ -2979,9 +3141,8 @@ static gboolean _distort_transform_md(dt_iop_module_t *self,
     return FALSE;
 
   const float inv_scale_md = 1.0f / d->scale_md;
-  const float w2 = 0.5f * piece->buf_in.width;
-  const float h2 = 0.5f * piece->buf_in.height;
-  const float r = 1.0f / hypotf(w2, h2);
+  float w2, h2, r;
+  _md_geometry(self, d, piece, 1.0f, FALSE, &w2, &h2, &r);
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
@@ -2995,9 +3156,11 @@ static gboolean _distort_transform_md(dt_iop_module_t *self,
       const float dr =
         _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
                                    d->nc, r * hypotf(cx, cy));
+      float tx, ty;
+      _md_tangential(d, 1, cx, cy, r, &tx, &ty);
 
-      const float dist1 = points[i] - (dr*cx + w2);
-      const float dist2 = points[i + 1] - (dr*cy + h2);
+      const float dist1 = points[i] - (dr*cx + tx + w2);
+      const float dist2 = points[i + 1] - (dr*cy + ty + h2);
 
       if(fabsf(dist1) < .5f
          && fabsf(dist2) < .5f)
@@ -3025,9 +3188,8 @@ static gboolean _distort_backtransform_md(dt_iop_module_t *self,
     return FALSE;
 
   const float inv_scale_md = 1.0f / d->scale_md;
-  const float w2 = 0.5f * piece->buf_in.width;
-  const float h2 = 0.5f * piece->buf_in.height;
-  const float r = 1.0f / hypotf(w2, h2);
+  float w2, h2, r;
+  _md_geometry(self, d, piece, 1.0f, FALSE, &w2, &h2, &r);
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
@@ -3036,9 +3198,11 @@ static gboolean _distort_backtransform_md(dt_iop_module_t *self,
     const float dr =
       _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
                                  d->nc, r * hypotf(cx, cy));
+    float tx, ty;
+    _md_tangential(d, 1, cx, cy, r, &tx, &ty);
 
-    points[i] = dr*cx + w2;
-    points[i + 1] = dr*cy + h2;
+    points[i] = dr*cx + tx + w2;
+    points[i + 1] = dr*cy + ty + h2;
   }
 
   return TRUE;
@@ -3059,9 +3223,8 @@ static void _distort_mask_md(dt_iop_module_t *self,
                                      roi_out->height, 1);
 
   const float inv_scale_md = 1.0f / d->scale_md;
-  const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
-  const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1.0f / hypotf(w2, h2);
+  float w2, h2, r;
+  _md_geometry(self, d, piece, roi_in->scale, FALSE, &w2, &h2, &r);
 
   const float limw = roi_in->width - 1;
   const float limh = roi_in->height - 1;
@@ -3078,8 +3241,10 @@ static void _distort_mask_md(dt_iop_module_t *self,
       const float dr =
         _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
                                    d->nc, r*hypotf(cx, cy));
-      const float xs = CLAMP(fmaf(dr, cx, w2) - roi_in->x, 0.0f, limw);
-      const float ys = CLAMP(fmaf(dr, cy, h2) - roi_in->y, 0.0f, limh);
+      float tx, ty;
+      _md_tangential(d, 1, cx, cy, r, &tx, &ty);
+      const float xs = CLAMP(fmaf(dr, cx, w2 + tx) - roi_in->x, 0.0f, limw);
+      const float ys = CLAMP(fmaf(dr, cy, h2 + ty) - roi_in->y, 0.0f, limh);
       out[y * roi_out->width + x] = CLIP(dt_interpolation_compute_sample(interpolation, in,
                                                                          xs, ys,
                                                                          roi_in->width, roi_in->height, 1, roi_in->width));
@@ -3102,9 +3267,10 @@ static void _process_md(dt_iop_module_t *self,
                                  roi_in, roi_out);
 
   const float inv_scale_md = 1.0f / d->scale_md;
-  const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
-  const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1.0f / hypotf(w2, h2);
+  float w2, h2, r;
+  _md_geometry(self, d, piece, roi_in->scale, FALSE, &w2, &h2, &r);
+  float vw2, vh2, vr;
+  _md_geometry(self, d, piece, roi_in->scale, TRUE, &vw2, &vh2, &vr);
 
   const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -3127,11 +3293,11 @@ static void _process_md(dt_iop_module_t *self,
       for(int x = 0; x < roi_in->width; x++)
       {
         const size_t idx = 4 * (y * roi_in->width + x);
-        const float cx = roi_in->x + x - w2;
-        const float cy = roi_in->y + y - h2;
+        const float cx = roi_in->x + x - vw2;
+        const float cy = roi_in->y + y - vh2;
         const float sf =
           _interpolate_linear_spline(d->knots_vig, d->vig,
-                                     d->nc, r*hypotf(cx, cy));
+                                     d->nc, vr*hypotf(cx, cy));
 
         for_each_channel(c)
           buf[idx + c] /= MAX(1e-4f, sf);
@@ -3161,8 +3327,10 @@ static void _process_md(dt_iop_module_t *self,
         const int plane = (c == 3 || pass_mode) ? 1 : c;
         const float dr =
           _interpolate_linear_spline(d->knots_dist, d->cor_rgb[plane], d->nc, radius);
-        const float xs = CLAMP(fmaf(dr, cx, w2) - roi_in->x, 0.0f, limw);
-        const float ys = CLAMP(fmaf(dr, cy, h2) - roi_in->y, 0.0f, limh);
+        float tx, ty;
+        _md_tangential(d, plane, cx, cy, r, &tx, &ty);
+        const float xs = CLAMP(fmaf(dr, cx, w2 + tx) - roi_in->x, 0.0f, limw);
+        const float ys = CLAMP(fmaf(dr, cy, h2 + ty) - roi_in->y, 0.0f, limh);
         out[odx+c] = dt_interpolation_compute_sample(interpolation, buf + c,
                                                      xs, ys,
                                                      roi_in->width, roi_in->height, 4, 4*roi_in->width);
@@ -3194,9 +3362,10 @@ static int _process_cl_md(dt_iop_module_t *self,
                                         CLIMG_ORIGIN, CLIMG_ORIGIN, oregion);
   }
 
-  const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
-  const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1.0f / hypotf(w2, h2);
+  float w2, h2, r;
+  _md_geometry(self, d, piece, roi_in->scale, FALSE, &w2, &h2, &r);
+  float vw2, vh2, vr;
+  _md_geometry(self, d, piece, roi_in->scale, TRUE, &vw2, &vh2, &vr);
   const int knots = d->nc;
 
   const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
@@ -3206,6 +3375,7 @@ static int _process_cl_md(dt_iop_module_t *self,
   cl_mem data = dev_in;
   cl_mem knots_dist = NULL;
   cl_mem cor_rgb = NULL;
+  cl_mem tangential = NULL;
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
 
   // Correct vignetting
@@ -3222,7 +3392,7 @@ static int _process_cl_md(dt_iop_module_t *self,
        CLARG(dev_in), CLARG(data),
        CLARG(knots_vig), CLARG(vig),
        CLARG(roi_in->width), CLARG(roi_in->height),
-       CLARG(w2), CLARG(h2), CLARG(r),
+       CLARG(vw2), CLARG(vh2), CLARG(vr),
        CLARG(roi_in->x), CLARG(roi_in->y),
        CLARG(knots));
 
@@ -3234,20 +3404,39 @@ static int _process_cl_md(dt_iop_module_t *self,
   knots_dist = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->knots_dist), &d->knots_dist);
   cor_rgb = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->cor_rgb), &d->cor_rgb);
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_md_correct, roi_out->width, roi_out->height,
-     CLARG(data), CLARG(dev_out),
-     CLARG(knots_dist), CLARG(cor_rgb),
-     CLARG(roi_out->width), CLARG(roi_out->height),
-     CLARG(roi_in->width), CLARG(roi_in->height),
-     CLARG(w2), CLARG(h2), CLARG(r), CLARG(d->scale_md),
-     CLARG(roi_in->x), CLARG(roi_in->y),
-     CLARG(roi_out->x), CLARG(roi_out->y),
-     CLARG(knots), CLARG(itor->id), CLARG(itor_width), CLARG(pass_mode));
+  {
+    const float tan_coeffs[8] = { d->md_tangential[0][0], d->md_tangential[0][1],
+                                  d->md_tangential[1][0], d->md_tangential[1][1],
+                                  d->md_tangential[2][0], d->md_tangential[2][1],
+                                  d->md_tan_in, d->md_tan_out };
+    tangential = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(tan_coeffs),
+                                                                 (void *)tan_coeffs);
+  }
+  if(knots_dist == NULL || cor_rgb == NULL || tangential == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
+
+  {
+    const int use_tangential = d->md_has_tangential;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_md_correct, roi_out->width, roi_out->height,
+       CLARG(data), CLARG(dev_out),
+       CLARG(knots_dist), CLARG(cor_rgb),
+       CLARG(roi_out->width), CLARG(roi_out->height),
+       CLARG(roi_in->width), CLARG(roi_in->height),
+       CLARG(w2), CLARG(h2), CLARG(r), CLARG(d->scale_md),
+       CLARG(roi_in->x), CLARG(roi_in->y),
+       CLARG(roi_out->x), CLARG(roi_out->y),
+       CLARG(knots), CLARG(itor->id), CLARG(itor_width), CLARG(pass_mode),
+       CLARG(tangential), CLARG(use_tangential));
+  }
 
 error:
   if(data != dev_in) dt_opencl_release_mem_object(data);
   dt_opencl_release_mem_object(knots_dist);
   dt_opencl_release_mem_object(cor_rgb);
+  dt_opencl_release_mem_object(tangential);
   return err;
 }
 #endif
@@ -3267,9 +3456,8 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
   const float inv_scale_md = 1.0f / d->scale_md;
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
-  const float w2 = 0.5f * orig_w;
-  const float h2 = 0.5f * orig_h;
-  const float r = 1.0f / dt_fast_hypotf(w2, h2);
+  float w2, h2, r;
+  _md_geometry(self, d, piece, roi_in->scale, FALSE, &w2, &h2, &r);
 
   const int xoff = roi_in->x;
   const int yoff = roi_in->y;
@@ -3294,8 +3482,10 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
         const float dr = _interpolate_linear_spline(d->knots_dist,
                                                     d->cor_rgb[c], d->nc,
                                                     r*hypotf(cx, cy));
-        const float xs = dr*cx + w2;
-        const float ys = dr*cy + h2;
+        float tx, ty;
+        _md_tangential(d, c, cx, cy, r, &tx, &ty);
+        const float xs = dr*cx + tx + w2;
+        const float ys = dr*cy + ty + h2;
         xm = MIN(xm, xs);
         xM = MAX(xM, xs);
         ym = MIN(ym, ys);
@@ -3316,8 +3506,10 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
         const float dr = _interpolate_linear_spline(d->knots_dist,
                                                     d->cor_rgb[c], d->nc,
                                                     r*hypotf(cx, cy));
-        const float xs = dr*cx + w2;
-        const float ys = dr*cy + h2;
+        float tx, ty;
+        _md_tangential(d, c, cx, cy, r, &tx, &ty);
+        const float xs = dr*cx + tx + w2;
+        const float ys = dr*cy + ty + h2;
         xm = MIN(xm, xs);
         xM = MAX(xM, xs);
         ym = MIN(ym, ys);
