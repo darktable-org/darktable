@@ -845,8 +845,8 @@ code. [Confirming an entry](#confirming-an-entry) has the details.
 A workflow triggered by `pull_request` checks out GitHub's merge of the pull
 request into its target branch. The first parent of that merge commit is the
 target branch, so `--head HEAD HEAD^1` compares exactly what merging would
-change, and a checkout with `fetch-depth: 2` is enough. darktable's own job is
-`.github/workflows/dt-lockcheck.yml`.
+change, and a checkout with `fetch-depth: 2` is enough. darktable
+runs it as the `dt-lockcheck` job in `.github/workflows/dt-linters.yml`.
 
 ### Exit status of the comparison
 

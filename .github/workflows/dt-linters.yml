@@ -7,7 +7,7 @@ on:
     paths:
         - "src/iop/**"
         - "tools/dt-lockcheck/**"
-        - ".github/workflows/dt-lockcheck.yml"
+        - ".github/workflows/dt-linters.yml"
 
 permissions:
   contents: read
