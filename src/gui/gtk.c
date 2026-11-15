@@ -3903,6 +3903,17 @@ static gboolean _flexi_shape_highlighted(void)
   return FALSE;
 }
 
+// the halo has nothing to offer a focused module that cannot be masked, and
+// would sit on top of the interactive overlay a module draws on the canvas
+// (a chart, a crop frame, ...) when that reaches the border, swallowing the
+// clicks meant for it
+static gboolean _flexi_halo_unwanted(void)
+{
+  const dt_iop_module_t *module = darktable.develop ? darktable.develop->gui_module : NULL;
+  if(!module) return FALSE;
+  if(!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)) return TRUE;
+  return module->canvas_overlay_active && module->canvas_overlay_active((dt_iop_module_t *)module);
+}
 
 // clicking a sliver pins the panel open on that side. Like the toolbar button
 // and the "blend mask" caption (dt_masks_gui_flexi_inline_collapse_clicked in
@@ -4730,7 +4741,8 @@ static GtkWidget *_flexi_build_halo(dt_ui_t *ui, const gboolean right)
 // While it is shown it takes clicks over that strip of canvas, so it stands
 // down for a canvas gesture the panel itself started -- reaching the canvas
 // means leaving the panel, and a band in the way would break the very operation
-// the user came to finish.
+// the user came to finish. The same goes for a focused module that cannot be
+// masked, or that is showing an interactive overlay (_flexi_halo_unwanted).
 //
 // It deliberately does NOT stand down for armed mask editing generally, even
 // though shape nodes are editable right up to and past the image border and the
@@ -4763,7 +4775,8 @@ static gboolean _flexi_proximity_poll(gpointer user_data)
   gboolean live[2] = { collapsed || ui->flexi_panel_right,
                        collapsed || !ui->flexi_panel_right };
 
-  if(!_flexi_canvas_op_pending() && !_flexi_shape_highlighted() && gtk_widget_get_realized(base))
+  if(!_flexi_canvas_op_pending() && !_flexi_shape_highlighted()
+     && !_flexi_halo_unwanted() && gtk_widget_get_realized(base))
   {
     GdkWindow *win = gtk_widget_get_window(base);
     GdkDisplay *display = gtk_widget_get_display(base);

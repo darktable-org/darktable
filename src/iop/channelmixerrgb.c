@@ -2845,6 +2845,13 @@ int button_released(dt_iop_module_t *self,
   return 1;
 }
 
+gboolean canvas_overlay_active(dt_iop_module_t *self)
+{
+  // the color checker overlay and its handles
+  const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+  return self->enabled && g && g->is_profiling_started;
+}
+
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const float width,
