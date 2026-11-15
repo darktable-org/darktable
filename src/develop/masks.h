@@ -637,7 +637,9 @@ typedef struct dt_masks_form_gui_t
   // panel_selected_formid: the panel's selection, highlighted on the canvas
   //   while nothing is hovered
   // canvas_hover_formid: the shape under the cursor, whose row the panel
-  //   highlights; kept to skip repeated updates
+  //   highlights and which the selection panel shows in place of the
+  //   selection (_canvas_hovered in blend_gui.c); the only copy of the hover,
+  //   INVALID = none
   // solo_formids: shapes soloed or solo-edited in the panel, highlighted
   //   whatever is hovered (_sync_solo_canvas_highlight in blend_gui.c).
   //   NULL = none
