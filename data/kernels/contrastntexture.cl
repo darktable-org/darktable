@@ -35,19 +35,21 @@ kernel void contrastntexture_luminance(read_only image2d_t in,
   log_luminance[mad24(y, width, x)] = dtcl_log2(fmax(norm, NORM_MIN));
 }
 
-// the value and its square, blurred together as the two channels of one
-// gaussian to give the local mean and variance of fast_gaussian_guided_filter()
+// the value relative to center and its square, blurred together as the two
+// channels of one gaussian to give the local mean and variance of
+// fast_gaussian_guided_filter()
 kernel void contrastntexture_guided_filter_pack(global const float *const log_luminance,
                                                 global float2 *const moments,
                                                 const int width,
-                                                const int height)
+                                                const int height,
+                                                const float center)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
   const int k = mad24(y, width, x);
-  const float v = log_luminance[k];
+  const float v = log_luminance[k] - center;
   moments[k] = (float2)(v, v * v);
 }
 
@@ -65,7 +67,8 @@ kernel void contrastntexture_details(global float *const log_luminance,
                                      const float noise_bias,
                                      const float next_bias_step,
                                      const int accumulate,
-                                     const int last_level)
+                                     const int last_level,
+                                     const float center)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -76,7 +79,7 @@ kernel void contrastntexture_details(global float *const log_luminance,
   const float2 m = moments[k];
   const float variance = fmax(m.y - m.x * m.x, 0.0f);
   const float a = variance / (variance + feathering);
-  const float log_smoothed = a * log_pixel + (1.0f - a) * m.x;
+  const float log_smoothed = a * log_pixel + (1.0f - a) * (m.x + center);
   const float smoothed = dtcl_exp2(log_smoothed);
 
   const float noise_power = noise_bias * noise_bias;

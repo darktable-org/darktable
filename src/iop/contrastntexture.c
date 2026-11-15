@@ -295,7 +295,7 @@ static inline void compute_mask(float *const restrict log_smoothed_luminance,
   const float sigma = SIZE_TO_SIGMA * d->size_details[pyramid_level];
 
   fast_gaussian_guided_filter(log_smoothed_luminance, width, height,
-                              sigma, d->feathering);
+                              sigma, d->feathering, d->midtones_pivot);
 }
 
 // Extract logarithmic high pass detail in log space (EV):
@@ -689,7 +689,7 @@ void tiling_callback(dt_iop_module_t *self,
 
 #ifdef HAVE_OPENCL
 // fast_gaussian_guided_filter() of common/fast_gaussian_guided_filter.h, with
-// the value and its square blurred as the two channels of one gaussian. The
+// the centered value and its square blurred as the two channels of one gaussian. The
 // details kernel finishes the filter, so this leaves the blurred moments in
 // dev_moments and dev_image untouched
 static cl_int _gaussian_guided_filter_moments_cl(const int devid,
@@ -698,10 +698,11 @@ static cl_int _gaussian_guided_filter_moments_cl(const int devid,
                                                  cl_mem dev_moments,
                                                  const int width,
                                                  const int height,
-                                                 const float sigma)
+                                                 const float sigma,
+                                                 const float center)
 {
   cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_guided_filter_pack, width, height,
-                 CLARG(dev_image), CLARG(dev_moments), CLARG(width), CLARG(height));
+                 CLARG(dev_image), CLARG(dev_moments), CLARG(width), CLARG(height), CLARG(center));
   if(err != CL_SUCCESS) return err;
 
   // the CPU bounds the gaussian by the range of the values. A blur stays
@@ -777,7 +778,8 @@ int process_cl(dt_iop_module_t *self,
   for(int pyramid_level = d->max_used_pyramid_level; pyramid_level >= 0; pyramid_level--)
   {
     const float sigma = SIZE_TO_SIGMA * d->size_details[pyramid_level];
-    err = _gaussian_guided_filter_moments_cl(devid, gd, dev_lowpass, dev_moments, width, height, sigma);
+    err = _gaussian_guided_filter_moments_cl(devid, gd, dev_lowpass, dev_moments, width, height, sigma,
+                                             d->midtones_pivot);
     if(err != CL_SUCCESS) goto error;
 
     const float gain = gain_per_pyramid_level[pyramid_level];
@@ -791,7 +793,7 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_details, width, height,
             CLARG(dev_lowpass), CLARG(dev_moments), CLARG(dev_corrections),
             CLARG(width), CLARG(height), CLARG(d->feathering), CLARG(gain), CLARG(noise_bias),
-            CLARG(next_bias_step), CLARG(accumulate), CLARG(last_level));
+            CLARG(next_bias_step), CLARG(accumulate), CLARG(last_level), CLARG(d->midtones_pivot));
     if(err != CL_SUCCESS) goto error;
   }
 
