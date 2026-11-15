@@ -89,6 +89,8 @@ typedef struct dt_lib_snapshots_t
   // a press on the split line of a compared step that may still turn into a
   // drag: where it was and where the line was
   gboolean pending_click;
+  // the overlay took the press of the button now down, so it takes the release
+  gboolean owns_press;
   double press_xp, press_yp, line_xp, line_yp;
   // a press on the boundary of the side-by-side halves of a compared step
   gboolean separator_pressed, separator_dragged;
@@ -552,6 +554,7 @@ int button_released(struct dt_lib_module_t *self,
   if(d->panning)
   {
     d->panning = FALSE;
+    d->owns_press = FALSE;
     return 0;
   }
 
@@ -569,8 +572,11 @@ int button_released(struct dt_lib_module_t *self,
   }
 
   // the darkroom needs the release of a click it got the press of, see
-  // button_pressed()
-  if(_compare_history_end(d) >= 0 && (d->sidebyside || (!d->dragging && !d->on_going)))
+  // button_pressed(). Redraws clear on_going and dragging, so the press is
+  // tracked on its own
+  const gboolean owned = d->owns_press;
+  d->owns_press = FALSE;
+  if(_compare_history_end(d) >= 0 && !owned)
     return 0;
 
   if(d->selected >= 0)
@@ -625,6 +631,7 @@ int button_pressed(struct dt_lib_module_t *self,
 
   if(d->selected >= 0 && which != GDK_BUTTON_MIDDLE)
   {
+    d->owns_press = TRUE;
     if(d->on_going) return 1;
 
     const double xp = x / d->vp_width;
@@ -1373,7 +1380,8 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
       if(d->selected != k)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
   }
-  darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
+  // a compared history step leaves the live edit editable, handles included
+  darktable.lib->proxy.snapshots.enabled = d->selected >= 0 && _compare_history_end(d) < 0;
   gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), d->sidebyside && d->selected >= 0);
 
   DT_LEAVE_GUI_UPDATE();

@@ -65,6 +65,9 @@ typedef struct dt_lib_history_t
   // to tell when an edit has discarded or replaced that step
   GList *compare_keys;
   int compare_keys_end;
+  // the selected item when the list was last built, to tell an edit that
+  // replaced the compared step from one that changed it in place
+  int shown_history_end;
   gboolean record_undo;
   int record_history_level; // set to +1 in signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
                             // and back to -1 in DT_SIGNAL_DEVELOP_HISTORY_CHANGE. We want
@@ -179,13 +182,14 @@ void gui_init(dt_lib_module_t *self)
         .clicked_cb = G_CALLBACK(_lib_history_create_style_button_clicked_callback),
       });
 
-  d->seal_button = dtgtk_button_new_full(dtgtk_cairo_paint_plus, CPF_NONE, NULL,
+  // a toggle: lit while the next change is going to start a new item
+  d->seal_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_plus, CPF_NONE, NULL,
       &(dtgtk_button_config_t){
         .tooltip = _("keep the current state as a history item: the next change\n"
                      "starts a new item instead of adding to this one"),
         .action = DT_ACTION(self),
         .action_label = N_("commit to history"),
-        .action_def = &dt_action_def_button,
+        .action_def = &dt_action_def_toggle,
         .clicked_cb = G_CALLBACK(_lib_history_seal_clicked_callback),
       });
 
@@ -1369,11 +1373,21 @@ void gui_update(dt_lib_module_t *self)
     dt_pthread_mutex_lock(&darktable.develop->history_mutex);
     const gboolean same =
       g_list_length(d->compare_keys) <= g_list_length(darktable.develop->history)
-      && _history_prefix_same(d->compare_keys, FALSE);
+      // an edit made from before the compared step replaces it, whereas one
+      // made with it on top changes it in place
+      && _history_prefix_same(d->compare_keys, d->shown_history_end < d->compare_keys_end);
     dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
     if(!same)
       lib->proxy.snapshots.compare_history(lib->proxy.snapshots.module, d->compare_keys_end);
   }
+  d->shown_history_end = darktable.develop->history_end;
+
+  // lit from the click until the next change starts the new item
+  g_signal_handlers_block_matched(d->seal_button, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
+                                  _lib_history_seal_clicked_callback, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->seal_button), darktable.develop->history_sealed);
+  g_signal_handlers_unblock_matched(d->seal_button, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
+                                    _lib_history_seal_clicked_callback, NULL);
 }
 
 // what a history item contributes to the image, to tell if a step is the same
@@ -1386,7 +1400,16 @@ typedef struct _history_key_t
   size_t params_size;
   gpointer params;
   dt_develop_blend_params_t blend_params;
+  dt_hash_t forms_hash; // the drawn masks, whose shapes are not in the params
 } _history_key_t;
+
+static dt_hash_t _history_forms_hash(const dt_dev_history_item_t *item)
+{
+  dt_hash_t hash = DT_INITHASH;
+  for(GList *l = item->forms; l; l = g_list_next(l))
+    hash = dt_masks_group_hash_ext(hash, l->data, item->forms);
+  return hash;
+}
 
 static void _history_key_free(gpointer data)
 {
@@ -1414,6 +1437,7 @@ static GList *_history_prefix(const int count)
       memcpy(key->params, item->params, key->params_size);
     }
     if(item->blend_params) key->blend_params = *item->blend_params;
+    key->forms_hash = _history_forms_hash(item);
     keys = g_list_prepend(keys, key);
   }
   return g_list_reverse(keys);
@@ -1437,6 +1461,7 @@ static gboolean _history_prefix_same(const GList *keys, const gboolean exact_las
     if(strcmp(key->op_name, item->op_name)
        || key->multi_priority != item->multi_priority
        || key->enabled != item->enabled
+       || key->forms_hash != _history_forms_hash(item)
        || !item->module
        || key->params_size != item->module->params_size
        || (key->params_size && memcmp(key->params, item->params, key->params_size))
@@ -1583,8 +1608,12 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
 static void _lib_history_seal_clicked_callback(GtkWidget *widget,
                                                gpointer user_data)
 {
-  if(darktable.develop->image_storage.id)
-    dt_dev_history_seal(darktable.develop);
+  if(!darktable.develop->image_storage.id) return;
+
+  // pressing it again while lit cancels
+  const gboolean seal = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_dev_history_seal(darktable.develop, seal);
+  if(seal) dt_toast_log(_("the next change starts a new history item"));
 }
 
 void gui_reset(dt_lib_module_t *self)

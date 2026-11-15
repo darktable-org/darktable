@@ -205,6 +205,7 @@ typedef struct dt_develop_t
   double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
 
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
+  gboolean history_sealed; // the next change starts a new item, see dt_dev_history_seal()
   gboolean history_updating, image_force_reload, first_load;
   gboolean autosaving;
   double autosave_time;
@@ -475,8 +476,8 @@ void dt_dev_add_history_item_target(dt_develop_t *dev,
                                     const gboolean enable,
                                     const gpointer target);
 // make the next change start a new history item instead of merging into the
-// top one
-void dt_dev_history_seal(dt_develop_t *dev);
+// top one (or cancel that); repeating it before that change makes no difference
+void dt_dev_history_seal(dt_develop_t *dev, const gboolean sealed);
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable);
