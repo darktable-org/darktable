@@ -150,6 +150,17 @@ changes (where available).
   saved in increments. The button stays lit until that change is made,
   and pressing it again cancels.
 
+- The history module no longer shows an on/off icon on each step. A
+  small icon now marks a module that is turned off, always on or
+  deprecated, and the step's tooltip says what the module is.
+
+- Snapshots now leave the image editable, like the history compare. In
+  the side-by-side view clicks go through to the darkroom, and in the
+  overlay only the split line and its rotate handle take input. A click
+  on the split line swaps the two sides. The snapshots module has a
+  rotate button, and the mode and rotate buttons of the snapshots and
+  history modules show the same state.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
