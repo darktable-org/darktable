@@ -898,14 +898,20 @@ void expose(dt_view_t *self,
   {
     sb_zoom_x = .0f;
     sb_boxw = 1.01f;
-    if(!mask_editing)
+    // the image still pans a little while it only nearly fits, so the
+    // overlay center is only pinned once it really fits; pinning it from
+    // 0.95 made pickers jump off the image when the zoom crossed that
+    if(!mask_editing && boxw >= 1.0f)
       zoom_x = .0f;
   }
   if(boxh > 0.95f)
   {
     sb_zoom_y = .0f;
     sb_boxh = 1.01f;
-    if(!mask_editing)
+    // the image still pans a little while it only nearly fits, so the
+    // overlay center is only pinned once it really fits; pinning it from
+    // 0.95 made pickers jump off the image when the zoom crossed that
+    if(!mask_editing && boxh >= 1.0f)
       zoom_y = .0f;
   }
 
