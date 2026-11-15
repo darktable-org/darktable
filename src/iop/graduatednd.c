@@ -483,6 +483,11 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+gboolean canvas_overlay_active(dt_iop_module_t *self)
+{
+  return TRUE;
+}
+
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const float wd,
