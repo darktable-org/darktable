@@ -95,6 +95,7 @@ typedef struct dt_lib_t
 
     struct
     {
+      // a snapshot, or a compared history step, is shown
       gboolean enabled;
       struct dt_lib_module_t *module;
       // compare the edit as it was after history_end items with the live

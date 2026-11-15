@@ -57,7 +57,7 @@ typedef struct dt_lib_history_t
   GtkWidget *create_button;
   GtkWidget *compress_button;
   GtkWidget *seal_button;
-  // how a compared step is shown, usable while comparing
+  // how a snapshot is shown, usable while one is
   GtkWidget *mode_button, *rotate_button;
   // the compare toggles are being set from code, not clicked
   gboolean syncing_compare;
@@ -195,7 +195,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->mode_button = dtgtk_button_new_full(dtgtk_cairo_paint_compare_mode, CPF_NONE, NULL,
       &(dtgtk_button_config_t){
-        .tooltip = _("switch the compared step between side by side\n"
+        .tooltip = _("switch the shown snapshot between side by side\n"
                      "and an overlay with a split line"),
         .clicked_cb = G_CALLBACK(_lib_history_layout_clicked_callback),
         .clicked_data = self,
@@ -206,7 +206,7 @@ void gui_init(dt_lib_module_t *self)
         .clicked_cb = G_CALLBACK(_lib_history_layout_clicked_callback),
         .clicked_data = self,
       });
-  // usable while a step is compared, see _lib_history_compare_changed()
+  // usable while a snapshot is shown, see _lib_history_compare_changed()
   gtk_widget_set_sensitive(d->mode_button, FALSE);
   gtk_widget_set_sensitive(d->rotate_button, FALSE);
 
@@ -311,8 +311,10 @@ static void _lib_history_compare_changed(gpointer user_data)
   d->syncing_compare = FALSE;
   g_list_free(children);
 
-  gtk_widget_set_sensitive(d->mode_button, shown >= 0);
-  gtk_widget_set_sensitive(d->rotate_button, shown >= 0);
+  // for any snapshot that is shown, not only a compared step
+  const gboolean overlay = darktable.lib->proxy.snapshots.enabled;
+  gtk_widget_set_sensitive(d->mode_button, overlay);
+  gtk_widget_set_sensitive(d->rotate_button, overlay);
   dtgtk_button_set_active(DTGTK_BUTTON(d->mode_button), sidebyside);
   gtk_widget_queue_draw(d->mode_button);
 }

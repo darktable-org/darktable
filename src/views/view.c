@@ -468,16 +468,15 @@ const char *dt_view_manager_name(const dt_view_manager_t *vm)
 }
 
 
-// a compared history step is drawn and clicked by the snapshots module even
-// when the user has hidden its panel
+// a shown snapshot is drawn and clicked by the snapshots module even when the
+// user has hidden its panel
 static gboolean _lib_draws_and_clicks(dt_lib_module_t *plugin,
                                       const dt_view_t *view)
 {
   if(dt_lib_is_visible_in_view(plugin, view)) return TRUE;
   const dt_lib_t *lib = darktable.lib;
   return plugin == lib->proxy.snapshots.module
-         && lib->proxy.snapshots.compared_history_end
-         && lib->proxy.snapshots.compared_history_end(plugin) >= 0
+         && lib->proxy.snapshots.enabled
          && (plugin->views(plugin) & view->view(view));
 }
 void dt_view_manager_expose(dt_view_manager_t *vm,
