@@ -141,9 +141,11 @@ There are two gates, and a run may ask for at most one of them:
   positive has gone stale, which means that the facts or the access lines it
   was judged on have changed. It passes as long as the list is kept up to date,
   so a CI job or a pre-commit hook can use it before every finding has been
-  reviewed. It says nothing about findings that nobody has judged. It reports
-  only the stale entries, in `report` and in `csv`, because those are what it
-  fired on.
+  reviewed. It says nothing about findings that nobody has judged. It lists
+  only the stale entries, because those are what it fired on. With the default
+  `--format report` they are printed to the terminal, each with its access
+  lines, the recorded reason and the command that re-confirms it; with `csv`
+  they are the only rows.
 
 Asking for both gates is an error. One exit status cannot carry two answers,
 and the wide gate already fails on everything the narrow one does.
