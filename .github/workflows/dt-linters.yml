@@ -26,7 +26,4 @@ jobs:
           fetch-depth: 2
 
       - name: Report the findings the pull request adds
-        # advisory: findings become warnings and the job passes, until the
-        # noise level on real pull requests is known. Add
-        # --fail-on-new-findings to make it blocking
-        run: python3 tools/dt-lockcheck/dt-lockcheck-diff.py --github --head HEAD HEAD^1
+        run: python3 tools/dt-lockcheck/dt-lockcheck-diff.py --fail-on-new-findings --github --head HEAD HEAD^1

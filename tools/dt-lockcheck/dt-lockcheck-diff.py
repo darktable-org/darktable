@@ -43,7 +43,7 @@ SITE = re.compile(r"^(?P<fn>.+):(?P<line>\d+)\[(?P<thread>[^\]]*)\]$")
 
 NEW = "newly reported"
 MORE = "more unlocked accesses"
-README_HINT = "see 'Comparing two trees' in tools/dt-lockcheck/README.md"
+README_HINT = "see 'When it fires' in tools/dt-lockcheck/README.md"
 
 
 class Failure(Exception):
@@ -219,6 +219,11 @@ def _report(diffs, n_base, n_head, base_label, head_label):
             out.append(f"    {kind:9} {fn}[{thread}]  {nb} -> {nh}   {where}")
     out.append("")
     out.append(_verdict_line(diffs) if diffs else "no differences")
+    # the report is all that a local run, the job log and the job summary
+    # show; without this only the annotations would say what to do next
+    if any(d["verdict"] == NEW for d in diffs):
+        out.append(f"fix each newly reported finding, or record why it is not"
+                   f" a defect; {README_HINT}")
     return out
 
 
