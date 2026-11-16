@@ -1383,6 +1383,16 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
   history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
 
+  // after dt_dev_history_seal() any real change to the top item's module starts
+  // a new item: its parameters, blending, enabled state or masks differ
+  const gboolean sealed_change = dev->history_sealed && hist && module == hist->module
+    && (include_masks
+        || module->enabled != hist->enabled
+        || (module->params_size && memcmp(hist->params, module->params, module->params_size))
+        || ((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+            && memcmp(hist->blend_params, module->blend_params,
+                      sizeof(dt_develop_blend_params_t))));
+
   // if module should be enabled, do it now
   if(enable)
   {
@@ -1400,6 +1410,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
 
   if(!history                                              // no history yet, push new item
      || new_item                                           // a new item is requested
+     || sealed_change                                      // or the top item was committed
      || module != hist->module
      || module->instance != hist->module->instance         // add new item for different op
      || module->multi_priority != hist->module->multi_priority // or instance
@@ -1412,6 +1423,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
   {
     // new operation, push new item
     dev->history_end++;
+    dev->history_sealed = FALSE;
 
     hist = calloc(1, sizeof(dt_dev_history_item_t));
 
@@ -1606,6 +1618,15 @@ void dt_dev_add_history_item_target(dt_develop_t *dev,
   _dev_add_history_item(dev, module, enable, FALSE, target);
 }
 
+void dt_dev_history_seal(dt_develop_t *dev, const gboolean sealed)
+{
+  // a flag rather than a flip of focus_hash: that one only sees parameter
+  // changes, and flipping twice would undo the first
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  dev->history_sealed = sealed;
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+}
+
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  dt_iop_module_t *module,
                                  const gboolean enable)
@@ -1709,6 +1730,7 @@ void dt_dev_free_history_item(gpointer data)
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = FALSE;
+  dev->history_sealed = FALSE;
 
   dt_lock_image(dev->image_storage.id);
 

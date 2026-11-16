@@ -467,6 +467,18 @@ const char *dt_view_manager_name(const dt_view_manager_t *vm)
     return vm->current_view->module_name;
 }
 
+
+// a shown snapshot is drawn and clicked by the snapshots module even when the
+// user has hidden its panel
+static gboolean _lib_draws_and_clicks(dt_lib_module_t *plugin,
+                                      const dt_view_t *view)
+{
+  if(dt_lib_is_visible_in_view(plugin, view)) return TRUE;
+  const dt_lib_t *lib = darktable.lib;
+  return plugin == lib->proxy.snapshots.module
+         && lib->proxy.snapshots.enabled
+         && (plugin->views(plugin) & view->view(view));
+}
 void dt_view_manager_expose(dt_view_manager_t *vm,
                             cairo_t *cr,
                             const int32_t width,
@@ -510,7 +522,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm,
 
       /* does this module belong to current view ?*/
       if(plugin->gui_post_expose
-         && dt_lib_is_visible_in_view(plugin, vm->current_view))
+         && _lib_draws_and_clicks(plugin, vm->current_view))
         plugin->gui_post_expose(plugin, cr,
                                 vm->current_view->width,
                                 vm->current_view->height, px, py);
@@ -540,7 +552,7 @@ void dt_view_manager_mouse_leave(dt_view_manager_t *vm)
     dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
-    if(plugin->mouse_leave && dt_lib_is_visible_in_view(plugin, v))
+    if(plugin->mouse_leave && _lib_draws_and_clicks(plugin, v))
       if(plugin->mouse_leave(plugin))
         handled = TRUE;
   }
@@ -576,7 +588,7 @@ void dt_view_manager_mouse_moved(dt_view_manager_t *vm,
     dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
-    if(plugin->mouse_moved && dt_lib_is_visible_in_view(plugin, v))
+    if(plugin->mouse_moved && _lib_draws_and_clicks(plugin, v))
       if(plugin->mouse_moved(plugin, x, y, pressure, which))
         handled = TRUE;
   }
@@ -605,7 +617,7 @@ int dt_view_manager_button_released(dt_view_manager_t *vm,
     dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
-    if(plugin->button_released && dt_lib_is_visible_in_view(plugin, v))
+    if(plugin->button_released && _lib_draws_and_clicks(plugin, v))
       if(plugin->button_released(plugin, x, y, which, state))
         handled = TRUE;
   }
@@ -640,7 +652,7 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm,
     dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
-    if(plugin->button_pressed && dt_lib_is_visible_in_view(plugin, v))
+    if(plugin->button_pressed && _lib_draws_and_clicks(plugin, v))
       if(plugin->button_pressed(plugin, x, y, pressure, which, type, state))
         handled = TRUE;
   }

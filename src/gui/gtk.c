@@ -1752,6 +1752,7 @@ static void _button_pressed(GtkGestureSingle *gesture,
       gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure);
   }
   GtkWidget *w = dt_gui_get_widget(gesture);
+  darktable.gui->press_in_snapshot = w == dt_ui_snapshot(darktable.gui->ui);
   // n_press replaces the old GDK_BUTTON_PRESS/GDK_2BUTTON_PRESS/GDK_3BUTTON_PRESS
   // event-type distinction that dt_control_button_pressed() stores
   dt_control_button_pressed(x, y, pressure,
@@ -1798,6 +1799,8 @@ static void _mouse_moved(GtkEventControllerMotion *controller,
       gui->have_pen_pressure = pressure != 1.0;
     }
   }
+  darktable.gui->pointer_in_snapshot =
+    dt_gui_get_widget(controller) == dt_ui_snapshot(darktable.gui->ui);
   dt_control_mouse_moved(x, y, pressure,
                          dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & 0xf);
 #if !GTK_CHECK_VERSION(4, 0, 0)
@@ -7704,6 +7707,7 @@ GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_na
     if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
     else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
     else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "pointer"))   type = GDK_HAND2;
     else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
     else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
     else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;

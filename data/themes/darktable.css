@@ -1865,15 +1865,6 @@ progressbar progress
   margin: 0.14em;
 }
 
-/* then the switches */
-.dt_history_switch:disabled /* state of those switch is always disabled */
-{
-  color: @plugin_label_color;
-  font-size: 0.75em;
-  margin-left: 0.42em;
-  border: 0;
-}
-
 /* and the history number */
 #history-number
 {
@@ -1886,10 +1877,10 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
-/* history on/off button */
-.dt_history_switch_off:disabled
+/* the marks of a row fill their box, which is too big for a row */
+.dt_history_power_mark
 {
-  color: shade(@disabled_fg_color, 0.9);
+  font-size: 0.75em;
 }
 
 #dt-metadata-changed

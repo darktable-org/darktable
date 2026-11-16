@@ -3921,6 +3921,48 @@ void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, const gint x, const gint y
   FINISH
 }
 
+void dtgtk_cairo_paint_compare(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  cairo_rectangle(cr, 0.1, 0.2, 0.8, 0.6);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.5, 0.1);
+  cairo_line_to(cr, 0.5, 0.9);
+  cairo_stroke(cr);
+
+  // filled while the comparison is on
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_rectangle(cr, 0.1, 0.2, 0.4, 0.6);
+    cairo_fill(cr);
+  }
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_compare_mode(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_rectangle(cr, 0.06, 0.24, 0.38, 0.52);
+    cairo_rectangle(cr, 0.56, 0.24, 0.38, 0.52);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    cairo_rectangle(cr, 0.06, 0.24, 0.88, 0.52);
+    cairo_stroke(cr);
+    cairo_rectangle(cr, 0.06, 0.24, 0.44, 0.52);
+    cairo_fill(cr);
+  }
+
+  FINISH
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

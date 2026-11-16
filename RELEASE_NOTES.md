@@ -137,6 +137,34 @@ changes (where available).
   shortcuts. Navigation remembers collection rules and thumbnail scroll
   positions for up to 32 visits during the current session.
 
+- Added a compare icon to each step of the history module. It shows the
+  image as it was at that step next to the live edit, side by side or
+  as an overlay with a split line, and the live edit stays fully
+  editable while comparing. The mode and rotate buttons of the history
+  toolbar turn the view, and the comparison ends when an edit discards
+  the compared step.
+
+- Added a "commit to history" button and action to the history module.
+  The next change then starts a new history item instead of merging
+  into the current one, so a long series of edits to one module can be
+  saved in increments. The button stays lit until that change is made,
+  and pressing it again cancels.
+
+- The history module no longer shows an on/off icon on each step. A
+  small icon now marks a module that is turned off, always on or
+  deprecated, and the step's tooltip says what the module is.
+
+- Snapshots now leave the image editable, like the history compare. In
+  the side-by-side view clicks go through to the darkroom, and in the
+  overlay only the split line and its rotate handle take input. A click
+  on the split line swaps the two sides. The snapshots module has a
+  rotate button, and the mode and rotate buttons of the snapshots and
+  history modules show the same state.
+
+- The comparison layout (side by side or overlay, and the direction of
+  the split) is remembered across snapshots and sessions, and is shared
+  by the snapshots and history modules.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
