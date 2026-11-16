@@ -28,7 +28,22 @@ And then further explored and optimized by Christian Bouhon
 https://discuss.pixls.us/t/contrast-management-rgb-a-new-scene-referred-approach-poc/56004
 
 Current status as implemented by Jandren:
-- Local contrast in log space based on the eigf surface blur filter.
+- Local contrast based on the gaussian guided filter surface blur in log space.
+- The local contrast is extracted and manipulated in multiple pyramid levels.
+  The filtering is done top to bottom and each new level is filtering the
+  filtered result of the one above, extracted details are the log difference between the two levels.
+- The user controls the size of the pyramid's base and the amount in three
+  interpolated segments along the pyramid, fine to coarse (top to bottom).
+- The final very smooth filtered image at the base level is used as a base
+  for highlights and shadows sliders which alter the contrast above and below middle grey.
+
+TERMINOLOGY:
+- detail level: absolute scale, log2(image size / detail size), 0 == full image size.
+  The detail size is in pixels, the filter gets a gaussian sigma of 0.375 x detail size.
+- pyramid level: index of a filter instance, 0 == the base detail level slider, +1 == half size.
+  detail level = base detail level + pyramid level
+- max pyramid level: where the "fine" band reaches 100%.
+- max used pyramid level: last level filtered at the current preview scale.
 */
 
 /* Work around a compiler bug, see
@@ -47,11 +62,8 @@ Current status as implemented by Jandren:
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/fast_guided_filter.h"
-#include "common/eigf.h"
-#include "common/luminance_mask.h"
+#include "common/fast_gaussian_guided_filter.h"
 #include "common/opencl.h"
-#include "common/bilinear.h"
 #include "common/gaussian.h"
 #include "develop/tiling.h"
 #include "control/conf.h"
@@ -63,6 +75,7 @@ Current status as implemented by Jandren:
 #include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/paint.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/expander.h"
@@ -75,14 +88,23 @@ Current status as implemented by Jandren:
 #include <omp.h>
 #endif
 
-DT_MODULE_INTROSPECTION(2, dt_iop_contrastntexture_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_contrastntexture_params_t)
+
+// Standard scene-referred midtone pivot.
+#define MIDDLE_GREY 0.1845f
+// Detail sizes in pixels for the low pass filter, a size of 1 px is the nyquist limit "half period".
+// Detail size 1 px barely extracts any feature, 2 px is therefore where the max_pyramid_level is placed.
+#define NYQUIST_SIZE 1.0f
+#define MINIMUM_SIZE (2.0f * NYQUIST_SIZE)
+// Gaussian sigma that gives a -6 dB response at the Nyquist frequency
+#define SIZE_TO_SIGMA 0.375f
 
 typedef struct dt_iop_contrastntexture_params_t
 {
   float gain_coarse;     // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "coarse details"
   float gain_medium;     // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "medium details"
   float gain_fine;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "fine details"
-  float detail_level;    // $MIN: 1.0 $MAX: 15.0 $DEFAULT: 5.0 $DESCRIPTION: "base detail level"
+  float base_detail_level; // $MIN: 1.0 $MAX: 15.0 $DEFAULT: 5.0 $DESCRIPTION: "base detail level"
   float halo_control;    // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "halo control"
   float noise_bias;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.001 $DESCRIPTION: "noise bias"
   float gain_shadows;    // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
@@ -103,14 +125,16 @@ typedef enum dt_iop_contrastntexture_details_display_t
 typedef struct dt_iop_contrastntexture_data_t
 {
   float gain_details[DT_LC_MASK_LAST];
-  float radius_details[MAX_ITERATIONS];
+  // indexed by pyramid level
+  float size_details[MAX_ITERATIONS];
   float scale_details[MAX_ITERATIONS];
-  float max_detail_level;
-  int   max_used_level;
-  float feathering;
   float noise_bias[MAX_ITERATIONS];
+  float max_pyramid_level;
+  int   max_used_pyramid_level;
+  float feathering;
   float slope_shadows;
   float slope_highlights;
+  float midtones_pivot;
   float midtones_width;
   float midtones_polynomial[3];
 } dt_iop_contrastntexture_data_t;
@@ -122,16 +146,16 @@ typedef struct dt_iop_contrastntexture_global_data_t
   int kernel_apply;
   int kernel_display_details;
   int kernel_display_lowpass;
-  // the guided filter kernels of toneequal.cl, see _fast_eigf_surface_blur_cl()
-  int kernel_eigf_pack_2c;
-  int kernel_eigf_finish_2c;
-  int kernel_eigf_blend_no_mask;
+  int kernel_guided_filter_pack;
 } dt_iop_contrastntexture_global_data_t;
 
 typedef struct dt_iop_contrastntexture_gui_data_t
 {
-  // Flags
+  // Preview widgets and data for the GUI
+  // Read-only graph of the total gain per detail size
   dt_iop_contrastntexture_details_display_t details_display;
+  GtkWidget *gain_graph;
+  dt_gui_collapsible_section_t graph_section;
 
   // GTK widgets adjustments
   GtkWidget *gain_details[DT_LC_MASK_LAST]; // coarse, medium, and fine
@@ -139,7 +163,7 @@ typedef struct dt_iop_contrastntexture_gui_data_t
   GtkWidget *gain_highlights;
 
   // GTK widgets filter settings
-  GtkWidget *detail_level;
+  GtkWidget *base_detail_level;
   GtkWidget *halo_control;
   GtkWidget *noise_bias;
 } dt_iop_contrastntexture_gui_data_t;
@@ -158,7 +182,7 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
-    (self, _("enhance local contrast by boosting details while preserving edges"),
+    (self, _("enhance local contrast and handle highlights and shadows"),
      _("creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
@@ -205,7 +229,7 @@ int legacy_params(dt_iop_module_t *self,
     n->gain_coarse = o->gain_local_contrast - 1.0f;
     n->gain_medium = o->gain_local_contrast - 1.0f;
     n->gain_fine = o->gain_local_contrast - 1.0f;
-    n->detail_level = o->detail_level;
+    n->base_detail_level = o->detail_level;
     n->halo_control = o->edge_protection;
     n->noise_bias = o->noise_bias;
     n->gain_highlights = 0.0f;
@@ -216,13 +240,27 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 2;
     return 0;
   }
+  if(old_version == 2)
+  {
+    // v3 changed the filter sigma from 0.5 x detail size to SIZE_TO_SIGMA x detail size.
+    // Lowering the base detail level by log2(0.5 / SIZE_TO_SIGMA) keeps the sigma of every filter
+    // instance as it was. Exact except where the hard minimum of the slider clamps it.
+    dt_iop_contrastntexture_params_t *n = calloc(1, sizeof(dt_iop_contrastntexture_params_t));
+    memcpy(n, old_params, sizeof(dt_iop_contrastntexture_params_t));
+    n->base_detail_level = fmaxf(n->base_detail_level - log2f(0.5f / SIZE_TO_SIGMA), 1.0f);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_contrastntexture_params_t);
+    *new_version = 3;
+    return 0;
+  }
   return 1;
 }
 
-// Compute smoothed luminance mask using edge-aware filters
+// Compute the greyscale log luminance from linear rgb input
 __DT_CLONE_TARGETS__
-static inline void compute_luminance(const float *const restrict in,
-                                      float *const restrict luminance,
+static inline void compute_luminance(const float *const restrict linear_rgb,
+                                      float *const restrict log_luminance,
                                       const dt_iop_roi_t *const roi_in,
                                       const float noise_bias)
 {
@@ -230,52 +268,58 @@ static inline void compute_luminance(const float *const restrict in,
   const size_t height = (size_t)roi_in->height;
   const size_t npixels = width * height;
 
-  // First compute pixel-wise luminance (no boost) and add noise bias
-  luminance_mask(in, luminance, width, height, DT_TONEEQ_NORM_2, 1.0f, 0.0f, 1.0f);
   const float normalize_luminance = 1.0f / sqrtf(3.0f);
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    luminance[k] = normalize_luminance * luminance[k] + noise_bias;
+    float rgb_square_sum = 0.0f;
+    for_three_channels(c)
+    {
+      const float channel_value = linear_rgb[4 * k + c];
+      rgb_square_sum += channel_value * channel_value;
+    }
+    const float rgb_norm = normalize_luminance * sqrtf(rgb_square_sum) + noise_bias;
+    log_luminance[k] = log2f(fmaxf(rgb_norm, NORM_MIN));
   }
 }
 
 // Compute smoothed luminance mask using edge-aware filters
 __DT_CLONE_TARGETS__
-static inline void compute_mask(float *const restrict smoothed_luminance,
+static inline void compute_mask(float *const restrict log_smoothed_luminance,
                                 const dt_iop_roi_t *const roi_in,
                                 const dt_iop_contrastntexture_data_t *const d,
-                                const int level)
+                                const int pyramid_level)
 {
   const size_t width = (size_t)roi_in->width;
   const size_t height = (size_t)roi_in->height;
+  const float sigma = SIZE_TO_SIGMA * d->size_details[pyramid_level];
 
-  fast_eigf_surface_blur(smoothed_luminance, width, height,
-                         d->radius_details[level], d->feathering, 1,
-                         DT_GF_BLENDING_LINEAR, 1.0f,
-                         0.0f, NORM_MIN, 4.0f);
+  fast_gaussian_guided_filter(log_smoothed_luminance, width, height,
+                              sigma, d->feathering);
 }
 
 // Extract logarithmic high pass detail in log space (EV):
-// How much brighter/darker is this pixel compared to the smooth version
+// How much brighter/darker is this pixel compared to the smooth version.
+// The caller supplies the smoothed luminance in linear space too, as it needs it as well.
 __DT_CLONE_TARGETS__
-static inline float extract_details(const float luminance_pixel,
-                                   const float luminance_smoothed,
-                                   const float noise_bias)
+static inline float extract_details(const float log_luminance_pixel,
+                                    const float log_luminance_smoothed,
+                                    const float smoothed_luminance,
+                                    const float noise_power)
 {
-  const float log_pixel = log2f(fmaxf(luminance_pixel, NORM_MIN));
-  const float log_smoothed = log2f(fmaxf(luminance_smoothed, NORM_MIN));
-
-  const float noise_power = noise_bias * noise_bias;
-  const float combined_power = luminance_smoothed * luminance_smoothed;
-  const float weiner_gain = fmaxf(combined_power - noise_power, 0.0f) / fmaxf(combined_power, NORM_MIN);
-  return weiner_gain * fmaxf(fminf(log_pixel - log_smoothed, 5.0f), -5.0f);
+  const float combined_power = smoothed_luminance * smoothed_luminance;
+  const float wiener_gain = fmaxf(combined_power - noise_power, 0.0f) / fmaxf(combined_power, NORM_MIN);
+  return wiener_gain * fmaxf(fminf(log_luminance_pixel - log_luminance_smoothed, 5.0f), -5.0f);
 }
 
-// Squared cosine/sine crossfade weight of a given band (coarse/medium/fine) at position t
-static inline float band_weight(const dt_iop_contrastntexture_details_display_t band, const int level, const float max_level)
+// Squared cosine/sine crossfade weight of a given band (coarse/medium/fine) at a pyramid level
+static inline float band_weight(const dt_iop_contrastntexture_details_display_t band,
+                                const float pyramid_level,
+                                const float max_pyramid_level)
 {
-  float t = (float)level / max_level - 0.5f;
+  // with no room for a crossfade (max_pyramid_level <= 0) every level is at or beyond
+  // the fine end, so avoid the division and give the fine band full weight
+  float t = max_pyramid_level > 0.0f ? pyramid_level / max_pyramid_level - 0.5f : 0.5f;
   t = fmaxf(fminf(t, 0.5f), -0.5f);
 
   float weight = 0.0f;
@@ -289,10 +333,19 @@ static inline float band_weight(const dt_iop_contrastntexture_details_display_t 
   return weight * weight;
 }
 
+// The pyramid level where the detail size == MINIMUM_SIZE for a full resolution image, i.e. where the
+// "fine" band reaches 100%. It is independent of the preview scale, so the band weights match
+// between the preview and the full pipe.
+static inline float max_pyramid_level_for(const float max_image_size,
+                                          const float base_detail_level)
+{
+  return log2f(max_image_size) - log2f(MINIMUM_SIZE) - base_detail_level;
+}
+
 // Apply shadow and highlight enhancement
 // Different slopes for shadows and highlights, with a smooth transition in the midtones
 __DT_CLONE_TARGETS__
-static inline float apply_shadows_highlights(const float luminance_lowpass,
+static inline float apply_shadows_highlights(const float log_luminance_lowpass,
                                              const dt_iop_contrastntexture_data_t *const d)
 {
   const float slope_shadows = d->slope_shadows;
@@ -301,12 +354,11 @@ static inline float apply_shadows_highlights(const float luminance_lowpass,
   const float a0 = d->midtones_polynomial[0];
   const float a1 = d->midtones_polynomial[1];
   const float a2 = d->midtones_polynomial[2];
-  const float noise_bias = d->noise_bias[0]; // Applied on the base level
-  const float pivot_offset = log2f(noise_bias + 0.1845f);
+  const float pivot_offset = d->midtones_pivot;
 
   float correction_ev = 0.0f;
   // Low pass correction for shadows and highlights
-  const float normalized_ev = log2f(fmaxf(luminance_lowpass, NORM_MIN)) - pivot_offset;
+  const float normalized_ev = log_luminance_lowpass - pivot_offset;
   if(normalized_ev <= -midtones_width)
     correction_ev += slope_shadows * normalized_ev;
   else if(normalized_ev >= midtones_width)
@@ -343,7 +395,7 @@ static inline void display_local_mask(const float *const restrict corrections,
     const float intensity = local_ev / sqrtf(local_ev * local_ev + 1.0f) * 0.5f + 0.5f; // Smooth mapping to [0, 1]
 
     // Set all RGB channels to the same intensity (grayscale)
-    for_each_channel(c)
+    for_three_channels(c)
     {
       out[4 * k + c] = intensity;
     }
@@ -357,13 +409,13 @@ static inline void display_local_mask(const float *const restrict corrections,
  shadows (blue) and highlights (yellow) control, mapped to linear [0, 1].
  */
 __DT_CLONE_TARGETS__
-static inline void display_lowpass_mask(const float *const restrict luminance_lowpass,
+static inline void display_lowpass_mask(const float *const restrict log_luminance_lowpass,
                                         float *const restrict out,
                                         const dt_iop_roi_t *const roi_in,
                                         const dt_iop_contrastntexture_data_t *const d)
 {
   const size_t npixels = roi_in->width * roi_in->height;
-  const float pivot_offset = d->noise_bias[0] + 0.1845f;
+  const float pivot_offset = d->noise_bias[0] + MIDDLE_GREY;
 
   const dt_aligned_pixel_t blue = {0.0f, 0.0f, 1.0f};
   const dt_aligned_pixel_t yellow = {1.0f, 1.0f, 0.0f};
@@ -372,16 +424,17 @@ static inline void display_lowpass_mask(const float *const restrict luminance_lo
   for(size_t k = 0; k < npixels; k++)
   {
     // Low contrast sigmoid for the preview.
-    const float intensity = luminance_lowpass[k] / (pivot_offset + luminance_lowpass[k]);
-    float saturation = (intensity - 0.5f) * 2.0f;
-    saturation *= saturation;
+    const float linear_luminance = exp2f(log_luminance_lowpass[k]);
+    const float display_intensity = linear_luminance / (pivot_offset + linear_luminance);
+    float display_saturation = (display_intensity - 0.5f) * 2.0f;
+    display_saturation *= display_saturation;
 
-    for_each_channel(c)
+    for_three_channels(c)
     {
-      if(intensity < 0.5f)
-        out[4 * k + c] = intensity * ((1.0f - saturation) + saturation * blue[c]);
+      if(display_intensity < 0.5f)
+        out[4 * k + c] = display_intensity * ((1.0f - display_saturation) + display_saturation * blue[c]);
       else
-        out[4 * k + c] = intensity * ((1.0f - saturation) + saturation * yellow[c]);
+        out[4 * k + c] = display_intensity * ((1.0f - display_saturation) + display_saturation * yellow[c]);
     }
     out[4 * k + 3] = 1.0f;
   }
@@ -406,23 +459,23 @@ void process(dt_iop_module_t *self,
   float *const restrict out = (float *const)ovoid;
 
   const size_t npixels = roi_in->width * roi_in->height;
-  float *restrict luminance_highpass = dt_alloc_align_float(npixels);
-  float *restrict luminance_lowpass = dt_alloc_align_float(npixels);
+  float *restrict log_luminance_highpass = dt_alloc_align_float(npixels);
+  float *restrict log_luminance_lowpass = dt_alloc_align_float(npixels);
   float *restrict corrections = dt_alloc_align_float(npixels);
-  if(!luminance_lowpass ||
-     !luminance_highpass ||
+    if(!log_luminance_lowpass ||
+      !log_luminance_highpass ||
      !corrections)
   {
     dt_control_log(_("contrast and texture failed to allocate memory, check your RAM settings"));
-    dt_free_align(luminance_highpass);
-    dt_free_align(luminance_lowpass);
+    dt_free_align(log_luminance_highpass);
+    dt_free_align(log_luminance_lowpass);
     dt_free_align(corrections);
     return;
   }
 
-  // The actual gain per level is computed here in process() instead of
+  // The actual gain per pyramid level is computed here in process() instead of
   // in commit params as it is affected by the display mask option.
-  float gain_per_level[MAX_ITERATIONS] = { 0.0f };
+  float gain_per_pyramid_level[MAX_ITERATIONS] = { 0.0f };
 
   // Display output
   dt_iop_contrastntexture_details_display_t details_display = DT_LC_MASK_OFF;
@@ -436,17 +489,17 @@ void process(dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  dt_print(DT_DEBUG_PIPE, "display_mask: %d, max_used_level: %d\n", display_mask, d->max_used_level);
   if(display_mask)
   {
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     // Preview the displayed band alone, at full strength, across all pyramid levels
-    // (the lowpass preview does not use band weights, the final luminance_lowpass suffices)
+    // (the lowpass preview does not use band weights, the final log_luminance_lowpass suffices)
     if(details_display != DT_LC_MASK_LAST)
     {
-      for(int level = 0; level <= d->max_used_level; level++)
+      for(int pyramid_level = 0; pyramid_level <= d->max_used_pyramid_level; pyramid_level++)
       {
-        gain_per_level[level] = band_weight(details_display, level, d->max_detail_level);
+        gain_per_pyramid_level[pyramid_level]
+          = band_weight(details_display, pyramid_level, d->max_pyramid_level);
       }
     }
   }
@@ -455,38 +508,55 @@ void process(dt_iop_module_t *self,
     // Smoothly interpolate the 3 sliders (coarse/medium/fine) across all pyramid
     // levels using squared cosine/sine crossfade weights, so neighboring levels blend
     // instead of jumping discretely between the 3 gains.
-    for(int level = 0; level <= d->max_used_level; level++)
+    for(int pyramid_level = 0; pyramid_level <= d->max_used_pyramid_level; pyramid_level++)
     {
       for(int band = 0; band < DT_LC_MASK_LAST; band++)
-      gain_per_level[level] += d->gain_details[band] * band_weight(band, level, d->max_detail_level);
+      {
+        gain_per_pyramid_level[pyramid_level]
+          += d->gain_details[band] * band_weight(band, pyramid_level, d->max_pyramid_level);
+      }
     }
   }
 
-  const float max_noise_bias = d->noise_bias[d->max_used_level];
-  compute_luminance(in, luminance_lowpass, roi_in, max_noise_bias);
+  const float max_noise_bias = d->noise_bias[d->max_used_pyramid_level];
+  compute_luminance(in, log_luminance_lowpass, roi_in, max_noise_bias);
   memset(corrections, 0, npixels * sizeof(float));
 
-  for(int level = d->max_used_level; level >= 0; level--)
+  for(int pyramid_level = d->max_used_pyramid_level; pyramid_level >= 0; pyramid_level--)
   {
-    memcpy(luminance_highpass, luminance_lowpass, npixels * sizeof(float));
-    compute_mask(luminance_lowpass, roi_in, d, level);
+    memcpy(log_luminance_highpass, log_luminance_lowpass, npixels * sizeof(float));
+    compute_mask(log_luminance_lowpass, roi_in, d, pyramid_level);
+
+    const float level_gain = gain_per_pyramid_level[pyramid_level];
+    const float noise_power = d->noise_bias[pyramid_level] * d->noise_bias[pyramid_level];
+    const float bias_diff = pyramid_level > 0
+                            ? d->noise_bias[pyramid_level] - d->noise_bias[pyramid_level - 1]
+                            : 0.0f;
 
     DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
-      // Details as the bandpass difference
-      corrections[k] += gain_per_level[level] * extract_details(luminance_highpass[k], luminance_lowpass[k], d->noise_bias[level]);
+      const float smoothed_luminance = exp2f(log_luminance_lowpass[k]);
 
-      // Reduce the noise bias to the next level
-      if(level > 0)
-        luminance_lowpass[k] -= d->noise_bias[level] - d->noise_bias[level - 1];
+      // Details as the bandpass difference
+      corrections[k] += level_gain * extract_details(log_luminance_highpass[k],
+                                                     log_luminance_lowpass[k],
+                                                     smoothed_luminance,
+                                                     noise_power);
+
+      // Reduce the noise bias to the next pyramid level
+      if(pyramid_level > 0)
+      {
+        const float linear_luminance = smoothed_luminance - bias_diff;
+        log_luminance_lowpass[k] = log2f(fmaxf(linear_luminance, NORM_MIN));
+      }
     }
   }
 
   if(display_mask)
   {
     if(details_display == DT_LC_MASK_LAST)
-      display_lowpass_mask(luminance_lowpass, out, roi_in, d);
+      display_lowpass_mask(log_luminance_lowpass, out, roi_in, d);
     else
       display_local_mask(corrections, out, roi_in);
   }
@@ -496,18 +566,18 @@ void process(dt_iop_module_t *self,
     for(size_t k = 0; k < npixels; k++)
     {
       // Low pass correction for shadows and highlights
-      const float lowpass_correction = apply_shadows_highlights(luminance_lowpass[k], d);
+      const float lowpass_correction = apply_shadows_highlights(log_luminance_lowpass[k], d);
 
       // Apply correction in linear space
-      const float multiplier = exp2f(corrections[k] + lowpass_correction);;
-      for_each_channel(c)
+      const float multiplier = exp2f(corrections[k] + lowpass_correction);
+      for_three_channels(c)
         out[4 * k + c] = in[4 * k + c] * multiplier;
       out[4 * k + 3] = in[4 * k + 3];
     }
   }
 
-  dt_free_align(luminance_highpass);
-  dt_free_align(luminance_lowpass);
+  dt_free_align(log_luminance_highpass);
+  dt_free_align(log_luminance_lowpass);
   dt_free_align(corrections);
 }
 
@@ -518,24 +588,20 @@ void modify_roi_in(dt_iop_module_t *self,
 {
   dt_iop_contrastntexture_data_t *const d = piece->data;
 
-  // Get the scaled window radius for the box average
+  // Detail size in pixels of each pyramid level at the current scale
   const float max_size = (float)((piece->iwidth > piece->iheight) ? piece->iwidth : piece->iheight);
-  for(int level = 0; level < MAX_ITERATIONS; level++)
+  for(int pyramid_level = 0; pyramid_level < MAX_ITERATIONS; pyramid_level++)
   {
     const float base_diameter = max_size * roi_in->scale;
-    const float radius = 0.5f * fminf(d->scale_details[level], 0.5f) * base_diameter;
-    d->radius_details[level] = radius;
+    d->size_details[pyramid_level] = base_diameter * d->scale_details[pyramid_level];
   }
 
-  // Find the smallest level with non zero radius.
-  d->max_used_level = MAX_ITERATIONS - 1;
-  for(int level = MAX_ITERATIONS - 1; level >= 0; level--)
+  // The last level, i.e. the top of the pyramid that still has a usable size, level 0 is always processed.
+  d->max_used_pyramid_level = 0;
+  for(int pyramid_level = 1; pyramid_level < MAX_ITERATIONS; pyramid_level++)
   {
-    // If the radius is <2.0 pixels, the next level will be unused (<1.0)
-    if(d->radius_details[level] < 2.0f)
-    {
-      d->max_used_level = level;
-    }
+    if(d->size_details[pyramid_level] < NYQUIST_SIZE) break;
+    d->max_used_pyramid_level = pyramid_level;
   }
 }
 
@@ -564,16 +630,19 @@ void commit_params(dt_iop_module_t *self,
 
   const float max_piece_size = (float)((piece->iwidth > piece->iheight) ? piece->iwidth : piece->iheight);
   const float max_image_size = max_piece_size * piece->iscale;
-  d->max_detail_level = log2f(max_image_size) - p->detail_level - 1.0f;
+  d->max_pyramid_level = max_pyramid_level_for(max_image_size, p->base_detail_level);
 
   // UI contrast scale is inverse logarithmic with 0 as 100% of image width.
   // Convert it to a linear scale for processing. Scales are separated by powers of 2 for each step in the UI.
-  // The noise bias is reduced for each level in the pyramid.
-  for(int level = 0; level < MAX_ITERATIONS; level++)
+  // The noise bias is reduced for each pyramid level.
+  for(int pyramid_level = 0; pyramid_level < MAX_ITERATIONS; pyramid_level++)
   {
-    d->scale_details[level] = powf(2.0f, -p->detail_level - (float)level);
-    d->noise_bias[level] = p->noise_bias * powf(2.0f, fminf((float)level - d->max_detail_level, 0.0f));
+    d->scale_details[pyramid_level] = powf(2.0f, -p->base_detail_level - (float)pyramid_level);
+    d->noise_bias[pyramid_level]
+      = p->noise_bias * powf(2.0f, fminf((float)pyramid_level - d->max_pyramid_level, 0.0f));
   }
+  // Pre-compute the midtones pivot based on the noise bias at the base pyramid level and the middle grey reference.
+  d->midtones_pivot = log2f(d->noise_bias[0] + MIDDLE_GREY);
 
   // UI feathering is inverted (higher = stricter halo control).
   const float default_feathering = 0.2f;  // Base value based on Christian's experiments for a good balance of halo control and contrast boost at default settings.
@@ -606,10 +675,11 @@ void tiling_callback(dt_iop_module_t *self,
                      dt_develop_tiling_t *tiling)
 {
   // in and out plus the three grey full size buffers of process(). On the CPU,
-  // fast_eigf_surface_blur() adds a full size mask and 4 channel averages; on
-  // the GPU, the averages stay downscaled
+  // fast_eigf_surface_blur() adds a full size mask and 4 channel averages. On
+  // the GPU, the two grey buffers of process_cl() add the two channel moments
+  // and the two temporary two channel buffers of their gaussian
   tiling->factor = 2.0f + 3.0f / 4.0f + 1.0f / 4.0f + 1.0f;
-  tiling->factor_cl = 2.0f + 3.0f / 4.0f + 1.0f / 4.0f;
+  tiling->factor_cl = 2.0f + 2.0f / 4.0f + 2.0f / 4.0f + 4.0f / 4.0f;
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
@@ -618,51 +688,32 @@ void tiling_callback(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-// fast_eigf_surface_blur() of common/eigf.h without quantization, which is how
-// compute_mask() calls it. In place on a grey device buffer.
-static cl_int _fast_eigf_surface_blur_cl(const int devid,
-                                         const dt_iop_contrastntexture_global_data_t *const gd,
-                                         cl_mem dev_image,
-                                         const int width,
-                                         const int height,
-                                         const float sigma,
-                                         const float feathering)
+// fast_gaussian_guided_filter() of common/fast_gaussian_guided_filter.h, with
+// the value and its square blurred as the two channels of one gaussian. The
+// details kernel finishes the filter, so this leaves the blurred moments in
+// dev_moments and dev_image untouched
+static cl_int _gaussian_guided_filter_moments_cl(const int devid,
+                                                 const dt_iop_contrastntexture_global_data_t *const gd,
+                                                 cl_mem dev_image,
+                                                 cl_mem dev_moments,
+                                                 const int width,
+                                                 const int height,
+                                                 const float sigma)
 {
-  const float scaling = fmaxf(fminf(sigma, 4.0f), 1.0f);
-  const float ds_sigma = fmaxf(sigma / scaling, 1.0f);
-  const int ds_width = MAX(1, (int)((float)width / scaling));
-  const int ds_height = MAX(1, (int)((float)height / scaling));
-  const size_t ds_bsize = (size_t)ds_width * ds_height * sizeof(float);
-  const int blending = DT_GF_BLENDING_LINEAR;
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_guided_filter_pack, width, height,
+                 CLARG(dev_image), CLARG(dev_moments), CLARG(width), CLARG(height));
+  if(err != CL_SUCCESS) return err;
 
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
-  cl_mem dev_ds_av = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
-  if(!dev_ds_image || !dev_ds_av) goto error;
-
-  err = dt_interpolate_bilinear_cl(devid, dev_image, width, height,
-                                   dev_ds_image, ds_width, ds_height, 1);
-  if(err != CL_SUCCESS) goto error;
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_eigf_pack_2c, ds_width, ds_height,
-          CLARG(dev_ds_image), CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
-  if(err != CL_SUCCESS) goto error;
-
-  err = dt_gaussian_mean_blur_cl(devid, dev_ds_av, ds_width, ds_height, 2, ds_sigma);
-  if(err != CL_SUCCESS) goto error;
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_eigf_finish_2c, ds_width, ds_height,
-          CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
-  if(err != CL_SUCCESS) goto error;
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_eigf_blend_no_mask, width, height,
-          CLARG(dev_image), CLARG(width), CLARG(height),
-          CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height),
-          CLARG(blending), CLARG(feathering));
-
-error:
-  dt_opencl_release_mem_object(dev_ds_av);
-  dt_opencl_release_mem_object(dev_ds_image);
+  // the CPU bounds the gaussian by the range of the values. A blur stays
+  // within that range up to rounding, so wide bounds save a min/max
+  // reduction here. The square keeps its lower bound of 0
+  const float range = 1.0e9f;
+  const float max[2] = { range, range };
+  const float min[2] = { -range, 0.0f };
+  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, 2, max, min, sigma, 0);
+  if(!g) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  err = dt_gaussian_blur_cl_buffer(g, dev_moments, dev_moments);
+  dt_gaussian_free_cl(g);
   return err;
 }
 
@@ -684,8 +735,8 @@ int process_cl(dt_iop_module_t *self,
   const int height = roi_in->height;
   const size_t bsize = (size_t)width * height * sizeof(float);
 
-  // the gains per level and the mask display, as in process()
-  float gain_per_level[MAX_ITERATIONS] = { 0.0f };
+  // the gains per pyramid level and the mask display, as in process()
+  float gain_per_pyramid_level[MAX_ITERATIONS] = { 0.0f };
   dt_iop_contrastntexture_details_display_t details_display = DT_LC_MASK_OFF;
   gboolean display_mask = FALSE;
   if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe))
@@ -700,49 +751,53 @@ int process_cl(dt_iop_module_t *self,
   {
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     if(details_display != DT_LC_MASK_LAST)
-      for(int level = 0; level <= d->max_used_level; level++)
-        gain_per_level[level] = band_weight(details_display, level, d->max_detail_level);
+      for(int pyramid_level = 0; pyramid_level <= d->max_used_pyramid_level; pyramid_level++)
+        gain_per_pyramid_level[pyramid_level]
+          = band_weight(details_display, pyramid_level, d->max_pyramid_level);
   }
   else
   {
-    for(int level = 0; level <= d->max_used_level; level++)
+    for(int pyramid_level = 0; pyramid_level <= d->max_used_pyramid_level; pyramid_level++)
       for(int band = 0; band < DT_LC_MASK_LAST; band++)
-        gain_per_level[level] += d->gain_details[band] * band_weight(band, level, d->max_detail_level);
+        gain_per_pyramid_level[pyramid_level]
+          += d->gain_details[band] * band_weight(band, pyramid_level, d->max_pyramid_level);
   }
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  cl_mem dev_highpass = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem dev_lowpass = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem dev_moments = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
   cl_mem dev_corrections = dt_opencl_alloc_device_buffer(devid, bsize);
-  if(!dev_highpass || !dev_lowpass || !dev_corrections) goto error;
+  if(!dev_lowpass || !dev_moments || !dev_corrections) goto error;
 
-  const float max_noise_bias = d->noise_bias[d->max_used_level];
+  const float max_noise_bias = d->noise_bias[d->max_used_pyramid_level];
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_luminance, width, height,
-          CLARG(dev_in), CLARG(dev_lowpass), CLARG(dev_highpass), CLARG(width), CLARG(height),
-          CLARG(max_noise_bias));
+          CLARG(dev_in), CLARG(dev_lowpass), CLARG(width), CLARG(height), CLARG(max_noise_bias));
   if(err != CL_SUCCESS) goto error;
 
-  for(int level = d->max_used_level; level >= 0; level--)
+  for(int pyramid_level = d->max_used_pyramid_level; pyramid_level >= 0; pyramid_level--)
   {
-    err = _fast_eigf_surface_blur_cl(devid, gd, dev_lowpass, width, height,
-                                     d->radius_details[level], d->feathering);
+    const float sigma = SIZE_TO_SIGMA * d->size_details[pyramid_level];
+    err = _gaussian_guided_filter_moments_cl(devid, gd, dev_lowpass, dev_moments, width, height, sigma);
     if(err != CL_SUCCESS) goto error;
 
-    const float gain = gain_per_level[level];
-    const float noise_bias = d->noise_bias[level];
-    const float next_bias_step = level > 0 ? d->noise_bias[level] - d->noise_bias[level - 1] : 0.0f;
+    const float gain = gain_per_pyramid_level[pyramid_level];
+    const float noise_bias = d->noise_bias[pyramid_level];
+    const float next_bias_step = pyramid_level > 0
+                                 ? d->noise_bias[pyramid_level] - d->noise_bias[pyramid_level - 1]
+                                 : 0.0f;
     // the first level starts the sum, so the corrections need no clearing
-    const int accumulate = level < d->max_used_level;
+    const int accumulate = pyramid_level < d->max_used_pyramid_level;
+    const int last_level = pyramid_level == 0;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_details, width, height,
-            CLARG(dev_highpass), CLARG(dev_lowpass), CLARG(dev_corrections),
-            CLARG(width), CLARG(height), CLARG(gain), CLARG(noise_bias), CLARG(next_bias_step),
-            CLARG(accumulate));
+            CLARG(dev_lowpass), CLARG(dev_moments), CLARG(dev_corrections),
+            CLARG(width), CLARG(height), CLARG(d->feathering), CLARG(gain), CLARG(noise_bias),
+            CLARG(next_bias_step), CLARG(accumulate), CLARG(last_level));
     if(err != CL_SUCCESS) goto error;
   }
 
   if(display_mask && details_display == DT_LC_MASK_LAST)
   {
-    const float pivot_offset = d->noise_bias[0] + 0.1845f;
+    const float pivot_offset = d->noise_bias[0] + MIDDLE_GREY;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_display_lowpass, width, height,
             CLARG(dev_out), CLARG(dev_lowpass), CLARG(width), CLARG(height), CLARG(pivot_offset));
   }
@@ -755,17 +810,16 @@ int process_cl(dt_iop_module_t *self,
   {
     const float polynomial[4] = { d->midtones_polynomial[0], d->midtones_polynomial[1],
                                   d->midtones_polynomial[2], 0.0f };
-    const float pivot_offset = log2f(d->noise_bias[0] + 0.1845f);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_apply, width, height,
             CLARG(dev_in), CLARG(dev_out), CLARG(dev_lowpass), CLARG(dev_corrections),
             CLARG(width), CLARG(height), CLARG(d->slope_shadows), CLARG(d->slope_highlights),
-            CLARG(d->midtones_width), CLFLARRAY(4, polynomial), CLARG(pivot_offset));
+            CLARG(d->midtones_width), CLFLARRAY(4, polynomial), CLARG(d->midtones_pivot));
   }
 
 error:
   dt_opencl_release_mem_object(dev_corrections);
+  dt_opencl_release_mem_object(dev_moments);
   dt_opencl_release_mem_object(dev_lowpass);
-  dt_opencl_release_mem_object(dev_highpass);
   return err;
 }
 #endif
@@ -773,7 +827,6 @@ error:
 void init_global(dt_iop_module_so_t *self)
 {
   const int program = 46; // contrastntexture.cl, from programs.conf
-  const int program_toneequal = 45; // toneequal.cl
   dt_iop_contrastntexture_global_data_t *gd = malloc(sizeof(dt_iop_contrastntexture_global_data_t));
   self->data = gd;
   gd->kernel_luminance = dt_opencl_create_kernel(program, "contrastntexture_luminance");
@@ -781,9 +834,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_apply = dt_opencl_create_kernel(program, "contrastntexture_apply");
   gd->kernel_display_details = dt_opencl_create_kernel(program, "contrastntexture_display_details");
   gd->kernel_display_lowpass = dt_opencl_create_kernel(program, "contrastntexture_display_lowpass");
-  gd->kernel_eigf_pack_2c = dt_opencl_create_kernel(program_toneequal, "toneequal_eigf_pack_2c");
-  gd->kernel_eigf_finish_2c = dt_opencl_create_kernel(program_toneequal, "toneequal_eigf_finish_2c");
-  gd->kernel_eigf_blend_no_mask = dt_opencl_create_kernel(program_toneequal, "toneequal_eigf_blend_no_mask");
+  gd->kernel_guided_filter_pack = dt_opencl_create_kernel(program, "contrastntexture_guided_filter_pack");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -794,9 +845,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_apply);
   dt_opencl_free_kernel(gd->kernel_display_details);
   dt_opencl_free_kernel(gd->kernel_display_lowpass);
-  dt_opencl_free_kernel(gd->kernel_eigf_pack_2c);
-  dt_opencl_free_kernel(gd->kernel_eigf_finish_2c);
-  dt_opencl_free_kernel(gd->kernel_eigf_blend_no_mask);
+  dt_opencl_free_kernel(gd->kernel_guided_filter_pack);
   free(self->data);
   self->data = NULL;
 }
@@ -824,7 +873,7 @@ static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self
   g->details_display = DT_LC_MASK_OFF;
   if(toggle_is_active)
   {
-    if(togglebutton == g->detail_level)
+    if(togglebutton == g->base_detail_level)
     {
       g->details_display = DT_LC_MASK_LAST;
     }
@@ -846,7 +895,8 @@ static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self
   {
     dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->gain_details[i]), g->details_display == i);
   }
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->detail_level), g->details_display == DT_LC_MASK_LAST);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->base_detail_level), g->details_display == DT_LC_MASK_LAST);
+  gtk_widget_queue_draw(g->gain_graph);
   dt_iop_refresh_center(self);
 }
 
@@ -860,10 +910,223 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
     g->details_display = DT_LC_MASK_OFF;
     for(int i = 0; i < DT_LC_MASK_LAST; i++)
       dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->gain_details[i]), FALSE);
-    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->detail_level), FALSE);
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->base_detail_level), FALSE);
+    gtk_widget_queue_draw(g->gain_graph);
     if(was_mask)
       dt_iop_refresh_center(self);
   }
+}
+
+static void draw_label(cairo_t *cr,
+                       PangoLayout *layout,
+                       const char *text,
+                       const double x,
+                       const double y,
+                       const double ax,
+                       const double ay)
+{
+  PangoRectangle ink;
+  pango_layout_set_text(layout, text, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, x - ax * (ink.x + ink.width), y - ay * (ink.y + ink.height));
+  pango_cairo_show_layout(cr, layout);
+}
+
+// the image dimensions are unknown until the image is loaded
+static float gui_max_image_size(const dt_iop_module_t *self)
+{
+  const dt_image_t *img = &self->dev->image_storage;
+  const float image_size = (float)MAX(img->width, img->height);
+  return image_size > 1.0f ? image_size : 4096.0f;
+}
+
+static gboolean gain_graph_draw(GtkWidget *widget,
+                                cairo_t *cr,
+                                dt_iop_module_t *self)
+{
+  const dt_iop_contrastntexture_params_t *p = self->params;
+  const dt_iop_contrastntexture_gui_data_t *g = self->gui_data;
+
+  const float max_image_size = gui_max_image_size(self);
+
+  const float x_min = 1.0f;
+  const float x_max = fmaxf(max_pyramid_level_for(max_image_size, 0.0f) + 1.0f, x_min);
+  const float max_pyramid_level = max_pyramid_level_for(max_image_size, p->base_detail_level);
+  const float band_gains[DT_LC_MASK_LAST] = { p->gain_coarse, p->gain_medium, p->gain_fine };
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  PangoFontDescription *desc = dt_gui_get_font();
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
+  PangoRectangle ink;
+  pango_layout_set_text(layout, "-100%", -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+
+  const double margin_left = ink.width + DT_PIXEL_APPLY_DPI(6);
+  const double margin_bottom = DT_PIXEL_APPLY_DPI(4);
+  const double margin_top = DT_PIXEL_APPLY_DPI(4);
+  const double margin_right = DT_PIXEL_APPLY_DPI(4);
+  const double width = allocation.width - margin_left - margin_right;
+  const double height = allocation.height - margin_top - margin_bottom;
+  if(width < 10.0 || height < 10.0)
+  {
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+    return FALSE;
+  }
+
+  // Determine whether a single band is being previewed, which affects the y-axis range and the total gain calculation.
+  const gboolean band_preview = g->details_display != DT_LC_MASK_OFF && g->details_display != DT_LC_MASK_LAST;
+
+  // The band weights sum to 1 at every level, so the total gain is a weighted average of the band gains
+  // and never leaves their range. The y-range can therefore be set up front. A previewed band is
+  // shown alone at full strength, i.e. 0 to 100%.
+  float y_min = -0.5f, y_max = 0.5f;
+  if(band_preview)
+  {
+    y_max = 1.0f;
+  }
+  else
+  {
+    for(int band = 0; band < DT_LC_MASK_LAST; band++)
+    {
+      y_min = fminf(y_min, band_gains[band]);
+      y_max = fmaxf(y_max, band_gains[band]);
+    }
+  }
+  const float y_pad = 0.05f * (y_max - y_min);
+  y_min -= y_pad;
+  y_max += y_pad;
+
+  // The curve is a stair function to reflect the underlying detail structure:
+  // it only changes at whole pyramid levels, so one value per pyramid level is enough.
+  const int level_count = CLAMP((int)floorf(x_max - p->base_detail_level) + 1, 1, MAX_ITERATIONS);
+  float total_gain_per_level[MAX_ITERATIONS];
+  for(int pyramid_level = 0; pyramid_level < level_count; pyramid_level++)
+  {
+    float total_gain = 0.0f;
+    if(band_preview)
+      total_gain = band_weight(g->details_display, pyramid_level, max_pyramid_level);
+    else
+    {
+      for(int band = 0; band < DT_LC_MASK_LAST; band++)
+      {
+        total_gain += band_gains[band] * band_weight(band, pyramid_level, max_pyramid_level);
+      }
+    }
+    total_gain_per_level[pyramid_level] = total_gain;
+  }
+
+  cairo_translate(cr, margin_left, margin_top);
+  set_color(cr, darktable.bauhaus->graph_bg);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+
+  // y(value) and x(value) to pixel coordinates
+#define GRAPH_X(v) (((v) - x_min) / (x_max - x_min) * width)
+#define GRAPH_Y(v) ((1.0 - ((v) - y_min) / (y_max - y_min)) * height)
+
+  // filter instances in use, one per pyramid level starting at the base detail level
+  int max_used_pyramid_level = 0;
+  for(int pyramid_level = 0; pyramid_level < MAX_ITERATIONS; pyramid_level++)
+  {
+    const float scale = powf(2.0f, -p->base_detail_level - (float)pyramid_level);
+    const float detail_size = max_image_size * scale;
+    if(pyramid_level > 0 && detail_size < NYQUIST_SIZE) break;
+    max_used_pyramid_level = pyramid_level;
+  }
+  cairo_save(cr);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_clip(cr);
+  const gboolean lowpass_preview = g->details_display == DT_LC_MASK_LAST;
+  const double dashes[] = { DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(5) };
+  cairo_set_dash(cr, dashes, 2, 0);
+  set_color(cr, darktable.bauhaus->graph_overlay);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+  for(int pyramid_level = 0; pyramid_level <= max_used_pyramid_level; pyramid_level++)
+  {
+    const float detail = p->base_detail_level + (float)pyramid_level;
+    if(detail < x_min || detail > x_max) continue;
+    // the base detail level is solid and brighter than the other filter instances
+    if(pyramid_level == 0)
+    {
+      cairo_set_dash(cr, NULL, 0, 0);
+      // highlighted while the base detail level preview shows the low pass of that level
+      set_color(cr, lowpass_preview ? darktable.bauhaus->graph_fg_active : darktable.bauhaus->graph_fg);
+      if(lowpass_preview) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0));
+    }
+    cairo_move_to(cr, GRAPH_X(detail), 0);
+    cairo_line_to(cr, GRAPH_X(detail), height);
+    cairo_stroke(cr);
+    if(pyramid_level == 0)
+    {
+      cairo_set_dash(cr, dashes, 2, 0);
+      set_color(cr, darktable.bauhaus->graph_overlay);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+    }
+  }
+  cairo_restore(cr);
+
+  // y zero line
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+  set_color(cr, darktable.bauhaus->graph_overlay);
+  cairo_move_to(cr, 0, GRAPH_Y(0.0f));
+  cairo_line_to(cr, width, GRAPH_Y(0.0f));
+  cairo_stroke(cr);
+
+  // total gain curve
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+  set_color(cr, darktable.bauhaus->graph_fg_active);
+  // detail levels finer than the base detail level are not processed, so the curve starts there
+  for(int pyramid_level = 0; pyramid_level < level_count; pyramid_level++)
+  {
+    const float detail_start = p->base_detail_level + (float)pyramid_level;
+    const float detail_end = fminf(detail_start + 1.0f, x_max);
+    const double pixel_y = GRAPH_Y(total_gain_per_level[pyramid_level]);
+    if(pyramid_level == 0) cairo_move_to(cr, GRAPH_X(detail_start), pixel_y);
+    else cairo_line_to(cr, GRAPH_X(detail_start), pixel_y);
+    cairo_line_to(cr, GRAPH_X(detail_end), pixel_y);
+  }
+  cairo_stroke(cr);
+
+  // labels
+  set_color(cr, darktable.bauhaus->graph_fg);
+  char text[32];
+  const float y_values[3] = { y_min + y_pad, 0.0f, y_max - y_pad };
+  for(int i = 0; i < 3; i++)
+  {
+    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_values[i]);
+    draw_label(cr, layout, text, -DT_PIXEL_APPLY_DPI(3), GRAPH_Y(y_values[i]), 1.0, 0.5);
+  }
+#undef GRAPH_X
+#undef GRAPH_Y
+
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+  return FALSE;
+}
+
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
+{
+  dt_iop_contrastntexture_gui_data_t *g = self->gui_data;
+  gtk_widget_queue_draw(g->gain_graph);
+}
+
+void gui_update(dt_iop_module_t *self)
+{
+  dt_iop_contrastntexture_gui_data_t *g = self->gui_data;
+
+  // at the maximum, coarse, medium and fine each sit on exactly one pyramid level
+  const float hard_min = dt_bauhaus_slider_get_hard_min(g->base_detail_level);
+  const float hard_max = fmaxf(max_pyramid_level_for(gui_max_image_size(self), 2.0f), hard_min);
+  dt_bauhaus_slider_set_hard_max(g->base_detail_level, hard_max);
+
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -876,29 +1139,27 @@ void gui_init(dt_iop_module_t *self)
   // Main container
   self->widget = dt_gui_vbox();
 
-  g->detail_level = dt_bauhaus_slider_from_params(self, "detail_level");
-  dt_bauhaus_slider_set_soft_range(g->detail_level, 1.0, 10.0);
-  gtk_widget_set_tooltip_text(g->detail_level,
+  dt_gui_new_collapsible_section(&g->graph_section, "plugins/darkroom/contrastntexture/expand_gain_graph",
+                                 _("show gain graph"), GTK_BOX(self->widget), DT_ACTION(self));
+  g->gain_graph = dtgtk_drawing_area_new_with_aspect_ratio(0.5f);
+  gtk_widget_set_tooltip_text(g->gain_graph,
+     _("total gain applied per detail size.\n"
+       "solid vertical line: base detail level\n"
+       "dashed vertical lines: filter instances (pyramid levels) in use"));
+  g_signal_connect(G_OBJECT(g->gain_graph), "draw", G_CALLBACK(gain_graph_draw), self);
+  dt_gui_box_add(g->graph_section.container, g->gain_graph);
+
+  g->base_detail_level = dt_bauhaus_slider_from_params(self, "base_detail_level");
+  gtk_widget_set_tooltip_text(g->base_detail_level,
      _("adjust the detail level used for highlights, shadows, and coarse details.\n"
        "higher = more contrast boost in finer details\n"
        "lower = more contrast boost in coarser details\n"
        "press the mask button to preview the low pass filter result used for shadows/highlights."));
-  dt_bauhaus_widget_set_quad(g->detail_level, self, dtgtk_cairo_paint_showmask, TRUE, show_details_callback,
+  dt_bauhaus_widget_set_quad(g->base_detail_level, self, dtgtk_cairo_paint_showmask, TRUE, show_details_callback,
                              _("preview the low pass filter result used for shadows(blue)/highlights(yellow)."));
 
-  // Highlights and shadows sliders
-  g->gain_highlights = dt_bauhaus_slider_from_params(self, "gain_highlights");
-  dt_bauhaus_slider_set_soft_range(g->gain_highlights, -2.0, 2.0);
-  gtk_widget_set_tooltip_text(g->gain_highlights,
-    _("adjust highlights at the base detail level size."));
-  g->gain_shadows = dt_bauhaus_slider_from_params(self, "gain_shadows");
-  dt_bauhaus_slider_set_soft_range(g->gain_shadows, -2.0, 2.0);
-  gtk_widget_set_tooltip_text(g->gain_shadows,
-    _("adjust shadows at the base detail level size."));
-
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(_("local contrast")));
-
   // Details boost sliders
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(_("texture")));
   const char *labels[DT_LC_MASK_LAST] = {"gain_coarse", "gain_medium", "gain_fine"};
   for(int i = 0; i < DT_LC_MASK_LAST; i++)
   {
@@ -925,6 +1186,17 @@ void gui_init(dt_iop_module_t *self)
                                 "press the mask button to preview the effect."));
   dt_bauhaus_widget_set_quad(g->gain_details[DT_LC_MASK_FINE], self, dtgtk_cairo_paint_showmask, TRUE, show_details_callback,
                              _("preview the size of the fine details to adjust."));
+
+  // Highlights and shadows sliders
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(_("contrast")));
+  g->gain_highlights = dt_bauhaus_slider_from_params(self, "gain_highlights");
+  dt_bauhaus_slider_set_soft_range(g->gain_highlights, -2.0, 2.0);
+  gtk_widget_set_tooltip_text(g->gain_highlights,
+    _("adjust highlights at the base detail level size."));
+  g->gain_shadows = dt_bauhaus_slider_from_params(self, "gain_shadows");
+  dt_bauhaus_slider_set_soft_range(g->gain_shadows, -2.0, 2.0);
+  gtk_widget_set_tooltip_text(g->gain_shadows,
+    _("adjust shadows at the base detail level size."));
 
   // Filter settings section
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "filter settings")));
