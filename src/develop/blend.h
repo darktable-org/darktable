@@ -616,13 +616,16 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_selection_compose_btn;
   GtkWidget *masks_selection_delete_btn;
   GtkWidget *masks_selection_presets_btn;
-  // the members picked together with shift+click (see _pick_toggle): ids as
+  // the members picked together with ctrl/cmd+click or shift+click (see _pick_toggle): ids as
   // the rows carry them, an element's form id or a group's cid, in the order
   // they were picked. NULL unless two or more are picked, which
   // dt_masks_model_pick_toggle keeps true; then the "multiple selection"
   // panel (masks_multi_area, see _multi_panel_sync) stands in for the
   // selection panel above. Touched on the GUI thread only
   GList *masks_picked;
+  // the pick id a shift+click range starts from while there are picks: the
+  // row last picked with ctrl/cmd+click (see _range_anchor)
+  dt_mask_id_t masks_range_anchor;
   // what the bulk actions took away from the picks (see _picks_undo_t), newest
   // first: an undo that brings back the mask as it was before one brings the
   // picks back with it. masks_picks_undo_check asks the next list build to
