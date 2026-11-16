@@ -1164,6 +1164,10 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed typing in the styles module list opening a second search box
+  that grabbed the keyboard focus, so shortcuts stopped working until
+  you clicked elsewhere.
+
 ## Lua
 
 ### API Version
