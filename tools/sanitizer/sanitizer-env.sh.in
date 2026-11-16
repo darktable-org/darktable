@@ -78,6 +78,13 @@ _dt_san_active()
 # aggregate-reports.py deduplicates. It also keeps a leak report from turning
 # the exit status non-zero, which the suite would read as "darktable-cli
 # errored" and skip the image comparison.
+#
+# use_sigaltstack=0 because an OpenCL compiler built on LLVM, such as ROCm's,
+# installs a malloc'd alternate signal stack on the threads it runs on, and ASan
+# unmaps whatever alternate stack is current when a thread exits. munmap fails
+# with EINVAL and ASan aborts the run ("failed to deallocate"). The cost is that
+# a stack overflow crashes without an ASan report; other findings are
+# unaffected.
 if _dt_san_active address; then
 ASAN_OPTIONS="log_path=$DT_SAN_LOGDIR/asan\
 :detect_leaks=1\
@@ -88,7 +95,8 @@ ASAN_OPTIONS="log_path=$DT_SAN_LOGDIR/asan\
 :strict_string_checks=1\
 :print_stats=0\
 :handle_segv=1\
-:handle_abort=1"
+:handle_abort=1\
+:use_sigaltstack=0"
 export ASAN_OPTIONS
 fi
 
