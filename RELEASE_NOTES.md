@@ -1200,6 +1200,9 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed darktable freezing when dragging a Bézier handle of a path or
+  AI object mask node whose other handle sits on the node itself.
+
 ## Lua
 
 ### API Version
