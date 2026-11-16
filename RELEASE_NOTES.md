@@ -625,6 +625,10 @@ changes (where available).
 - Fixed faint seams on a 112 pixel grid in images demosaiced with
   LMMSE, where each tile read leftover data from the previous tile.
 
+- Fixed the macOS title bar and menu bar covering the top of
+  darktable's window when it started in full screen, until the pointer
+  was moved to the top edge of the screen.
+
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
   the device.
