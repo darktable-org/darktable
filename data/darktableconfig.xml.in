@@ -4556,6 +4556,27 @@
     <longdescription>maximum height the snapshots list in darkroom will grow to before scrolling</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/snapshots/sidebyside</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>snapshot side-by-side</shortdescription>
+    <longdescription>show snapshots and compared history steps side by side instead of overlaid with a split line</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/snapshots/vertical</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>snapshot split is vertical</shortdescription>
+    <longdescription>split the comparison left/right instead of top/bottom</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/snapshots/inverted</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>snapshot sides swapped</shortdescription>
+    <longdescription>show the snapshot on the opposite side of the split</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/style/windowheight</name>
     <type>int</type>
     <default>400</default>

@@ -111,6 +111,15 @@ static int _compare_history_end(const dt_lib_snapshots_t *d)
 
 static void _compare_rotate(dt_lib_module_t *self);
 
+// the layout of the comparison is a global preference shared with the history
+// module, so it is kept across snapshots and sessions
+static void _layout_store(const dt_lib_snapshots_t *d)
+{
+  dt_conf_set_bool("plugins/darkroom/snapshots/sidebyside", d->sidebyside);
+  dt_conf_set_bool("plugins/darkroom/snapshots/vertical", d->vertical);
+  dt_conf_set_bool("plugins/darkroom/snapshots/inverted", d->inverted);
+}
+
 static void _compare_changed(void)
 {
   // turning the split makes sense while a snapshot is shown
@@ -516,6 +525,7 @@ int button_released(struct dt_lib_module_t *self,
     if(!d->separator_dragged)
     {
       d->inverted = !d->inverted;
+      _layout_store(d);
       d->snap_requested = TRUE;
       dt_control_queue_redraw_center();
     }
@@ -539,6 +549,7 @@ int button_released(struct dt_lib_module_t *self,
       d->vp_xpointer = d->line_xp;
       d->vp_ypointer = d->line_yp;
       d->inverted = !d->inverted;
+      _layout_store(d);
       d->snap_requested = TRUE;
       dt_control_queue_redraw_center();
     }
@@ -610,6 +621,7 @@ int button_pressed(struct dt_lib_module_t *self,
       gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
                                      d->vertical ?  GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
       if(_lib_snapshot_rotation_cnt % 2) d->inverted = !d->inverted;
+      _layout_store(d);
       if(d->sidebyside)
         d->snap_requested = TRUE;
 
@@ -983,6 +995,7 @@ static void _sidebyside_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_snapshots_t *d = self->data;
 
   d->sidebyside = !d->sidebyside;
+  _layout_store(d);
   d->snap_requested = TRUE;
   gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui),
                          d->sidebyside && d->selected >= 0);
@@ -1006,7 +1019,9 @@ void gui_init(dt_lib_module_t *self)
   d->vp_ypointer = 0.5;
   d->vp_xrotate = 0.0;
   d->vp_yrotate = 0.0;
-  d->vertical = TRUE;
+  d->sidebyside = dt_conf_get_bool("plugins/darkroom/snapshots/sidebyside");
+  d->vertical = dt_conf_get_bool("plugins/darkroom/snapshots/vertical");
+  d->inverted = dt_conf_get_bool("plugins/darkroom/snapshots/inverted");
   d->on_going = FALSE;
   d->rotsym_lightup = FALSE;
   d->panning = FALSE;
@@ -1014,6 +1029,8 @@ void gui_init(dt_lib_module_t *self)
   d->snap_requested = FALSE;
   d->expose_again_timeout_id = 0;
   d->num_snapshots = 0;
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
+                                 d->vertical ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
   darktable.lib->proxy.snapshots.enabled = FALSE;
   darktable.lib->proxy.snapshots.module = self;
   darktable.lib->proxy.snapshots.compare_history = _compare_history;
@@ -1100,6 +1117,7 @@ void gui_init(dt_lib_module_t *self)
   // the icon shows the mode, as in the history module: no toggled background
   dt_gui_add_class(d->sidebyside_button, "dt_transparent_background");
   dt_gui_add_class(d->sidebyside_button, "dt_ignore_fg_state");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->sidebyside_button), d->sidebyside);
   gtk_widget_set_sensitive(d->sidebyside_button, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), d->sidebyside_button, FALSE, TRUE, 0);
   d->rotate_button = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
@@ -1118,6 +1136,9 @@ void gui_init(dt_lib_module_t *self)
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGE_REMOVED, _signal_image_removed);
+
+  // the history module may have been set up first, with the saved mode unknown
+  _compare_changed();
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1269,10 +1290,6 @@ static void _compare_history(dt_lib_module_t *self,
   _take_snapshot(self, history_end);
   d->compare_id = d->snapshot[d->num_snapshots - 1].id;
 
-  // side-by-side is the way to start, but whatever the user picks after that
-  // stays. The toggled callback below reads d->sidebyside, so set it first
-  if(shown < 0) _compare_set_sidebyside(self, TRUE);
-
   gtk_toggle_button_set_active
     (GTK_TOGGLE_BUTTON(d->snapshot[d->num_snapshots - 1].button), TRUE);
 }
@@ -1306,6 +1323,7 @@ static void _compare_rotate(dt_lib_module_t *self)
   dt_lib_snapshots_t *d = self->data;
 
   d->vertical = !d->vertical;
+  _layout_store(d);
   gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
                                  d->vertical ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
   d->snap_requested = TRUE;
@@ -1450,6 +1468,7 @@ static int direction_member(lua_State *L)
       d->vertical = TRUE;
       d->inverted = TRUE;
     }
+    _layout_store(d);
     dt_control_queue_redraw_center();
     return 0;
   }
