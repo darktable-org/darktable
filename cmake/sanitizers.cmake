@@ -92,7 +92,12 @@ if("undefined" IN_LIST _dt_san_list)
   # vptr is off because the dlopen'd C++ modules are built with hidden
   # visibility (cmake/manage-symbol-visibility.cmake), which makes the check
   # unreliable across module boundaries.
-  list(APPEND _dt_san_flags -fsanitize=undefined -fno-sanitize=vptr -fsanitize-recover=all)
+  #
+  # float-cast-overflow is not part of -fsanitize=undefined in gcc or clang.
+  # Without it a NaN converted to int goes unreported and only surfaces later
+  # as INT_MIN overflowing in integer arithmetic, far from the conversion.
+  list(APPEND _dt_san_flags -fsanitize=undefined -fsanitize=float-cast-overflow
+                            -fno-sanitize=vptr -fsanitize-recover=all)
   if(DT_SANITIZE_EXTRA_CHECKS)
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
       list(APPEND _dt_san_flags
