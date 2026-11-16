@@ -745,7 +745,7 @@ int main(int argc, char *arg[])
   if(verbose)
   {
     int id = GPOINTER_TO_INT(id_list->data);
-    gchar *history = dt_history_get_items_as_string(id);
+    gchar *history = dt_history_get_items_as_string(id, 0);
     if(history)
       printf("%s\n", history);
     else
