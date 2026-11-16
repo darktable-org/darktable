@@ -161,6 +161,10 @@ changes (where available).
   rotate button, and the mode and rotate buttons of the snapshots and
   history modules show the same state.
 
+- The comparison layout (side by side or overlay, and the direction of
+  the split) is remembered across snapshots and sessions, and is shared
+  by the snapshots and history modules.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
