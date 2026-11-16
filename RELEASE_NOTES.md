@@ -1164,6 +1164,11 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed darktable on macOS starting with an oversized, blurry layout,
+  with clipped panel labels and a half-drawn bottom panel, when it was
+  last closed maximized. Until now, it only looked right after the
+  window was resized once.
+
 ## Lua
 
 ### API Version
