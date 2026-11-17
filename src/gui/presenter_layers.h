@@ -139,6 +139,15 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
                                                   gchar **reason);
 #endif
 
+#ifdef HAVE_QUARTZ_PRESENTER
+/** the macOS platform of toplevel. NULL with *reason NULL if toplevel is
+ * no Quartz window, NULL with *reason set, which the caller frees, if it
+ * cannot set up */
+dt_presenter_platform_t *dt_presenter_quartz_new(GtkWidget *toplevel,
+                                                 dt_presenter_window_t *window,
+                                                 gchar **reason);
+#endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
