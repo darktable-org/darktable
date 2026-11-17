@@ -1215,6 +1215,9 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed the GPS pin and flash emoji of the extended overlay staying
+  visible on all lighttable thumbnails instead of only the hovered one.
+
 ## Lua
 
 ### API Version

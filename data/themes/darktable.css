@@ -2260,6 +2260,12 @@ filmstrip-thumbnail-boxes as for the canvas background */
   color: transparent;
 }
 
+/* color emoji (GPS pin, flash) ignore the text color, so also hide the label with opacity */
+#thumb-bottom-label
+{
+  opacity: 0;
+}
+
 #thumbtable-filmstrip #thumb-main:active #thumb-cursor
 {
   color: @bg_color;
@@ -2424,6 +2430,15 @@ filmstrip-thumbnail-boxes as for the canvas background */
 .dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
+}
+
+/* show the bottom label wherever its text color is made visible above */
+.dt_overlays_always_extended #thumb-bottom-label,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
+{
+  opacity: 1;
 }
 
 .dt_overlays_always_extended.dt_fullview #thumb-main:hover #thumb-bottom-label,
