@@ -18,6 +18,8 @@
 
 #include "common.h"
 
+#define INVERSE_SQRT_3 0.5773502691896258f
+
 // see compute_luminance(): the log luminance, input of the first level
 kernel void contrastntexture_luminance(read_only image2d_t in,
                                        global float *const log_luminance,
@@ -30,7 +32,7 @@ kernel void contrastntexture_luminance(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   const float4 pixel = Areadpixel(in, x, y);
-  const float norm = (1.0f / sqrt(3.0f)) * dtcl_sqrt(pixel.x * pixel.x + pixel.y * pixel.y + pixel.z * pixel.z)
+  const float norm = INVERSE_SQRT_3 * dtcl_sqrt(pixel.x * pixel.x + pixel.y * pixel.y + pixel.z * pixel.z)
                      + noise_bias;
   log_luminance[mad24(y, width, x)] = dtcl_log2(fmax(norm, NORM_MIN));
 }
@@ -78,13 +80,13 @@ kernel void contrastntexture_details(global float *const log_luminance,
   const float log_pixel = log_luminance[k];
   const float2 m = moments[k];
   const float variance = fmax(m.y - m.x * m.x, 0.0f);
-  const float a = variance / (variance + feathering);
+  const float a = fp32_div(variance, variance + feathering);
   const float log_smoothed = a * log_pixel + (1.0f - a) * (m.x + center);
   const float smoothed = dtcl_exp2(log_smoothed);
 
   const float noise_power = noise_bias * noise_bias;
   const float combined_power = smoothed * smoothed;
-  const float wiener_gain = fmax(combined_power - noise_power, 0.0f) / fmax(combined_power, NORM_MIN);
+  const float wiener_gain = fp32_div(fmax(combined_power - noise_power, 0.0f), fmax(combined_power, NORM_MIN));
   const float detail = gain * (wiener_gain * clamp(log_pixel - log_smoothed, -5.0f, 5.0f));
   corrections[k] = accumulate ? corrections[k] + detail : detail;
 

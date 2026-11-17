@@ -92,6 +92,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_contrastntexture_params_t)
 
 // Standard scene-referred midtone pivot.
 #define MIDDLE_GREY 0.1845f
+#define INVERSE_SQRT_3 0.5773502691896258f
 // Detail sizes in pixels for the low pass filter, a size of 1 px is the nyquist limit "half period".
 // Detail size 1 px barely extracts any feature, 2 px is therefore where the max_pyramid_level is placed.
 #define NYQUIST_SIZE 1.0f
@@ -268,7 +269,6 @@ static inline void compute_luminance(const float *const restrict linear_rgb,
   const size_t height = (size_t)roi_in->height;
   const size_t npixels = width * height;
 
-  const float normalize_luminance = 1.0f / sqrtf(3.0f);
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
@@ -278,7 +278,7 @@ static inline void compute_luminance(const float *const restrict linear_rgb,
       const float channel_value = linear_rgb[4 * k + c];
       rgb_square_sum += channel_value * channel_value;
     }
-    const float rgb_norm = normalize_luminance * sqrtf(rgb_square_sum) + noise_bias;
+    const float rgb_norm = INVERSE_SQRT_3 * sqrtf(rgb_square_sum) + noise_bias;
     log_luminance[k] = log2f(fmaxf(rgb_norm, NORM_MIN));
   }
 }
