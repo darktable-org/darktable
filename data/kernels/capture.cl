@@ -243,28 +243,33 @@ __kernel void modify_blend(global float *blend,
 
   float sum = 0.0f;
   float sum_sq = 0.0f;
+  const float reference = Yold[mad24(row, width, col)];
   for(int y = row-1; y < row+2; y++)
   {
     for(int x = col-2; x < col+3; x++)
     {
-      sum += Yold[mad24(y, width, x)];
-      sum_sq += fsquare(Yold[mad24(y, width, x)]);
+      const float delta = Yold[mad24(y, width, x)] - reference;
+      sum += delta;
+      sum_sq += delta*delta;
     }
   }
   for(int x = col-1; x < col+2; x++)
   {
-    sum += Yold[mad24(row-2, width, x)];
-    sum_sq += fsquare(Yold[mad24(row-2, width, x)]);
-    sum += Yold[mad24(row+2, width, x)];
-    sum_sq += fsquare(Yold[mad24(row+2, width, x)]);
+    float delta = Yold[mad24(row-2, width, x)] - reference;
+    sum += delta;
+    sum_sq += delta*delta;
+    delta = Yold[mad24(row+2, width, x)] - reference;
+    sum += delta;
+    sum_sq += delta*delta;
   }
+  const float mean_delta = fp32_div(sum, 21.0f);
+  const float mean = fmax(NORM_MIN, reference + mean_delta);
+  const float variance = fmax(0.0f, fp32_div(sum_sq, 21.0f) - mean_delta * mean_delta);
+  const float modified_coef_variation = sqrt(fp32_div(variance, mean));
 
+  const float t = log(1.0f + modified_coef_variation);
+  const float weight = fp32_div(1.0f, 1.0f + exp(offset - tscale * t));
   const int k = mad24(irow, width, icol);
-  const float sum_of_squares = fmax(0.0f, sum_sq - fp32_div(fsquare(sum), 21.0f));
-  const float std_deviation = sqrt(fp32_div(sum_of_squares, 21.0f));
-  const float modified_coef_variation = fp32_div(std_deviation, sqrt(fmax(NORM_MIN, fp32_div(sum, 21.0f))));
-  const float t = dtcl_log(1.0f + modified_coef_variation);
-  const float weight = fp32_div(1.0f, (1.0f + exp(offset - tscale * t)));
   blend[k] = clipf(blend[k] * 1.01011f * (weight - 0.01f));
   luminance[k] = Yold[k];
 }

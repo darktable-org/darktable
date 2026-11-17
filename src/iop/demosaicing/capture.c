@@ -784,28 +784,32 @@ static void _modify_blend(float *blend,
     {
       const int col = CLAMP(icol, 2, width-3);
       const size_t k = (size_t)irow * width + icol;
+      const float reference = Yold[(size_t)row * width + col];
       float sum = 0.0f;
       float sum_sq = 0.0f;
       for(int y = row-1; y < row+2; y++)
       {
         for(int x = col-2; x < col+3; x++)
         {
-          sum += Yold[(size_t)y*width + x];
-          sum_sq += sqrf(Yold[(size_t)y*width + x]);
+          const float delta = Yold[(size_t)y*width + x] - reference;
+          sum += delta;
+          sum_sq += delta*delta;
         }
       }
       for(int x = col-1; x < col+2; x++)
       {
-        sum += Yold[(size_t)(row-2)*width + x];
-        sum_sq += sqrf(Yold[(size_t)(row-2)*width + x]);
-        sum += Yold[(size_t)(row+2)*width + x];
-        sum_sq += sqrf(Yold[(size_t)(row+2)*width + x]);
+        float delta = Yold[(size_t)(row-2)*width + x] - reference;
+        sum += delta;
+        sum_sq += delta * delta;
+        delta = Yold[(size_t)(row+2)*width + x] - reference;
+        sum += delta;
+        sum_sq += delta*delta;
       }
       // we don't have to count locations as it's always 21
-      const float sum_of_squares = MAX(0.0f, sum_sq - sqrf(sum) / 21.0f);
-      const float std_deviation = sqrtf(sum_of_squares / 21.0f);
-      const float mean = MAX(NORM_MIN, sum / 21.0f);
-      const float modified_coef_variation = std_deviation / sqrtf(mean);
+      const float mean_delta = sum / 21.0f;
+      const float mean = MAX(NORM_MIN, reference + mean_delta);
+      const float variance = MAX(0.0f, sum_sq / 21.0f - mean_delta * mean_delta);
+      const float modified_coef_variation = sqrtf(variance / mean);
       const float t = logf(1.0f + modified_coef_variation);
       const float weight = 1.0f / (1.0f + expf(offset - tscale * t));
       blend[k] = CLIP(blend[k] * 1.01011f * (weight - 0.01f));
