@@ -153,8 +153,6 @@ static void green_equilibration_lavg(float *out,
                                      const uint32_t filters,
                                      const float thr)
 {
-  const float maximum = 1.0f;
-
   int oj = 2, oi = 2;
   if(FC(oj, oi, filters) != GREEN) oj++;
   if(FC(oj, oi, filters) != GREEN) oi++;
@@ -179,18 +177,19 @@ static void green_equilibration_lavg(float *out,
       const float m1 = (o1_1 + o1_2 + o1_3 + o1_4) / 4.0f;
       const float m2 = (o2_1 + o2_2 + o2_3 + o2_4) / 4.0f;
 
-      // prevent divide by zero and ...
-      // guard against m1/m2 becoming too large (due to m2 being too small) which results in hot pixels
-      // also m1 must be checked to be positive
-      if((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+      // prevent divide by zero and guard against m1/m2 becoming too large (due to m2 being too small)
+      // which results in hot pixels, also m1 must be checked to be positive.
+      // Make sure the correction quotient is exactly as for OpenCL.
+      if(m2 > 0.0f && m1 > 0.0f)
       {
-        const float c1 = (fabsf(o1_1 - o1_2) + fabsf(o1_1 - o1_3) + fabsf(o1_1 - o1_4) + fabsf(o1_2 - o1_3)
-                          + fabsf(o1_3 - o1_4) + fabsf(o1_2 - o1_4)) / 6.0f;
-        const float c2 = (fabsf(o2_1 - o2_2) + fabsf(o2_1 - o2_3) + fabsf(o2_1 - o2_4) + fabsf(o2_2 - o2_3)
-                          + fabsf(o2_3 - o2_4) + fabsf(o2_2 - o2_4)) / 6.0f;
-        if((in[j * width + i] < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
+        if(m1 / m2 < 2.0f)
         {
-          out[j * width + i] = fmaxf(0.0f, in[j * width + i] * m1 / m2);
+          const float c1 = (fabsf(o1_1 - o1_2) + fabsf(o1_1 - o1_3) + fabsf(o1_1 - o1_4) + fabsf(o1_2 - o1_3)
+                          + fabsf(o1_3 - o1_4) + fabsf(o1_2 - o1_4)) / 6.0f;
+          const float c2 = (fabsf(o2_1 - o2_2) + fabsf(o2_1 - o2_3) + fabsf(o2_1 - o2_4) + fabsf(o2_2 - o2_3)
+                          + fabsf(o2_3 - o2_4) + fabsf(o2_2 - o2_4)) / 6.0f;
+          if(in[j * width + i] < 0.95f && c1 < thr && c2 < thr)
+            out[j * width + i] = fmaxf(0.0f, (in[j * width + i] * m1) / m2);
         }
       }
     }
@@ -204,8 +203,7 @@ static void green_equilibration_favg(float *out,
                                      const uint32_t filters)
 {
   int oj = 0, oi = 0;
-  // const float ratio_max = 1.1f;
-  double sum1 = 0.0, sum2 = 0.0, gr_ratio;
+  double sum1 = 0.0, sum2 = 0.0;
 
   if((FC(oj, oi, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
@@ -220,11 +218,11 @@ static void green_equilibration_favg(float *out,
     }
   }
 
-  if(sum1 > 0.0 && sum2 > 0.0)
-    gr_ratio = sum2 / sum1;
-  else
+  if(sum1 <= 0.0 || sum2 <= 0.0)
     return;
 
+  // use a float gr_ratio to match what we have in opencl
+  const float gr_ratio = (float)(sum2 / sum1);
   DT_OMP_FOR(collapse(2))
   for(int j = oj; j < (height - 1); j += 2)
   {

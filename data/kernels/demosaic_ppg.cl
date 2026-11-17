@@ -51,25 +51,27 @@ green_equilibration_lavg(read_only image2d_t in,
   const int yul = mul24(ygid, ylsz) - 2;
 
   // populate local memory buffer
-  for(int n = 0; n <= maxbuf/lsz; n++)
+  for(int idx = l; idx < maxbuf; idx += lsz)
   {
-    const int bufidx = mad24(n, lsz, l);
-    if(bufidx >= maxbuf) continue;
-    const int xx = xul + bufidx % stride;
-    const int yy = yul + bufidx / stride;
-    buffer[bufidx] = readsingle(in, xx, yy);
+    const int xx = clamp(xul + idx % stride, 0, width - 1);
+    const int yy = clamp(yul + idx / stride, 0, height - 1);
+    buffer[idx] = Areadsingle(in, xx, yy);
   }
-
-  // center buffer around current x,y-Pixel
-  buffer += mad24(ylid + 2, stride, xlid + 2);
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
 
-  const int c = FC(y, x, filters);
-  const float maximum = 1.0f;
+  // center buffer around current x,y-Pixel
+  buffer += mad24(ylid + 2, stride, xlid + 2);
   float o = buffer[0];
+
+  // we don't correct the outermost two photosites as on CPU
+  if(x < 2 || y < 2 || x >= width - 2 || y >= height - 2)
+  {
+    write_imagef(out, (int2)(x, y), o);
+    return;
+  }
 
   // check lines to be used as we do in cpu code
   int oj = 2, oi = 2;
@@ -77,9 +79,7 @@ green_equilibration_lavg(read_only image2d_t in,
   if(FC(oj, oi, filters) != GREEN) oi++;
   if(FC(oj, oi, filters) != GREEN) oj--;
 
-  int row_ok = (oj & 1) == (y & 1);
-  int col_ok = (oi & 1) == (x & 1);
-  if(row_ok && col_ok && x >= 2 && y >= 2 && x < width -2 && y < height-2)
+  if(((oj & 1) == (y & 1)) && ((oi & 1) == (x & 1)))
   {
     const float o1_1 = buffer[-1 * stride - 1];
     const float o1_2 = buffer[-1 * stride + 1];
@@ -90,16 +90,18 @@ green_equilibration_lavg(read_only image2d_t in,
     const float o2_3 = buffer[-2];
     const float o2_4 = buffer[ 2];
 
-    const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
-    const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
+    const float m1 = fp32_div(o1_1+o1_2+o1_3+o1_4, 4.0f);
+    const float m2 = fp32_div(o2_1+o2_2+o2_3+o2_4, 4.0f);
 
-    if((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+    if(m2 > 0.0f && m1 > 0.0f)
     {
-      const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
-      const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
-
-      if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
-          o = fmax(0.0f, o * m1/m2);
+      if(fp32_div(m1, m2) < 2.0f)
+      {
+        const float c1 = fp32_div((fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)), 6.0f);
+        const float c2 = fp32_div((fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)), 6.0f);
+        if(o < 0.95f && c1 < thr && c2 < thr)
+          o = fmax(0.0f, fp32_div(o * m1, m2));
+      }
     }
   }
   write_imagef(out, (int2)(x, y), o);
@@ -152,8 +154,8 @@ green_equilibration_favg_reduce_first(read_only image2d_t in,
   const int ygid = get_group_id(1);
   const int xgsz = get_num_groups(0);
 
-  const int m = mad24(ygid, xgsz, xgid);
-  accu[m]   = buffer[0];
+  if(l == 0)  // fill center
+    accu[mad24(ygid, xgsz, xgid)] = buffer[0];
 }
 
 
@@ -194,7 +196,6 @@ green_equilibration_favg_reduce_second(const global float2* input, global float2
   }
 }
 
-
 kernel void
 green_equilibration_favg_apply(read_only image2d_t in,
                                write_only image2d_t out,
@@ -208,15 +209,11 @@ green_equilibration_favg_apply(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float pixel = readsingle(in, x, y);
+  float pixel = Areadsingle(in, x, y);
 
-  const int c = FC(y, x, filters);
-
-  const int isgreen1 = (c == GREEN && !(y & 1)); // on even lines
-  if(isgreen1)
-  {
+  if((FC(y, x, filters) == GREEN) && !(y & 1))  // Only modify green locations on even lines
     pixel = fmax(0.0f, pixel * gr_ratio);
-  }
+
   write_imagef (out, (int2)(x, y), pixel);
 }
 
