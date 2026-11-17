@@ -853,6 +853,17 @@ static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer da
   dt_lib_gui_queue_update((dt_lib_module_t *)data);
 }
 
+static gboolean _start_interactive_search(GtkTreeView *view,
+                                          gpointer user_data)
+{
+  // the filter entry is the list's only search: also block GTK's ctrl+f
+  // binding, which enable-search FALSE does not cover, so the key falls
+  // through to darktable's shortcuts instead of opening a popup that
+  // grabs the keyboard focus
+  g_signal_stop_emission_by_name(view, "start-interactive-search");
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = malloc(sizeof(dt_lib_styles_t));
@@ -862,6 +873,9 @@ void gui_init(dt_lib_module_t *self)
   /* tree */
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_tree_view_set_headers_visible(d->tree, FALSE);
+  gtk_tree_view_set_enable_search(d->tree, FALSE);
+  g_signal_connect(d->tree, "start-interactive-search",
+                   G_CALLBACK(_start_interactive_search), NULL);
   GtkTreeStore *treestore = gtk_tree_store_new(DT_STYLES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->tree), col);
