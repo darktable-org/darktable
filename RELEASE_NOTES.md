@@ -264,9 +264,9 @@ changes (where available).
 ## Documentation updates
 
 - The stable documentation for 5.8 can be found [here](https://docs.darktable.org/usermanual/5.8/en/)
-- The docs have received a refreshed theme: It is more colorful, has better handling of wide screens, a table of contents in the right panel and more tweaks.
+- The theme has been refreshed: It is more colorful, has better handling of wide screens, a table of contents in the right panel and more tweaks.
 - If you find room for improvement on the manual, you are welcome to open an [issue](https://github.com/darktable-org/dtdocs/issues), post to [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
-- Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). The french translations have now hit 100%. 
+- Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). Lots of work has been done, among others Ukranian and French translations have now hit 100%. 
 
 ## Other Changes
 
