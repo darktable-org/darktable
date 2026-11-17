@@ -102,10 +102,8 @@ typedef struct dt_control_export_t
   double scale_factor;
   char style[128];
   gboolean style_append;
-  dt_colorspaces_color_profile_type_t icc_type;
-  gchar *icc_filename;
-  dt_iop_color_intent_t icc_intent;
-  int pq_peak_nits;
+  // the export's override, as the export was queued
+  dt_color_target_t icc;
   gchar *metadata_export;
 } dt_control_export_t;
 
@@ -803,7 +801,7 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
       dt_imageio_export_with_flags(pimgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
                                    TRUE, FALSE, TRUE, TRUE, FALSE, 1.0,
                                    FALSE, "pre:rawprepare", FALSE,
-                                   FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                   FALSE, &DT_COLOR_TARGET_KEEP, NULL,
                                    NULL, pnum, total, NULL, -1);
       // the probe pre-pass is a full extra decode sweep; advance the bar over it
       // so a large bracket does not look hung, and honor a cancel between frames
@@ -836,7 +834,7 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
                                  TRUE, FALSE, TRUE, TRUE, FALSE, 1.0,
                                  FALSE, "pre:rawprepare", FALSE,
-                                 FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                 FALSE, &DT_COLOR_TARGET_KEEP, NULL,
                                  NULL, num, total, NULL, -1);
 
     t = g_list_next(t);
@@ -2097,9 +2095,6 @@ static int32_t _control_export_job_run(dt_job_t *job)
   GList *t = params->index;
   double prev_time = 0;
 
-  // the peak set when the export was queued, not the setting's current value
-  dt_ioppr_set_thread_pq_peak_nits(settings->pq_peak_nits);
-
   while(t && !_job_cancelled(job))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -2131,8 +2126,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata,
                            num, total, settings->high_quality, settings->upscale,
                            settings->is_scaling, settings->scale_factor,
-                           settings->export_masks, settings->icc_type,
-                           settings->icc_filename, settings->icc_intent,
+                           settings->export_masks, &settings->icc,
                            &metadata) != 0)
           dt_control_job_cancel(job);
         else
@@ -2152,7 +2146,6 @@ static int32_t _control_export_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     _update_progress(job, fraction, &prev_time);
   }
-  dt_ioppr_set_thread_pq_peak_nits(0);
   g_list_free_full(metadata.list, g_free);
 
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
@@ -2729,7 +2722,6 @@ static void _control_export_cleanup(void *p)
 
   mstorage->free_params(mstorage, sdata);
 
-  g_free(settings->icc_filename);
   g_free(settings->metadata_export);
   free(params->data);
 
@@ -2749,10 +2741,7 @@ void dt_control_export(GList *imgid_list,
                        const gboolean export_masks,
                        char *style,
                        const gboolean style_append,
-                       const dt_colorspaces_color_profile_type_t icc_type,
-                       const gchar *icc_filename,
-                       const dt_iop_color_intent_t icc_intent,
-                       const int pq_peak_nits,
+                       const dt_color_target_t *icc,
                        const gchar *metadata_export)
 {
   dt_job_t *job = dt_control_job_create(&_control_export_job_run, "export");
@@ -2806,10 +2795,7 @@ void dt_control_export(GList *imgid_list,
   data->scale_factor = scale_factor;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
-  data->icc_type = icc_type;
-  data->icc_filename = g_strdup(icc_filename);
-  data->icc_intent = icc_intent;
-  data->pq_peak_nits = pq_peak_nits;
+  data->icc = *icc;
   data->metadata_export = g_strdup(metadata_export);
 
   dt_control_job_add_progress(job, _("export images"), TRUE);

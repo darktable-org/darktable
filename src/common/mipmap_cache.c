@@ -1661,7 +1661,7 @@ static void _init_8(uint8_t *buf,
                                        TRUE, FALSE, FALSE,
                                        FALSE, FALSE, 1.0, TRUE, NULL,
                                        FALSE, FALSE,
-                                       DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                       &DT_COLOR_TARGET_KEEP, NULL,
                                        NULL, 1, 1, NULL, -1);
     if(!res)
     {

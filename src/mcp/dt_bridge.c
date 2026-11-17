@@ -1202,8 +1202,8 @@ static cairo_surface_t *_render_to_surface(dt_imgid_t imgid, int w, int h,
       imgid, "memory", &fmt, (dt_imageio_module_data_t *)&dat,
       TRUE, TRUE, FALSE /*hq*/, TRUE /*upscale*/, FALSE /*is_scaling*/, 1.0,
       FALSE /*thumbnail*/, NULL /*filter*/, FALSE /*copy_meta*/, FALSE /*export_masks*/,
-      DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL,
-      1, 1, NULL /*metadata*/, history_end);
+      &(dt_color_target_t){ .type = DT_COLORSPACE_DISPLAY, .intent = DT_INTENT_LAST },
+      NULL, NULL, 1, 1, NULL /*metadata*/, history_end);
 
   if(failed || dat.width == 0 || dat.height == 0)
   {
@@ -2518,13 +2518,9 @@ static gboolean _write_export(dt_imgid_t imgid, const char *filename,
     return FALSE;
   }
 
-  // the same output profile settings darktable's own export reads
-  // (libs/export.c:417); -1 on either means the image's own choice stands
-  const dt_colorspaces_color_profile_type_t icc_type =
-    dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  const dt_iop_color_intent_t icc_intent =
-    dt_conf_get_int("plugins/lighttable/export/iccintent");
+  // the override darktable's own export applies
+  dt_color_target_t icc;
+  dt_colorspaces_get_export_override(&icc);
 
   // NB: returns FALSE on success
   const gboolean failed = dt_imageio_export_with_flags(
@@ -2532,10 +2528,8 @@ static gboolean _write_export(dt_imgid_t imgid, const char *filename,
       FALSE /*ignore_exif*/, FALSE /*display_byteorder*/, high_quality, upscale,
       FALSE /*is_scaling*/, 1.0, FALSE /*thumbnail*/, NULL /*filter*/,
       TRUE /*copy_metadata*/, FALSE /*export_masks*/,
-      icc_type, icc_filename, icc_intent, NULL, NULL,
-      1, 1, NULL /*metadata*/, history_end);
+      &icc, NULL, NULL, 1, 1, NULL /*metadata*/, history_end);
 
-  g_free(icc_filename);
   fmt->free_params(fmt, fdata);
   if(failed) _seterr(err, "export_images: could not write '%s'", filename);
   return !failed;

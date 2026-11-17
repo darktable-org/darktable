@@ -1562,13 +1562,13 @@ static void _drop_unoffered_choices(dt_colorspaces_t *self)
     self->histogram_type = DT_COLORSPACE_SRGB;
     self->histogram_filename[0] = '\0';
   }
-  if(!_offered(self, self->softproof_type, self->softproof_filename, FALSE))
+  if(!_offered(self, self->softproof.type, self->softproof.filename, FALSE))
   {
     dt_print(DT_DEBUG_ALWAYS, "[colorspaces] soft proof profile `%s' is no soft proof"
-             " choice, using sRGB", dt_colorspaces_get_name(self->softproof_type,
-                                                            self->softproof_filename));
-    self->softproof_type = DT_COLORSPACE_SRGB;
-    self->softproof_filename[0] = '\0';
+             " choice, using sRGB", dt_colorspaces_get_name(self->softproof.type,
+                                                            self->softproof.filename));
+    self->softproof.type = DT_COLORSPACE_SRGB;
+    self->softproof.filename[0] = '\0';
   }
 }
 
@@ -1907,26 +1907,29 @@ dt_colorspaces_t *dt_colorspaces_init()
   _migrate_display_selection(res);
 
   // init softproof/gama checking from conf
-  res->softproof_type = dt_conf_get_int("ui_last/color/softproof_type");
+  res->softproof.type = dt_conf_get_int("ui_last/color/softproof_type");
   res->histogram_type = dt_conf_get_int("ui_last/color/histogram_type");
   const char *tmp = dt_conf_get_string_const("ui_last/color/softproof_filename");
-  g_strlcpy(res->softproof_filename, tmp, sizeof(res->softproof_filename));
+  g_strlcpy(res->softproof.filename, tmp, sizeof(res->softproof.filename));
   tmp = dt_conf_get_string_const("ui_last/color/histogram_filename");
   g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
-  res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
-  res->softproof_bpc = dt_conf_get_bool("ui_last/color/softproof_bpc");
+  res->softproof.intent = dt_conf_get_int("ui_last/color/softproof_intent");
+  res->softproof.bpc = dt_conf_get_bool("ui_last/color/softproof_bpc");
+  // the setting is in nits, as its slider shows it
+  res->softproof.headroom =
+    dt_conf_get_int("ui_last/color/softproof_pq_peak_nits") / DT_HDR_REFERENCE_WHITE_NITS;
   res->mode = dt_conf_get_int("ui_last/color/mode");
 
   // sanity checks to ensure the profile filenames are present
 
-  if((unsigned int)res->softproof_intent >= DT_INTENT_LAST)
-    res->softproof_intent = DT_INTENT_PERCEPTUAL;
+  if((unsigned int)res->softproof.intent >= DT_INTENT_LAST)
+    res->softproof.intent = DT_INTENT_PERCEPTUAL;
 
-  if((unsigned int)res->softproof_type >= DT_COLORSPACE_LAST
-     || (res->softproof_type == DT_COLORSPACE_FILE
-         && (!res->softproof_filename[0]
-             || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
-    res->softproof_type = DT_COLORSPACE_SRGB;
+  if((unsigned int)res->softproof.type >= DT_COLORSPACE_LAST
+     || (res->softproof.type == DT_COLORSPACE_FILE
+         && (!res->softproof.filename[0]
+             || !g_file_test(res->softproof.filename, G_FILE_TEST_IS_REGULAR))))
+    res->softproof.type = DT_COLORSPACE_SRGB;
 
   if((unsigned int)res->histogram_type >= DT_COLORSPACE_LAST
      || (res->histogram_type == DT_COLORSPACE_FILE
@@ -2022,15 +2025,63 @@ dt_colorspaces_t *dt_colorspaces_init()
   return res;
 }
 
+float dt_colorspaces_target_headroom(const dt_colorspaces_color_profile_type_t type,
+                                     const float headroom)
+{
+  switch(dt_colorspaces_hdr_transfer(type))
+  {
+    case DT_HDR_PQ:
+      return CLAMPS(headroom, 1.0f, DT_HDR_PQ_PEAK_NITS / DT_HDR_REFERENCE_WHITE_NITS);
+    case DT_HDR_HLG_REC2020:
+    case DT_HDR_HLG_P3:
+      // colorout's OOTF clips HLG at the nominal 1000 nit display
+      return DT_HDR_HLG_PEAK_NITS / DT_HDR_REFERENCE_WHITE_NITS;
+    default:
+      return 1.0f;
+  }
+}
+
+void dt_color_target_override(dt_color_target_t *t, const dt_color_target_t *override)
+{
+  // the peak belongs to the profile: PQ needs both to say what its values
+  // mean, so they override together
+  if(override->type != DT_COLORSPACE_NONE)
+  {
+    t->type = override->type;
+    g_strlcpy(t->filename, override->filename, sizeof(t->filename));
+    t->headroom = override->headroom;
+  }
+  if((unsigned int)override->intent < DT_INTENT_LAST)
+  {
+    t->intent = override->intent;
+    t->bpc = override->bpc;
+  }
+  t->headroom = dt_colorspaces_target_headroom(t->type, t->headroom);
+}
+
+void dt_colorspaces_get_export_override(dt_color_target_t *override)
+{
+  memset(override, 0, sizeof(*override));
+  override->type = dt_conf_get_int("plugins/lighttable/export/icctype");
+  g_strlcpy(override->filename, dt_conf_get_string_const("plugins/lighttable/export/iccprofile"),
+            sizeof(override->filename));
+  override->intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  // in nits, as the export module shows it
+  override->headroom =
+    dt_conf_get_int("plugins/lighttable/export/pq_peak_nits") / DT_HDR_REFERENCE_WHITE_NITS;
+}
+
 void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 {
   // remember softproof/gama checking from conf
-  dt_conf_set_int("ui_last/color/softproof_type", self->softproof_type);
+  dt_conf_set_int("ui_last/color/softproof_type", self->softproof.type);
   dt_conf_set_int("ui_last/color/histogram_type", self->histogram_type);
-  dt_conf_set_string("ui_last/color/softproof_filename", self->softproof_filename);
+  dt_conf_set_string("ui_last/color/softproof_filename", self->softproof.filename);
   dt_conf_set_string("ui_last/color/histogram_filename", self->histogram_filename);
-  dt_conf_set_int("ui_last/color/softproof_intent", self->softproof_intent);
-  dt_conf_set_bool("ui_last/color/softproof_bpc", self->softproof_bpc);
+  dt_conf_set_int("ui_last/color/softproof_intent", self->softproof.intent);
+  dt_conf_set_bool("ui_last/color/softproof_bpc", self->softproof.bpc);
+  dt_conf_set_int("ui_last/color/softproof_pq_peak_nits",
+                  (int)roundf(self->softproof.headroom * DT_HDR_REFERENCE_WHITE_NITS));
   dt_conf_set_int("ui_last/color/mode", self->mode);
 
   if(self->transform_srgb_to_display)

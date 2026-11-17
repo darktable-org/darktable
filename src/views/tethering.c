@@ -424,6 +424,9 @@ static void _expose_tethered_mode(dt_view_t *self,
       dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
     }
 
+    dt_color_target_t icc = { .type = histogram_type, .intent = DT_INTENT_PERCEPTUAL };
+    g_strlcpy(icc.filename, histogram_filename, sizeof(icc.filename));
+
     // this uses the export rather than thumbnail pipe -- slower, but
     // as we're not competing with the full pixelpipe, it's a
     // reasonable trade-off for a histogram which matches that in
@@ -436,8 +439,7 @@ static void _expose_tethered_mode(dt_view_t *self,
     if(!dt_imageio_export_with_flags(lib->image_id, "unused",
                                      &format, (dt_imageio_module_data_t *)&dat, TRUE,
                                      FALSE, FALSE, FALSE, FALSE, 1.0, FALSE, NULL,
-                                     FALSE, FALSE, histogram_type, histogram_filename,
-                                     DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL, -1))
+                                     FALSE, FALSE, &icc, NULL, NULL, 1, 1, NULL, -1))
     {
       const dt_iop_order_iccprofile_info_t *const histogram_profile =
         dt_ioppr_add_profile_info_to_list(darktable.develop, histogram_type,

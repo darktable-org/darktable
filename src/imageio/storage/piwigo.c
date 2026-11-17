@@ -1277,9 +1277,7 @@ int store(dt_imageio_module_storage_t *self,
           const gboolean is_scaling,
           const double scale_factor,
           const gboolean export_masks,
-          const dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename,
-          const dt_iop_color_intent_t icc_intent,
+          const dt_color_target_t *icc,
           dt_export_metadata_t *metadata)
 {
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
@@ -1360,8 +1358,7 @@ int store(dt_imageio_module_storage_t *self,
   dt_image_cache_read_release(img);
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale,
                        is_scaling, scale_factor,
-                       TRUE, export_masks, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, metadata) != 0)
+                       TRUE, export_masks, icc, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_piwigo] could not export to file: `%s'!",
