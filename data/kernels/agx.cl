@@ -96,26 +96,26 @@ static inline void _agx_compress_into_gamut(float4 *pixel)
 
     const float luminance_ratio =
       (y_new > y_compensate_negative && y_new > _epsilon)
-      ? y_compensate_negative / y_new
+      ? fp32_div(y_compensate_negative, y_new)
       : 1.f;
   *pixel = luminance_ratio * rgb_offset;
 }
 
 static inline float _agx_apply_log_encoding(const float x, const float range_in_ev, const float min_ev)
 {
-  const float x_relative = fmax(_epsilon, x / 0.18f);
-  const float mapped = (log2(fmax(x_relative, 0.0f)) - min_ev) / range_in_ev;
+  const float x_relative = fmax(_epsilon, fp32_div(x, 0.18f));
+  const float mapped = fp32_div(log2(fmax(x_relative, 0.0f)) - min_ev, range_in_ev);
   return clipf(mapped);
 }
 
 static inline float _agx_sigmoid(const float x, const float power)
 {
-  return x / dtcl_pow(1.0f + dtcl_pow(x, power), 1.0f / power);
+  return fp32_div(x, dtcl_pow(1.0f + dtcl_pow(x, power), fp32_div(1.0f, power)));
 }
 
 static inline float _agx_scaled_sigmoid(const float x, const float scale, const float slope, const float power, const float transition_x, const float transition_y)
 {
-  return scale * _agx_sigmoid(slope * (x - transition_x) / scale, power) + transition_y;
+  return scale * _agx_sigmoid(slope * fp32_div(x - transition_x, scale), power) + transition_y;
 }
 
 static inline float _agx_fallback_toe(const float x, const dt_iop_agx_tone_mapping_params_t *params)
@@ -148,7 +148,7 @@ static inline float _agx_apply_curve(const float x, const dt_iop_agx_tone_mappin
 
 static inline float _agx_apply_slope_offset(const float x, const float slope, const float offset)
 {
-  const float m = slope / (1.0f + offset);
+  const float m = fp32_div(slope, 1.0f + offset);
   const float b = offset * m;
   return m * x + b;
 }
@@ -280,7 +280,7 @@ __kernel void kernel_agx(
     if(i >= width || j >= height) return;
 
     const int2 pos = (int2)(i, j);
-    float4 in_pixel = read_imagef(input, sampleri, pos);
+    float4 in_pixel = read_imagef(input, samplerA, pos);
 
     // sanitize input range and get rid of NaNs
     in_pixel = select(clamp(in_pixel, -1e6f, 1e6f), (float4)(0.0f), isnan(in_pixel));
