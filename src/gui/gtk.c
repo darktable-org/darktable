@@ -1241,19 +1241,24 @@ int dt_gui_gtk_load_config()
   const gint x = MAX(0, dt_conf_get_int("ui_last/window_x"));
   const gint y = MAX(0, dt_conf_get_int("ui_last/window_y"));
 
-  gtk_window_resize(GTK_WINDOW(widget), width, height);
+  const gboolean fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+  const gboolean maximized = dt_conf_get_bool("ui_last/maximized");
+
+  // maximizing sizes the window anyway. On macOS, resizing the shown window
+  // to a saved size larger than the maximized one and then maximizing it
+  // leaves its contents drawn at the wrong scale until the next resize
+  if(fullscreen || !maximized)
+    gtk_window_resize(GTK_WINDOW(widget), width, height);
   if(_valid_window_placement(x, y, width, height, 24))
     gtk_window_move(GTK_WINDOW(widget), x, y);
   else
     gtk_window_move(GTK_WINDOW(widget), 0, 0);
-  const gboolean fullscreen = dt_conf_get_bool("ui_last/fullscreen");
 
   if(fullscreen)
     gtk_window_fullscreen(GTK_WINDOW(widget));
   else
   {
     gtk_window_unfullscreen(GTK_WINDOW(widget));
-    const gboolean maximized = dt_conf_get_bool("ui_last/maximized");
     if(maximized)
       gtk_window_maximize(GTK_WINDOW(widget));
     else
