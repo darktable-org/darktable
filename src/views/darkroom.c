@@ -2388,14 +2388,6 @@ static void _rawoverexposed_threshold_callback(GtkWidget *slider,
     dt_dev_reprocess_center(d, 0);
 }
 
-// the full and the preview pipe from colorout on: colorout proofs both
-static void _reprocess_proof(dt_develop_t *d)
-{
-  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
-  dt_dev_reprocess_center(d, cout->iop_order);
-  dt_dev_reprocess_preview(d, cout->iop_order);
-}
-
 /* softproof */
 static void _softproof_quickbutton_clicked(GtkWidget *w,
                                            gpointer user_data)
@@ -2407,7 +2399,7 @@ static void _softproof_quickbutton_clicked(GtkWidget *w,
     darktable.color_profiles->mode = DT_PROFILE_SOFTPROOF;
 
   _update_softproof_gamut_checking(d);
-  _reprocess_proof(d);
+  dt_dev_reprocess_proof(d);
 }
 
 /* gamut */
@@ -2421,7 +2413,7 @@ static void _gamut_quickbutton_clicked(GtkWidget *w,
     darktable.color_profiles->mode = DT_PROFILE_GAMUTCHECK;
 
   _update_softproof_gamut_checking(d);
-  _reprocess_proof(d);
+  dt_dev_reprocess_proof(d);
 }
 
 /* set the gui state for both softproof and gamut checking */
@@ -2443,12 +2435,33 @@ static void _update_softproof_gamut_checking(dt_develop_t *d)
                                     _gamut_quickbutton_clicked, d);
 }
 
-// the proof's peak only for a PQ profile
+// the custom target's widgets only for a custom proof, its peak only for
+// a PQ profile
 static void _update_softproof_widgets(dt_develop_t *d)
 {
+  const dt_colorspaces_t *const cp = darktable.color_profiles;
+  gtk_widget_set_visible(d->profile.proof_custom,
+                         cp->softproof_source == DT_PROOF_SOURCE_CUSTOM);
   gtk_widget_set_visible(d->profile.proof_pq_peak,
-                         dt_colorspaces_hdr_transfer(darktable.color_profiles->softproof.type)
-                         == DT_HDR_PQ);
+                         dt_colorspaces_hdr_transfer(cp->softproof.type) == DT_HDR_PQ);
+}
+
+static void _softproof_source_callback(GtkWidget *combo,
+                                       gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  const dt_colorspaces_proof_source_t source =
+    dt_bauhaus_combobox_get(combo) == DT_PROOF_SOURCE_CUSTOM ? DT_PROOF_SOURCE_CUSTOM
+                                                             : DT_PROOF_SOURCE_EXPORT;
+  if(source == darktable.color_profiles->softproof_source) return;
+  darktable.color_profiles->softproof_source = source;
+  _update_softproof_widgets(d);
+  // as for the profile
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                          DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
+  dt_dev_reprocess_all(d);
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
+    dt_dev_reprocess_proof(d);
 }
 
 static void _softproof_pq_peak_callback(GtkWidget *slider,
@@ -2460,7 +2473,7 @@ static void _softproof_pq_peak_callback(GtkWidget *slider,
   darktable.color_profiles->softproof.headroom = headroom;
   // as for the intent
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
-    _reprocess_proof(d);
+    dt_dev_reprocess_proof(d);
 }
 
 static void _softproof_intent_callback(GtkWidget *combo,
@@ -2475,7 +2488,7 @@ static void _softproof_intent_callback(GtkWidget *combo,
   // proof was made with
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
-    _reprocess_proof(d);
+    dt_dev_reprocess_proof(d);
   }
 }
 
@@ -2489,7 +2502,7 @@ static void _softproof_bpc_callback(GtkWidget *toggle,
   // as for the intent
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
-    _reprocess_proof(d);
+    dt_dev_reprocess_proof(d);
   }
 }
 
@@ -2538,7 +2551,7 @@ end:
     // as for the intent: an ink proof's output encoding is the window's,
     // whatever the proof profile
     if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
-      _reprocess_proof(d);
+      dt_dev_reprocess_proof(d);
   }
 }
 
@@ -3578,6 +3591,19 @@ void gui_init(dt_view_t *self)
           N_("absolute colorimetric"),
           NULL };
 
+    static const gchar *sources_list[]
+      = { N_("export settings"),
+          N_("custom"),
+          NULL };
+
+    // the list follows dt_colorspaces_proof_source_t
+    GtkWidget *softproof_source =
+      dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("softproof against"),
+                                   _("proof what an export with the export module's settings"
+                                     " renders, or a target of its own"),
+                                   darktable.color_profiles->softproof_source,
+                                   _softproof_source_callback, dev, sources_list);
+
     GtkWidget *softproof_pq_peak =
       dt_bauhaus_slider_new_action(DT_ACTION(self), 1.0f,
                                    DT_HDR_PQ_PEAK_NITS / DT_HDR_REFERENCE_WHITE_NITS, 0,
@@ -3666,16 +3692,18 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
+    dev->profile.proof_custom = dt_gui_vbox(softproof_profile, softproof_pq_peak,
+                                            softproof_intent, softproof_bpc);
     dev->profile.proof_pq_peak = softproof_pq_peak;
 
     GtkWidget *vbox = dt_gui_vbox
       (display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       softproof_profile, softproof_pq_peak, softproof_intent, softproof_bpc,
-       histogram_profile);
+       softproof_source, dev->profile.proof_custom, histogram_profile);
 
     gtk_widget_show_all(vbox);
     // _toolbar_show_popup() shows the popover with gtk_widget_show_all()
+    gtk_widget_set_no_show_all(dev->profile.proof_custom, TRUE);
     gtk_widget_set_no_show_all(dev->profile.proof_pq_peak, TRUE);
     _update_softproof_widgets(dev);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);

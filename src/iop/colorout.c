@@ -1070,9 +1070,9 @@ static void _image_target(dt_color_target_t *const t,
 
 // what the pipe asks for: an export the image's target with the export's
 // override, the thumbnail pipe the mipmap cache's, a presented pipe its
-// window's output or the soft proof's, which the proof applies over the
-// image's as an export applies its override. an export's target goes into
-// p, which the pipe hashes after this commit
+// window's output or the soft proof's. a soft proof applies its override
+// as an export does, so that a proof of the export's is that export. an
+// export's target goes into p, which the pipe hashes after this commit
 static void _request_output(dt_iop_colorout_request_t *const req,
                             dt_iop_colorout_params_t *const p,
                             const dt_dev_pixelpipe_t *const pipe)
@@ -1123,8 +1123,10 @@ static void _request_output(dt_iop_colorout_request_t *const req,
     // frame holds RGB, so an ink proof goes on to the window's output
     if(proof)
     {
+      dt_color_target_t override;
+      dt_colorspaces_get_proof_override(&override);
       _image_target(&proof_target, p);
-      dt_color_target_override(&proof_target, &darktable.color_profiles->softproof);
+      dt_color_target_override(&proof_target, &override);
       const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
         (proof_target.type, proof_target.filename,
          DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);

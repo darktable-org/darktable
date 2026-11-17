@@ -1016,6 +1016,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/color/softproof_source</name>
+    <type min="0" max="1">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/color/softproof_pq_peak_nits</name>
     <type min="203" max="10000">int</type>
     <default>1000</default>

@@ -158,6 +158,14 @@ typedef struct dt_color_target_t
 #define DT_COLOR_TARGET_KEEP \
   ((dt_color_target_t){ .type = DT_COLORSPACE_NONE, .intent = DT_INTENT_LAST })
 
+/* what a soft proof applies over the image's target: the export's
+ * override, which makes the proof what an export renders, or its own */
+typedef enum dt_colorspaces_proof_source_t
+{
+  DT_PROOF_SOURCE_EXPORT = 0,
+  DT_PROOF_SOURCE_CUSTOM = 1
+} dt_colorspaces_proof_source_t;
+
 typedef enum dt_colorspaces_profile_direction_t
 {
   DT_PROFILE_DIRECTION_IN = 1 << 0,
@@ -347,9 +355,11 @@ typedef struct dt_colorspaces_t
   // the current set of selected profiles
   dt_colorspaces_color_profile_type_t histogram_type;
   char histogram_filename[512];
-  // what the soft proof renders to. the target's intent and black point
+  // what the soft proof renders to, and its own target for
+  // DT_PROOF_SOURCE_CUSTOM. the target's intent and black point
   // compensation take the image to it; the proof goes on to the display
   // relative colorimetric
+  dt_colorspaces_proof_source_t softproof_source;
   dt_color_target_t softproof;
 
   dt_colorspaces_color_mode_t mode;
@@ -415,6 +425,10 @@ void dt_color_target_override(dt_color_target_t *t, const dt_color_target_t *ove
 
 /** the export module's override, as an export started now applies it */
 void dt_colorspaces_get_export_override(dt_color_target_t *override);
+
+/** what the soft proof applies over the image's target: the export
+ * module's override or the custom proof target */
+void dt_colorspaces_get_proof_override(dt_color_target_t *override);
 
 /** create a profile from a xyz->camera matrix. */
 cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);

@@ -989,6 +989,16 @@ static void _update_pq_peak_visibility(dt_lib_export_t *d)
   gtk_widget_set_visible(d->pq_peak, _export_is_pq(dt_conf_get_int(CONFIG_PREFIX "icctype")));
 }
 
+// a soft proof of the export's target renders with these settings
+static void _export_target_changed(void)
+{
+  const dt_colorspaces_t *const cp = darktable.color_profiles;
+  if(dt_view_get_current() == DT_VIEW_DARKROOM
+     && cp->mode != DT_PROFILE_NORMAL
+     && cp->softproof_source == DT_PROOF_SOURCE_EXPORT)
+    dt_dev_reprocess_proof(darktable.develop);
+}
+
 static void _set_profile_conf(GtkWidget *widget)
 {
   int pos = dt_bauhaus_combobox_get(widget);
@@ -1019,11 +1029,13 @@ static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   _set_profile_conf(widget);
   _update_pq_peak_visibility(d);
+  _export_target_changed();
 }
 
 static void _pq_peak_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   dt_conf_set_int(CONFIG_PREFIX "pq_peak_nits", (int)roundf(dt_bauhaus_slider_get(widget)));
+  _export_target_changed();
 }
 
 static void _dimensions_type_changed(GtkWidget *widget,
@@ -1174,6 +1186,7 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int(CONFIG_PREFIX "iccintent", pos - 1);
+  _export_target_changed();
 }
 
 static void _update_style_label(dt_lib_export_t *d, const char *name)
