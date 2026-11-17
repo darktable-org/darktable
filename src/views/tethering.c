@@ -403,6 +403,7 @@ static void _expose_tethered_mode(dt_view_t *self,
 
     dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_NONE;
     const char *histogram_filename = NULL;
+    const gboolean use_image_target = darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT;
     if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
     {
       const dt_colorspaces_color_profile_t *work_profile =
@@ -410,7 +411,7 @@ static void _expose_tethered_mode(dt_view_t *self,
       histogram_type = work_profile->type;
       histogram_filename = work_profile->filename;
     }
-    else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+    else if(use_image_target)
     {
       const dt_colorspaces_color_profile_t *export_profile =
         dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, NULL);
@@ -424,7 +425,9 @@ static void _expose_tethered_mode(dt_view_t *self,
       dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
     }
 
-    dt_color_target_t icc = { .type = histogram_type, .intent = DT_INTENT_PERCEPTUAL };
+    // the image's colorout supplies both its export profile and its PQ peak
+    dt_color_target_t icc = { .type = use_image_target ? DT_COLORSPACE_NONE : histogram_type,
+                              .intent = DT_INTENT_PERCEPTUAL };
     g_strlcpy(icc.filename, histogram_filename, sizeof(icc.filename));
 
     // this uses the export rather than thumbnail pipe -- slower, but
