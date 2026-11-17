@@ -1907,6 +1907,9 @@ dt_colorspaces_t *dt_colorspaces_init()
   _migrate_display_selection(res);
 
   // init softproof/gama checking from conf
+  res->softproof_source =
+    dt_conf_get_int("ui_last/color/softproof_source") == DT_PROOF_SOURCE_CUSTOM
+    ? DT_PROOF_SOURCE_CUSTOM : DT_PROOF_SOURCE_EXPORT;
   res->softproof.type = dt_conf_get_int("ui_last/color/softproof_type");
   res->histogram_type = dt_conf_get_int("ui_last/color/histogram_type");
   const char *tmp = dt_conf_get_string_const("ui_last/color/softproof_filename");
@@ -2065,17 +2068,29 @@ void dt_colorspaces_get_export_override(dt_color_target_t *override)
 {
   memset(override, 0, sizeof(*override));
   override->type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  g_strlcpy(override->filename, dt_conf_get_string_const("plugins/lighttable/export/iccprofile"),
-            sizeof(override->filename));
+  // colorout reads this on the pipe thread while the export module may set it
+  gchar *filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  g_strlcpy(override->filename, filename, sizeof(override->filename));
+  g_free(filename);
   override->intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
   // in nits, as the export module shows it
   override->headroom =
     dt_conf_get_int("plugins/lighttable/export/pq_peak_nits") / DT_HDR_REFERENCE_WHITE_NITS;
 }
 
+void dt_colorspaces_get_proof_override(dt_color_target_t *override)
+{
+  const dt_colorspaces_t *const cp = darktable.color_profiles;
+  if(cp->softproof_source == DT_PROOF_SOURCE_EXPORT)
+    dt_colorspaces_get_export_override(override);
+  else
+    *override = cp->softproof;
+}
+
 void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 {
   // remember softproof/gama checking from conf
+  dt_conf_set_int("ui_last/color/softproof_source", self->softproof_source);
   dt_conf_set_int("ui_last/color/softproof_type", self->softproof.type);
   dt_conf_set_int("ui_last/color/histogram_type", self->histogram_type);
   dt_conf_set_string("ui_last/color/softproof_filename", self->softproof.filename);

@@ -2975,6 +2975,13 @@ void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order)
   dt_control_queue_redraw_center();
 }
 
+void dt_dev_reprocess_proof(dt_develop_t *dev)
+{
+  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+  dt_dev_reprocess_center(dev, cout->iop_order);
+  dt_dev_reprocess_preview(dev, cout->iop_order);
+}
+
 gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
                                 float *zoom_x,
                                 float *zoom_y,

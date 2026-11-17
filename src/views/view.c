@@ -2165,9 +2165,10 @@ dt_view_context_t dt_view_get_context_hash(void)
   // for irrelevant variations for the zooms.
   const float flt_prec = 1.e6;
   const dt_colorspaces_t *const cp = darktable.color_profiles;
-  // the proof's settings matter only while it is shown
-  const dt_color_target_t proof = cp->mode != DT_PROFILE_NORMAL ? cp->softproof
-                                                                : DT_COLOR_TARGET_KEEP;
+  // the proof's settings matter only while it is shown: its override of
+  // the image's target, which the image's history holds
+  dt_color_target_t proof = DT_COLOR_TARGET_KEEP;
+  if(cp->mode != DT_PROFILE_NORMAL) dt_colorspaces_get_proof_override(&proof);
   const uint32_t test[] = { (uint32_t)dev->full.color_assessment,
                             (uint32_t)darktable.gui->show_focus_peaking,
                             (uint32_t)closeup,
@@ -2179,6 +2180,8 @@ dt_view_context_t dt_view_get_context_hash(void)
                             dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY),
                             // and the soft proof they render with
                             (uint32_t)cp->mode,
+                            // a custom proof takes its own intent's path
+                            (uint32_t)(cp->mode != DT_PROFILE_NORMAL ? cp->softproof_source : 0),
                             (uint32_t)proof.type,
                             (uint32_t)proof.intent,
                             (uint32_t)proof.bpc };

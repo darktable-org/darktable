@@ -854,16 +854,16 @@ static gboolean _matrix_like_lcms(const cmsHPROFILE profile,
 }
 
 // the matrix path an export takes, unless "always use LittleCMS 2" asks
-// for littlecms; a soft proof takes it only where it reproduces littlecms
-// for the proof's intent and black point compensation
+// for littlecms; a custom soft proof takes it only where it reproduces
+// littlecms for the proof's intent and black point compensation
 static gboolean _matrix_path(dt_iop_colorout_data_t *d,
                              const cmsHPROFILE output,
-                             const gboolean proof,
+                             const gboolean own_intent,
                              const dt_iop_color_intent_t intent,
                              const gboolean bpc,
                              const gboolean force_lcms2)
 {
-  if(force_lcms2 || (proof && !_matrix_like_lcms(output, intent, bpc))) return FALSE;
+  if(force_lcms2 || (own_intent && !_matrix_like_lcms(output, intent, bpc))) return FALSE;
   return !dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
                                                         d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES);
 }
@@ -1034,6 +1034,9 @@ typedef struct dt_iop_colorout_request_t
   cmsHPROFILE ink;
   // a soft proof, with or without the gamut check, or none
   dt_colorspaces_color_mode_t mode;
+  // a custom proof, which promises its own intent and compensation. a
+  // proof of the export's settings converts as that export does
+  gboolean own_intent;
   gboolean presented;
   // the pipe renders to its window's output
   gboolean window;
@@ -1070,9 +1073,9 @@ static void _image_target(dt_color_target_t *const t,
 
 // what the pipe asks for: an export the image's target with the export's
 // override, the thumbnail pipe the mipmap cache's, a presented pipe its
-// window's output or the soft proof's, which the proof applies over the
-// image's as an export applies its override. an export's target goes into
-// p, which the pipe hashes after this commit
+// window's output or the soft proof's. a soft proof applies its override
+// as an export does, so that a proof of the export's is that export. an
+// export's target goes into p, which the pipe hashes after this commit
 static void _request_output(dt_iop_colorout_request_t *const req,
                             dt_iop_colorout_params_t *const p,
                             const dt_dev_pixelpipe_t *const pipe)
@@ -1091,6 +1094,8 @@ static void _request_output(dt_iop_colorout_request_t *const req,
             : dt_pipe_is_preview(pipe) && mode != DT_PROFILE_NORMAL ? DT_PROFILE_SOFTPROOF
             : DT_PROFILE_NORMAL;
   const gboolean proof = req->mode != DT_PROFILE_NORMAL;
+  req->own_intent =
+    proof && darktable.color_profiles->softproof_source == DT_PROOF_SOURCE_CUSTOM;
 
   dt_color_target_t *const t = &req->target;
   dt_color_target_t proof_target = { .type = DT_COLORSPACE_NONE };
@@ -1123,8 +1128,10 @@ static void _request_output(dt_iop_colorout_request_t *const req,
     // frame holds RGB, so an ink proof goes on to the window's output
     if(proof)
     {
+      dt_color_target_t override;
+      dt_colorspaces_get_proof_override(&override);
       _image_target(&proof_target, p);
-      dt_color_target_override(&proof_target, &darktable.color_profiles->softproof);
+      dt_color_target_override(&proof_target, &override);
       const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
         (proof_target.type, proof_target.filename,
          DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
@@ -1165,7 +1172,7 @@ static void _build_transforms(dt_iop_colorout_data_t *const d,
                               const dt_iop_colorout_request_t *const req,
                               dt_iop_colorout_built_t *const b)
 {
-  const gboolean proof = req->mode != DT_PROFILE_NORMAL;
+  const gboolean own_intent = req->own_intent;
   const gboolean gamutcheck = req->mode == DT_PROFILE_GAMUTCHECK;
   const cmsHPROFILE ink = req->ink;
   const dt_iop_color_intent_t intent = req->transform_intent;
@@ -1267,7 +1274,7 @@ static void _build_transforms(dt_iop_colorout_data_t *const d,
   // littlecms' gamut check sees: its linear values tell
   const gboolean alarm = gamutcheck && (ink || !d->hdr_transfer);
 
-  if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
+  if(ink || !_matrix_path(d, output, own_intent, intent, bpc, force_lcms2))
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     b->cl_ready = FALSE;
@@ -1287,7 +1294,7 @@ static void _build_transforms(dt_iop_colorout_data_t *const d,
     b->filename = "";
     b->profile = output;
 
-    if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
+    if(ink || !_matrix_path(d, output, own_intent, intent, bpc, force_lcms2))
     {
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       b->cl_ready = FALSE;

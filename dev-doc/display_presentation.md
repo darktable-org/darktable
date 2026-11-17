@@ -239,8 +239,12 @@ second window, the thumbnail pipe or exports.
   its override to it with `dt_color_target_override()`: the profile and the
   headroom override together, since a PQ profile needs its peak to say what
   its values mean, and the intent with the black point compensation.
-- The proof applies its own target (`cp->softproof`), set in the darkroom,
-  over the image's target in the same way.
+- The proof applies an override to the image's target in the same way. By
+  default it is the export module's (`softproof_source` is
+  `DT_PROOF_SOURCE_EXPORT`), read by the same
+  `dt_colorspaces_get_export_override()` as an export, so the proof is what
+  an export with those settings renders. A custom proof applies its own
+  target (`cp->softproof`), set in the darkroom.
 - The output encoding is the proof's profile, and the frame is tagged with
   it. The presenter converts the frame in the same way as each other frame
   and clips what the screen cannot show.
