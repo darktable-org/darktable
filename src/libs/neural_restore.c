@@ -3101,7 +3101,11 @@ static gpointer _preview_thread_raw(gpointer data)
                     : cfg_type,
           .intent = DT_INTENT_PERCEPTUAL };
     if(cfg_type == DT_COLORSPACE_FILE)
-      g_strlcpy(icc.filename, dt_conf_get_string_const(CONF_ICC_FILE), sizeof(icc.filename));
+    {
+      gchar *filename = dt_conf_get_string(CONF_ICC_FILE);
+      g_strlcpy(icc.filename, filename, sizeof(icc.filename));
+      g_free(filename);
+    }
     dt_imageio_export_with_flags(
       pd->imgid, "unused", &fmt,
       (dt_imageio_module_data_t *)&cap,
