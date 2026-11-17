@@ -4156,6 +4156,12 @@ static float _calculate_straightening(const dt_iop_module_t *self,
   return a;
 }
 
+gboolean canvas_overlay_active(dt_iop_module_t *self)
+{
+  // as drawn by gui_post_expose()
+  return self->enabled;
+}
+
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const float wd,

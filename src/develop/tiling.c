@@ -1811,13 +1811,15 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   for(int tile_nr = 0; tile_nr < num_tiles; tile_nr++)
   {
     const int group = tile_nr * valid_rows ;
-    const int last_in = MIN(height, group + valid_rows + border);
-    const int topline = group - border;
-    const int first_in = MAX(0, topline);
-    const int t_rows = last_in - first_in;
-    const int missing = topline < 0 ? -topline : 0;
-    const int first_out = border - missing;
-    const int out_height = t_rows - first_out;
+    // every tile has the height of t_in and t_out, so the last one starts
+    // earlier. A shorter tile leaves rows of the previous tile below its
+    // roi, which kernels reading past the roi through a clamping sampler
+    // took for the bottom of the image
+    const int first_in = CLAMP(group - border, 0, height - tile_height);
+    const int last_in = first_in + tile_height;
+    const int t_rows = tile_height;
+    const int first_out = group - first_in;
+    const int out_height = MIN(valid_rows, height - group);
 
     if(out_height > 0)
     {

@@ -187,6 +187,9 @@ if(Rsvg2_FOUND)
 endif(Rsvg2_FOUND)
 
 add_iop(lens "lens.cc" DEFAULT_VISIBLE)
+target_compile_options(lens PRIVATE
+  -fno-fast-math
+  -ffp-contract=off)
 
 # fix for Mac when OpenMP is only available in C compiler
 if(APPLE)

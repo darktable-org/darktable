@@ -82,6 +82,17 @@ static inline float dt_hdr_hlg_luminance(const float rgb[3], const int transfer)
     : 0.2627f * rgb[0] + 0.6780f * rgb[1] + 0.0593f * rgb[2];
 }
 
+/* takes display light of luminance y to HLG scene light: the inverse of
+   the BT.2100 OOTF */
+static inline float dt_hdr_hlg_scene_scale(const float y)
+{
+  return y > 0.0f
+    ? DT_HDR_POW(DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_HLG_PEAK_NITS,
+                 1.0f / DT_HDR_HLG_SYSTEM_GAMMA)
+      * DT_HDR_POW(y, 1.0f / DT_HDR_HLG_SYSTEM_GAMMA - 1.0f)
+    : 0.0f;
+}
+
 static inline void dt_hdr_decode(float rgb[3], const int transfer)
 {
   if(transfer == DT_HDR_PQ)
@@ -107,12 +118,7 @@ static inline void dt_hdr_encode(float rgb[3], const int transfer)
   else if(transfer != DT_HDR_NONE)
   {
     for(int c = 0; c < 3; c++) rgb[c] = DT_HDR_MAX(rgb[c], 0.0f);
-    const float y = dt_hdr_hlg_luminance(rgb, transfer);
-    const float scale = y > 0.0f
-      ? DT_HDR_POW(DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_HLG_PEAK_NITS,
-                   1.0f / DT_HDR_HLG_SYSTEM_GAMMA)
-        * DT_HDR_POW(y, 1.0f / DT_HDR_HLG_SYSTEM_GAMMA - 1.0f)
-      : 0.0f;
+    const float scale = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(rgb, transfer));
     for(int c = 0; c < 3; c++) rgb[c] = dt_hdr_hlg_encode(rgb[c] * scale);
   }
 }

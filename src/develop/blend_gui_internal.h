@@ -139,7 +139,7 @@ int dt_masks_model_move_points(dt_iop_module_t *module,
                                const dt_mask_id_t dst);
 
 /** the multiple selection: members of the mask picked together by
-    shift+click, kept as a list of ids as the rows carry them, an element's
+    ctrl/cmd+click or shift+click ranges, kept as a list of ids as the rows carry them, an element's
     form id or a group's cid. The list is NULL or holds two or more: one pick
     is no multiple selection. A group is picked whole: when its cid is picked,
     so is everything it holds, at any depth. The functions below keep both
@@ -184,6 +184,17 @@ dt_masks_pick_result_t dt_masks_model_pick_toggle(dt_masks_form_t *grp,
                                                   const dt_mask_id_t selected_formid,
                                                   const dt_mask_id_t selected_cid,
                                                   const dt_mask_id_t fid);
+/** shift+click: pick the rows from `anchor` to `fid` in `order`, the pick ids of
+    the rows as they are listed on screen, top down. The picks are replaced by
+    the range, or with `add` (ctrl+shift+click) joined by it. A picked group
+    brings what it holds. The mask's own group is never a pick. IGNORED if
+    either end is not in `order` */
+dt_masks_pick_result_t dt_masks_model_pick_range(dt_masks_form_t *grp,
+                                                 GList **picked,
+                                                 const GList *order,
+                                                 const dt_mask_id_t anchor,
+                                                 const dt_mask_id_t fid,
+                                                 const gboolean add);
 /** drop the picks that are not in the mask any more, and the groups that are
     not picked whole any more, as after one gained a member; and all of them if
     fewer than two remain */

@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/frame.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -56,10 +57,7 @@ typedef struct dt_lib_snapshot_t
   dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
-  uint8_t *buf;
-  float scale;
-  size_t width, height;
-  dt_dev_zoom_pos_t zoom_pos;
+  dt_frame_t *frame;
 } dt_lib_snapshot_t;
 
 typedef struct dt_lib_snapshots_t
@@ -82,8 +80,61 @@ typedef struct dt_lib_snapshots_t
   gboolean on_going;
   gboolean rotsym_lightup;
 
-  GtkWidget *take_button, *sidebyside_button;
+  GtkWidget *take_button, *sidebyside_button, *rotate_button;
+
+  // id of the snapshot made by a click on the compare icon of a history entry,
+  // 0 if none. It is replaced by the next click, so comparing entry after
+  // entry takes one slot
+  uint32_t compare_id;
+  // a press on the split line of a compared step that may still turn into a
+  // drag: where it was and where the line was
+  gboolean pending_click;
+  // the overlay took the press of the button now down, so it takes the release
+  gboolean owns_press;
+  double press_xp, press_yp, line_xp, line_yp;
+  // a press on the boundary of the side-by-side halves of a compared step
+  gboolean separator_pressed, separator_dragged;
+  // the resize cursor shown over what a click swaps the sides of, NULL if not
+  const char *cursor;
+  double separator_x, separator_y;
 } dt_lib_snapshots_t;
+
+// history_end of the snapshot being compared with the live edit on behalf of
+// a history entry, -1 if there is none
+static int _compare_history_end(const dt_lib_snapshots_t *d)
+{
+  if(!d->compare_id || d->selected < 0) return -1;
+  const dt_lib_snapshot_t *s = &d->snapshot[d->selected];
+  return s->id == d->compare_id && s->imgid == darktable.develop->image_storage.id
+    ? (int)s->history_end : -1;
+}
+
+static void _compare_rotate(dt_lib_module_t *self);
+
+// the layout of the comparison is a global preference shared with the history
+// module, so it is kept across snapshots and sessions
+static void _layout_store(const dt_lib_snapshots_t *d)
+{
+  dt_conf_set_bool("plugins/darkroom/snapshots/sidebyside", d->sidebyside);
+  dt_conf_set_bool("plugins/darkroom/snapshots/vertical", d->vertical);
+  dt_conf_set_bool("plugins/darkroom/snapshots/inverted", d->inverted);
+}
+
+static void _compare_changed(void)
+{
+  // turning the split makes sense while a snapshot is shown
+  dt_lib_module_t *self = darktable.lib->proxy.snapshots.module;
+  const dt_lib_snapshots_t *d = self ? self->data : NULL;
+  if(d && d->rotate_button)
+  {
+    gtk_widget_set_sensitive(d->rotate_button, d->selected >= 0);
+    gtk_widget_set_sensitive(d->sidebyside_button, d->selected >= 0);
+  }
+
+  if(darktable.lib->proxy.snapshots.compare_changed)
+    darktable.lib->proxy.snapshots.compare_changed
+      (darktable.lib->proxy.snapshots.compare_user_data);
+}
 
 /* callback for take snapshot */
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
@@ -91,6 +142,18 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
                                             dt_lib_module_t *self);
+
+static void _compare_history(dt_lib_module_t *self,
+                             const int history_end);
+
+static int _compare_get(dt_lib_module_t *self);
+
+static void _compare_set_sidebyside(dt_lib_module_t *self,
+                                    const gboolean sidebyside);
+
+static void _compare_rotate(dt_lib_module_t *self);
+
+static gboolean _compare_get_sidebyside(dt_lib_module_t *self);
 
 static void _lib_snapshots_restore_callback(GtkButton *widget,
                                             dt_lib_module_t *self);
@@ -219,6 +282,7 @@ void gui_post_expose(dt_lib_module_t *self,
   dt_lib_snapshots_t *d = self->data;
   dt_develop_t *dev = darktable.develop;
 
+  // this half shows the live edit
   if(d->sidebyside && (!darktable.gui->drawing_snapshot ^ !d->inverted))
     return;
 
@@ -231,24 +295,21 @@ void gui_post_expose(dt_lib_module_t *self,
     // if a new snapshot is needed, do this now
     if(d->snap_requested && snap->ctx == ctx)
     {
-      dt_free_align(snap->buf);
-      snap->buf = NULL;
+      dt_frame_unref(snap->frame);
 
       // export image with proper size
-      dt_dev_image(snap->imgid,
-                   width,
-                   height,
-                   snap->history_end,
-                   &snap->buf,
-                   &snap->scale,
-                   &snap->width,
-                   &snap->height,
-                   snap->zoom_pos,
-                   snap->id,
-                   NULL,
-                   DT_DEVICE_NONE,
-                   FALSE,
-                   FALSE);
+      dt_display_output_t output;
+      dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+      snap->frame = dt_dev_image(snap->imgid,
+                                 width,
+                                 height,
+                                 FALSE,
+                                 snap->history_end,
+                                 snap->id,
+                                 NULL,
+                                 DT_DEVICE_NONE,
+                                 FALSE,
+                                 &output);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
@@ -258,7 +319,7 @@ void gui_post_expose(dt_lib_module_t *self,
     // create many snapshot while zooming (this is slow), so we wait
     // to the zoom level to be stabilized to create the new snapshot.
     if(snap->ctx != ctx
-       || !snap->buf)
+       || !snap->frame)
     {
       // request a new snapshot in the following conditions:
       //    1. we are not panning
@@ -308,11 +369,8 @@ void gui_post_expose(dt_lib_module_t *self,
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(snap->buf)
-    {
-      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                            snap->buf, snap->scale, snap->width, snap->height, snap->zoom_pos);
-    }
+    if(snap->frame)
+      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN, snap->frame);
 
     cairo_restore(cri);
 
@@ -389,6 +447,62 @@ void gui_post_expose(dt_lib_module_t *self,
   }
 }
 
+// the pointer is on the split line or its rotation handle, the only places of
+// a snapshot's overlay that take a click
+static gboolean _near_split_line(const dt_lib_snapshots_t *d,
+                                 const double x,
+                                 const double y)
+{
+  const double tol = DT_PIXEL_APPLY_DPI(8);
+  const double line = d->vertical ? d->vp_xpointer * d->vp_width
+                                  : d->vp_ypointer * d->vp_height;
+  return fabs((d->vertical ? x : y) - line) < tol;
+}
+
+static gboolean _on_split_control(dt_lib_module_t *self,
+                                  const double x,
+                                  const double y)
+{
+  const dt_lib_snapshots_t *d = self->data;
+  if(_near_split_line(d, x, y)) return TRUE;
+  return _get_rotation_area(self, x, y, NULL, NULL, NULL);
+}
+
+// side-by-side: the pointer is on the edge the two halves share. The first
+// widget is the left or top half, the snapshot widget the other one
+static gboolean _on_sidebyside_separator(const dt_lib_snapshots_t *d,
+                                         const double x,
+                                         const double y,
+                                         const gboolean second)
+{
+  const double tol = DT_PIXEL_APPLY_DPI(8);
+  const double pos = d->vertical ? x : y;
+  const double size = d->vertical ? d->vp_width : d->vp_height;
+  return second ? pos < tol : pos > size - tol;
+}
+
+// a click of the darkroom, not of the split, while a snapshot is shown: the
+// image stays editable
+static gboolean _compare_passes(dt_lib_module_t *self,
+                                const double x,
+                                const double y)
+{
+  const dt_lib_snapshots_t *d = self->data;
+  if(d->selected < 0) return FALSE;
+  return d->sidebyside || !_on_split_control(self, x, y);
+}
+
+int mouse_leave(struct dt_lib_module_t *self)
+{
+  dt_lib_snapshots_t *d = self->data;
+  if(d->cursor)
+  {
+    d->cursor = NULL;
+    dt_control_change_cursor("default");
+  }
+  return 0;
+}
+
 int button_released(struct dt_lib_module_t *self,
                     const double x,
                     const double y,
@@ -400,11 +514,45 @@ int button_released(struct dt_lib_module_t *self,
   if(d->panning)
   {
     d->panning = FALSE;
+    d->owns_press = FALSE;
     return 0;
   }
 
+  if(d->separator_pressed)
+  {
+    d->separator_pressed = FALSE;
+    // only a click swaps the halves, not an attempt to drag the boundary
+    if(!d->separator_dragged)
+    {
+      d->inverted = !d->inverted;
+      _layout_store(d);
+      d->snap_requested = TRUE;
+      dt_control_queue_redraw_center();
+    }
+    return 1;
+  }
+
+  // the darkroom needs the release of a click it got the press of, see
+  // button_pressed(). Redraws clear on_going and dragging, so the press is
+  // tracked on its own
+  const gboolean owned = d->owns_press;
+  d->owns_press = FALSE;
+  if(d->selected >= 0 && !owned)
+    return 0;
+
   if(d->selected >= 0)
   {
+    // a click on the split line, not a drag, swaps the sides
+    if(d->pending_click)
+    {
+      d->pending_click = FALSE;
+      d->vp_xpointer = d->line_xp;
+      d->vp_ypointer = d->line_yp;
+      d->inverted = !d->inverted;
+      _layout_store(d);
+      d->snap_requested = TRUE;
+      dt_control_queue_redraw_center();
+    }
     d->dragging = FALSE;
     return 1;
   }
@@ -429,8 +577,23 @@ int button_pressed(struct dt_lib_module_t *self,
     return 0;
   }
 
+  // comparing a history entry side-by-side: the image stays editable, so the
+  // click goes on to the darkroom instead of turning the split
+  // a click on the boundary between the halves swaps them
+  if(d->sidebyside && d->selected >= 0 && _on_sidebyside_separator(d, x, y, darktable.gui->press_in_snapshot))
+  {
+    d->separator_pressed = TRUE;
+    d->separator_dragged = FALSE;
+    d->separator_x = x;
+    d->separator_y = y;
+    return 1;
+  }
+
+  if(_compare_passes(self, x, y)) return 0;
+
   if(d->selected >= 0 && which != GDK_BUTTON_MIDDLE)
   {
+    d->owns_press = TRUE;
     if(d->on_going) return 1;
 
     const double xp = x / d->vp_width;
@@ -458,6 +621,7 @@ int button_pressed(struct dt_lib_module_t *self,
       gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
                                      d->vertical ?  GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
       if(_lib_snapshot_rotation_cnt % 2) d->inverted = !d->inverted;
+      _layout_store(d);
       if(d->sidebyside)
         d->snap_requested = TRUE;
 
@@ -471,6 +635,11 @@ int button_pressed(struct dt_lib_module_t *self,
     /* do the dragging !? */
     else
     {
+      d->pending_click = TRUE;
+      d->press_xp = xp;
+      d->press_yp = yp;
+      d->line_xp = d->vp_xpointer;
+      d->line_yp = d->vp_ypointer;
       d->dragging = TRUE;
       d->vp_ypointer = yp;
       d->vp_xpointer = xp;
@@ -494,10 +663,47 @@ int mouse_moved(dt_lib_module_t *self,
   // if panning, do not handle here, let darkroom do the job
   if(d->panning) return 0;
 
+  // an arrow over the split line or the boundary of the halves of a compared step
+  if(!d->separator_pressed && !d->dragging)
+  {
+    const gboolean over = d->selected >= 0
+      && (d->sidebyside
+          ? _on_sidebyside_separator(d, x, y, darktable.gui->pointer_in_snapshot)
+          : _near_split_line(d, x, y));
+    // an arrow across the split: left/right for a vertical one
+    const char *cursor = over ? d->vertical ? "ew-resize" : "ns-resize" : NULL;
+    if(cursor != d->cursor)
+    {
+      d->cursor = cursor;
+      dt_control_change_cursor(cursor ? cursor : "default");
+    }
+  }
+
+  if(d->separator_pressed)
+  {
+    if(fabs(x - d->separator_x) + fabs(y - d->separator_y) > DT_PIXEL_APPLY_DPI(4))
+      d->separator_dragged = TRUE;
+    return 1;
+  }
+
+  // nothing to move unless the split is being dragged
+  if(d->selected >= 0 && (d->sidebyside || !d->dragging))
+  {
+    if(!d->sidebyside
+       && _get_rotation_area(self, x, y, NULL, NULL, NULL) != d->rotsym_lightup)
+      dt_control_queue_redraw_center();
+    return 0;
+  }
+
   if(d->selected >= 0)
   {
     const double xp = x / d->vp_width;
     const double yp = y / d->vp_height;
+
+    if(d->pending_click
+       && fabs(xp - d->press_xp) * d->vp_width + fabs(yp - d->press_yp) * d->vp_height
+          > DT_PIXEL_APPLY_DPI(4))
+      d->pending_click = FALSE;
 
     /* update x pointer */
     if(d->dragging)
@@ -638,10 +844,10 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
 
   g_free(s->module);
   g_free(s->label);
-  dt_free_align(s->buf);
+  dt_frame_unref(s->frame);
   s->module = NULL;
   s->label = NULL;
-  s->buf = NULL;
+  s->frame = NULL;
 }
 
 static void _clear_snapshots(dt_lib_module_t *self)
@@ -659,30 +865,16 @@ static void _clear_snapshots(dt_lib_module_t *self)
   }
 
   d->num_snapshots = 0;
+  d->compare_id = 0;
   gtk_widget_set_sensitive(d->take_button, TRUE);
 
   dt_control_queue_redraw_center();
+  _compare_changed();
 }
 
 void gui_reset(dt_lib_module_t *self)
 {
   _clear_snapshots(self);
-}
-
-static void _signal_profile_changed(gpointer instance,
-                                    const uint8_t profile_type,
-                                    dt_lib_module_t *self)
-{
-  // when the display profile is changed, make sure we recreate the snapshot
-  if(profile_type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY)
-  {
-    dt_lib_snapshots_t *d = self->data;
-
-    if(d->selected >= 0)
-      d->snap_requested = TRUE;
-
-    dt_control_queue_redraw_center();
-  }
 }
 
 static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
@@ -701,6 +893,8 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
   }
   else if(d->selected > (int)index)
     d->selected--;
+
+  if(d->snapshot[index].id == d->compare_id) d->compare_id = 0;
 
   //  First clean the entry
   _clear_snapshot_entry(&d->snapshot[index]);
@@ -724,6 +918,8 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 
   // taking the tenth snapshot disabled the button, and a slot is free again
   gtk_widget_set_sensitive(d->take_button, TRUE);
+
+  _compare_changed();
 }
 
 static void _signal_image_removed(gpointer instance,
@@ -799,9 +995,17 @@ static void _sidebyside_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_snapshots_t *d = self->data;
 
   d->sidebyside = !d->sidebyside;
+  _layout_store(d);
   d->snap_requested = TRUE;
   gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui),
                          d->sidebyside && d->selected >= 0);
+  // the mode icon of the history module follows
+  _compare_changed();
+}
+
+static void _rotate_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
+{
+  _compare_rotate(self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -815,7 +1019,9 @@ void gui_init(dt_lib_module_t *self)
   d->vp_ypointer = 0.5;
   d->vp_xrotate = 0.0;
   d->vp_yrotate = 0.0;
-  d->vertical = TRUE;
+  d->sidebyside = dt_conf_get_bool("plugins/darkroom/snapshots/sidebyside");
+  d->vertical = dt_conf_get_bool("plugins/darkroom/snapshots/vertical");
+  d->inverted = dt_conf_get_bool("plugins/darkroom/snapshots/inverted");
   d->on_going = FALSE;
   d->rotsym_lightup = FALSE;
   d->panning = FALSE;
@@ -823,7 +1029,15 @@ void gui_init(dt_lib_module_t *self)
   d->snap_requested = FALSE;
   d->expose_again_timeout_id = 0;
   d->num_snapshots = 0;
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
+                                 d->vertical ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
   darktable.lib->proxy.snapshots.enabled = FALSE;
+  darktable.lib->proxy.snapshots.module = self;
+  darktable.lib->proxy.snapshots.compare_history = _compare_history;
+  darktable.lib->proxy.snapshots.compared_history_end = _compare_get;
+  darktable.lib->proxy.snapshots.set_sidebyside = _compare_set_sidebyside;
+  darktable.lib->proxy.snapshots.get_sidebyside = _compare_get_sidebyside;
+  darktable.lib->proxy.snapshots.rotate_layout = _compare_rotate;
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -891,7 +1105,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), d->take_button, TRUE, TRUE, 0);
-  d->sidebyside_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL,
+  d->sidebyside_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_compare_mode, 0, NULL,
       &(dtgtk_button_config_t){
         .tooltip = _("place the snapshot side-by-side / above-below the current image instead of overlaying"),
         .action = DT_ACTION(self),
@@ -900,28 +1114,50 @@ void gui_init(dt_lib_module_t *self)
         .clicked_cb = G_CALLBACK(_sidebyside_button_clicked),
         .clicked_data = self,
       });
+  // the icon shows the mode, as in the history module: no toggled background
+  dt_gui_add_class(d->sidebyside_button, "dt_transparent_background");
+  dt_gui_add_class(d->sidebyside_button, "dt_ignore_fg_state");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->sidebyside_button), d->sidebyside);
+  gtk_widget_set_sensitive(d->sidebyside_button, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), d->sidebyside_button, FALSE, TRUE, 0);
+  d->rotate_button = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("turn the split between left/right and top/bottom"),
+        .clicked_cb = G_CALLBACK(_rotate_button_clicked),
+        .clicked_data = self,
+      });
+  gtk_widget_set_sensitive(d->rotate_button, FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), d->rotate_button, FALSE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   dt_action_register(DT_ACTION(self), N_("toggle last snapshot"),
                      _lib_snapshots_toggle_last, 0, 0);
 
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGE_REMOVED, _signal_image_removed);
+
+  // the history module may have been set up first, with the saved mode unknown
+  _compare_changed();
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   _clear_snapshots(self);
+  darktable.lib->proxy.snapshots.module = NULL;
+  darktable.lib->proxy.snapshots.compare_history = NULL;
+  darktable.lib->proxy.snapshots.compared_history_end = NULL;
+  darktable.lib->proxy.snapshots.set_sidebyside = NULL;
+  darktable.lib->proxy.snapshots.get_sidebyside = NULL;
+  darktable.lib->proxy.snapshots.rotate_layout = NULL;
 
   g_free(self->data);
   self->data = NULL;
 }
 
-static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
-                                                       dt_lib_module_t *self)
+// snapshot the edit as it was after history_end items
+static void _take_snapshot(dt_lib_module_t *self,
+                           const int history_end)
 {
   dt_lib_snapshots_t *d = self->data;
 
@@ -943,11 +1179,10 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 
   _clear_snapshot_entry(s);
 
-  if(darktable.develop->history_end > 0)
+  if(history_end > 0)
   {
     dt_dev_history_item_t *history_item =
-      g_list_nth_data(darktable.develop->history,
-                      darktable.develop->history_end - 1);
+      g_list_nth_data(darktable.develop->history, history_end - 1);
     if(history_item && history_item->module)
     {
       s->module = g_strdup(history_item->module->name());
@@ -966,7 +1201,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   else
     s->module = g_strdup(_("original"));
 
-  s->history_end = darktable.develop->history_end;
+  s->history_end = history_end;
   s->imgid = darktable.develop->image_storage.id;
 
   dt_history_snapshot_create(s->imgid, s->id, s->history_end);
@@ -1014,6 +1249,94 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
     gtk_widget_set_sensitive(d->take_button, FALSE);
 }
 
+static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
+                                                       dt_lib_module_t *self)
+{
+  _take_snapshot(self, darktable.develop->history_end);
+}
+
+// compare the edit as it was after history_end items with the live edit, which
+// stays editable; the same entry again ends the comparison
+static void _compare_history(dt_lib_module_t *self,
+                             const int history_end)
+{
+  dt_lib_snapshots_t *d = self->data;
+
+  const int shown = _compare_history_end(d);
+
+  if(d->compare_id)
+  {
+    for(uint32_t k = 0; k < d->num_snapshots; k++)
+      if(d->snapshot[k].id == d->compare_id)
+      {
+        _remove_snapshot_entry(self, k);
+        break;
+      }
+    d->compare_id = 0;
+  }
+
+  if(shown == history_end)
+  {
+    dt_control_queue_redraw_center();
+    return;
+  }
+
+  if(d->num_snapshots >= MAX_SNAPSHOT)
+  {
+    dt_control_log(_("all %d snapshot slots are in use"), MAX_SNAPSHOT);
+    return;
+  }
+
+  _take_snapshot(self, history_end);
+  d->compare_id = d->snapshot[d->num_snapshots - 1].id;
+
+  gtk_toggle_button_set_active
+    (GTK_TOGGLE_BUTTON(d->snapshot[d->num_snapshots - 1].button), TRUE);
+}
+
+static int _compare_get(dt_lib_module_t *self)
+{
+  return _compare_history_end(self->data);
+}
+
+static void _compare_set_sidebyside(dt_lib_module_t *self,
+                                    const gboolean sidebyside)
+{
+  dt_lib_snapshots_t *d = self->data;
+  if(d->sidebyside == sidebyside) return;
+
+  // the toggle follows without its click handler, which flips the mode and
+  // is called here once instead
+  g_signal_handlers_block_matched(d->sidebyside_button, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA,
+                                  0, 0, NULL, _sidebyside_button_clicked, self);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->sidebyside_button), sidebyside);
+  g_signal_handlers_unblock_matched(d->sidebyside_button, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA,
+                                    0, 0, NULL, _sidebyside_button_clicked, self);
+  _sidebyside_button_clicked(NULL, self);
+  dt_control_queue_redraw_center();
+  _compare_changed();
+}
+
+// turn a left/right split into a top/bottom one and back
+static void _compare_rotate(dt_lib_module_t *self)
+{
+  dt_lib_snapshots_t *d = self->data;
+
+  d->vertical = !d->vertical;
+  _layout_store(d);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
+                                 d->vertical ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
+  d->snap_requested = TRUE;
+  dt_control_queue_redraw_center();
+  _compare_changed();
+}
+
+static gboolean _compare_get_sidebyside(dt_lib_module_t *self)
+{
+  const dt_lib_snapshots_t *d = self->data;
+  return d->sidebyside;
+}
+
 static int _lib_snapshots_get_activated(dt_lib_module_t *self, GtkWidget *widget)
 {
   dt_lib_snapshots_t *d = self->data;
@@ -1052,6 +1375,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
 
   /* redraw center view */
   dt_control_queue_redraw_center();
+  _compare_changed();
 }
 
 static void _lib_snapshots_restore_callback(GtkButton *widget,
@@ -1144,6 +1468,7 @@ static int direction_member(lua_State *L)
       d->vertical = TRUE;
       d->inverted = TRUE;
     }
+    _layout_store(d);
     dt_control_queue_redraw_center();
     return 0;
   }

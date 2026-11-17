@@ -29,6 +29,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/frame.h"
 #include "dtgtk/thumbnail.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -44,11 +45,7 @@ typedef struct dt_lib_duplicate_t
   GtkWidget *duplicate_box;
   dt_imgid_t imgid;
 
-  uint8_t *buf;
-  float scale;
-  size_t buf_width;
-  size_t buf_height;
-  dt_dev_zoom_pos_t zoom_pos;
+  dt_frame_t *frame;
 
   dt_view_context_t view_ctx;
   int preview_id;
@@ -218,11 +215,8 @@ void view_leave(struct dt_lib_module_t *self,
 {
   // we leave the view. Let's destroy preview surf if any
   dt_lib_duplicate_t *d = self->data;
-  if(d->buf)
-  {
-    dt_free_align(d->buf);
-    d->buf = NULL;
-  }
+  dt_frame_unref(d->frame);
+  d->frame = NULL;
 }
 void gui_post_expose(dt_lib_module_t *self,
                      cairo_t *cri,
@@ -240,30 +234,19 @@ void gui_post_expose(dt_lib_module_t *self,
 
   if(!view_ok || d->preview_id != d->imgid)
   {
-    if(d->buf)
-      dt_free_align(d->buf);
+    dt_frame_unref(d->frame);
 
-    dt_dev_image(d->imgid,
-                 width,
-                 height,
-                 -1,
-                 &d->buf,
-                 &d->scale,
-                 &d->buf_width,
-                 &d->buf_height,
-                 d->zoom_pos,
-                 -1,
-                 NULL,
-                 DT_DEVICE_NONE,
-                 FALSE,
-                 FALSE);
+    dt_display_output_t output;
+    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+    d->frame = dt_dev_image(d->imgid, width, height, FALSE, -1, -1, NULL, DT_DEVICE_NONE,
+                            FALSE, &output);
 
     d->preview_id = d->imgid;
   }
 
-  if(d->buf)
+  if(d->frame)
     dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
-                          d->buf, d->scale, d->buf_width, d->buf_height, d->zoom_pos);
+                          d->frame);
 }
 
 static void _thumb_remove(gpointer user_data)
@@ -283,11 +266,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   d->imgid = NO_IMGID;
   // we drop the preview if any
-  if(d->buf)
-  {
-    dt_free_align(d->buf);
-    d->buf = NULL;
-  }
+  dt_frame_unref(d->frame);
+  d->frame = NULL;
   // we drop all the thumbs
   g_list_free_full(d->thumbs, _thumb_remove);
   d->thumbs = NULL;
@@ -461,7 +441,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_duplicate_t *d = self->data = g_malloc0(sizeof(dt_lib_duplicate_t));
 
   d->imgid = NO_IMGID;
-  d->buf = NULL;
+  d->frame = NULL;
   d->view_ctx = 0;
 
   d->duplicate_box = dt_gui_vbox();

@@ -20,6 +20,7 @@
 #include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
 #include "common/imagebuf.h"     // for dt_iop_image_copy_by_size
 #include "common/mipmap_cache.h" // for dt_mipmap_buffer_t, dt_mipmap_cach...
+#include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "control/control.h"      // for dt_control_log
 #include "develop/develop.h"      // for dt_develop_t, dt_develop_t::(anony...
@@ -47,6 +48,15 @@ static const float dt_iop_rawoverexposed_colors[4][4] __attribute__((aligned(64)
   { 0.0f, 0.0f, 1.0f, 1.0f }, // blue
   { 0.0f, 0.0f, 0.0f, 1.0f }  // black
 };
+
+// the marks are UI tones, authored as device values of the window
+static void _mark_colors(dt_iop_module_t *self,
+                         const dt_dev_pixelpipe_t *pipe,
+                         dt_aligned_pixel_t colors[4])
+{
+  for(int k = 0; k < 4; k++) copy_pixel(colors[k], dt_iop_rawoverexposed_colors[k]);
+  dt_ioppr_device_to_output(self->dev, pipe, colors[0], 4, 1);
+}
 
 typedef struct dt_iop_rawoverexposed_data_t
 {
@@ -126,7 +136,9 @@ void process(dt_iop_module_t *self,
 
   const dt_dev_rawoverexposed_mode_t mode = dev->rawoverexposed.mode;
   const int colorscheme = dev->rawoverexposed.colorscheme;
-  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
+  dt_aligned_pixel_t colors[4];
+  _mark_colors(self, piece->pipe, colors);
+  const float *const color = colors[colorscheme];
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
@@ -150,7 +162,7 @@ void process(dt_iop_module_t *self,
   size_t coordbufsize;
   float *const restrict coordbuf = dt_alloc_perthread_float(2*roi_out->width, &coordbufsize);
 
-  DT_OMP_FOR(firstprivate(dt_iop_rawoverexposed_colors))
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *const restrict bufptr = dt_get_perthread(coordbuf, coordbufsize);
@@ -194,7 +206,7 @@ void process(dt_iop_module_t *self,
       switch(mode)
       {
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
-          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], sizeof(float) * 4);
+          memcpy(out + pout, colors[c], sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
           memcpy(out + pout, color, sizeof(float) * 4);
@@ -255,7 +267,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(err != CL_SUCCESS) goto error;
 
   const int colorscheme = dev->rawoverexposed.colorscheme;
-  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
+  dt_aligned_pixel_t colors[4];
+  _mark_colors(self, piece->pipe, colors);
+  const float *const color = colors[colorscheme];
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
@@ -296,7 +310,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
       kernel = gd->kernel_rawoverexposed_mark_cfa;
 
-      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_rawoverexposed_colors), (void *)dt_iop_rawoverexposed_colors);
+      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(colors), (void *)colors);
       if(dev_colors == NULL) goto error;
 
       break;

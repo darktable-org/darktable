@@ -1865,15 +1865,6 @@ progressbar progress
   margin: 0.14em;
 }
 
-/* then the switches */
-.dt_history_switch:disabled /* state of those switch is always disabled */
-{
-  color: @plugin_label_color;
-  font-size: 0.75em;
-  margin-left: 0.42em;
-  border: 0;
-}
-
 /* and the history number */
 #history-number
 {
@@ -1886,10 +1877,10 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
-/* history on/off button */
-.dt_history_switch_off:disabled
+/* the marks of a row fill their box, which is too big for a row */
+.dt_history_power_mark
 {
-  color: shade(@disabled_fg_color, 0.9);
+  font-size: 0.75em;
 }
 
 #dt-metadata-changed
@@ -2984,9 +2975,6 @@ popover#log-history-popover label
 @define-color mask_selected      @mask_selected_top;
 @define-color mask_hover_top     shade(@plugin_bg_color, 1.5);
 @define-color mask_hover         @mask_hover_top;
-/* what a ctrl+shift+click would delete, while ctrl+shift is held over the list */
-@define-color mask_delete_top    mix(@mask_hover_top, rgb(200, 60, 50), 0.55);
-@define-color mask_delete        @mask_delete_top;
 /* the ground of the controls under an open header, in every state */
 /* the glyph on every row's lead icon. A lead has no plate of its own, so its
    glyph sits on the header and must read on every header shade */
@@ -3714,14 +3702,6 @@ button.dt_masks_enable_toggle:checked:hover
 .dt_masks_group_header.dt_masks_hovered
 {
   box-shadow: inset -3px 0 @mask_selected_frame;
-}
-
-/* ctrl+shift held over the list (see _armed_watch): the hovered header takes the delete
-   shade */
-.dt_masks_deleting .dt_masks_header.dt_masks_hovered
-{
-  background-color: transparent;
-  background-image: linear-gradient(to bottom, @mask_delete_top, @mask_delete);
 }
 
 /* the group a drop would land in (see _drop_group_of) lights its header up

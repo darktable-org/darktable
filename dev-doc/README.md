@@ -31,6 +31,11 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 | **[Quick_Access_Panel.md](Quick_Access_Panel.md)** | Quick Access Panel integration for widgets |
 | **[GUI_Recipes.md](GUI_Recipes.md)** | Copy-paste patterns for notebooks, sections, buttons, visibility |
 
+### Display
+| File | Description |
+|------|-------------|
+| **[display_presentation.md](display_presentation.md)** | How rendered frames reach the screen: output description, frames and their renditions, presenter and its backends |
+
 ### AI Subsystem
 | File | Description |
 |------|-------------|

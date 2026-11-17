@@ -520,7 +520,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
 }
 
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
   DT_GUARD_GUI_UPDATE(FALSE);
@@ -532,7 +532,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   if(pixels_fixed < 0) return FALSE;
 
-  char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
+  char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", pixels_fixed), pixels_fixed);
 
   DT_ENTER_GUI_UPDATE();
   gtk_label_set_text(g->message, str);
@@ -550,7 +550,7 @@ void gui_init(dt_iop_module_t *self)
   g->pixels_fixed = -1;
 
   GtkWidget *box_raw = self->widget = dt_gui_vbox();
-  g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
+  g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(_draw), self);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_digits(g->threshold, 4);

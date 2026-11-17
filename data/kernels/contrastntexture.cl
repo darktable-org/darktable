@@ -18,11 +18,11 @@
 
 #include "common.h"
 
-// the luminance goes to both buffers: the blur of the first level works in
-// place on one, the band pass needs the other unblurred
+#define INVERSE_SQRT_3 0.5773502691896258f
+
+// see compute_luminance(): the log luminance, input of the first level
 kernel void contrastntexture_luminance(read_only image2d_t in,
-                                       global float *const luminance,
-                                       global float *const highpass,
+                                       global float *const log_luminance,
                                        const int width,
                                        const int height,
                                        const float noise_bias)
@@ -32,57 +32,77 @@ kernel void contrastntexture_luminance(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   const float4 pixel = Areadpixel(in, x, y);
-  const float norm = fmax(dtcl_sqrt(pixel.x * pixel.x + pixel.y * pixel.y + pixel.z * pixel.z),
-                          NORM_MIN);
-  const int k = mad24(y, width, x);
-  const float lum = (1.0f / sqrt(3.0f)) * norm + noise_bias;
-  luminance[k] = lum;
-  highpass[k] = lum;
+  const float norm = INVERSE_SQRT_3 * dtcl_sqrt(pixel.x * pixel.x + pixel.y * pixel.y + pixel.z * pixel.z)
+                     + noise_bias;
+  log_luminance[mad24(y, width, x)] = dtcl_log2(fmax(norm, NORM_MIN));
 }
 
-// one pyramid level: the band pass between the luminance before and after
-// this level's blur, see extract_details(). The blurred luminance, less the
-// noise bias step, is the input of the next level, so it goes to both buffers
-kernel void contrastntexture_details(global float *const highpass,
-                                     global float *const lowpass,
-                                     global float *const corrections,
-                                     const int width,
-                                     const int height,
-                                     const float gain,
-                                     const float noise_bias,
-                                     const float next_bias_step,
-                                     const int accumulate)
+// the value relative to center and its square, blurred together as the two
+// channels of one gaussian to give the local mean and variance of
+// fast_gaussian_guided_filter()
+kernel void contrastntexture_guided_filter_pack(global const float *const log_luminance,
+                                                global float2 *const moments,
+                                                const int width,
+                                                const int height,
+                                                const float center)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
   const int k = mad24(y, width, x);
-  const float pixel = highpass[k];
-  const float smoothed = lowpass[k];
+  const float v = log_luminance[k] - center;
+  moments[k] = (float2)(v, v * v);
+}
 
-  const float log_pixel = dtcl_log2(fmax(pixel, NORM_MIN));
-  const float log_smoothed = dtcl_log2(fmax(smoothed, NORM_MIN));
+// one pyramid level: the guided filter output from the blurred moments, then
+// the band pass between the log luminance before and after it, see
+// extract_details(). The smoothed luminance, less the noise bias step,
+// replaces the input as the next level's input
+kernel void contrastntexture_details(global float *const log_luminance,
+                                     global const float2 *const moments,
+                                     global float *const corrections,
+                                     const int width,
+                                     const int height,
+                                     const float feathering,
+                                     const float gain,
+                                     const float noise_bias,
+                                     const float next_bias_step,
+                                     const int accumulate,
+                                     const int last_level,
+                                     const float center)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const int k = mad24(y, width, x);
+  const float log_pixel = log_luminance[k];
+  const float2 m = moments[k];
+  const float variance = fmax(m.y - m.x * m.x, 0.0f);
+  const float a = fp32_div(variance, variance + feathering);
+  const float log_smoothed = a * log_pixel + (1.0f - a) * (m.x + center);
+  const float smoothed = dtcl_exp2(log_smoothed);
+
   const float noise_power = noise_bias * noise_bias;
   const float combined_power = smoothed * smoothed;
-  const float weiner_gain = fmax(combined_power - noise_power, 0.0f) / fmax(combined_power, NORM_MIN);
-  const float detail = gain * (weiner_gain * clamp(log_pixel - log_smoothed, -5.0f, 5.0f));
+  const float wiener_gain = fp32_div(fmax(combined_power - noise_power, 0.0f), fmax(combined_power, NORM_MIN));
+  const float detail = gain * (wiener_gain * clamp(log_pixel - log_smoothed, -5.0f, 5.0f));
   corrections[k] = accumulate ? corrections[k] + detail : detail;
 
-  const float next = smoothed - next_bias_step;
-  lowpass[k] = next;
-  highpass[k] = next;
+  log_luminance[k] = last_level ? log_smoothed
+                                : dtcl_log2(fmax(smoothed - next_bias_step, NORM_MIN));
 }
 
 // see apply_shadows_highlights()
-static inline float _shadows_highlights(const float luminance_lowpass,
+static inline float _shadows_highlights(const float log_luminance_lowpass,
                                         const float slope_shadows,
                                         const float slope_highlights,
                                         const float midtones_width,
                                         const float4 polynomial,
                                         const float pivot_offset)
 {
-  const float normalized_ev = dtcl_log2(fmax(luminance_lowpass, NORM_MIN)) - pivot_offset;
+  const float normalized_ev = log_luminance_lowpass - pivot_offset;
   float correction_ev;
   if(normalized_ev <= -midtones_width)
     correction_ev = slope_shadows * normalized_ev;
@@ -148,7 +168,7 @@ kernel void contrastntexture_display_lowpass(write_only image2d_t out,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float l = lowpass[mad24(y, width, x)];
+  const float l = dtcl_exp2(lowpass[mad24(y, width, x)]);
   const float intensity = l / (pivot_offset + l);
   float saturation = (intensity - 0.5f) * 2.0f;
   saturation *= saturation;
