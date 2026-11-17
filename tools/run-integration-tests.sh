@@ -306,9 +306,18 @@ fi
 
 # With --with-opencl the suite renders each test twice from the same directory.
 # The output file it asks for is what tells the two invocations apart.
+#
+# Whether OpenCL is used is decided by --disable-opencl alone, which the suite
+# passes on every CPU pass. It makes dt_opencl_init() return before the driver
+# is loaded (src/common/opencl.c), so the LLVM-based OpenCL compilers that
+# force use_sigaltstack=0 in sanitizer-env.sh never enter the process.
 pass=cpu
+opencl=1
 for arg in "$@"; do
-    case "$arg" in *output-cl.png) pass=gpu ;; esac
+    case "$arg" in
+        *output-cl.png)   pass=gpu ;;
+        --disable-opencl) opencl=0 ;;
+    esac
 done
 
 # Point each runtime's log_path into this test's directory. sanitizer-env.sh
@@ -322,6 +331,12 @@ retarget()
 [ -n "${TSAN_OPTIONS:-}" ]  && TSAN_OPTIONS=$(retarget  "$TSAN_OPTIONS"  tsan)
 [ -n "${UBSAN_OPTIONS:-}" ] && UBSAN_OPTIONS=$(retarget "$UBSAN_OPTIONS" ubsan)
 [ -n "${LSAN_OPTIONS:-}" ]  && LSAN_OPTIONS=$(retarget  "$LSAN_OPTIONS"  lsan)
+
+# Without the driver nothing else installs an alternate signal stack, so give
+# ASan its own back and with it the stack-overflow reports. ASan takes the last
+# occurrence of a repeated option.
+[ -n "${ASAN_OPTIONS:-}" ] && [ "$opencl" = 0 ] \
+    && ASAN_OPTIONS="$ASAN_OPTIONS:use_sigaltstack=1"
 export ASAN_OPTIONS TSAN_OPTIONS UBSAN_OPTIONS LSAN_OPTIONS
 
 exec timeout --signal=TERM --kill-after=30 "$DT_SAN_TIMEOUT" \
@@ -340,6 +355,8 @@ if [ "$NO_OPENMP" -eq 1 ]; then
     export OMP_NUM_THREADS
 fi
 
+# Without --with-opencl the suite skips its GPU pass, so every invocation runs
+# with --disable-opencl and the shim gives ASan use_sigaltstack=1 throughout.
 OPENCL_ARG="--disable-opencl"
 [ "$WITH_OPENCL" -eq 1 ] && OPENCL_ARG=""
 

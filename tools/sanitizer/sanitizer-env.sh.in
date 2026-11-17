@@ -84,7 +84,10 @@ _dt_san_active()
 # unmaps whatever alternate stack is current when a thread exits. munmap fails
 # with EINVAL and ASan aborts the run ("failed to deallocate"). The cost is that
 # a stack overflow crashes without an ASan report; other findings are
-# unaffected.
+# unaffected. Only a process that loads no OpenCL driver can safely have it
+# back: run-integration-tests.sh appends use_sigaltstack=1 to every invocation
+# carrying --disable-opencl, and tools/sanitizer/README.md says how to do the
+# same by hand.
 if _dt_san_active address; then
 ASAN_OPTIONS="log_path=$DT_SAN_LOGDIR/asan\
 :detect_leaks=1\

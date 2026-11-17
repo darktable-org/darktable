@@ -193,6 +193,39 @@ Under `thread` the GPU pass is not worth attempting. The driver's own worker
 threads carry no TSan annotations, so their synchronisation is invisible and
 nearly every OpenCL call turns into a reported race.
 
+**ASan's `use_sigaltstack` depends on OpenCL.** An OpenCL compiler built on
+LLVM, such as ROCm's behind `libamdocl64.so`, installs a `malloc`'d alternate
+signal stack on the threads it compiles on. When such a thread exits, ASan
+unmaps whatever alternate stack is current, `munmap` rejects the address, and
+the process dies with
+
+```
+ERROR: AddressSanitizer failed to deallocate 0x10800 (67584) bytes at address 0x7f0fd2ee4800 (error code: 22)
+```
+
+The generated `sanitizer-env.sh` therefore sets `use_sigaltstack=0`. That
+costs only ASan's stack-overflow report: runaway recursion or an oversized
+stack array then crashes as a plain SIGSEGV instead. Every other finding is
+reported as before.
+
+What decides whether the driver is loaded is `--disable-opencl` on the command
+line. It makes `dt_opencl_init()` return before loading anything. Turning
+OpenCL off in the preferences does not, because the driver is still loaded and
+probed. A build configured without OpenCL never loads one.
+
+* the integration suite: nothing to do. `run-integration-tests.sh` appends
+  `use_sigaltstack=1` to every invocation that carries `--disable-opencl`,
+  which is all of them without `--with-opencl`, and the CPU pass with it.
+* interactive use with OpenCL: keep the default `use_sigaltstack=0`.
+* hunting a stack overflow: run without OpenCL and turn it back on. ASan takes
+  the last occurrence of a repeated option:
+
+  ```bash
+  . build-asan/bin/sanitizer-env.sh
+  ASAN_OPTIONS="$ASAN_OPTIONS:use_sigaltstack=1" \
+      build-asan/bin/darktable --disable-opencl
+  ```
+
 **ASan does not stop at the first finding.** The build passes
 `-fsanitize-recover=address` and the environment sets `halt_on_error=0`, so a
 recoverable error is reported and execution continues. Both halves are required:
