@@ -1200,6 +1200,11 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed "select only new" in the copy & import dialog selecting every
+  image on a memory card on Windows after daylight saving time started
+  or ended, because the card's file times had moved by one hour since
+  the earlier imports.
+
 ## Lua
 
 ### API Version
