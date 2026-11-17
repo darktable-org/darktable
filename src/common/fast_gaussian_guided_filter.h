@@ -27,16 +27,19 @@
 // supports negative values for log-luminance data (any sign).
 // This implementation avoids downscaling (as done in eigf) and works directly on the full-resolution image,
 // ensuring higher accuracy at the cost of a roughly ~2x increased computational load.
+// The local variance is the difference of two blurred moments, which cancels badly in float
+// for values far from 0. Pass a center near the typical value: in exact arithmetic the result does not depend on it.
 
 __DT_CLONE_TARGETS__
 static inline void fast_gaussian_guided_filter(float *const restrict image,
                                                const size_t width,
                                                const size_t height,
                                                const float sigma,
-                                               const float feathering)
+                                               const float feathering,
+                                               const float center)
 {
   const size_t num_elem = width * height;
-  // holds the squared image, then its blur (the gaussian supports in-place use)
+  // hold the centered and the squared centered image, then their blurs (the gaussian supports in-place use)
   float *const restrict blurred_image = dt_alloc_align_float(num_elem);
   float *const restrict blurred_squared_image = dt_alloc_align_float(num_elem);
 
@@ -53,7 +56,8 @@ static inline void fast_gaussian_guided_filter(float *const restrict image,
   DT_OMP_FOR(reduction(max:maxg, maxg2) reduction(min:ming))
   for(size_t k = 0; k < num_elem; k++)
   {
-    const float pixel_value = image[k];
+    const float pixel_value = image[k] - center;
+    blurred_image[k] = pixel_value;
     blurred_squared_image[k] = pixel_value * pixel_value;
     ming = fminf(ming, pixel_value);
     maxg = fmaxf(maxg, pixel_value);
@@ -71,7 +75,7 @@ static inline void fast_gaussian_guided_filter(float *const restrict image,
     dt_control_log(_("fast gaussian guided filter failed to initialize gaussian structure"));
     goto clean;
   }
-  dt_gaussian_blur(g, image, blurred_image);
+  dt_gaussian_blur(g, blurred_image, blurred_image);
   dt_gaussian_free(g);
 
   // Blur the squared image to obtain the local variance
@@ -92,7 +96,7 @@ static inline void fast_gaussian_guided_filter(float *const restrict image,
     const float average = blurred_image[k];
     const float variance = fmaxf(blurred_squared_image[k] - average * average, 0.0f);
     const float a = variance / (variance + feathering);
-    image[k] = a * image[k] + (1.0f - a) * average;
+    image[k] = a * image[k] + (1.0f - a) * (average + center);
   }
 
   clean:
