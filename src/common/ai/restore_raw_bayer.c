@@ -170,30 +170,48 @@ static inline float _bayer_remosaic_raw(int r, int c, int ch,
 }
 
 // shared scalar match_gain: scales 3ch model output (2T × 2T) so
-// its mean equals the 4ch input mean. identical algorithm for batch
-// and preview; batch uses the returned means/gain to log a per-tile
-// diagnostic
+// its mean equals the mean of the 4ch input taken over R, G and B.
+// identical algorithm for batch and preview; batch uses the returned
+// means/gain to log a per-tile diagnostic
 static void _bayer_gain_match(const float *tile_in,
                               float *tile_out,
                               int T,
+                              uint32_t filters,
+                              int sr0_origin,
+                              int sc0_origin,
                               double *out_in_mean,
                               double *out_out_mean,
                               float *out_gain)
 {
   const size_t tile_in_plane = (size_t)T * T;
   const size_t tile_out_plane = (size_t)(2 * T) * (size_t)(2 * T);
-  double in_sum = 0.0, out_sum = 0.0;
+  // the packed input holds two green planes, so a plain 4-plane mean
+  // counts green twice while the output counts it once. the gain then
+  // follows the scene color: green tiles come out brighter, red and
+  // blue ones darker. average per CFA color to weight both sides alike
+  double in_sum[3] = { 0.0, 0.0, 0.0 };
+  int in_planes[3] = { 0, 0, 0 };
   for(int k = 0; k < 4; k++)
   {
+    const int ch = FC(sr0_origin + ((k >> 1) & 1), sc0_origin + (k & 1),
+                      filters);
     const float *p = tile_in + (size_t)k * tile_in_plane;
-    for(size_t i = 0; i < tile_in_plane; i++) in_sum += p[i];
+    double sum = 0.0;
+    for(size_t i = 0; i < tile_in_plane; i++) sum += p[i];
+    in_sum[ch] += sum;
+    in_planes[ch]++;
   }
+  double out_sum = 0.0;
   for(int k = 0; k < 3; k++)
   {
     const float *p = tile_out + (size_t)k * tile_out_plane;
     for(size_t i = 0; i < tile_out_plane; i++) out_sum += p[i];
   }
-  const double in_mean = in_sum / (double)(4 * tile_in_plane);
+  double in_mean = 0.0;
+  for(int ch = 0; ch < 3; ch++)
+    if(in_planes[ch])
+      in_mean += in_sum[ch] / (double)(in_planes[ch] * tile_in_plane);
+  in_mean /= 3.0;
   const double out_mean = out_sum / (double)(3 * tile_out_plane);
   // allow negative gain too: the RawNIND model output scale is
   // arbitrary by design (match_gain post-step during training absorbs
@@ -546,6 +564,7 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
       float gain = 1.0f;
       if(ctx->output_scale == DT_RESTORE_OUT_MATCH_GAIN)
         _bayer_gain_match(tile_in, tile_out, T,
+                          filters, sr0_origin, sc0_origin,
                           &in_mean, &out_mean, &gain);
 
       // diagnostic: tile 0 post-gain model-output ranges + gain info
@@ -887,7 +906,8 @@ int dt_restore_raw_bayer_preview_piped(dt_restore_context_t *ctx,
   // gain-match: same scalar correction as the batch path (gated on
   // output_scale; ABSOLUTE-scale models skip it)
   if(ctx->output_scale == DT_RESTORE_OUT_MATCH_GAIN)
-    _bayer_gain_match(tile_in, tile_out, T, NULL, NULL, NULL);
+    _bayer_gain_match(tile_in, tile_out, T,
+                      prep.filters, pp_sr0, pp_sc0, NULL, NULL, NULL);
   g_free(tile_in);
 
   // fetch source sensor buffer in native dtype

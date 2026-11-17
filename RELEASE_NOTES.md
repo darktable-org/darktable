@@ -1215,6 +1215,8 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed AI raw denoise making Bayer images brighter than the original.
+
 ## Lua
 
 ### API Version
