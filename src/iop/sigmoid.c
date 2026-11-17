@@ -1030,7 +1030,7 @@ void gui_init(dt_iop_module_t *self)
     (g->white_target_toggle,
      _("this edit predates HDR output and keeps target white as set.\n"
        "turn on to scale target white to the peak of an HDR output\n"
-       "(1000 nits for HLG, the PQ peak set in export), up to 1600%\n"
+       "(1000 nits for HLG, the PQ peak of the output), up to 1600%\n"
        "(3248 nits). SDR output does not change"));
 
   self->widget = main_box;

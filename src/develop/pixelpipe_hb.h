@@ -335,10 +335,8 @@ typedef struct dt_dev_pixelpipe_t
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
   dt_image_t image;
-  // the user might choose to overwrite the output color space and rendering intent.
-  dt_colorspaces_color_profile_type_t icc_type;
-  gchar *icc_filename;
-  dt_iop_color_intent_t icc_intent;
+  // an export's override of the image's target (dt_color_target_override())
+  dt_color_target_t icc;
   // snapshot of modules
   GList *iop;
   // snapshot of modules iop_order
@@ -467,9 +465,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe,
                                 const float iscale);
 // set some metadata for colorout to avoid race conditions.
 void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
-                              const dt_colorspaces_color_profile_type_t icc_type,
-                              const gchar *icc_filename,
-                              const dt_iop_color_intent_t icc_intent);
+                              const dt_color_target_t *override);
 
 /** a reference to the last frame a screen pipe published, or NULL: release
  * it with dt_frame_unref() */

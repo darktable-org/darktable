@@ -273,9 +273,7 @@ int store(dt_imageio_module_storage_t *self,
           const gboolean is_scaling,
           const double scale_factor,
           const gboolean export_masks,
-          dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename,
-          dt_iop_color_intent_t icc_intent,
+          const dt_color_target_t *icc,
           dt_export_metadata_t *metadata)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
@@ -419,8 +417,7 @@ int store(dt_imageio_module_storage_t *self,
   // fdata->width and height below.
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
                        upscale, is_scaling, scale_factor,
-                       TRUE, export_masks, icc_type,
-                       icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
+                       TRUE, export_masks, icc, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_gallery] could not export to file: `%s'!", filename);
@@ -461,8 +458,7 @@ int store(dt_imageio_module_storage_t *self,
   sprintf(c, "-thumb.%s", ext);
   if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE,
                        is_scaling, scale_factor,
-                       export_masks, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, NULL) != 0)
+                       export_masks, icc, self, sdata, num, total, NULL) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_gallery] could not export to file: `%s'!", filename);

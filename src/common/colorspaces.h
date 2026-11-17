@@ -138,6 +138,26 @@ typedef enum dt_colorspaces_color_mode_t
   DT_PROFILE_GAMUTCHECK
 } dt_colorspaces_color_mode_t;
 
+/* what a pipe is asked to render to: a profile, the intent and black point
+ * compensation of the conversion into it, and the headroom above reference
+ * white its output is rendered for. colorout's params, an export, the soft
+ * proof and a window's output each choose one. as an override
+ * (dt_color_target_override()), type DT_COLORSPACE_NONE keeps the profile
+ * and headroom of the target it applies to, intent DT_INTENT_LAST its
+ * intent and black point compensation */
+typedef struct dt_color_target_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  gboolean bpc;
+  float headroom;
+} dt_color_target_t;
+
+/* the override that keeps the target it applies to */
+#define DT_COLOR_TARGET_KEEP \
+  ((dt_color_target_t){ .type = DT_COLORSPACE_NONE, .intent = DT_INTENT_LAST })
+
 typedef enum dt_colorspaces_profile_direction_t
 {
   DT_PROFILE_DIRECTION_IN = 1 << 0,
@@ -325,14 +345,12 @@ typedef struct dt_colorspaces_t
   gboolean system_display_hinted[2];
 
   // the current set of selected profiles
-  dt_colorspaces_color_profile_type_t softproof_type;
   dt_colorspaces_color_profile_type_t histogram_type;
-  char softproof_filename[512];
   char histogram_filename[512];
-  // from the image to the soft proof profile, where the proof goes on to
-  // the display relative colorimetric
-  dt_iop_color_intent_t softproof_intent;
-  gboolean softproof_bpc;
+  // what the soft proof renders to. the target's intent and black point
+  // compensation take the image to it; the proof goes on to the display
+  // relative colorimetric
+  dt_color_target_t softproof;
 
   dt_colorspaces_color_mode_t mode;
 
@@ -384,6 +402,20 @@ dt_colorspaces_t *dt_colorspaces_init();
 
 /** cleanup on shutdown */
 void dt_colorspaces_cleanup(dt_colorspaces_t *self);
+
+/** the headroom an output in this profile type renders for, given the one
+ * asked for: PQ's within its range, or its default peak where none is
+ * asked for (0, as a zeroed target has), HLG's nominal 1000 nit display,
+ * reference white for every other profile */
+float dt_colorspaces_target_headroom(const dt_colorspaces_color_profile_type_t type,
+                                     const float headroom);
+
+/** apply override over target t (see dt_color_target_t), and give t the
+ * headroom its profile carries */
+void dt_color_target_override(dt_color_target_t *t, const dt_color_target_t *override);
+
+/** the export module's override, as an export started now applies it */
+void dt_colorspaces_get_export_override(dt_color_target_t *override);
 
 /** create a profile from a xyz->camera matrix. */
 cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);

@@ -855,14 +855,14 @@ int dt_restore_run_user_pipe_roi(dt_imgid_t imgid,
   // force output to linear Rec.709 (sRGB primaries, linear transfer)
   // so the widget's sRGB-gamma encoder displays the right colours.
   // MUST be called before create_nodes / synch_all: colorout reads
-  // pipe->icc_type during commit_params at synch_all time. setting it
+  // pipe->icc during commit_params at synch_all time. setting it
   // afterwards leaves colorout committed with the user's working
   // profile (often Rec.2020 / ProPhoto) → the cairo path then
   // applies sRGB gamma to wrong-primaries numbers → preview comes
   // out noticeably brighter / wrong colours vs. the batch DNG that
   // re-imports through the normal pipe
-  dt_dev_pixelpipe_set_icc(&pipe, DT_COLORSPACE_LIN_REC709, NULL,
-                           DT_INTENT_PERCEPTUAL);
+  dt_dev_pixelpipe_set_icc(&pipe, &(dt_color_target_t){ .type = DT_COLORSPACE_LIN_REC709,
+                                                       .intent = DT_INTENT_PERCEPTUAL });
 
   dt_ioppr_resync_modules_order(&dev);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)input_native,

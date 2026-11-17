@@ -408,6 +408,8 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
+    // the proof target's PQ peak
+    GtkWidget *proof_pq_peak;
   } profile;
 
   GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here

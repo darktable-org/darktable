@@ -1019,9 +1019,7 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
                            const double scale_factor,
                            const gboolean copy_metadata,
                            const gboolean export_masks,
-                           const dt_colorspaces_color_profile_type_t icc_type,
-                           const gchar *icc_filename,
-                           const dt_iop_color_intent_t icc_intent,
+                           const dt_color_target_t *icc,
                            dt_imageio_module_storage_t *storage,
                            dt_imageio_module_data_t *storage_params,
                            const int num,
@@ -1030,16 +1028,15 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
-    return (format->write_image(format_params, filename, NULL, icc_type,
-                               icc_filename, NULL, 0, imgid, num, total, NULL,
+    return (format->write_image(format_params, filename, NULL, icc->type,
+                               icc->filename, NULL, 0, imgid, num, total, NULL,
                                export_masks)) != 0;
   else
   {
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
                                         FALSE, FALSE, high_quality, upscale,
                                         is_scaling, scale_factor, FALSE, NULL, copy_metadata,
-                                        export_masks, icc_type, icc_filename,
-                                        icc_intent, storage, storage_params,
+                                        export_masks, icc, storage, storage_params,
                                         num, total, metadata, -1);
   }
 }
@@ -1075,9 +1072,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                       const char *filter,
                                       const gboolean copy_metadata,
                                       const gboolean export_masks,
-                                      const dt_colorspaces_color_profile_type_t icc_type,
-                                      const gchar *icc_filename,
-                                      const dt_iop_color_intent_t icc_intent,
+                                      const dt_color_target_t *icc,
                                       dt_imageio_module_storage_t *storage,
                                       dt_imageio_module_data_t *storage_params,
                                       int num,
@@ -1232,7 +1227,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   dt_ioppr_resync_modules_order(&dev);
 
-  dt_dev_pixelpipe_set_icc(&pipe, icc_type, icc_filename, icc_intent);
+  dt_dev_pixelpipe_set_icc(&pipe, icc);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf,
                              buf.width, buf.height, buf.iscale);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
@@ -1278,8 +1273,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   // find output color profile for this image:
   gboolean sRGB = TRUE;
-  if(icc_type == DT_COLORSPACE_SRGB) { }
-  else if(icc_type == DT_COLORSPACE_NONE)
+  if(icc->type == DT_COLORSPACE_SRGB) { }
+  else if(icc->type == DT_COLORSPACE_NONE)
   {
     dt_iop_module_t *colorout = NULL;
     for(GList *modules = dev.iop; modules; modules = g_list_next(modules))
@@ -1490,16 +1485,16 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
                                          processed_width, processed_height, FALSE);
 
-    res = (format->write_image(format_params, filename, outbuf, icc_type,
-                              icc_filename, exif_profile, length, imgid,
+    res = (format->write_image(format_params, filename, outbuf, icc->type,
+                              icc->filename, exif_profile, length, imgid,
                               num, total, &pipe, export_masks)) != 0;
 
     free(exif_profile);
   }
   else
   {
-    res = (format->write_image(format_params, filename, outbuf, icc_type,
-                              icc_filename, NULL, 0, imgid, num, total,
+    res = (format->write_image(format_params, filename, outbuf, icc->type,
+                              icc->filename, NULL, 0, imgid, num, total,
                               &pipe, export_masks)) != 0;
   }
   dt_free_align(buf8);
@@ -1776,7 +1771,9 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   dt_imageio_export_with_flags
     (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
      high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE,
-     export_masks, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL,
+     export_masks,
+     &(dt_color_target_t){ .type = DT_COLORSPACE_DISPLAY, .intent = DT_INTENT_LAST },
+     NULL, NULL,
      1, 1, NULL, history_end);
 
   const int32_t stride =

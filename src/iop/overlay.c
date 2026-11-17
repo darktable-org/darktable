@@ -343,7 +343,7 @@ static void _setup_overlay(dt_iop_module_t *self,
     // RGB: as float for HQ, packed for LEGACY into the 8-bit buffer the
     // Cairo compositing path expects
     const dt_display_output_t sink =
-      { .image = { .type = DT_COLORSPACE_NONE },
+      { .image = { .type = DT_COLORSPACE_NONE, .headroom = 1.0f },
         .device = { .type = DT_COLORSPACE_NONE },
         .format = legacy ? DT_FRAME_RGB24 : DT_FRAME_FLOAT };
 
