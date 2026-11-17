@@ -68,6 +68,11 @@ static gboolean _update_files_list(dt_lib_module_t* self);
 static void _update_folders_list(dt_lib_module_t* self);
 static void _update_images_number(dt_lib_module_t* self,
                                   const guint nb_sel);
+static void _import_cancel(dt_lib_module_t* self);
+static void _import_active(dt_lib_module_t* self,
+                           const gboolean active,
+                           const uint32_t nb_sel);
+static void _show_all_thumbs(dt_lib_module_t* self);
 static void _lib_import_select_folder(GtkWidget *widget,
                                       dt_lib_module_t *self);
 static void _remove_place(gchar *folder,
@@ -151,6 +156,7 @@ typedef struct dt_lib_import_t
     GtkTreeViewColumn *foldercol;
     GtkTreeIter iter;
     guint event;
+    gboolean thumb_busy;
     guint nb;
     GdkPixbuf *eye;
     GtkTreeViewColumn *pixcol;
@@ -173,6 +179,8 @@ typedef struct dt_lib_import_t
   dt_gui_collapsible_section_t cs;
 
   gboolean is_importing;
+  guint camera_jobs;
+  gboolean list_in_flight, list_rerun;
   GList *to_be_visited;
 
 #ifdef USE_LUA
@@ -207,6 +215,15 @@ int position(const dt_lib_module_t *self)
 
 #ifdef HAVE_GPHOTO2
 
+// device scanning (which may free d->camera) stays paused while an import dialog is open or a
+// camera listing/thumbnail job is still outstanding
+static void _camera_scan_resume(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = self->data;
+  if(!d->from.dialog && !d->camera_jobs)
+    ((dt_camctl_t *)darktable.camctl)->import_ui = FALSE;
+}
+
 /* show import from camera dialog */
 static void _lib_import_from_camera_callback(GtkButton *button,
                                              dt_lib_module_t *self)
@@ -216,10 +233,14 @@ static void _lib_import_from_camera_callback(GtkButton *button,
 
   dt_lib_import_t *d = self->data;
   d->import_case = DT_IMPORT_CAMERA;
+  // a stale in-flight thumbnail request must not leave the busy flag stuck
+  d->from.thumb_busy = FALSE;
+  // block early accepts (Return key): the listing starts only with the 100 ms timer
+  d->is_importing = TRUE;
   _import_from_dialog_new(self);
   _import_from_dialog_run(self);
   _import_from_dialog_free(self);
-  camctl->import_ui = FALSE;
+  _camera_scan_resume(self);
 }
 
 /* enter tethering mode for camera */
@@ -249,6 +270,12 @@ static void _lib_import_unmount_callback(GtkToggleButton *button,
   camctl->tickmask = 3;
 }
 
+static gboolean _devices_update_retry(gpointer user_data)
+{
+  dt_lib_gui_queue_update((dt_lib_module_t *)user_data);
+  return G_SOURCE_REMOVE;
+}
+
 /** update the device list */
 void gui_update(dt_lib_module_t *self)
 {
@@ -258,12 +285,16 @@ void gui_update(dt_lib_module_t *self)
   // This should really be changed to have a fixed set of (un)hidden buttons
   // that work on the "selected" camera (in a, resizable, treeview).
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
-  dt_pthread_mutex_lock(&camctl->lock);
+  dt_lib_import_t *d = self->data;
+  if(dt_pthread_mutex_trylock(&camctl->lock))
+  {
+    // camera I/O runs in a background job and holds the lock: don't block the GUI, retry later
+    g_timeout_add(500, _devices_update_retry, self);
+    return;
+  }
 
   if(camctl->changed_camera)
   {
-    dt_lib_import_t *d = self->data;
-
     /* cleanup of widgets in devices container*/
     dt_gui_container_remove_children(GTK_CONTAINER(d->devices));
     GtkWidget *button = NULL;
@@ -348,7 +379,8 @@ void gui_update(dt_lib_module_t *self)
 
     camctl->changed_camera = FALSE;
   }
-  camctl->import_ui = FALSE;
+  // an open import dialog keeps scanning paused; its callback resumes it on close
+  _camera_scan_resume(self);
   dt_pthread_mutex_unlock(&camctl->lock);
 }
 
@@ -359,11 +391,11 @@ static void _free_camera_files(gpointer data)
   g_free(file);
 }
 
-static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
+static guint _import_from_camera_set_file_list(dt_lib_module_t *self,
+                                               GList *imgs)
 {
   dt_lib_import_t *d = self->data;
 
-  GList *imgs = dt_camctl_get_images_list(darktable.camctl, d->camera);
   int nb = 0;
   const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
   for(GList *img = imgs; img; img = g_list_next(img))
@@ -398,6 +430,255 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
   }
   g_list_free_full(imgs, _free_camera_files);
   return nb;
+}
+
+typedef struct _camera_list_request_t
+{
+  dt_lib_module_t *self;
+  dt_camera_t *camera;
+  GCancellable *cancel;
+  GList *imgs;
+  gboolean queued;
+} _camera_list_request_t;
+
+typedef struct _camera_thumb_request_t
+{
+  dt_lib_module_t *self;
+  dt_camera_t *camera;
+  GCancellable *cancel;
+  GtkTreeIter iter;
+  gchar *filename;
+  GdkPixbuf *pixbuf;
+} _camera_thumb_request_t;
+
+static void _camera_list_queue(dt_lib_module_t *self);
+
+static gboolean _camera_list_done(gpointer user_data)
+{
+  _camera_list_request_t *req = user_data;
+  dt_lib_module_t *self = req->self;
+  dt_lib_import_t *d = self->data;
+
+  if(req->queued)
+    d->camera_jobs--;
+  d->list_in_flight = FALSE;
+
+  if(req->cancel == d->cancel_iter && !g_cancellable_is_cancelled(req->cancel))
+  {
+    GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+    g_object_ref(model);
+    gtk_tree_view_set_model(d->from.treeview, NULL);
+    d->from.nb = _import_from_camera_set_file_list(self, req->imgs);
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                         DT_IMPORT_FILENAME, GTK_SORT_ASCENDING);
+    gtk_tree_view_set_model(d->from.treeview, model);
+    g_object_unref(model);
+    gtk_widget_hide(d->from.info);
+    uint32_t count_sel;
+    if(dt_conf_get_bool("ui_last/import_select_new"))
+      count_sel = _do_select_new(self);
+    else
+    {
+      _do_select_all(self);
+      count_sel = d->from.nb;
+    }
+    d->is_importing = FALSE;
+    _import_active(self, TRUE, count_sel);
+    _update_images_number(self, count_sel);
+    // thumbs toggle may already be on (e.g. after "ignore non-raws")
+    _show_all_thumbs(self);
+  }
+  else
+    g_list_free_full(req->imgs, _free_camera_files);
+
+  g_object_unref(req->cancel);
+  g_free(req);
+  if(d->list_rerun)
+  {
+    d->list_rerun = FALSE;
+    if(d->import_case == DT_IMPORT_CAMERA && d->from.dialog
+       && d->cancel_iter && !g_cancellable_is_cancelled(d->cancel_iter))
+      _camera_list_queue(self);
+  }
+  _camera_scan_resume(self);
+  return G_SOURCE_REMOVE;
+}
+
+static int32_t _camera_list_job_run(dt_job_t *job)
+{
+  _camera_list_request_t *req = dt_control_job_get_params(job);
+  if(!g_cancellable_is_cancelled(req->cancel))
+    req->imgs = dt_camctl_get_images_list(darktable.camctl, req->camera);
+  g_idle_add(_camera_list_done, req);
+  return 0;
+}
+
+static void _camera_list_queue(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = self->data;
+
+  _camera_list_request_t *req = g_malloc0(sizeof(_camera_list_request_t));
+  req->self = self;
+  req->camera = d->camera;
+  req->cancel = g_object_ref(d->cancel_iter);
+
+  dt_job_t *job = dt_control_job_create(_camera_list_job_run,
+                                        "%s", "camera import list");
+  if(job)
+  {
+    dt_control_job_set_params(job, req, NULL);
+    if(!dt_control_add_job(DT_JOB_QUEUE_USER_BG, job))
+    {
+      d->camera_jobs++;
+      req->queued = TRUE;
+      d->list_in_flight = TRUE;
+      return;
+    }
+  }
+  // the request never reached a worker: finish with an empty list
+  _camera_list_done(req);
+}
+
+static void _import_from_camera_set_file_list_start(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = self->data;
+
+  _import_cancel(self);
+  if(d->cancel_iter)
+    g_object_unref(d->cancel_iter);
+  d->cancel_iter = g_cancellable_new();
+
+  d->from.nb = 0;
+  d->is_importing = TRUE;
+  gtk_widget_show(d->from.info);
+  _import_active(self, FALSE, 0);
+  // a stale in-flight thumbnail request must not leave the busy flag stuck
+  d->from.thumb_busy = FALSE;
+
+  if(d->list_in_flight)
+    d->list_rerun = TRUE;   // the walk in progress cannot be interrupted; list again once it ends
+  else
+    _camera_list_queue(self);
+}
+
+static gboolean _camera_thumb_done(gpointer user_data);
+static void _camera_thumb_next(dt_lib_module_t *self);
+
+static int32_t _camera_thumb_job_run(dt_job_t *job)
+{
+  _camera_thumb_request_t *req = dt_control_job_get_params(job);
+  if(!g_cancellable_is_cancelled(req->cancel))
+    req->pixbuf = dt_camctl_get_thumbnail(darktable.camctl, req->camera,
+                                          req->filename);
+  g_idle_add(_camera_thumb_done, req);
+  return 0;
+}
+
+static gboolean _camera_thumb_done(gpointer user_data)
+{
+  _camera_thumb_request_t *req = user_data;
+  dt_lib_module_t *self = req->self;
+  dt_lib_import_t *d = self->data;
+
+  d->camera_jobs--;
+
+  if(req->cancel == d->cancel_iter)
+    d->from.thumb_busy = FALSE;
+
+  if(req->cancel == d->cancel_iter && !g_cancellable_is_cancelled(req->cancel))
+  {
+    GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+    gboolean thumb_sel = FALSE;
+    GdkPixbuf *thumb = NULL;
+    gtk_tree_model_get(model, &req->iter,
+                       DT_IMPORT_SEL_THUMB, &thumb_sel,
+                       DT_IMPORT_THUMB, &thumb, -1);
+    const gboolean wanted = thumb_sel && thumb == d->from.eye;
+    if(thumb)
+      g_object_unref(thumb);
+    if(wanted)
+      gtk_list_store_set(d->from.store, &req->iter,
+                         DT_IMPORT_THUMB, req->pixbuf, -1);
+    _camera_thumb_next(self);
+  }
+
+  if(req->pixbuf)
+    g_object_unref(req->pixbuf);
+  g_free(req->filename);
+  g_object_unref(req->cancel);
+  g_free(req);
+  _camera_scan_resume(self);
+  return G_SOURCE_REMOVE;
+}
+
+static void _camera_thumb_next(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = self->data;
+  if(d->from.thumb_busy) return;
+
+  // lazy: linear rescan per fetch, O(n) per thumbnail; fine next to a
+  // USB round trip per thumbnail; upgrade path is a cursor
+  GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+  GtkTreeIter iter;
+  for(gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+      valid;
+      valid = gtk_tree_model_iter_next(model, &iter))
+  {
+    gboolean thumb_sel = FALSE;
+    GdkPixbuf *thumb = NULL;
+    gtk_tree_model_get(model, &iter,
+                       DT_IMPORT_SEL_THUMB, &thumb_sel,
+                       DT_IMPORT_THUMB, &thumb, -1);
+    const gboolean wants = thumb_sel && thumb == d->from.eye;
+    if(thumb)
+      g_object_unref(thumb);
+    if(wants)
+    {
+      _camera_thumb_request_t *req = g_malloc0(sizeof(_camera_thumb_request_t));
+      req->self = self;
+      req->camera = d->camera;
+      req->cancel = g_object_ref(d->cancel_iter);
+      req->iter = iter;
+      gtk_tree_model_get(model, &iter, DT_IMPORT_UI_FILENAME, &req->filename, -1);
+      d->from.thumb_busy = TRUE;
+
+      dt_job_t *job = dt_control_job_create(_camera_thumb_job_run,
+                                            "%s", "camera import thumbnail");
+      if(job)
+      {
+        dt_control_job_set_params(job, req, NULL);
+        if(!dt_control_add_job(DT_JOB_QUEUE_USER_BG, job))
+        {
+          d->camera_jobs++;
+          return;
+        }
+      }
+      // the request never reached a worker: drop it and clear the busy flag
+      d->from.thumb_busy = FALSE;
+      g_free(req->filename);
+      g_object_unref(req->cancel);
+      g_free(req);
+      return;
+    }
+  }
+}
+
+static void _camera_thumb_show_all(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = self->data;
+  // camera thumbnails are fetched off the main thread, one job at a time
+  GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+  GtkTreeIter iter;
+  for(gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+      valid;
+      valid = gtk_tree_model_iter_next(model, &iter))
+  {
+    gboolean thumb_sel_row;
+    gtk_tree_model_get(model, &iter, DT_IMPORT_SEL_THUMB, &thumb_sel_row, -1);
+    if(!thumb_sel_row)
+      gtk_list_store_set(d->from.store, &iter, DT_IMPORT_SEL_THUMB, TRUE, -1);
+  }
+  _camera_thumb_next(self);
 }
 
 #endif // HAVE_GPHOTO2
@@ -541,9 +822,20 @@ static void _thumb_set_in_listview(GtkTreeModel *model,
   GdkPixbuf *pixbuf = NULL;
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
-    pixbuf = thumb_sel ?
-      dt_camctl_get_thumbnail(darktable.camctl, d->camera, filename)
-      : d->from.eye;
+  {
+    if(thumb_sel)
+    {
+      // camera thumbnails are fetched off the main thread, one job at a time
+      gtk_list_store_set(d->from.store, iter,
+                         DT_IMPORT_SEL_THUMB, TRUE,
+                         DT_IMPORT_THUMB, d->from.eye, -1);
+      g_free(filename);
+      g_free(fullname);
+      _camera_thumb_next(self);
+      return;
+    }
+    pixbuf = d->from.eye;
+  }
   else
 #endif
   {
@@ -652,10 +944,17 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column,
   }
   else if(!d->from.event)
   {
-    // if the display is not yet started, start it
-    GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
-    if(gtk_tree_model_get_iter_first(model, &d->from.iter))
-      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_thumb_set, self, NULL);
+#ifdef HAVE_GPHOTO2
+    if(d->import_case == DT_IMPORT_CAMERA)
+      _camera_thumb_show_all(self);
+    else
+#endif
+    {
+      // if the display is not yet started, start it
+      GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+      if(gtk_tree_model_get_iter_first(model, &d->from.iter))
+        d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_thumb_set, self, NULL);
+    }
   }
 }
 
@@ -666,10 +965,17 @@ static void _show_all_thumbs(dt_lib_module_t* self)
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->from.thumbs));
   if(!d->from.event && thumb_sel)
   {
-    // if the display is not yet started, start it
-    GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
-    if(gtk_tree_model_get_iter_first(model, &d->from.iter))
-      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_thumb_set, self, NULL);
+#ifdef HAVE_GPHOTO2
+    if(d->import_case == DT_IMPORT_CAMERA)
+      _camera_thumb_show_all(self);
+    else
+#endif
+    {
+      // if the display is not yet started, start it
+      GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+      if(gtk_tree_model_get_iter_first(model, &d->from.iter))
+        d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_thumb_set, self, NULL);
+    }
   }
 }
 
@@ -1022,12 +1328,7 @@ static gboolean _update_files_list(dt_lib_module_t *self)
                                        GTK_SORT_ASCENDING);
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
-  {
-    d->from.nb = _import_from_camera_set_file_list(self);
-    gtk_widget_hide(d->from.info);
-    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
-                                         DT_IMPORT_FILENAME, GTK_SORT_ASCENDING);
-  }
+    _import_from_camera_set_file_list_start(self);
   else
 #endif
   {
@@ -2230,6 +2531,11 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
 
   while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
   {
+#ifdef HAVE_GPHOTO2
+    // the camera file list is still loading in the background: ignore an early accept (e.g. Return key)
+    if(d->import_case == DT_IMPORT_CAMERA && d->is_importing)
+      continue;
+#endif
     // reset filter so that view isn't empty
     dt_view_filtering_reset(darktable.view_manager, TRUE);
     GList *imgs = NULL;
@@ -2316,6 +2622,7 @@ static void _import_from_dialog_free(dt_lib_module_t* self)
   }
   // Destroy and quit
   gtk_widget_destroy(d->from.dialog);
+  d->from.dialog = NULL;
 }
 
 static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
@@ -2356,7 +2663,7 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
   _import_from_dialog_free(self);
 #ifdef HAVE_GPHOTO2
   // OK to resume periodic scans for new GPhoto2 devices
-  camctl->import_ui = FALSE;
+  _camera_scan_resume(self);
 #endif
 }
 

@@ -1215,6 +1215,11 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed darktable becoming unresponsive while the "copy & import from
+  camera" dialog read the list of files from the camera. The list and
+  the thumbnails are now read in the background, and the import button
+  is enabled once the list is complete.
+
 ## Lua
 
 ### API Version
