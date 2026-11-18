@@ -1786,7 +1786,8 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   const int64_t per_line = (ibpp + obpp) * width * tiling->factor;
   const int tile_height = MIN(_align_up((int)(avail / per_line), aligner), height);
   const int valid_rows = tile_height - 2*border;
-  if(valid_rows < 1) // should never happen - just make sure, see dt_opencl_image_fits_device()
+  // a single tile covers the whole image and needs no border rows
+  if(valid_rows < 1 && tile_height < height) // see dt_opencl_image_fits_device()
     return DT_OPENCL_PROCESS_CL;
 
   // the first and the last tile end at the image, where they need no border
