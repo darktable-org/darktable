@@ -141,6 +141,16 @@ static inline float fp32_div(const float a, const float b)
   return fma(r, y, q);
 }
 
+static inline float4 fp32_div_4(const float4 a, const float4 b)
+{
+  float4 y = native_recip(b);
+  float4 e = fma(-b, y, 1.0f);
+  y = fma(y, e, y);
+  float4 q = a * y;
+  float4 r = fma(-b, q, a);
+  return fma(r, y, q);
+}
+
 static inline float _radius_hypotf(const float x, const float y)
 {
   const float ax = fabs(x), ay = fabs(y);
@@ -157,6 +167,26 @@ static inline float _radius_hypotf(const float x, const float y)
   const float h = sqrt(s);
   const float residual = fma(-h, h, s) + e;
   return fma(residual, fp32_div(0.5f, h), h);
+}
+
+// a more precise cbrt() variant.
+// It uses cbrt(x) as a seed and refines it with one FP32 Newton step.
+// Avoids the refinement for y==zero or infinite
+static inline float cbrt_refined(const float x)
+{
+  const float y = cbrt(x);
+  if(y == 0.0f || isinf(y))
+    return y;
+  const float y2 = y * y;
+  const float y2_err = fma(y, y, -y2);
+  // Compensate for rounding in y * y when computing x - y^3.
+  const float residual = fma(-y, y2_err, fma(-y, y2, x));
+  return y + residual / (3.0f * y2);
+}
+
+static inline float4 cbrt_refined_4(const float4 x)
+{
+  return (float4) { cbrt_refined(x.x), cbrt_refined(x.y), cbrt_refined(x.z), cbrt_refined(x.w) };
 }
 
 static inline int

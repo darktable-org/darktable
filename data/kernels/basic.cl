@@ -375,7 +375,7 @@ static float _calc_refavg(read_only image2d_t in,
   }
 
   for(int c = 0; c < 3; c++)
-    mean[c] = cnt[c] > 0 ? cbrt(fp32_div(correction[c] * mean[c], (float)cnt[c])) : 0.0f;
+    mean[c] = cnt[c] > 0 ? cbrt_refined(fp32_div(correction[c] * mean[c], (float)cnt[c])) : 0.0f;
 
   float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   int color = fcol(row, col, filters, xtrans);
@@ -498,7 +498,7 @@ kernel void highlights_opposed(read_only image2d_t in,
 // linear raws, see _process_linear_opposed() in src/iop/hlreconstruct/opposed.c
 static float _calc_linear_refavg(const float4 pixel, const int color)
 {
-  const float ins[3] = { cbrt(fmax(0.0f, pixel.x)), cbrt(fmax(0.0f, pixel.y)), cbrt(fmax(0.0f, pixel.z)) };
+  const float ins[3] = { cbrt_refined(fmax(0.0f, pixel.x)), cbrt_refined(fmax(0.0f, pixel.y)), cbrt_refined(fmax(0.0f, pixel.z)) };
   const float opp[3] = { 0.5f*(ins[1]+ins[2]), 0.5f*(ins[0]+ins[2]), 0.5f*(ins[0]+ins[1]) };
   return fcube(opp[color]);
 }

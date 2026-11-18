@@ -298,7 +298,7 @@ static inline float sf_knee(float d, float threshold, float limit, float power)
 static inline float3 sf_xyz_to_oklab(__constant const float *mats, float3 xyz)
 {
   float3 lms = sf_mat3(mats + SF_M_OK1, xyz);
-  lms = (float3)(cbrt(lms.x), cbrt(lms.y), cbrt(lms.z));
+  lms = (float3)(cbrt_refined(lms.x), cbrt_refined(lms.y), cbrt_refined(lms.z));
   return sf_mat3(mats + SF_M_OK2, lms);
 }
 
