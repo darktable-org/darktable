@@ -1373,9 +1373,9 @@ void process(dt_iop_module_t *self,
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
-  float *restrict temp1, *restrict temp2;
+  float *restrict temp1 = NULL, *restrict temp2 = NULL;
   // temp buffer for blurs. We will need to cycle between them for memory efficiency
-  float *restrict LF_odd, *restrict LF_even;
+  float *restrict LF_odd = NULL, *restrict LF_even = NULL;
 
   float *restrict temp_in = NULL;
   float *restrict temp_out = NULL;
