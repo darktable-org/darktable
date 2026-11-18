@@ -680,6 +680,8 @@ changes (where available).
   processed in tiles, and the upscale now runs on OpenCL when it fits
   the device.
 
+- Fixed a crash in dt_noiseprofile_get_matching() due to missing thread safety.
+
 - Fixed Lightroom develop import which was not done. Only the tags,
   color labels, stars where imported.
 
