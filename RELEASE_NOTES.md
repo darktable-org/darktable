@@ -367,13 +367,13 @@ changes (where available).
   every pixel, so the CPU no longer computes and uploads hundreds of
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
-  
+
 ## Documentation updates
 
 - The stable documentation for 5.8 can be found [here](https://docs.darktable.org/usermanual/5.8/en/)
 - The theme has been refreshed: It is more colorful, has better handling of wide screens, a table of contents in the right panel and more tweaks.
 - If you find room for improvement on the manual, you are welcome to open an [issue](https://github.com/darktable-org/dtdocs/issues), post to [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
-- Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). Lots of work has been done, among others Ukranian and French translations have now hit 100%. 
+- Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). Lots of work has been done, among others Ukranian and French translations have now hit 100%.
 
 - The raw denoise module can now run on the OpenCL device for Bayer
   sensors.
@@ -498,9 +498,9 @@ changes (where available).
 
 - Added a preference to disable automatic AI model update checks,
   with a manual check button for when it is off.
-  
+
 - Added css classes for individual processing and utility modules to
-  enable styling of individual modules (e.g. coloring the header of 
+  enable styling of individual modules (e.g. coloring the header of
   just the export module to make navigation of the panels easier).
 
 - Added a compression option for the TIFF files written by neural
@@ -680,7 +680,7 @@ changes (where available).
   processed in tiles, and the upscale now runs on OpenCL when it fits
   the device.
 
-- Fixed a crash in dt_noiseprofile_get_matching() due to missing thread safety.
+- Fixed a crash in noise profile lookup due to missing thread safety.
 
 - Fixed Lightroom develop import which was not done. Only the tags,
   color labels, stars where imported.
