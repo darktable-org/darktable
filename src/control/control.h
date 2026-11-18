@@ -163,6 +163,8 @@ typedef struct dt_control_t
   dt_imgid_t last_clicked_filmstrip_id;
   gboolean lock_cursor_shape;
 
+  int skip_first_altered;
+
   int busy;
   dt_pthread_mutex_t log_mutex;
 

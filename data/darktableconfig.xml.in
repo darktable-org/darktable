@@ -1652,12 +1652,12 @@
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_history_tooltip_max</name>
-    <type min="0" max="1000">int</type>
+    <type min="10" max="1000">int</type>
     <default>20</default>
-    <shortdescription>maximum number of history items in the thumbnail tooltip</shortdescription>
-    <longdescription>the history tooltip of a thumbnail shows only the most recent items, followed by the number of items left out. 0 shows all items.</longdescription>
+    <shortdescription>maximum number of lines in thumbnail history tooltip</shortdescription>
+    <longdescription>the thumbnail history tooltip shows a limited number of items, with the number of skipped items indicated before and after them. you can navigate through the list by scrolling the mouse wheel.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pressure_sensitivity</name>
