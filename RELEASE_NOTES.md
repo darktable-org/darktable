@@ -1237,6 +1237,9 @@ changes (where available).
   masked or blended, or is in automatic (deflicker) mode, and when the
   fitted values cannot be set in exposure.
 
+- Fixed darktable freezing when dragging a Bézier handle of a path or
+  AI object mask node whose other handle sits on the node itself.
+
 ## Lua
 
 ### API Version

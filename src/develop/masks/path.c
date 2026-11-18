@@ -3807,6 +3807,19 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
                                              point->ctrl1[0], point->ctrl1[1],
                                              point->ctrl2[0], point->ctrl2[1],
                                              iwidth/iheight);
+      // a handle on its corner, or within rounding of it, has no usable
+      // length or direction, so there is no ratio or angle to keep: moving
+      // the other one with it would throw that one to infinity. Lengths are
+      // in image heights, as in _get_ctrl_scale(), so the limit is a pixel
+      const float aspect = iwidth / iheight;
+      const float len1 = dt_fast_hypotf((point->ctrl1[0] - point->corner[0]) * aspect,
+                                        point->ctrl1[1] - point->corner[1]);
+      const float len2 = dt_fast_hypotf((point->ctrl2[0] - point->corner[0]) * aspect,
+                                        point->ctrl2[1] - point->corner[1]);
+      if(!(len1 >= 1.0f / iheight && len2 >= 1.0f / iheight)
+         && (gui->bezier_mode == DT_MASKS_BEZIER_NONE
+             || gui->bezier_mode == DT_MASKS_BEZIER_SING_SYMM))
+        gui->bezier_mode = DT_MASKS_BEZIER_SINGLE;
 
       dt_control_queue_redraw_center();
       return 1;
