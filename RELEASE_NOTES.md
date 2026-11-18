@@ -925,6 +925,8 @@ changes (where available).
 
 - Fixed various interpolating issues at top & lest image border.
 
+- Fixed calculation of green data at R/B photosites in RCD demosaicer.
+
 - Fixed a bug in OpenCL demosaicer leading to slighly increased chroma
   differences compared with CPU code.
 
