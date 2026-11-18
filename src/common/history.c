@@ -1350,23 +1350,66 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid,
 
   GList *items = NULL;
   int kept = 0;
-  int skipped = 0;
+  int skipped_top = 0;
+  int skipped_bottom = 0;
+  int _items;
   sqlite3_stmt *stmt;
+
+  int count = 0;
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT operation, enabled, multi_name"
-      " FROM main.history"
-      " WHERE imgid=?1 ORDER BY num DESC", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*)"
+                              " FROM main.history"
+                              " WHERE imgid=?1",
+                              -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT operation, enabled, multi_name"
+                              " FROM main.history"
+                              " WHERE imgid=?1 ORDER BY num DESC",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  _items = max_items;
+  if(count <= _items)
+  {
+    darktable.control->skip_first_altered = 0;
+  }
+  else
+  {
+    _items = max_items - 1;
+  }
+
+  int _skip_first = darktable.control->skip_first_altered;
+
+  if(count - max_items + 1 < _skip_first)
+  {
+    darktable.control->skip_first_altered =_skip_first = count - max_items + 1;
+  }
+
+  if((_skip_first != 0) && (count - max_items >= _skip_first))
+  {
+    _items = max_items - 2;
+  }
 
   // collect the entries in the history from the db, newest first
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(max_items > 0 && kept >= max_items)
+    if(skipped_top < _skip_first)
     {
-      skipped++;
+      skipped_top++;
+      continue;
+    }
+    if(_items > 0 && kept >= _items)
+    {
+      skipped_bottom++;
       continue;
     }
     kept++;
@@ -1389,12 +1432,18 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid,
   }
   sqlite3_finalize(stmt);
   items = g_list_reverse(items); // list was built in reverse order, so un-reverse it
-  if(skipped > 0)
+  if(skipped_top > 0)
+    items = g_list_prepend(items,
+                          g_strdup_printf(ngettext("%d item above and ...",
+                                                   "%d items above and ...",
+                                                   skipped_top),
+                                          skipped_top));
+  if(skipped_bottom > 0)
     items = g_list_append(items,
                           g_strdup_printf(ngettext("... and %d more item",
                                                    "... and %d more items",
-                                                   skipped),
-                                          skipped));
+                                                   skipped_bottom),
+                                          skipped_bottom));
   char *result = dt_util_glist_to_str("\n", items);
   g_list_free_full(items, g_free);
   return result;
