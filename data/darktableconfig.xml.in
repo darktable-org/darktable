@@ -1653,6 +1653,13 @@
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/thumbnail_history_tooltip_max</name>
+    <type min="0" max="1000">int</type>
+    <default>20</default>
+    <shortdescription>maximum number of history items in the thumbnail tooltip</shortdescription>
+    <longdescription>the history tooltip of a thumbnail shows only the most recent items, followed by the number of items left out. 0 shows all items.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>pressure_sensitivity</name>
     <type>
       <enum>

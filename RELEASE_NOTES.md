@@ -1217,6 +1217,10 @@ changes (where available).
   colored field when an edit made with darktable 4.7 or older had white
   balance at the camera's as-shot or reference multipliers.
 
+- Fixed the history tooltip of a lighttable thumbnail growing taller
+  than the screen and flickering for images with a long history. It
+  now shows the newest 20 items and how many more there are.
+
 ## Lua
 
 ### API Version

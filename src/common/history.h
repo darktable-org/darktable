@@ -162,8 +162,10 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
                             const gboolean multi_priority_order,
                             const gboolean markup);
 
-/** get list of history items for image as a nice string */
-char *dt_history_get_items_as_string(const dt_imgid_t imgid);
+/** get list of history items for image as a nice string
+ *  if max_items > 0, keep only the newest max_items items and append a
+ *  "... and N more items" line for the rest; max_items <= 0 means no limit */
+char *dt_history_get_items_as_string(const dt_imgid_t imgid, const int max_items);
 
 /* check if a module exists in the history of corresponding image */
 gboolean dt_history_check_module_exists(const dt_imgid_t imgid,
