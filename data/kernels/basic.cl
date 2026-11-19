@@ -2491,8 +2491,9 @@ static inline void _lens_grid_sample(global const float *grid, const int x, cons
 {
   const int i = x / step;
   const int j = y / step;
-  const float tx = (float)(x - i * step) / (float)step;
-  const float ty = (float)(y - j * step) / (float)step;
+  // for some steps like 3 we need a precise division
+  const float tx = fp32_div((float)(x - i * step), (float)step);
+  const float ty = fp32_div((float)(y - j * step), (float)step);
   global const float *p00 = grid + (j * gwidth + i) * stride;
   global const float *p01 = p00 + gwidth * stride;
   for(int n = 0; n < count; n++)
@@ -2506,7 +2507,10 @@ static inline void _lens_grid_sample(global const float *grid, const int x, cons
 /* lens plugin: a lensfun coordinate relative to the input, held inside it as
    in the CPU path of src/iop/lens.cc. Coordinates past the edge sample the
    edge pixel there; mirroring the taps alone would reflect them back into the
-   image. fmin() and fmax() also map NaN to an edge as the CPU path does. */
+   image.
+   Using fmin() and fmax() to map NaN to an edge (as the CPU path does) is not
+   safe as this depends on compiler flags.
+*/
 static inline float _lens_coord(const float v, const int offset, const int size)
 {
   return fmax(fmin(v - (float)offset, (float)size - 1.0f), 0.0f);
@@ -2628,7 +2632,7 @@ lens_distort_bicubic (read_only image2d_t in,
 
   float rx, ry;
   int tx, ty;
-  float sum, weight;
+  float sum;
   float2 sum2;
   float ppi[6];
   _lens_grid_sample(pi, x, y, step, gwidth, 6, 6, ppi);
@@ -2653,7 +2657,6 @@ lens_distort_bicubic (read_only image2d_t in,
   ty = floor(ry);
 
   sum = 0.0f;
-  weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
@@ -2665,9 +2668,8 @@ lens_distort_bicubic (read_only image2d_t in,
     float w = wx * wy;
 
     sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).x * w;
-    weight += w;
   }
-  pixel.x = sum/weight;
+  pixel.x = sum;
 
   rx = _lens_coord(ppi[2], roi_in_x, iwidth);
   ry = _lens_coord(ppi[3], roi_in_y, iheight);
@@ -2675,7 +2677,6 @@ lens_distort_bicubic (read_only image2d_t in,
   ty = floor(ry);
 
   sum2 = (float2)0.0f;
-  weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
@@ -2687,9 +2688,8 @@ lens_distort_bicubic (read_only image2d_t in,
     float w = wx * wy;
 
     sum2 += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).yw * w;
-    weight += w;
   }
-  pixel.yw = sum2/weight;
+  pixel.yw = sum2;
 
   rx = _lens_coord(ppi[4], roi_in_x, iwidth);
   ry = _lens_coord(ppi[5], roi_in_y, iheight);
@@ -2697,7 +2697,6 @@ lens_distort_bicubic (read_only image2d_t in,
   ty = floor(ry);
 
   sum = 0.0f;
-  weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
@@ -2709,9 +2708,8 @@ lens_distort_bicubic (read_only image2d_t in,
     float w = wx * wy;
 
     sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).z * w;
-    weight += w;
   }
-  pixel.z = sum/weight;
+  pixel.z = sum;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
   write_ipixel(out, (int2)(x, y), pixel);
@@ -2784,7 +2782,9 @@ lens_distort_lanczos2 (read_only image2d_t in,
     sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).x * w;
     weight += w;
   }
-  pixel.x = sum/weight;
+  // we also do so in CPU code - multiply by 1/norm - let's agree on one way
+  weight = fp32_div(1.0f, weight);
+  pixel.x = sum * weight;
 
 
   rx = _lens_coord(ppi[2], roi_in_x, iwidth);
@@ -2807,7 +2807,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
     sum2 += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).yw * w;
     weight += w;
   }
-  pixel.yw = sum2/weight;
+  weight = fp32_div(1.0f, weight);
+  pixel.yw = sum2 * weight;
 
   rx = _lens_coord(ppi[4], roi_in_x, iwidth);
   ry = _lens_coord(ppi[5], roi_in_y, iheight);
@@ -2829,7 +2830,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
     sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).z * w;
     weight += w;
   }
-  pixel.z = sum/weight;
+  weight = fp32_div(1.0f, weight);
+  pixel.z = sum * weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
   write_ipixel(out, (int2)(x, y), pixel);
@@ -2892,7 +2894,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).x * w;
     weight += w;
   }
-  pixel.x = sum/weight;
+  weight = fp32_div(1.0f, weight);
+  pixel.x = sum * weight;
 
   rx = _lens_coord(ppi[2], roi_in_x, iwidth);
   ry = _lens_coord(ppi[3], roi_in_y, iheight);
@@ -2914,7 +2917,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     sum2 += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).yw * w;
     weight += w;
   }
-  pixel.yw = sum2/weight;
+  weight = fp32_div(1.0f, weight);
+  pixel.yw = sum2 * weight;
 
   rx = _lens_coord(ppi[4], roi_in_x, iwidth);
   ry = _lens_coord(ppi[5], roi_in_y, iheight);
@@ -2936,7 +2940,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).z * w;
     weight += w;
   }
-  pixel.z = sum/weight;
+  weight = fp32_div(1.0f, weight);
+  pixel.z = sum * weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
   write_ipixel(out, (int2)(x, y), pixel);
@@ -3146,8 +3151,9 @@ ashift_lanczos2(read_only image2d_t in,
     weight += w;
   }
 
+  weight = fp32_div(1.0f, weight);
   pixel = (tx >= -1 && ty >= -1 && tx < iwidth && ty < iheight)
-        ? pixel/weight
+        ? pixel * weight
         : (float4)0.0f;
 
   write_ipixel(out, (int2)(x, y), pixel);
@@ -3223,8 +3229,10 @@ ashift_lanczos3(read_only image2d_t in,
       weight += w;
     }
   }
+
+  weight = fp32_div(1.0f, weight);
   pixel = (tx >= -1 && ty >= -1 && tx < iwidth && ty < iheight)
-          ? pixel/weight
+          ? pixel * weight
           : (float4)0.0f;
 
   write_ipixel(out, (int2)(x, y), pixel);
