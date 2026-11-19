@@ -512,6 +512,10 @@ void dt_ui_flexi_panel_set_idle(struct dt_ui_t *ui, const char *text);
 /** \brief which edge the panel is on now, which can differ from the stored
     preference: anything mirroring the panel's own chrome follows this */
 gboolean dt_ui_flexi_panel_is_right(struct dt_ui_t *ui);
+/** \brief how far into the canvas, from its left and right edges, the panel
+    and the edge bands that reveal it reach: a press there goes to them, not
+    to the canvas, so a canvas control left there is out of reach */
+void dt_ui_flexi_panel_get_cover(struct dt_ui_t *ui, int *left, int *right);
 /** \brief re-read "plugins/darkroom/masks/show_panel_handle" and resize/repaint
     the panel's resize-and-collapse handle to match, so the option applies
     without a view reopen */
