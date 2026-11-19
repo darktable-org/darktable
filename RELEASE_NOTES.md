@@ -1250,6 +1250,10 @@ changes (where available).
   could build and rearrange interface elements from its own thread
   while the main window was still being assembled.
 
+- Fixed darktable sometimes hanging on quit while a background job,
+  such as an export, was still running a Lua script that updated the
+  interface.
+
 ## Lua
 
 ### API Version
