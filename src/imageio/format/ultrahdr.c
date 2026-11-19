@@ -26,7 +26,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/hdr-transfer.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
@@ -48,16 +50,12 @@ enum ultrahdr_gainmap_downscale_e
 
 static const int ultrahdr_gainmap_scale[] = { 1, 2, 4 };
 
-/* Module defaults, also declared in data/darktableconfig.xml.in. Used for the
- * slider construction default and the gui_reset() values; the runtime conf
- * keys are read with dt_conf_get_int() (the xml supplies the stored default). */
-#define ULTRAHDR_DEFAULT_QUALITY 95
-#define ULTRAHDR_DEFAULT_GAINMAP_QUALITY 95
+/* mirrors libultrahdr's compile-time limit, which its public header does not expose */
+#define ULTRAHDR_MAX_DIMENSION 8192
 
 typedef struct dt_imageio_ultrahdr_t
 {
   dt_imageio_module_data_t global;
-  int bpp;
   int quality;
   int gainmap_quality;
   int gainmap_downscale;
@@ -83,16 +81,32 @@ void init(dt_imageio_module_format_t *self)
                                 dt_imageio_ultrahdr_t,
                                 gainmap_quality,
                                 int);
+  luaA_enum(darktable.lua_state.state,
+            enum ultrahdr_gainmap_downscale_e);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum ultrahdr_gainmap_downscale_e,
+                  ULTRAHDR_GAINMAP_FULL);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum ultrahdr_gainmap_downscale_e,
+                  ULTRAHDR_GAINMAP_HALF);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum ultrahdr_gainmap_downscale_e,
+                  ULTRAHDR_GAINMAP_QUARTER);
   dt_lua_register_module_member(darktable.lua_state.state,
                                 self,
                                 dt_imageio_ultrahdr_t,
                                 gainmap_downscale,
-                                int);
+                                enum ultrahdr_gainmap_downscale_e);
 #endif
 }
 
 void cleanup(dt_imageio_module_format_t *self)
 {
+}
+
+static const char *_uhdr_detail(const uhdr_error_info_t *e)
+{
+  return e->has_detail ? e->detail : "unknown error";
 }
 
 int write_image(struct dt_imageio_module_data_t *data,
@@ -141,8 +155,14 @@ int write_image(struct dt_imageio_module_data_t *data,
                "UltraHDR export requires a PQ output color profile "
                "(PQ Rec2020 or PQ P3); got %s",
                dt_colorspaces_get_name(cp->type, filename));
+      dt_control_log(_("export to UltraHDR requires the PQ Rec2020 RGB or PQ P3 RGB output profile"));
       return 1;
   }
+
+  /* the index can come from Lua, so keep it inside the table */
+  const int gainmap_scale =
+    ultrahdr_gainmap_scale[CLAMP(d->gainmap_downscale, 0,
+                                 (int)G_N_ELEMENTS(ultrahdr_gainmap_scale) - 1)];
 
   dt_print(DT_DEBUG_IMAGEIO,
            "Exporting UltraHDR image [%s] "
@@ -153,7 +173,7 @@ int write_image(struct dt_imageio_module_data_t *data,
            height,
            d->quality,
            d->gainmap_quality,
-           ultrahdr_gainmap_scale[d->gainmap_downscale]);
+           gainmap_scale);
 
   /*
    * Pack the interleaved float32 RGBA buffer into RGBA1010102.
@@ -176,9 +196,10 @@ int write_image(struct dt_imageio_module_data_t *data,
   {
     const float *const restrict in_pixel = &in_data[4 * k];
 
-    const uint32_t r = (uint32_t)CLAMP(lroundf(CLAMP(in_pixel[0], 0.0f, 1.0f) * 1023.0f), 0, 1023);
-    const uint32_t g = (uint32_t)CLAMP(lroundf(CLAMP(in_pixel[1], 0.0f, 1.0f) * 1023.0f), 0, 1023);
-    const uint32_t b = (uint32_t)CLAMP(lroundf(CLAMP(in_pixel[2], 0.0f, 1.0f) * 1023.0f), 0, 1023);
+    // fminf/fmaxf map NaN to 0 and keep the loop vectorisable
+    const uint32_t r = (uint32_t)(fminf(fmaxf(in_pixel[0], 0.0f), 1.0f) * 1023.0f + 0.5f);
+    const uint32_t g = (uint32_t)(fminf(fmaxf(in_pixel[1], 0.0f), 1.0f) * 1023.0f + 0.5f);
+    const uint32_t b = (uint32_t)(fminf(fmaxf(in_pixel[2], 0.0f), 1.0f) * 1023.0f + 0.5f);
 
     packed[k] = r | (g << 10) | (b << 20) | (0x3u << 30);
   }
@@ -210,42 +231,57 @@ int write_image(struct dt_imageio_module_data_t *data,
   e = uhdr_enc_set_raw_image(enc, &img, UHDR_HDR_IMG);
   if(e.error_code != UHDR_CODEC_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_raw_image failed: %s", e.detail);
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_raw_image failed: %s", _uhdr_detail(&e));
     goto out;
   }
 
   e = uhdr_enc_set_quality(enc, d->quality, UHDR_BASE_IMG);
   if(e.error_code != UHDR_CODEC_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_quality (base) failed: %s", e.detail);
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_quality (base) failed: %s", _uhdr_detail(&e));
     goto out;
   }
 
   e = uhdr_enc_set_quality(enc, d->gainmap_quality, UHDR_GAIN_MAP_IMG);
   if(e.error_code != UHDR_CODEC_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_quality (gain map) failed: %s", e.detail);
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_quality (gain map) failed: %s", _uhdr_detail(&e));
     goto out;
   }
 
-  e = uhdr_enc_set_gainmap_scale_factor(enc, ultrahdr_gainmap_scale[d->gainmap_downscale]);
+  e = uhdr_enc_set_gainmap_scale_factor(enc, gainmap_scale);
   if(e.error_code != UHDR_CODEC_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_gainmap_scale_factor failed: %s", e.detail);
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_gainmap_scale_factor failed: %s", _uhdr_detail(&e));
+    goto out;
+  }
+
+  /*
+   * Without a target peak libultrahdr assumes 10000 nits for PQ, which
+   * over-scales the gain map. Use the content's MaxCLL, clamped to the
+   * [203, 10000] nits range the libultrahdr header documents.
+   */
+  float max_cll = 0.0f, max_fall = 0.0f;
+  dt_imageio_pq_light_level(in_data, width * height, &max_cll, &max_fall);
+  const float peak_nits = CLAMP(max_cll, DT_HDR_REFERENCE_WHITE_NITS, DT_HDR_PQ_PEAK_NITS);
+  e = uhdr_enc_set_target_display_peak_brightness(enc, peak_nits);
+  if(e.error_code != UHDR_CODEC_OK)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_target_display_peak_brightness failed: %s", _uhdr_detail(&e));
     goto out;
   }
 
   e = uhdr_enc_set_output_format(enc, UHDR_CODEC_JPG);
   if(e.error_code != UHDR_CODEC_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_output_format failed: %s", e.detail);
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_enc_set_output_format failed: %s", _uhdr_detail(&e));
     goto out;
   }
 
   e = uhdr_encode(enc);
   if(e.error_code != UHDR_CODEC_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "uhdr_encode failed: %s", e.detail);
+    dt_print(DT_DEBUG_IMAGEIO, "uhdr_encode failed: %s", _uhdr_detail(&e));
     goto out;
   }
 
@@ -267,10 +303,10 @@ int write_image(struct dt_imageio_module_data_t *data,
   }
 
   const size_t cnt = fwrite(out->data, 1, out->data_sz, f);
-  fclose(f);
+  const int close_failed = fclose(f);
   f = NULL;
 
-  if(cnt != out->data_sz)
+  if(cnt != out->data_sz || close_failed)
   {
     dt_print(DT_DEBUG_IMAGEIO, "Failed to write UltraHDR image `%s'", filename);
     g_unlink(filename);
@@ -307,7 +343,6 @@ void *get_params(dt_imageio_module_format_t *self)
   if(d == NULL)
     return NULL;
 
-  d->bpp = 32;
   d->quality = dt_conf_get_int("plugins/imageio/format/ultrahdr/quality");
   d->gainmap_quality = dt_conf_get_int("plugins/imageio/format/ultrahdr/gainmap_quality");
   d->gainmap_downscale = dt_conf_get_int("plugins/imageio/format/ultrahdr/gainmap_downscale");
@@ -377,8 +412,9 @@ int dimension(struct dt_imageio_module_format_t *self,
               uint32_t *width,
               uint32_t *height)
 {
-  /* No hard limit imposed by the module. */
-  return 0;
+  *width = ULTRAHDR_MAX_DIMENSION;
+  *height = ULTRAHDR_MAX_DIMENSION;
+  return 1;
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -411,12 +447,13 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Base image quality slider
    */
-  gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self,
-                                                  0,   /* min */
-                                                  100, /* max */
-                                                  1,   /* step */
-                                                  ULTRAHDR_DEFAULT_QUALITY, /* default */
-                                                  0);  /* digits */
+  gui->quality = dt_bauhaus_slider_new_with_range
+    ((dt_iop_module_t *)self,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/quality", DT_MIN),
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/quality", DT_MAX),
+     1,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/quality", DT_DEFAULT),
+     0);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of the SDR base image, less quality means fewer details"));
@@ -425,12 +462,13 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Gain map quality slider
    */
-  gui->gainmap_quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self,
-                                                          0,   /* min */
-                                                          100, /* max */
-                                                          1,   /* step */
-                                                          ULTRAHDR_DEFAULT_GAINMAP_QUALITY, /* default */
-                                                          0);  /* digits */
+  gui->gainmap_quality = dt_bauhaus_slider_new_with_range
+    ((dt_iop_module_t *)self,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/gainmap_quality", DT_MIN),
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/gainmap_quality", DT_MAX),
+     1,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/gainmap_quality", DT_DEFAULT),
+     0);
   dt_bauhaus_widget_set_label(gui->gainmap_quality, NULL, N_("gain map quality"));
   gtk_widget_set_tooltip_text(gui->gainmap_quality,
           _("the quality of the HDR gain map, less quality means a coarser gain map"));
@@ -468,13 +506,15 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_ultrahdr_gui_t *gui = self->gui_data;
 
-  const int quality = ULTRAHDR_DEFAULT_QUALITY;
-  const int gainmap_quality = ULTRAHDR_DEFAULT_GAINMAP_QUALITY;
-  const int gainmap_downscale = ULTRAHDR_GAINMAP_FULL;
-
-  dt_bauhaus_slider_set(gui->quality, quality);
-  dt_bauhaus_slider_set(gui->gainmap_quality, gainmap_quality);
-  dt_bauhaus_combobox_set(gui->gainmap_downscale, gainmap_downscale);
+  dt_bauhaus_slider_set
+    (gui->quality,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/quality", DT_DEFAULT));
+  dt_bauhaus_slider_set
+    (gui->gainmap_quality,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/gainmap_quality", DT_DEFAULT));
+  dt_bauhaus_combobox_set
+    (gui->gainmap_downscale,
+     dt_confgen_get_int("plugins/imageio/format/ultrahdr/gainmap_downscale", DT_DEFAULT));
 }
 
 // clang-format off

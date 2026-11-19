@@ -539,11 +539,9 @@ if(USE_ULTRAHDR)
   # NOTE: the pkg-config module and link name are "libuhdr" (NOT "libultrahdr").
   find_package(PkgConfig)
   if(PkgConfig_FOUND)
+    # pkg_check_modules() stores UltraHDR_FOUND in the cache itself, which
+    # src/imageio/format/CMakeLists.txt reads to gate the module.
     pkg_check_modules(UltraHDR IMPORTED_TARGET libuhdr)
-    if(UltraHDR_FOUND)
-      # Cache so src/imageio/format/CMakeLists.txt can gate the module on it.
-      set(UltraHDR_FOUND ON CACHE INTERNAL "")
-    endif()
   endif()
 endif()
 
