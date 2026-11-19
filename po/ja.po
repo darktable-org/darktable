@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-18 22:34+0100\n"
-"PO-Revision-Date: 2026-11-20 00:48+0900\n"
+"PO-Revision-Date: 2026-11-20 00:59+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -20434,7 +20434,7 @@ msgid ""
 "memory darktable leaves free on this device, only used with 'tuned GPU memory'"
 msgstr ""
 "darktableがこのデバイス上で空けておくメモリ量\n"
-"「調整されたGPUメモリ」でのみ使用されます"
+"'GPUメモリを調整する'がオンのときにのみ使用されます"
 
 #: ../src/gui/preferences.c:1643
 msgid "only used with two or more OpenCL devices in use"
@@ -24345,7 +24345,7 @@ msgid ""
 "cannot be set in exposure"
 msgstr ""
 "利用不可：\n"
-"フィットした値は露出に設定することが出来ません"
+"算出された値は露出モジュールに設定することが出来ません"
 
 #: ../src/iop/channelmixerrgb.c:1549
 msgid ""
@@ -35462,7 +35462,7 @@ msgstr "パラメトリック入力マスク："
 
 #: ../src/libs/history.c:1630
 msgid "the next change starts a new history item"
-msgstr "次の変更は新しい履歴項目を開始します"
+msgstr "次の変更は新しい履歴項目になります"
 
 #: ../src/libs/history.c:1640
 msgid "delete image's history?"
