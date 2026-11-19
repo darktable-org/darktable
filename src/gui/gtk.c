@@ -3362,6 +3362,8 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
 
   section = g_menu_new();
   g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+  // the menu holds its own reference to the section
+  g_object_unref(section);
 
   g_menu_append(section, _("restore defaults"), "modules.restore");
 

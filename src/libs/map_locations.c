@@ -825,6 +825,8 @@ static void _pop_menu_view(GtkWidget *view,
 
     section = g_menu_new();
     g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+    // the menu holds its own reference to the section
+    g_object_unref(section);
 
     g_menu_append(section, _("update filmstrip"), "map_locations.update");
     g_menu_append(section, _("go to collection (lighttable)"), "map_locations.goto");
@@ -835,6 +837,7 @@ static void _pop_menu_view(GtkWidget *view,
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
     GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
     gtk_tree_view_get_background_area(GTK_TREE_VIEW(view), path, column, &rect);
+    gtk_tree_path_free(path);
 
     // popup the menu
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(view, menu);

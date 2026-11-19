@@ -1164,6 +1164,8 @@ static void _gui_multiinstance_callback(GtkButton *button,
   GMenu *section = g_menu_new();
   g_menu_append(section, _("rename"), "instances.rename");
   g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+  // the menu holds its own reference to the section
+  g_object_unref(section);
   
   GActionGroup *action_group = gtk_widget_get_action_group(GTK_WIDGET(button), "instances");
   GAction *action;

@@ -1488,6 +1488,8 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
       last_wp = writeprotect;
       submenu = mainmenu = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(submenu));
+      // the menu holds its own reference to the section
+      g_object_unref(submenu);
 
       *prev_split[0] = '\0'; // make first level mismatch so we start over
     }
@@ -1531,13 +1533,23 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
     cnt++;
   }
   g_list_free_full(rows, dt_presets_params_free);
-  g_slist_free(menu_path);
+  // the menus on the path stack stay alive via their parent's submenu item,
+  // so only drop the list's own references
+  while(menu_path)
+  {
+    GSList *link = menu_path;
+    menu_path = menu_path->next;
+    g_object_unref(G_MENU(link->data));
+    g_slist_free_1(link);
+  }
   g_strfreev(prev_split);
 
   if(cnt > 0)
   {
     mainmenu = g_menu_new();
     g_menu_append_section(menu, NULL, G_MENU_MODEL(mainmenu));
+    // the menu holds its own reference to the section
+    g_object_unref(mainmenu);
   }
 
   // tail: manage / edit+delete / store+update, then the optional prefs section
@@ -1576,6 +1588,8 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
   {
     mainmenu = g_menu_new();
     g_menu_append_section(menu, NULL, G_MENU_MODEL(mainmenu));
+    // the menu holds its own reference to the section
+    g_object_unref(mainmenu);
     ops->prefs(mainmenu, ops->data);
   }
 
