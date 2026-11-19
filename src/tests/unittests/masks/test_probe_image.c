@@ -206,9 +206,7 @@ static void _channels(const float *const restrict px, float out[CH_COUNT])
   out[CH_SCENE_G] = rgb[1];
   out[CH_SCENE_B] = rgb[2];
 
-  out[CH_SCENE_GRAY] = dt_ioppr_get_rgb_matrix_luminance(rgb, _profile.matrix_in, _profile.lut_in,
-                                                         _profile.unbounded_coeffs_in,
-                                                         _profile.lutsize, _profile.nonlinearlut);
+  out[CH_SCENE_GRAY] = dt_ioppr_rgb_luminance(rgb, &_profile);
 
   dt_aligned_pixel_t xyz_d65 = { 0.0f, 0.0f, 0.0f, 0.0f };
   for(int r = 0; r < 3; r++)

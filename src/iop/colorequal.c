@@ -1947,12 +1947,7 @@ static inline void _build_dt_UCS_HSB_gradients
 
   if(work_profile)
   {
-    dt_ioppr_xyz_to_rgb_matrix(XYZ_D65, RGB,
-                               work_profile->matrix_out_transposed,
-                               work_profile->lut_out,
-                               work_profile->unbounded_coeffs_out,
-                               work_profile->lutsize,
-                               work_profile->nonlinearlut);
+    dt_ioppr_xyz_to_rgb(XYZ_D65, RGB, work_profile);
   }
   else
   {
@@ -2697,11 +2692,7 @@ static void _pipe_RGB_to_Ych(dt_iop_module_t *self,
   dt_aligned_pixel_t XYZ_D50 = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, work_profile->matrix_in_transposed,
-                             work_profile->lut_in,
-                             work_profile->unbounded_coeffs_in,
-                             work_profile->lutsize,
-                             work_profile->nonlinearlut);
+  dt_ioppr_rgb_to_xyz(RGB, XYZ_D50, work_profile);
   XYZ_D50_to_D65(XYZ_D50, XYZ_D65);
   XYZ_to_Ych(XYZ_D65, Ych);
 

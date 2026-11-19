@@ -423,124 +423,31 @@ static inline float dt_ioppr_rgb_luminance(const float *const rgb,
        + profile->matrix_in[1][2] * linear[2];
 }
 
-DT_OMP_DECLARE_SIMD(
-  aligned(rgb, matrix_in, unbounded_coeffs_in:16)
-  aligned(lut_in:64)
-  uniform(rgb, matrix_in, lut_in, unbounded_coeffs_in))
-static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t rgb,
-                                                      const dt_colormatrix_t matrix_in,
-                                                      float *const lut_in[3],
-                                                      const float unbounded_coeffs_in[3][3],
-                                                      const int lutsize,
-                                                      const int nonlinearlut)
+static inline void dt_ioppr_xyz_to_rgb(const float *const xyz,
+                                      float *const rgb,
+                                      const dt_iop_order_iccprofile_info_t *const profile)
 {
-  float luminance = 0.f;
-
-  if(nonlinearlut)
-  {
-    dt_aligned_pixel_t linear_rgb;
-    dt_ioppr_apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
-    luminance = matrix_in[1][0] * linear_rgb[0]
-              + matrix_in[1][1] * linear_rgb[1]
-              + matrix_in[1][2] * linear_rgb[2];
-  }
-  else
-    luminance = matrix_in[1][0] * rgb[0]
-              + matrix_in[1][1] * rgb[1]
-              + matrix_in[1][2] * rgb[2];
-
-  return luminance;
+  dt_aligned_pixel_t linear;
+  dt_apply_transposed_color_matrix(xyz, profile->matrix_out_transposed, linear);
+  dt_ioppr_encode_rgb(linear, rgb, profile);
 }
 
-
-DT_OMP_DECLARE_SIMD(
-  aligned(unbounded_coeffs_in:16)
-  aligned(lut_in:64)
-  uniform(lut_in, unbounded_coeffs_in))
-static inline void dt_ioppr_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb,
-                                              dt_aligned_pixel_t xyz,
-                                              const dt_colormatrix_t matrix_in_transposed,
-                                              float *const lut_in[3],
-                                              const float unbounded_coeffs_in[3][3],
-                                              const int lutsize,
-                                              const int nonlinearlut)
+static inline void dt_ioppr_rgb_to_lab(const float *const rgb,
+                                      float *const lab,
+                                      const dt_iop_order_iccprofile_info_t *const profile)
 {
-  if(nonlinearlut)
-  {
-    dt_aligned_pixel_t linear_rgb;
-    dt_ioppr_apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
-    dt_apply_transposed_color_matrix(linear_rgb, matrix_in_transposed, xyz);
-  }
-  else
-    dt_apply_transposed_color_matrix(rgb, matrix_in_transposed, xyz);
+  dt_aligned_pixel_t xyz;
+  dt_ioppr_rgb_to_xyz(rgb, xyz, profile);
+  dt_XYZ_to_Lab(xyz, lab);
 }
 
-DT_OMP_DECLARE_SIMD(
-  aligned(unbounded_coeffs_out:16)
-  aligned(lut_out:64)
-  uniform(lut_out, unbounded_coeffs_out))
-static inline void dt_ioppr_xyz_to_rgb_matrix(const dt_aligned_pixel_t xyz,
-                                              dt_aligned_pixel_t rgb,
-                                              const dt_colormatrix_t matrix_out_transposed,
-                                              float *const lut_out[3],
-                                              const float unbounded_coeffs_out[3][3],
-                                              const int lutsize,
-                                              const int nonlinearlut)
-{
-  if(nonlinearlut)
-  {
-    dt_aligned_pixel_t linear_rgb;
-    dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, linear_rgb);
-    dt_ioppr_apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
-  }
-  else
-    dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, rgb);
-}
-
-
-DT_OMP_DECLARE_SIMD(
-  aligned(unbounded_coeffs_out:16)
-  aligned(lut_out:64)
-  uniform(lut_out, unbounded_coeffs_out))
-static inline void dt_ioppr_lab_to_rgb_matrix(const dt_aligned_pixel_t lab,
-                                              dt_aligned_pixel_t rgb,
-                                              const dt_colormatrix_t matrix_out_transposed,
-                                              float *const lut_out[3],
-                                              const float unbounded_coeffs_out[3][3],
-                                              const int lutsize,
-                                              const int nonlinearlut)
+static inline void dt_ioppr_lab_to_rgb(const float *const lab,
+                                      float *const rgb,
+                                      const dt_iop_order_iccprofile_info_t *const profile)
 {
   dt_aligned_pixel_t xyz;
   dt_Lab_to_XYZ(lab, xyz);
-
-  if(nonlinearlut)
-  {
-    dt_aligned_pixel_t linear_rgb;
-    dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, linear_rgb);
-    dt_ioppr_apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
-  }
-  else
-  {
-    dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, rgb);
-  }
-}
-
-DT_OMP_DECLARE_SIMD(
-  aligned(unbounded_coeffs_in:16)
-  aligned(lut_in:64)
-  uniform(lut_in, unbounded_coeffs_in))
-static inline void dt_ioppr_rgb_matrix_to_lab(const dt_aligned_pixel_t rgb,
-                                              dt_aligned_pixel_t lab,
-                                              const dt_colormatrix_t matrix_in_transposed,
-                                              float *const lut_in[3],
-                                              const float unbounded_coeffs_in[3][3],
-                                              const int lutsize,
-                                              const int nonlinearlut)
-{
-  dt_aligned_pixel_t xyz = { 0.f };
-  dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in_transposed, lut_in,
-                             unbounded_coeffs_in, lutsize, nonlinearlut);
-  dt_XYZ_to_Lab(xyz, lab);
+  dt_ioppr_xyz_to_rgb(xyz, rgb, profile);
 }
 
 // Convert a pixel from the pipe's working RGB space to darktable UCS JCH.

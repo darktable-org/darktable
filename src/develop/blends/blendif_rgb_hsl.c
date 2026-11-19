@@ -95,9 +95,7 @@ static inline void _blendif_gray(const float *const restrict pixels,
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    const float value = dt_ioppr_get_rgb_matrix_luminance(pixels + j, profile->matrix_in, profile->lut_in,
-                                                          profile->unbounded_coeffs_in, profile->lutsize,
-                                                          profile->nonlinearlut);
+    const float value = dt_ioppr_rgb_luminance(pixels + j, profile);
     mask[x] *= _blendif_compute_factor(value, invert_mask, parameters);
   }
 }
@@ -1086,9 +1084,7 @@ static inline float _rgb_luminance(const float *const restrict rgb,
 {
   float value = 0.0f;
   if(profile)
-    value = dt_ioppr_get_rgb_matrix_luminance(rgb, profile->matrix_in, profile->lut_in,
-                                              profile->unbounded_coeffs_in, profile->lutsize,
-                                              profile->nonlinearlut);
+    value = dt_ioppr_rgb_luminance(rgb, profile);
   else
     value = 0.3f * rgb[0] + 0.59f * rgb[1] + 0.11f * rgb[2];
   return value;

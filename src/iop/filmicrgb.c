@@ -862,9 +862,7 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
 
     case(DT_FILMIC_METHOD_LUMINANCE):
       return (work_profile)
-                 ? dt_ioppr_get_rgb_matrix_luminance(pixel, work_profile->matrix_in, work_profile->lut_in,
-                                                     work_profile->unbounded_coeffs_in, work_profile->lutsize,
-                                                     work_profile->nonlinearlut)
+                 ? dt_ioppr_rgb_luminance(pixel, work_profile)
                  : dt_camera_rgb_luminance(pixel);
 
     case(DT_FILMIC_METHOD_POWER_NORM):
@@ -878,9 +876,7 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
 
     default:
       return (work_profile)
-                 ? dt_ioppr_get_rgb_matrix_luminance(pixel, work_profile->matrix_in, work_profile->lut_in,
-                                                     work_profile->unbounded_coeffs_in, work_profile->lutsize,
-                                                     work_profile->nonlinearlut)
+                 ? dt_ioppr_rgb_luminance(pixel, work_profile)
                  : dt_camera_rgb_luminance(pixel);
   }
 }
@@ -1419,9 +1415,7 @@ static inline void filmic_split_v1(const float *const restrict in,
 
     // Get the desaturation coeff based on the log value
     const float lum = (work_profile)
-                          ? dt_ioppr_get_rgb_matrix_luminance(temp, work_profile->matrix_in, work_profile->lut_in,
-                                                              work_profile->unbounded_coeffs_in,
-                                                              work_profile->lutsize, work_profile->nonlinearlut)
+                          ? dt_ioppr_rgb_luminance(temp, work_profile)
                           : dt_camera_rgb_luminance(temp);
     const float desaturation = filmic_desaturate_v1(lum, data->sigma_toe, data->sigma_shoulder, data->saturation);
 
@@ -1465,9 +1459,7 @@ static inline void filmic_split_v2_v3(const float *const restrict in,
 
     // Get the desaturation coeff based on the log value
     const float lum = (work_profile)
-                          ? dt_ioppr_get_rgb_matrix_luminance(temp, work_profile->matrix_in, work_profile->lut_in,
-                                                              work_profile->unbounded_coeffs_in,
-                                                              work_profile->lutsize, work_profile->nonlinearlut)
+                          ? dt_ioppr_rgb_luminance(temp, work_profile)
                           : dt_camera_rgb_luminance(temp);
     const float desaturation = filmic_desaturate_v2(lum, data->sigma_toe, data->sigma_shoulder, data->saturation);
 
@@ -1519,9 +1511,7 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
 
     for_each_channel(c) ratios[c] *= norm;
 
-    const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(
-                          ratios, work_profile->matrix_in, work_profile->lut_in, work_profile->unbounded_coeffs_in,
-                          work_profile->lutsize, work_profile->nonlinearlut)
+    const float lum = (work_profile) ? dt_ioppr_rgb_luminance(ratios, work_profile)
                                      : dt_camera_rgb_luminance(ratios);
 
     // Desaturate on the non-linear parts of the curve and save ratios
