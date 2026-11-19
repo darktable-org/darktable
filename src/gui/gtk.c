@@ -5232,6 +5232,31 @@ gboolean dt_ui_flexi_panel_is_right(dt_ui_t *ui)
   return ui && ui->flexi_panel_right;
 }
 
+void dt_ui_flexi_panel_get_cover(dt_ui_t *ui, int *left, int *right)
+{
+  int cover[2] = { 0, 0 };
+  if(ui)
+  {
+    const gboolean collapsed = dt_ui_flexi_panel_is_collapsed(ui);
+    if(!collapsed && !ui->flexi_column)
+      cover[ui->flexi_panel_right ? 1 : 0] =
+        MAX(0, gtk_widget_get_allocated_width(ui->flexi_panel_overlay));
+
+    // a halo is only up while the pointer is at its edge, but it comes up
+    // under any pointer that goes there to reach for the canvas. Which edges
+    // are live is as in _flexi_proximity_poll
+    if(ui->flexi_has_content && !_flexi_halo_unwanted())
+    {
+      const gboolean live[2] = { collapsed || ui->flexi_panel_right,
+                                 collapsed || !ui->flexi_panel_right };
+      for(int i = 0; i < 2; i++)
+        if(live[i]) cover[i] = MAX(cover[i], _flexi_halo_width(ui->flexi_halo[i]));
+    }
+  }
+  if(left) *left = cover[0];
+  if(right) *right = cover[1];
+}
+
 
 static void _ui_init_panel_top(dt_ui_t *ui,
                                GtkWidget *container)

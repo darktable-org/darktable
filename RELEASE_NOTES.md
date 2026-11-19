@@ -164,9 +164,10 @@ changes (where available).
 - Snapshots now leave the image editable, like the history compare. In
   the side-by-side view clicks go through to the darkroom, and in the
   overlay only the split line and its rotate handle take input. A click
-  on the split line swaps the two sides. The snapshots module has a
-  rotate button, and the mode and rotate buttons of the snapshots and
-  history modules show the same state.
+  on the split line swaps the two sides, and dragging it off the
+  canvas or under the masks panel ends the comparison. The snapshots
+  module has a rotate button, and the mode and rotate buttons of the
+  snapshots and history modules show the same state.
 
 - The comparison layout (side by side or overlay, and the direction of
   the split) is remembered across snapshots and sessions, and is shared
