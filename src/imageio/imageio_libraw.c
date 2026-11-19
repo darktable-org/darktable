@@ -607,6 +607,7 @@ static dt_imageio_retval_t _open_libraw(dt_image_t *img,
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
+  GMappedFile *mapped = NULL;
 
   if(!fallback && !_supported_image(filename))
     return DT_IMAGEIO_LOAD_FAILED;
@@ -617,13 +618,13 @@ static dt_imageio_retval_t _open_libraw(dt_image_t *img,
   if(!raw)
     return fallback ? DT_IMAGEIO_UNSUPPORTED_FORMAT : DT_IMAGEIO_LOAD_FAILED;
 
-#if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-  libraw_err = libraw_open_wfile(raw, wfilename);
-  g_free(wfilename);
-#else
-  libraw_err = libraw_open_file(raw, filename);
-#endif
+  // decode from a read-only mapping; the file descriptor is closed once the
+  // mapping exists, so unpack() reads from memory rather than a file stream
+  mapped = g_mapped_file_new(filename, FALSE, NULL);
+  libraw_err = mapped
+    ? libraw_open_buffer(raw, g_mapped_file_get_contents(mapped),
+                         g_mapped_file_get_length(mapped))
+    : LIBRAW_IO_ERROR;
 
   if(fallback)
   {
@@ -635,6 +636,7 @@ static dt_imageio_retval_t _open_libraw(dt_image_t *img,
       // not a format we take over from RawSpeed: leave it to the
       // regular loader chain without any error output
       libraw_close(raw);
+      if(mapped) g_mapped_file_unref(mapped);
       return DT_IMAGEIO_UNSUPPORTED_FORMAT;
     }
     dt_print(DT_DEBUG_IMAGEIO,
@@ -883,6 +885,7 @@ error:
     }
   }
   libraw_close(raw);
+  if(mapped) g_mapped_file_unref(mapped);
   return err;
 }
 

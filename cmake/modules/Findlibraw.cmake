@@ -21,7 +21,11 @@
 #     used for linking
 
 find_package(PkgConfig QUIET)
-pkg_check_modules(PKG_libraw QUIET libraw)
+# darktable decodes from multiple threads, so the thread-safe libraw_r is preferred
+pkg_check_modules(PKG_libraw QUIET libraw_r)
+if(NOT PKG_libraw_FOUND)
+  pkg_check_modules(PKG_libraw QUIET libraw)
+endif()
 
 set(libraw_VERSION ${PKG_libraw_VERSION})
 set(libraw_DEFINITIONS ${PKG_libraw_CFLAGS_OTHER})
@@ -32,7 +36,7 @@ find_path(libraw_INCLUDE_DIR
 )
 
 find_library(libraw_LIBRARY
-    NAMES raw
+    NAMES raw_r raw
     HINTS ${PKG_libraw_LIBRARY_DIRS}
 )
 
