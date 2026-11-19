@@ -2,11 +2,7 @@
 # install opencl kernel source files
 #
 FILE(GLOB DT_OPENCL_KERNELS "*.cl")
-FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "common.h" "rgb_norms.h" "noise_generator.h" "color_conversion.h" "colorspace.h" "grain.h" "bilinear.h" "lut3d.h")
-
-set(DT_HDR_TRANSFER_HEADER "${CMAKE_SOURCE_DIR}/src/common/hdr-transfer.h")
-list(APPEND DT_OPENCL_EXTRA "${DT_HDR_TRANSFER_HEADER}")
-configure_file("${DT_HDR_TRANSFER_HEADER}" "${CMAKE_CURRENT_BINARY_DIR}/hdr-transfer.h" COPYONLY)
+FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "common.h" "rgb_norms.h" "noise_generator.h" "color_conversion.h" "colorspace.h" "grain.h" "bilinear.h" "lut3d.h" "hdr_transfer.h")
 
 add_custom_target(testcompile_opencl_kernels ALL)
 
