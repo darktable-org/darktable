@@ -600,7 +600,8 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 // a soft proof's export clips the linear value v: below 0, or above the
 // range its encoding stores, by more than the tolerance. the range: up
 // to 1 / gamut_scale for an SDR proof, light up to the peak for PQ and
-// scene light up to 1 for HLG, what dt_hdr_encode() clamps
+// scene light up to 1 for HLG, which encode to code 1. the HLG scale is
+// the one dt_hdr_encode() applies, from |Y| of the signed channels
 static inline gboolean _out_of_gamut(const float *const v,
                                      const dt_iop_colorout_data_t *const d)
 {
@@ -611,8 +612,8 @@ static inline gboolean _out_of_gamut(const float *const v,
   }
   else if(d->hdr_transfer != DT_HDR_NONE)
   {
-    const float positive[3] = { MAX(v[0], 0.0f), MAX(v[1], 0.0f), MAX(v[2], 0.0f) };
-    const float hlg = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(positive, d->hdr_transfer));
+    const float hlg =
+      dt_hdr_hlg_scene_scale(fabsf(dt_hdr_hlg_luminance(v, d->hdr_transfer)));
     for(int c = 0; c < 3; c++) scale[c] = hlg;
   }
   const float tolerance = d->gamut_tolerance;
@@ -711,8 +712,8 @@ static void _transform_ink_proof(const dt_iop_colorout_data_t *const d,
 }
 
 // what an export writes after its transform: the HDR transfer function,
-// and the clip of an integer file. dt_hdr_encode() already clamps the
-// signal
+// and the clip of an integer file. dt_hdr_encode() keeps the signal past
+// code 1 and below 0, so a soft proof clips it here
 static void _encode(const dt_iop_colorout_data_t *const d,
                     float *const restrict out,
                     const size_t npixels)
@@ -1231,8 +1232,8 @@ static void _build_transforms(dt_iop_colorout_data_t *const d,
     output = hdr_linear;
   }
 
-  // the export of a PQ or HLG proof clips in dt_hdr_encode(), past what
-  // littlecms' gamut check sees: its linear values tell
+  // the export of a PQ or HLG proof clips after dt_hdr_encode(), past
+  // what littlecms' gamut check sees: its linear values tell
   const gboolean alarm = gamutcheck && (ink || !d->hdr_transfer);
 
   if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
