@@ -1245,6 +1245,11 @@ changes (where available).
   after a large feather was given to a sharp corner where the path
   turns inward, such as the middle nodes of a sunglasses-shaped path.
 
+- Fixed random crashes while starting up, mostly seen while the splash
+  screen was still showing, where a Lua script or a background task
+  could build and rearrange interface elements from its own thread
+  while the main window was still being assembled.
+
 ## Lua
 
 ### API Version
