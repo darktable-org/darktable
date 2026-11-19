@@ -3512,7 +3512,7 @@ colorout_out_of_gamut(const float rgb[3],
   float scale[3] = { gamut_scale.x, gamut_scale.y, gamut_scale.z };
   if(hdr_transfer == DT_HDR_PQ)
   {
-    for(int c = 0; c < 3; c++) scale[c] = DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_PQ_PEAK_NITS;
+    for(int c = 0; c < 3; c++) scale[c] = DT_HDR_PQ_WHITE_SCALE;
   }
   else if(hdr_transfer != DT_HDR_NONE)
   {
