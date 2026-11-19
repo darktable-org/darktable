@@ -805,7 +805,6 @@ static void _pop_menu_view(GtkWidget *view,
   }
 
   GMenu *menu = g_menu_new();
-  GMenu *section = menu;
 
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
@@ -818,16 +817,17 @@ static void _pop_menu_view(GtkWidget *view,
     GtkTreeIter child, parent = iter;
     const gboolean children = gtk_tree_model_iter_children(model, &child, &parent);
 
-    g_menu_append(section, _("edit location"), "map_locations.edit");
-    g_menu_append(section, _("delete location"), "map_locations.delete");
+    g_menu_append(menu, _("edit location"), "map_locations.edit");
+    g_menu_append(menu, _("delete location"), "map_locations.delete");
     GAction *item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "delete");    
     g_simple_action_set_enabled(G_SIMPLE_ACTION(item_action), !children);
 
-    section = g_menu_new();
+    GMenu *section = g_menu_new();
     g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
 
     g_menu_append(section, _("update filmstrip"), "map_locations.update");
     g_menu_append(section, _("go to collection (lighttable)"), "map_locations.goto");
+    g_object_unref(section);
     item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "update");    
     g_simple_action_set_enabled(G_SIMPLE_ACTION(item_action), locid);
 
@@ -835,6 +835,7 @@ static void _pop_menu_view(GtkWidget *view,
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
     GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
     gtk_tree_view_get_background_area(GTK_TREE_VIEW(view), path, column, &rect);
+    gtk_tree_path_free(path);
 
     // popup the menu
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(view, menu);

@@ -1188,6 +1188,9 @@ static GMenu *_popup_get_numeric_menu(GtkDarktableRangeSelect *range,
     g_menu_append_item(section, mi);
     g_object_unref(mi);
   }
+
+  if(section != menu)
+    g_object_unref(section);
   
   return menu;
 }
