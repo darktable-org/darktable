@@ -458,6 +458,16 @@ typedef struct dt_iop_gui_blend_data_t
   // into freed blend_data
   guint preview_dwell_timer;
   dt_dev_pixelpipe_display_mask_t save_for_leave;
+  // the operator chooser's preview (_flexi_op_preview_show): the group the
+  // chooser is open on, the operators of the groups it changed to give back
+  // (NULL with no preview up), and the timer that shows the operator under
+  // the pointer, or with op_preview_show FALSE takes the preview down. Same
+  // teardown rule as preview_dwell_timer
+  dt_mask_id_t op_preview_cid;
+  GArray *op_preview_saved;
+  guint op_preview_timer;
+  gboolean op_preview_show;
+  dt_masks_state_t op_preview_op;
   GtkWidget *details_slider;
 
   // opens the menu that links or copies elements of other modules' masks, or
