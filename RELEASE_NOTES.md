@@ -1241,6 +1241,10 @@ changes (where available).
 - Fixed darktable freezing when dragging a Bézier handle of a path or
   AI object mask node whose other handle sits on the node itself.
 
+- Fixed nodes of a drawn path that could not be selected or moved
+  after a large feather was given to a sharp corner where the path
+  turns inward, such as the middle nodes of a sunglasses-shaped path.
+
 ## Lua
 
 ### API Version
