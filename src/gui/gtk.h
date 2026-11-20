@@ -463,6 +463,9 @@ gboolean dt_ui_panel_ancestor(const struct dt_ui_t *ui,
 GtkWidget *dt_ui_center(const struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(const struct dt_ui_t *ui);
 GtkWidget *dt_ui_snapshot(const struct dt_ui_t *ui);
+/** \brief is the pointer over the center view, or over a widget on it that
+    passes its motion on to it */
+gboolean dt_ui_pointer_on_canvas(const struct dt_ui_t *ui);
 /** \brief get the main window widget */
 GtkWidget *dt_ui_main_window(const struct dt_ui_t *ui);
 /** \brief get the thumb table */
