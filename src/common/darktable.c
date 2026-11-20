@@ -2095,6 +2095,15 @@ int dt_init(int argc,
   {
     gtk_init(&argc, &argv);
 
+    /* own the default main context for the life of the gui: glib runs a
+     * g_main_context_invoke() callback in the calling thread when it can
+     * acquire the context, so a job or Lua thread would otherwise touch
+     * widgets while dt_init() builds the main window.  released in dt_cleanup() */
+    if(!g_main_context_acquire(g_main_context_default()))
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_init] could not acquire the default main context,"
+               " gui calls from worker threads will not be serialized");
+
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
 
@@ -2743,6 +2752,14 @@ void dt_get_sysresource_level()
   }
 }
 
+static gpointer _control_shutdown_thread(gpointer data)
+{
+  dt_control_shutdown();
+  g_atomic_int_set((gint *)data, TRUE);
+  g_main_context_wakeup(g_main_context_default());
+  return NULL;
+}
+
 void dt_cleanup()
 {
   const gboolean init_gui = (darktable.gui != NULL);
@@ -2780,13 +2797,14 @@ void dt_cleanup()
     gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
     dt_gui_process_events();
 
-    dt_ctl_switch_mode_to("");
+    // no d-bus "open" request may start an import while we wait for the workers
     dt_dbus_destroy(darktable.dbus);
 
 /* How is darktable shutdown working safely?
 1. dt_control_quit() is called via user request, it sets control->running anatomically
      to DT_CONTROL_STATE_CLEANUP implying that dt_control_running() will not be TRUE any more.
-     It finally calls gtk_main_quit() so with current code we don't have gtk events after that.
+     It finally calls gtk_main_quit(), so the only gtk events after that are the ones processed
+     below while the threads are joined.
 
 2. Quitting gtk also means **we are exactly here** to continue the shutdown. Anything requiring a
      still active UI must be done before ...
@@ -2804,7 +2822,20 @@ void dt_cleanup()
 5. After dt_control_shutdown() has finished we are sure there are no background threads running any
      more so we can safely close all mentioned subsystems and continue.
 */
-    dt_control_shutdown();
+    /* a job still running, e.g. an export whose Lua hook builds a widget, may be
+     * waiting in g_main_context_invoke() for this thread, which owns the context.
+     * keep dispatching until the threads are joined, or neither side returns */
+    gint joined = FALSE;
+    GThread *joiner = g_thread_new("shutdown", _control_shutdown_thread, &joined);
+    while(!g_atomic_int_get(&joined))
+      g_main_context_iteration(NULL, TRUE);
+    g_thread_join(joiner);
+
+    // leave the view once no job can still be using it
+    dt_ctl_switch_mode_to("");
+
+    if(g_main_context_is_owner(g_main_context_default()))
+      g_main_context_release(g_main_context_default());
   }
 #ifdef USE_LUA
   dt_lua_finalize();
