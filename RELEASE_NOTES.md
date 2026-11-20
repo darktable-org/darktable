@@ -187,6 +187,10 @@ changes (where available).
 - Escape now cancels a mask shape that is being drawn, as a right-click
   does.
 
+- A mask shape that is ready to be placed is no longer drawn in the
+  middle of the image while the pointer is off the canvas. It shows up
+  again under the pointer as soon as the pointer comes back.
+
 - Mask nodes close or outside the image boundaries are now editable.
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
