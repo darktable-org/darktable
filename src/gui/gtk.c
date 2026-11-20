@@ -3209,6 +3209,26 @@ GtkWidget *dt_ui_snapshot(const dt_ui_t *ui)
 {
   return ui->snapshot;
 }
+
+// asks GDK rather than trusting enter and leave: under a GTK grab (a popup, a
+// modal popover) the center view's leave goes to the grab widget instead, and
+// the ungrab does not replay it once the pointer is elsewhere
+gboolean dt_ui_pointer_on_canvas(const dt_ui_t *ui)
+{
+  if(!ui->center || !gtk_widget_get_realized(ui->center)) return FALSE;
+
+  GdkDevice *pointer =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(ui->center)));
+  GdkWindow *under = pointer ? gdk_device_get_window_at_position(pointer, NULL, NULL) : NULL;
+  if(!under) return FALSE;
+
+  GtkWidget *canvas[] = { ui->center, ui->snapshot, ui->flexi_halo[0], ui->flexi_halo[1] };
+  for(int i = 0; i < G_N_ELEMENTS(canvas); i++)
+    if(canvas[i] && gtk_widget_get_visible(canvas[i])
+       && under == gtk_widget_get_window(canvas[i]))
+      return TRUE;
+  return FALSE;
+}
 dt_thumbtable_t *dt_ui_thumbtable(const struct dt_ui_t *ui)
 {
   return ui->thumbtable;
@@ -4707,6 +4727,25 @@ static void _flexi_halo_motion(GtkEventControllerMotion *controller,
   }
 }
 
+// the halo passes its motion on to the canvas, so for the canvas the pointer
+// is still on it: entering the halo undoes the canvas leave that comes just
+// before, and leaving it, possibly straight off the window edge, is a canvas
+// leave. Otherwise an armed shape stays drawn where the halo saw it last
+static void _flexi_halo_enter(GtkEventControllerMotion *controller,
+                              gdouble x,
+                              gdouble y,
+                              GtkWidget *w)
+{
+  dt_control_mouse_enter();
+  _flexi_sliver_enter(controller, x, y, w);
+}
+
+static void _flexi_halo_leave(GtkEventControllerMotion *controller, GtkWidget *w)
+{
+  _flexi_sliver_leave(controller, w);
+  dt_control_mouse_leave();
+}
+
 // the wide band the hairline grows into on approach. An overlay child of the
 // canvas, not a column: a column would push the image sideways every time the
 // pointer wandered near an edge. Carries the same handlers as the hairline, so
@@ -4728,8 +4767,8 @@ static GtkWidget *_flexi_build_halo(dt_ui_t *ui, const gboolean right)
   gtk_widget_set_events(h, GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK
                            | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(h), "draw", G_CALLBACK(_flexi_sliver_draw), NULL);
-  dt_gui_connect_motion(h, (GCallback)_flexi_halo_motion, _flexi_sliver_enter,
-                        _flexi_sliver_leave, h);
+  dt_gui_connect_motion(h, (GCallback)_flexi_halo_motion, _flexi_halo_enter,
+                        _flexi_halo_leave, h);
   dt_gui_connect_click(h, _flexi_sliver_pressed, NULL, h);
   gtk_widget_set_no_show_all(h, TRUE);
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(ui)), h);
