@@ -4893,6 +4893,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->temperature = dt_bauhaus_slider_from_params(self, N_("temperature"));
   dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
+  // 1 mired per step: equal steps in kelvin look too large at low temperatures
+  // and too small at high ones
+  dt_bauhaus_slider_set_step_reciprocal(g->temperature, 1e-6f);
   dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, " K");
   _paint_temperature_background(self);

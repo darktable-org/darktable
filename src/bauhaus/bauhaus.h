@@ -341,6 +341,12 @@ int dt_bauhaus_slider_get_digits(GtkWidget *widget);
 void dt_bauhaus_slider_set_step(GtkWidget *widget,
                                 float val);
 float dt_bauhaus_slider_get_step(GtkWidget *widget);
+// step by a constant amount of 1/value instead of value, for sliders with a
+// positive range. For a temperature in kelvin, 2e-6 steps by 2 mired, which
+// is about equally visible at any temperature. dt_bauhaus_slider_get_step()
+// is not affected, and still sets how far a modifier drag has to move per step
+void dt_bauhaus_slider_set_step_reciprocal(GtkWidget *widget,
+                                           const float val);
 
 void dt_bauhaus_slider_set_feedback(GtkWidget *widget,
                                     const int feedback);

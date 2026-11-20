@@ -2265,6 +2265,9 @@ void gui_init(dt_iop_module_t *self)
   g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback
     (self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
      0, 5000.0, 0, feedback);
+  // 1 mired per step: equal steps in kelvin look too large at low temperatures
+  // and too small at high ones
+  dt_bauhaus_slider_set_step_reciprocal(g->scale_k, 1e-6f);
   dt_bauhaus_slider_set_format(g->scale_k, " K");
   dt_bauhaus_widget_set_label(g->scale_k, NULL, N_("temperature"));
   gtk_widget_set_tooltip_text(g->scale_k, _("color temperature (in Kelvin)"));
