@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-18 22:34+0100\n"
-"PO-Revision-Date: 2026-11-20 15:02+0900\n"
+"PO-Revision-Date: 2026-11-20 15:04+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -28985,7 +28985,7 @@ msgstr "フィルムの銀粒子をシミュレートします"
 
 #: ../src/iop/grain.c:722
 msgid "the grain size (~ISO of the film)"
-msgstr "粒子のサイズ（フィルムのISO）"
+msgstr "粒子のサイズ（フィルムのISOに相当）"
 
 #: ../src/iop/grain.c:726
 msgid "the strength of applied grain"
