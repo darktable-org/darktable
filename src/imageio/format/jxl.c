@@ -235,8 +235,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   JxlColorEncoding color_encoding;
   color_encoding.color_space = JXL_COLOR_SPACE_RGB;
   // If not explicitly set in the export menu, use the intent of the actual output profile
-  if(pipe->icc_intent >= DT_INTENT_PERCEPTUAL && pipe->icc_intent < DT_INTENT_LAST)
-    color_encoding.rendering_intent = (JxlRenderingIntent)pipe->icc_intent;
+  if(pipe->icc.intent >= DT_INTENT_PERCEPTUAL && pipe->icc.intent < DT_INTENT_LAST)
+    color_encoding.rendering_intent = (JxlRenderingIntent)pipe->icc.intent;
   else
     color_encoding.rendering_intent = (JxlRenderingIntent)cmsGetHeaderRenderingIntent(out_profile);
 

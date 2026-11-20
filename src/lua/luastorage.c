@@ -94,9 +94,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
                          const gboolean is_scaling,
                          const double scale_factor,
                          const gboolean export_masks,
-                         dt_colorspaces_color_profile_type_t icc_type,
-                         const gchar *icc_filename,
-                         dt_iop_color_intent_t icc_intent,
+                         const dt_color_target_t *icc,
                          dt_export_metadata_t *metadata)
 {
 
@@ -114,7 +112,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
   gchar *complete_name = g_build_filename(tmpdir, filename, (char *)NULL);
 
   if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, is_scaling, scale_factor,
-                       TRUE, export_masks, icc_type, icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
+                       TRUE, export_masks, icc, self, self_data, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[lua] %s: could not export to file `%s'!", self->name(self), complete_name);

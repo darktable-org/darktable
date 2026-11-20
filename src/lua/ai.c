@@ -1121,9 +1121,8 @@ static int _load_image_from_imgid(lua_State *L)
                                NULL,   // filter
                                FALSE,  // copy_metadata
                                FALSE,  // export_masks
-                               dst_type,
-                               NULL,
-                               DT_INTENT_PERCEPTUAL,
+                               &(dt_color_target_t){ .type = dst_type,
+                                                     .intent = DT_INTENT_PERCEPTUAL },
                                NULL, NULL, 1, 1, NULL, -1);
 
   if(!cap.pixels)

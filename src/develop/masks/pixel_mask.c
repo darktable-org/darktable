@@ -1196,8 +1196,8 @@ dt_masks_pixel_render_t *dt_masks_pixel_render_init(const dt_imgid_t imgid,
     return NULL;
   }
 
-  dt_dev_pixelpipe_set_icc(&r->pipe, DT_COLORSPACE_SRGB, NULL,
-                           DT_INTENT_PERCEPTUAL);
+  dt_dev_pixelpipe_set_icc(&r->pipe, &(dt_color_target_t){ .type = DT_COLORSPACE_SRGB,
+                                                         .intent = DT_INTENT_PERCEPTUAL });
   dt_dev_pixelpipe_set_input(&r->pipe, &r->dev, (float *)r->buf.buf,
                              r->buf.width, r->buf.height, r->buf.iscale);
   dt_dev_pixelpipe_create_nodes(&r->pipe, &r->dev);

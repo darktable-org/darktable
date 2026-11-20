@@ -1729,8 +1729,8 @@ static int32_t _process_job_run(dt_job_t *job)
         NULL,   // filter
         FALSE,  // copy_metadata
         FALSE,  // export_masks
-        DT_COLORSPACE_LIN_REC2020, NULL,
-        DT_INTENT_PERCEPTUAL,
+        &(dt_color_target_t){ .type = DT_COLORSPACE_LIN_REC2020,
+                              .intent = DT_INTENT_PERCEPTUAL },
         NULL, NULL,
         count, total, NULL, -1);
       if(step_err)
@@ -2233,8 +2233,8 @@ static gpointer _preview_thread(gpointer data)
                                  NULL,   // filter
                                  FALSE,  // copy_metadata
                                  FALSE,  // export_masks
-                                 DT_COLORSPACE_LIN_REC2020, NULL,
-                                 DT_INTENT_PERCEPTUAL,
+                                 &(dt_color_target_t){ .type = DT_COLORSPACE_LIN_REC2020,
+                                                       .intent = DT_INTENT_PERCEPTUAL },
                                  NULL, NULL, 1, 1, NULL, -1);
 
     pixels = cap.pixels;
@@ -3093,15 +3093,19 @@ static gpointer _preview_thread_raw(gpointer data)
       = dt_conf_key_exists(CONF_ICC_TYPE)
         ? dt_conf_get_int(CONF_ICC_TYPE)
         : DT_COLORSPACE_NONE;
-    gchar *cfg_file = (cfg_type == DT_COLORSPACE_FILE)
-      ? dt_conf_get_string(CONF_ICC_FILE)
-      : NULL;
     const dt_colorspaces_color_profile_t *work_cp
       = dt_colorspaces_get_work_profile(pd->imgid);
-    const dt_colorspaces_color_profile_type_t dst_type
-      = (cfg_type == DT_COLORSPACE_NONE)
-        ? (work_cp ? work_cp->type : DT_COLORSPACE_LIN_REC2020)
-        : cfg_type;
+    dt_color_target_t icc
+      = { .type = (cfg_type == DT_COLORSPACE_NONE)
+                    ? (work_cp ? work_cp->type : DT_COLORSPACE_LIN_REC2020)
+                    : cfg_type,
+          .intent = DT_INTENT_PERCEPTUAL };
+    if(cfg_type == DT_COLORSPACE_FILE)
+    {
+      gchar *filename = dt_conf_get_string(CONF_ICC_FILE);
+      g_strlcpy(icc.filename, filename, sizeof(icc.filename));
+      g_free(filename);
+    }
     dt_imageio_export_with_flags(
       pd->imgid, "unused", &fmt,
       (dt_imageio_module_data_t *)&cap,
@@ -3115,11 +3119,8 @@ static gpointer _preview_thread_raw(gpointer data)
       NULL,   // filter
       FALSE,  // copy_metadata
       FALSE,  // export_masks
-      dst_type,
-      cfg_file,
-      DT_INTENT_PERCEPTUAL,
+      &icc,
       NULL, NULL, 1, 1, NULL, -1);
-    g_free(cfg_file);
 
     if(cap.pixels && cap.cap_w > 0 && cap.cap_h > 0)
     {

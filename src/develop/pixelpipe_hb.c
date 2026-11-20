@@ -307,9 +307,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   dt_pthread_mutex_init(&pipe->mutex);
   dt_pthread_mutex_init(&pipe->backbuf_mutex);
   dt_pthread_mutex_init(&pipe->busy_mutex);
-  pipe->icc_type = DT_COLORSPACE_NONE;
-  pipe->icc_filename = NULL;
-  pipe->icc_intent = DT_INTENT_LAST;
+  memset(&pipe->icc, 0, sizeof(pipe->icc));
+  pipe->icc.type = DT_COLORSPACE_NONE;
+  pipe->icc.intent = DT_INTENT_LAST;
   pipe->iop = NULL;
   pipe->iop_order_list = NULL;
   pipe->forms = NULL;
@@ -321,7 +321,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_headroom = 1.0f;
   memset(&pipe->output, 0, sizeof(pipe->output));
   pipe->output.image.type = DT_COLORSPACE_NONE;
+  pipe->output.image.headroom = 1.0f;
   pipe->output.device.type = DT_COLORSPACE_NONE;
+  pipe->output.device.headroom = 1.0f;
   pipe->window = DT_COLORSPACE_NONE;
   memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
   pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
@@ -406,14 +408,9 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe,
 }
 
 void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
-                              const dt_colorspaces_color_profile_type_t icc_type,
-                              const gchar *icc_filename,
-                              const dt_iop_color_intent_t icc_intent)
+                              const dt_color_target_t *override)
 {
-  pipe->icc_type = icc_type;
-  g_free(pipe->icc_filename);
-  pipe->icc_filename = g_strdup(icc_filename ? icc_filename : "");
-  pipe->icc_intent = icc_intent;
+  pipe->icc = *override;
 }
 
 void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe,
@@ -444,10 +441,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   dt_free_align(pipe->bcache_data);
   pipe->bcache_size = 0;
   _free_distort_bufs(pipe);
-
-  pipe->icc_type = DT_COLORSPACE_NONE;
-  g_free(pipe->icc_filename);
-  pipe->icc_filename = NULL;
 
   dt_frame_unref(pipe->frame);
   pipe->frame = NULL;
@@ -3760,11 +3753,9 @@ static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
   else if(work)
   {
     // for the modules after colorout
-    const dt_iop_order_iccprofile_info_t *const info =
-      dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
-                                            work->profile, work->intent);
-    pipe->output_headroom = fmaxf(pipe->output.image.headroom,
-                                  dt_ioppr_profile_headroom(info->type));
+    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
+                                          work->profile, work->intent);
+    pipe->output_headroom = pipe->output.image.headroom;
     memset(encoding, 0, sizeof(*encoding));
     encoding->type = work->type;
     g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));

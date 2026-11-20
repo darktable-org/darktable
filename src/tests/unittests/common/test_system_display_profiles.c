@@ -416,10 +416,10 @@ static void test_display_is_no_histogram_choice(void **state)
 
   // stored by a version that listed the system display profiles
   self->histogram_type = DT_COLORSPACE_DISPLAY;
-  self->softproof_type = DT_COLORSPACE_DISPLAY2;
+  self->softproof.type = DT_COLORSPACE_DISPLAY2;
   _drop_unoffered_choices(self);
   assert_int_equal(self->histogram_type, DT_COLORSPACE_SRGB);
-  assert_int_equal(self->softproof_type, DT_COLORSPACE_SRGB);
+  assert_int_equal(self->softproof.type, DT_COLORSPACE_SRGB);
 
   self->histogram_type = DT_COLORSPACE_DISPLAY2;
   _drop_unoffered_choices(self);
@@ -427,10 +427,10 @@ static void test_display_is_no_histogram_choice(void **state)
 
   // what the menus offer stays
   self->histogram_type = DT_COLORSPACE_ADOBERGB;
-  self->softproof_type = DT_COLORSPACE_ADOBERGB;
+  self->softproof.type = DT_COLORSPACE_ADOBERGB;
   _drop_unoffered_choices(self);
   assert_int_equal(self->histogram_type, DT_COLORSPACE_ADOBERGB);
-  assert_int_equal(self->softproof_type, DT_COLORSPACE_ADOBERGB);
+  assert_int_equal(self->softproof.type, DT_COLORSPACE_ADOBERGB);
 }
 
 // each system display entry is found by its own window's lookups only

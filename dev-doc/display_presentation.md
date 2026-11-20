@@ -229,18 +229,27 @@ same way as a pixel. A proof narrower than the device therefore clips it.
 
 ## Soft Proof
 
-A soft proof is an export to the proof profile. In proof mode colorout
-renders the full and the preview pipe as an export to that profile. It does
-not change the second window, the thumbnail pipe or exports.
+A soft proof is an export. In proof mode colorout renders the full and the
+preview pipe as an export to the proof's target. It does not change the
+second window, the thumbnail pipe or exports.
 
-- The proof has its own intent and black point compensation
-  (`softproof_intent`, `softproof_bpc`), set next to the proof profile in
-  the darkroom.
-- The output encoding is the proof profile, and the frame is tagged with
+- A target (`dt_color_target_t`) is a profile, the intent and black point
+  compensation of the conversion into it, and the headroom its output
+  renders for. colorout's params are the image's target. An export applies
+  its override to it with `dt_color_target_override()`: the profile and the
+  headroom override together, since a PQ profile needs its peak to say what
+  its values mean, and the intent with the black point compensation.
+- The proof applies an override to the image's target in the same way. By
+  default it is the export module's (`softproof_source` is
+  `DT_PROOF_SOURCE_EXPORT`), read by the same
+  `dt_colorspaces_get_export_override()` as an export, so the proof is what
+  an export with those settings renders. A custom proof applies its own
+  target (`cp->softproof`), set in the darkroom.
+- The output encoding is the proof's profile, and the frame is tagged with
   it. The presenter converts the frame in the same way as each other frame
   and clips what the screen cannot show.
-- `output_headroom` is the headroom of the proof profile, as in an export
-  to that profile. It can be above or below the headroom of the screen.
+- `output_headroom` is the headroom of the proof's target, as in an export
+  to it. It can be above or below the headroom of the screen.
 - The proof clips where an integer export clips. A float export does not
   clip. The gamut check marks what that clip changes.
 - The proof of the preview pipe has no gamut marks, because the scopes, the
