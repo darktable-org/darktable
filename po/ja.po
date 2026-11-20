@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-18 22:34+0100\n"
-"PO-Revision-Date: 2026-11-20 00:59+0900\n"
+"PO-Revision-Date: 2026-11-20 09:45+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -2282,8 +2282,8 @@ msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
 msgstr ""
-"パスワード保存用のストレージバックエンド：自動、なし、libsecret、"
-"kwallet,apple_keychain、windows_credentials"
+"パスワード保存用のストレージバックエンド：自動、なし、libsecret、kwallet、"
+"apple_keychain、windows_credentials"
 
 #: ../build/bin/preferences_gen.h:4410
 msgid "auto login to storage server"
@@ -2905,11 +2905,10 @@ msgid ""
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
-"サジェストリストに含まれるタグの信頼水準\n"
-"0：完全に条件に合うタグ\n"
-"99：99%条件に合うタグ,\n"
-"100：条件に合わせたサジェストを行わず、最近使用したタグのみを表示します（高"
-"速）"
+"サジェストリストにタグを含めるための信頼度\n"
+"0：関連する全てのタグ\n"
+"99：99%一致する関連タグ\n"
+"100：一致するタグなし（最近使用したタグのみを表示、高速）"
 
 #: ../build/bin/preferences_gen.h:5389
 msgid "number of recently attached tags"
@@ -7205,7 +7204,8 @@ msgstr "エラー：位置引数が多すぎます\n"
 #: ../src/cli/main.c:539
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
-msgstr "エラー：入力ファイルと入力オプションが指定されましたが、無効です！\n"
+msgstr ""
+"エラー：入力ファイルとインポートオプションが指定されましたが、無効です！\n"
 
 #: ../src/cli/main.c:589
 msgid ""
@@ -7487,7 +7487,7 @@ msgid ""
 "\n"
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
-"ポート `%s'のカメラ`%s'エラー%s\n"
+"カメラ%s'（ポート%s'）でエラー：%s\n"
 "\n"
 "カメラがアクセスを許可していること、非許可設定でマウントされていないことを確認"
 "してください"
@@ -7498,7 +7498,7 @@ msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
 msgstr ""
-"ポート`%s'の`%s'の初期化に失敗しました\n"
+"`%s'（ポート`%s'）の初期化に失敗しました\n"
 "別のアプリケーションによってロックされている、デバイスにアクセスできない、など"
 "が原因として考えられます"
 
@@ -7508,13 +7508,13 @@ msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
-"ポート`%s'の`%s'は、テザー撮影もインポートもサポートしていないため、使用するこ"
-"とが出来ません"
+"`%s'（ポート`%s'）は、テザー撮影もインポートもサポートしていないため、使用する"
+"ことが出来ません"
 
 #: ../src/common/camera_control.c:1129
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
-msgstr "ポート`%s' のカメラ `%s' はマウント中に切断されました"
+msgstr "カメラ`%s'（ポート`%s'）はマウント中に切断されました"
 
 #: ../src/common/camera_control.c:1142
 #, c-format
@@ -7522,7 +7522,7 @@ msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
-"ポート`%s' のカメラ `%s' は再マウントする必要があります\n"
+"カメラ`%s'（ポート`%s'）は再マウントする必要があります\n"
 "アクセスが許可されていること、非許可設定でマウントされていないことを確認してく"
 "ださい"
 
@@ -8051,8 +8051,8 @@ msgid ""
 "longer used. a profile file can replace it in preferences > miscellaneous"
 msgstr ""
 "ディスプレイプロファイルはシステムのカラー設定から取得されるようになりました："
-"%sは使用されなくなります。プロファイルファイルは環境設定 > その他 で指定するこ"
-"とが出来ます"
+"%sは使用されなくなります。プロファイルファイルは【設定】の【その他】タブで指定"
+"することが出来ます"
 
 #: ../src/common/colorspaces.c:1762 ../src/common/colorspaces.c:2104
 msgid "work profile"
@@ -11533,8 +11533,7 @@ msgid ""
 "discards small, stray outline fragments below this size\n"
 "(in traced pixels)"
 msgstr ""
-"このサイズ（単位はトレースピクセル単位）以下の小さく散乱した輪郭の破片を除外し"
-"ます"
+"このサイズ（トレースピクセル単位）以下の小さく散乱した輪郭の破片を除外します"
 
 #: ../src/develop/blend_gui.c:5654
 msgid ""
@@ -12285,7 +12284,7 @@ msgstr "パラメトリックマスク"
 
 #: ../src/develop/blend_gui.c:13973
 msgid "raster masks"
-msgstr "ラスターマス"
+msgstr "ラスターマスク"
 
 #: ../src/develop/blend_gui.c:13974
 msgid "AI objects"
@@ -12788,7 +12787,7 @@ msgstr "マスク"
 
 #: ../src/develop/blend_gui.c:18994
 msgid "show/hide mask panel"
-msgstr "選択したグループ内にグループを追加"
+msgstr "マスクパネルを表示／非表示"
 
 #: ../src/develop/blend_gui.c:18996
 msgid "add group in selected group"
@@ -18638,8 +18637,8 @@ msgid ""
 msgstr ""
 "警告：サムネイルキャッシュのディスクバックエンドが無効です"
 "(cache_disk_backend)\n"
-"サムネイルを事前生成してdarktableで使用したい場合、サムネイルキャシュのディス"
-"クバックエンドを有効にする必要があります\n"
+"サムネイルを事前生成してdarktableで使用したい場合、サムネイルキャッシュのディ"
+"スクバックエンドを有効にする必要があります\n"
 "サムネイルは生成されず、終了しました\n"
 
 #: ../src/generate-cache/main.c:225
@@ -18653,8 +18652,8 @@ msgid ""
 msgstr ""
 "警告：フルプレビューキャッシュのディスクバックエンドが無効です "
 "(cache_disk_backend_full)\n"
-"フルプレビューを事前生成してdarktableで使用したい場合、フルプレビューキャシュ"
-"のディスクバックエンドを有効にする必要があります\n"
+"フルプレビューを事前生成してdarktableで使用したい場合、フルプレビューキャッ"
+"シュのディスクバックエンドを有効にする必要があります\n"
 "フルプレビューは生成されず、終了しました\n"
 
 #: ../src/generate-cache/main.c:235
@@ -20693,7 +20692,7 @@ msgstr[1] "%d個の選択したモデルを本当に削除しますか？"
 
 #: ../src/gui/preferences_ai.c:2075
 msgid "scope"
-msgstr "領域"
+msgstr "用途"
 
 #: ../src/gui/preferences_ai.c:2075
 msgid "author"
@@ -22796,7 +22795,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2525
 msgid "shift the green primary towards cyan (+) or yellow (-)"
-msgstr "緑プライマリをシアン（＋）または黃（−）へずらす"
+msgstr "緑プライマリをシアン（＋）または黄色（−）へずらす"
 
 #: ../src/iop/agx.c:2531
 msgid "increase to desaturate blues in highlights faster"
@@ -22984,7 +22983,7 @@ msgstr "パラメータに保存することが出来る線は%d本のみです"
 #: ../src/iop/ashift.c:5127
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
-msgstr "%3.2f°から%3.2f°へ回転を調整"
+msgstr "回転を%3.2f°調整しました（現在%3.2f°）"
 
 #: ../src/iop/ashift.c:5781 ../src/iop/ashift.c:5783 ../src/iop/ashift.c:5885
 #: ../src/iop/ashift.c:5887
@@ -24336,8 +24335,8 @@ msgid ""
 "exposure compensation: \t%+.2f EV\n"
 "black offset: \t%+.4f"
 msgstr ""
-"露出補正：\\t%+.2f EV\n"
-"黒オフセット：\\t%+.4f"
+"露出補正：\t%+.2f EV\n"
+"黒オフセット：\t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1547
 msgid ""
@@ -24456,7 +24455,7 @@ msgstr ""
 "「カラーキャリブレーション用にデータを準備」にチェックが入っている場合にの"
 "み、\n"
 "このモジュールに追従します。チェックがない場合は、\n"
-"「撮影時のカメラ設定」イルミナントと同じ結果になります\n"
+"「撮影時の設定」イルミナントと同じ結果になります\n"
 "これらの係数をD65のスクリーンで測定して、\n"
 "カメラのリファレンスの代わりにしている場合は、\n"
 "カラーキャリブレーションで別のイルミナントを選択してください"
@@ -24478,7 +24477,7 @@ msgstr ""
 "「カラーキャリブレーション用にデータを準備」にチェックが入っている場合にの"
 "み、\n"
 "ホワイトバランスに追従します\n"
-"チェックがない場合は、「撮影時のカメラ設定」イルミナントと同じ結果になります\n"
+"チェックがない場合は、「撮影時の設定」イルミナントと同じ結果になります\n"
 "ホワイトバランスの係数をD65のスクリーンで測定して、\n"
 "カメラのリファレンスの代わりにしている場合は、\n"
 "ここで別のイルミナントを選択してください"
@@ -30402,7 +30401,7 @@ msgstr "カラーグレーディングのためのRGBカラープライマリの
 
 #: ../src/iop/primaries.c:384
 msgid "shift red towards yellow or magenta"
-msgstr "赤を黃またはマゼンタへずらす"
+msgstr "赤を黄色またはマゼンタへずらす"
 
 #: ../src/iop/primaries.c:385
 msgid "red primary purity"
@@ -31337,7 +31336,7 @@ msgstr "ニュートラルグレー"
 
 #: ../src/iop/sigmoid.c:290
 msgid "ACES 100-nit like"
-msgstr "ACES100ニット"
+msgstr "ACES100ニット風"
 
 #: ../src/iop/sigmoid.c:297
 msgid "Reinhard"
@@ -32491,7 +32490,7 @@ msgstr ""
 #: ../src/iop/spektrafilm.c:6748
 msgid "lift (above 0) or crush (below 0) the shadows. 0 is true black."
 msgstr ""
-"シャドウを持ち上げたり（0より大きい）、または潰します（0より小さい）\n"
+"シャドウを持ち上げるか（0より大きい）、または潰します（0より小さい）\n"
 "0が真の黒です"
 
 #: ../src/iop/spektrafilm.c:6754
@@ -36323,8 +36322,8 @@ msgstr ".wavがあります"
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
-msgstr[0] "評価星%d"
-msgstr[1] "評価星%d"
+msgstr[0] "星%d個"
+msgstr[1] "星%d個"
 
 #: ../src/libs/metadata_view.c:472
 #, c-format
@@ -37111,7 +37110,7 @@ msgstr "印刷設定"
 #: ../src/libs/print_settings.c:389 ../src/libs/print_settings.c:1060
 #, c-format
 msgid "processing `%s' for `%s'"
-msgstr "`%s'に`%s'を処理しています"
+msgstr "`%s'を`%s'向けに処理しています"
 
 #: ../src/libs/print_settings.c:420
 #, c-format
