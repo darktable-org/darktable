@@ -53,6 +53,14 @@ typedef enum dt_scopes_rgb_t
 
 typedef gboolean scopes_channels_t[DT_SCOPES_RGB_N];
 
+typedef enum dt_scopes_hdr_scale_t
+{
+  DT_SCOPES_HDR_NONE = 0,
+  DT_SCOPES_HDR_PQ,
+  DT_SCOPES_HDR_HLG,
+  DT_SCOPES_HDR_N // needs to be the last one
+} dt_scopes_hdr_scale_t;
+
 struct dt_scopes_t;
 struct dt_scopes_mode_t;
 
@@ -141,6 +149,8 @@ typedef struct dt_scopes_t
   int update_counter;                           // most recent pixelpipe vs mode data
   dt_scopes_highlight_t highlight;              // depends on mouse position
   scopes_channels_t channels;                   // display state chosen by RGB buttons
+  dt_scopes_hdr_scale_t hdr_scale;              // scale chosen by the HDR button
+  dt_scopes_hdr_scale_t hdr_active;             // encoding of the data being shown
   gboolean dragging;                            // to block motion handling during drag
   gdouble last_offset_x, last_offset_y;         // for drag handling
   // UI elements
@@ -151,6 +161,7 @@ typedef struct dt_scopes_t
   GtkWidget *button_box_right;                  // GtkBox -- option buttons for main scope
   GtkWidget *button_box_rgb;                    // GtkBox -- RGB channels buttons
   GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channels
+  GtkWidget *hdr_button;                        // GtkToggleButton -- SDR or HDR scale
   GtkWidget *scope_draw;                        // GtkDrawingArea -- scope & resize
   // for access to data during process/draw
   dt_pthread_mutex_t lock;
@@ -171,6 +182,12 @@ extern void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
                                     const int height);
 // FIXME: is there any reason this needs to be called with an argument?
 extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
+// grid for an HDR scale, with values running up the y axis or along the x axis
+extern void lib_histogram_draw_hdr_grid(cairo_t *cr,
+                                        const int width,
+                                        const int height,
+                                        const gboolean values_on_y,
+                                        const dt_scopes_hdr_scale_t scale);
 
 #define dt_scopes_func_exists(mode, func) ((mode)->functions->func != NULL)
 
