@@ -1797,8 +1797,10 @@ void dt_imageio_pq_light_level(const float *const rgba,
   double sum = 0.0;
 
   // dt_hdr_pq_decode() maps NaN to black and clamps Inf to the PQ maximum,
-  // so neither can poison the sum or overflow the writers' integer fields
-  DT_OMP_FOR_SIMD(reduction(max : peak) reduction(+ : sum))
+  // so neither can poison the sum or overflow the writers' integer fields.
+  // No simd: the powf() calls in the decode keep the loop scalar, and the
+  // simd request only raises a -Wpass-failed warning.
+  DT_OMP_FOR(reduction(max : peak) reduction(+ : sum))
   for(size_t k = 0; k < npixels; k++)
   {
     const float *const px = &rgba[4 * k];
