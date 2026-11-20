@@ -116,11 +116,18 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
 static inline float scharr_gradient(global float *in, const int k, const int w)
 {
-  const float gx = 47.0f / 255.0f * (in[k-w-1] - in[k-w+1] + in[k+w-1] - in[k+w+1])
-                + 162.0f / 255.0f * (in[k-1]   - in[k+1]);
-  const float gy = 47.0f / 255.0f * (in[k-w-1] - in[k+w-1] + in[k-w+1] - in[k+w+1])
-                + 162.0f / 255.0f * (in[k-w]   - in[k+w]);
-  return dt_fast_hypot(gx, gy);
+  /** Use these as the compiler folding works depending on the provided division
+      precision and that is only 2.5 ulp according to OpenCL precision specs and
+      might be even worse with fast relaxed math.
+      c47 = 47.0f / 255.0f, c162 = 162.0f / 255.0f
+  */
+  const float c47  = 0x1.79797ap-3f;
+  const float c162 = 0x1.454546p-1f;
+  const float gx = c47 * (in[k-w-1] - in[k-w+1] + in[k+w-1] - in[k+w+1])
+                + c162 * (in[k-1]   - in[k+1]);
+  const float gy = c47 * (in[k-w-1] - in[k+w-1] + in[k-w+1] - in[k+w+1])
+                + c162 * (in[k-w]   - in[k+w]);
+  return hypot(gx, gy);
 }
 
 static inline float fp32_div(const float a, const float b)
