@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-18 22:34+0100\n"
-"PO-Revision-Date: 2026-11-20 09:45+0900\n"
+"PO-Revision-Date: 2026-11-20 15:02+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1450,7 +1450,7 @@ msgstr ""
 "有効にすると、完全なプレビューがメモリキャッシュから削除された際にディスク"
 "（.cache/darktable/）に書き込みます\n"
 "これはメモリを大量に消費する可能性があり（20k画像に対して数ギガバイト）、"
-"キャッシュされたサムネイルを再び削除することはないので注意してください\n"
+"キャッシュされたフルプレビューを再び削除することはないので注意してください\n"
 " しかし、お望みであれば、これを手動で削除しても安全です\n"
 "フルプレビューモードで画像をズームする際のライトテーブルのパフォーマンスが大幅"
 "に向上します"
@@ -2020,8 +2020,8 @@ msgid ""
 "for performance."
 msgstr ""
 "システムリソースのうちdarktableが使用する割合を定義します\n"
-" - デフォルト：システムリソースの50%以下をdarktableが使用します。十分な性能で"
-"動作します\n"
+" - デフォルト：システムリソースの約50%をdarktableが使用します。十分な性能で動"
+"作します\n"
 " - 小：システムのメモリの大部分を消費するアプリケーションや、ゲームやHuginのよ"
 "うなOpenCL/GLを使用するアプリケーションを同時に動作させる場合に選択してくださ"
 "い\n"
@@ -2430,7 +2430,7 @@ msgid ""
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
 "on slow drives."
 msgstr ""
-"設定された間隔で現像中に履歴を自動保存します\n"
+"設定された間隔（単位は秒）で現像中に履歴を自動保存します\n"
 "0に設定すると自動保存を無効にします\n"
 "低速なドライブでは自動保存は無効になるかもしれません"
 
@@ -5859,11 +5859,11 @@ msgstr "曲線"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:435
 msgid "cusp"
-msgstr "カスプ"
+msgstr "尖点"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:437
 msgid "symmetrical"
-msgstr "対称"
+msgstr "シンメトリー"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:438
 msgid "autosmooth"
@@ -7162,7 +7162,7 @@ msgstr "ICC ファイル'%s'は存在しません。スキップします\n"
 #: ../src/cli/main.c:440
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
-msgstr "- --icc-intent:'%s'に不適切なICC インテントです \n"
+msgstr "--icc-intent:'%s'に不適切なICC インテントです\n"
 
 #: ../src/cli/main.c:452
 #, c-format
@@ -8735,7 +8735,7 @@ msgid ""
 "is too new for this build of darktable (this means the database was created "
 "or upgraded by a newer darktable version)\n"
 msgstr ""
-"データベーススキームのバージョン\n"
+"データベーススキーマのバージョン\n"
 "\n"
 "<span style='italic'>%s</span>\n"
 "\n"
@@ -12325,7 +12325,7 @@ msgstr "%sの出力ピッカー待機中"
 #: ../src/develop/blend_gui.c:15254
 #, c-format
 msgid "input picker of %s armed"
-msgstr "%sの入力スピッカーが待機しています"
+msgstr "%sの入力ピッカーが待機しています"
 
 #: ../src/develop/blend_gui.c:15257
 #, c-format
@@ -16163,7 +16163,7 @@ msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
 "default: 0.5"
 msgstr ""
-"中央値、ガウス重み関数の平均値 （0 <= 平均値 <= 1）\n"
+"中心値、ガウス重み関数の平均値 （0 <= 平均値 <= 1）\n"
 " デフォルト：0.5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:147
@@ -17805,7 +17805,7 @@ msgstr "コレクションを作成するのに十分な画像がありません
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/selection2collection.lua:300
 msgid "create temporary collection"
-msgstr "選択画像から作成したコレクションを保持します"
+msgstr "一時コレクションを作成"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
@@ -18664,7 +18664,7 @@ msgstr "エラー：min_mip <= max_mipを確認してください\n"
 #: ../src/generate-cache/main.c:240
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
-msgstr "完全なライトテーブルサムネイルを作成します\n"
+msgstr "完全なライトテーブルサムネイルキャッシュを作成します\n"
 
 #: ../src/gui/about.c:34
 #, c-format
@@ -20642,7 +20642,7 @@ msgstr "リポジトリからモデルをインストールする"
 
 #: ../src/gui/preferences_ai.c:1739
 msgid "_install"
-msgstr "_iインストール"
+msgstr "_インストール"
 
 #: ../src/gui/preferences_ai.c:1767
 msgid "repository"
@@ -21413,7 +21413,7 @@ msgid ""
 msgstr ""
 "警告\n"
 "\n"
-"\"default\"と\"Memory\"はすでに使われています\n"
+"ワークスペース名\"default\"と\"memory\"は予約されています\n"
 "\n"
 "別の名前を選択してください"
 
@@ -22921,7 +22921,7 @@ msgstr "回転|キーストーン|歪曲|トリミング|リフレーム"
 
 #: ../src/iop/ashift.c:124
 msgid "rotate or distort perspective"
-msgstr "回転またはペースペクティブ歪曲"
+msgstr "回転またはパースペクティブ歪曲"
 
 #: ../src/iop/ashift.c:125 ../src/iop/channelmixer.c:135
 #: ../src/iop/channelmixerrgb.c:247 ../src/iop/clipping.c:355
@@ -24990,7 +24990,7 @@ msgstr "出力デルタEのチェック"
 
 #: ../src/iop/channelmixerrgb.c:5141
 msgid "validate"
-msgstr "有効化"
+msgstr "検証"
 
 #: ../src/iop/choleski.h:223 ../src/iop/choleski.h:314
 msgid ""
@@ -29693,8 +29693,8 @@ msgid ""
 msgstr ""
 "<b>移動</b>：クリックしてドラッグ　　 <b>境界ぼかしのコントロールの表示／非表"
 "示</b>：クリック\n"
-"<b>自動平滑、尖点、平滑、シンメトリー</b>：Ctrl+クリック　　<b>削除</b>：右ク"
-"リック"
+"<b>自動スムーズ、尖点、平滑、シンメトリー</b>：Ctrl+クリック　　<b>削除</b>："
+"右クリック"
 
 #: ../src/iop/liquify.c:3704 ../src/iop/liquify.c:3706
 msgid "<b>shape of path</b>: drag"
@@ -36276,7 +36276,7 @@ msgstr "エクスポート高さ"
 #. geotagging
 #: ../src/libs/metadata_view.c:173
 msgid "latitude"
-msgstr "ラティチュード"
+msgstr "緯度"
 
 #: ../src/libs/metadata_view.c:174
 msgid "longitude"
@@ -36644,7 +36644,7 @@ msgid ""
 "right-click tab icon to add/remove modules"
 msgstr ""
 "%s\n"
-"タブアイコンを右クリックすると、ウィジェットを追加／削除します"
+"タブアイコンを右クリックすると、モジュールを追加／削除します"
 
 #: ../src/libs/modulegroups.c:3603
 msgid "basic icon"
@@ -37061,7 +37061,7 @@ msgstr "出力TIFFビット深度"
 
 #: ../src/libs/neural_restore.c:4644
 msgid "output TIFF compression"
-msgstr "出力TIGG圧縮"
+msgstr "出力TIFF圧縮"
 
 #: ../src/libs/neural_restore.c:4687
 msgid "color profile embedded in the output TIFF"
@@ -39127,8 +39127,8 @@ msgstr ""
 "ブラックポイントのクリッピングのしきい値\n"
 "単位はEVで、白（0EV）に対する相対値\n"
 "8ビットsRGBでは-12.69EVで黒がクリップします\n"
-"8ビットAdobeRGBクリップでは-19.79EVで黒がクリップします\n"
-"16ビットsRGBクリップでは-20.69EVで黒がクリップします\n"
+"8ビットAdobeRGBでは-19.79EVで黒がクリップします\n"
+"16ビットsRGBでは-20.69EVで黒がクリップします\n"
 "典型的なファインアート紙のマットプリントの黒は-5.30EVです\n"
 "典型的なカラーの高光沢プリントの黒は-8.00EVです\n"
 "典型的な白黒の高光沢プリントの黒は-9.00EVです"
