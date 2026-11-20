@@ -80,6 +80,12 @@ add_cmocka_test(test_path_resize
                 SOURCES test_path_resize.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+# Double-click on a gradient that is still being created (continuous creation):
+# no point exists yet, see #20759.
+add_cmocka_test(test_gradient_doubleclick
+                SOURCES test_gradient_doubleclick.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # The styling contract (dev-doc/flexi_masks/styling.md): the classes a theme
 # or the CSS tweaks can target. Reads the sources as text, no GTK.
 add_cmocka_test(test_flexi_styling
@@ -123,7 +129,8 @@ foreach(_t test_flexi_model test_flexi_cache test_flexi_persistence test_flexi_d
            test_flexi_groups test_flexi_panel test_flexi_migrate test_flexi_compose
            test_flexi_controls test_flexi_ui_coverage test_flexi_raster_prune
            test_flexi_raster_hover
-           test_flexi_styling test_probe_image ${_flexi_tests_catalog})
+           test_flexi_styling test_probe_image test_gradient_doubleclick
+           ${_flexi_tests_catalog})
   target_include_directories(${_t} PRIVATE
                              ${CMAKE_CURRENT_SOURCE_DIR}
                              ${CMAKE_SOURCE_DIR}/src)

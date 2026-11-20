@@ -118,8 +118,12 @@ typedef struct dt_gui_gtk_t
 
   dt_gui_scrollbars_t scrollbars;
 
-  cairo_surface_t *surface;  // cached prior image when config var ui/loading_screen is FALSE
   gboolean drawing_snapshot;
+  // the last button press was on the side-by-side snapshot widget, not the
+  // main center one
+  gboolean press_in_snapshot;
+  // the pointer is over the side-by-side snapshot widget, not the center one
+  gboolean pointer_in_snapshot;
 
   char *last_preset;
 
@@ -459,6 +463,9 @@ gboolean dt_ui_panel_ancestor(const struct dt_ui_t *ui,
 GtkWidget *dt_ui_center(const struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(const struct dt_ui_t *ui);
 GtkWidget *dt_ui_snapshot(const struct dt_ui_t *ui);
+/** \brief is the pointer over the center view, or over a widget on it that
+    passes its motion on to it */
+gboolean dt_ui_pointer_on_canvas(const struct dt_ui_t *ui);
 /** \brief get the main window widget */
 GtkWidget *dt_ui_main_window(const struct dt_ui_t *ui);
 /** \brief get the thumb table */
@@ -508,6 +515,10 @@ void dt_ui_flexi_panel_set_idle(struct dt_ui_t *ui, const char *text);
 /** \brief which edge the panel is on now, which can differ from the stored
     preference: anything mirroring the panel's own chrome follows this */
 gboolean dt_ui_flexi_panel_is_right(struct dt_ui_t *ui);
+/** \brief how far into the canvas, from its left and right edges, the panel
+    and the edge bands that reveal it reach: a press there goes to them, not
+    to the canvas, so a canvas control left there is out of reach */
+void dt_ui_flexi_panel_get_cover(struct dt_ui_t *ui, int *left, int *right);
 /** \brief re-read "plugins/darkroom/masks/show_panel_handle" and resize/repaint
     the panel's resize-and-collapse handle to match, so the option applies
     without a view reopen */
@@ -895,6 +906,11 @@ GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_na
 GdkCursor *dt_gui_cursor_get(GtkWidget *widget);
 void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor);
 void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// the pointer of an alt+click rename: an arrow with a pencil. GTK4 has no
+// stock pointer for it, but the text one will do. Owned by the cache
+GdkCursor *dt_gui_cursor_rename(GtkWidget *widget);
+#endif
 
 /* object-data key on the gesture carrying a shortcut-activated press'
  * button+state, encoded as (state << 8) | button (see

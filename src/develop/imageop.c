@@ -272,7 +272,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         i->UShort.Default;
       break;
     case DT_INTROSPECTION_TYPE_INT8:
-      *(short*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
+      *(int8_t*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
       break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Enum.Default;
@@ -507,6 +507,91 @@ static gboolean _pointer_in_module(const dt_iop_module_t *module)
   return FALSE;
 }
 #endif
+
+// alt or ctrl held over a header arms the rename its click would make (see
+// _iop_plugin_header_released), shown by the pointer. GTK sends nothing when a
+// modifier alone changes, so a timer watches it, but only while the pointer is
+// over the header
+static GtkWidget *_rename_cursor_header = NULL; // weak
+static guint _rename_cursor_timer = 0;
+static gboolean _rename_cursor_inside = FALSE;
+static gboolean _rename_cursor_armed = FALSE;
+
+// the clicks that rename a header: alt, and ctrl as its alias
+static gboolean _header_rename_click(const GdkModifierType state)
+{
+  return dt_modifier_is(state, GDK_MOD1_MASK) || dt_modifier_is(state, GDK_CONTROL_MASK);
+}
+
+static void _rename_cursor_apply(GtkWidget *header_evb, const gboolean on)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  dt_gui_cursor_set(header_evb, on ? "text" : NULL, "iop/rename");
+#else
+  dt_gui_cursor_apply(header_evb, on ? dt_gui_cursor_rename(header_evb) : NULL);
+#endif
+}
+
+static gboolean _rename_cursor_poll(gpointer data)
+{
+  GtkWidget *evb = _rename_cursor_header;
+  const gboolean want = evb && _rename_cursor_inside
+                        && _header_rename_click(dt_key_modifier_state());
+  if(evb && want != _rename_cursor_armed)
+  {
+    _rename_cursor_apply(evb, want);
+    _rename_cursor_armed = want;
+  }
+  if(evb && _rename_cursor_inside) return G_SOURCE_CONTINUE;
+
+  if(evb) g_object_remove_weak_pointer(G_OBJECT(evb), (gpointer *)&_rename_cursor_header);
+  _rename_cursor_header = NULL;
+  _rename_cursor_armed = FALSE;
+  _rename_cursor_timer = 0;
+  return G_SOURCE_REMOVE;
+}
+
+static void _header_rename_cursor_enter(GtkEventControllerMotion *controller,
+                                        gdouble x,
+                                        gdouble y,
+                                        dt_iop_module_t *module)
+{
+  GtkWidget *evb = dt_gui_get_widget(controller);
+  _rename_cursor_inside = TRUE;
+  if(_rename_cursor_header != evb)
+  {
+    // another header: the old one's timer, if it has not ended yet, serves this one
+    if(_rename_cursor_header)
+    {
+      if(_rename_cursor_armed) _rename_cursor_apply(_rename_cursor_header, FALSE);
+      g_object_remove_weak_pointer(G_OBJECT(_rename_cursor_header), (gpointer *)&_rename_cursor_header);
+    }
+    _rename_cursor_armed = FALSE;
+    _rename_cursor_header = evb;
+    g_object_add_weak_pointer(G_OBJECT(evb), (gpointer *)&_rename_cursor_header);
+  }
+  if(!_rename_cursor_timer) _rename_cursor_timer = g_timeout_add(80, _rename_cursor_poll, NULL);
+}
+
+static void _header_rename_cursor_leave(GtkEventControllerMotion *controller,
+                                        dt_iop_module_t *module)
+{
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // a crossing to a child of the header (a button, the label) is not leaving it
+  GtkWidget *evb = dt_gui_get_widget(controller);
+  GdkDevice *const device =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkWindow *const win = gtk_widget_get_realized(evb) ? gtk_widget_get_window(evb) : NULL;
+  gint x, y;
+  if(win)
+  {
+    gdk_window_get_device_position(win, device, &x, &y, NULL);
+    if(x >= 0 && y >= 0 && x < gdk_window_get_width(win) && y < gdk_window_get_height(win))
+      return;
+  }
+#endif
+  _rename_cursor_inside = FALSE;
+}
 
 static void _header_enter_notify_callback(GtkEventControllerMotion *controller,
                                           gdouble x,
@@ -2340,12 +2425,12 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
        field->UShort.Default);
     break;
   case DT_INTROSPECTION_TYPE_INT8:
-    all_ok = (*(uint8_t*)p >= field->Int8.Min && *(uint8_t*)p <= field->Int8.Max);
+    all_ok = (*(int8_t*)p >= field->Int8.Min && *(int8_t*)p <= field->Int8.Max);
     values = g_strdup_printf
-      (" (%ud - [%ud..%ud] : default %ud)",
-       *(uint8_t*)p,
+      (" (%d - [%d..%d] : default %d)",
+       *(int8_t*)p,
        field->Int8.Min, field->Int8.Max,
-       field->Int8.Default);
+       (int8_t)field->Int8.Default);
     break;
   case DT_INTROSPECTION_TYPE_CHAR:
     all_ok = (*(char*)p >= field->Char.Min && *(char*)p <= field->Char.Max);
@@ -3049,7 +3134,7 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
   {
     if(dt_modifier_is(dt_key_modifier_state(), GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
-    else if(dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK))
+    else if(_header_rename_click(dt_key_modifier_state()))
     {
       dt_iop_gui_rename_module(module);
       return;
@@ -3632,6 +3717,11 @@ static gboolean _on_drag_motion(GtkWidget *widget,
   GtkWidget *src_header = gtk_drag_get_source_widget(dc);
   if(!src_header) return TRUE;
   GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
+  // only a drag of a module header moves modules: anything else dragged from
+  // inside a module, like a row of the masks list, also has its expander as
+  // ancestor, and would be taken for the module itself
+  if(!src_expander || src_header != dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(src_expander)))
+    return TRUE;
 
   dt_iop_module_t *src = NULL;
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
@@ -3718,6 +3808,11 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   GtkWidget *expander = dtgtk_expander_new(header, iopw);
   gtk_widget_set_name(expander, "iop-expander");
 
+  /* per-module CSS class to enable styling of individual processing modules */
+  char css_class[160] = { 0 };
+  snprintf(css_class, sizeof(css_class), "dt_iop_%s", module->op);
+  dt_gui_add_class(expander, css_class);
+
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
@@ -3744,6 +3839,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_connect_motion(header_evb, NULL,
                         _header_motion_notify_show_callback,
                         _header_motion_notify_hide_callback, module);
+  dt_gui_connect_motion(header_evb, NULL,
+                        _header_rename_cursor_enter,
+                        _header_rename_cursor_leave, module);
 
   /* connect mouse button callbacks for focus and presets */
   dt_gui_connect_click(body_evb, _iop_plugin_body_pressed, NULL, module);
@@ -4588,8 +4686,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
 
 gboolean dt_iop_canvas_not_sensitive(const dt_develop_t *dev)
 {
-  return dt_iop_color_picker_is_visible(dev)
-         || darktable.lib->proxy.snapshots.enabled;
+  return dt_iop_color_picker_is_visible(dev);
 }
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)

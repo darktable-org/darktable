@@ -183,6 +183,8 @@ typedef union dt_image_correction_data_t
     float centre_vig[2];
     gboolean has_warp;
     gboolean has_vignette;
+    // a GainMap in OpcodeList3, applied after demosaic (see dng_gain_maps_opcode3)
+    gboolean has_gainmap;
   } dng;
   struct {
     gboolean has_dist;
@@ -361,6 +363,14 @@ typedef struct dt_image_t
   /* might help to improve highlights reconstruction module */
   float linear_response_limit;
 
+  /* DNG BaselineExposure + BaselineExposureOffset in EV, 0 when absent */
+  float dng_baseline_exposure;
+
+  /* DNG NoiseProfile as variance = a * x + b per RGB plane, x in [0,1] */
+  gboolean has_dng_noise_profile;
+  float dng_noise_a[3];
+  float dng_noise_b[3];
+
   /* White balance coeffs from the raw */
   dt_aligned_pixel_t wb_coeffs;
 
@@ -376,6 +386,9 @@ typedef struct dt_image_t
 
   /* GainMaps from DNG OpcodeList2 exif tag */
   GList *dng_gain_maps;
+
+  /* GainMaps from DNG OpcodeList3 exif tag */
+  GList *dng_gain_maps_opcode3;
 
   /* convenience pointer back into the image cache, so we can return
    * dt_image_t* there directly. */

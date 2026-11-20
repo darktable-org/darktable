@@ -64,6 +64,11 @@
 #include <string.h>
 
 #define SF_LOG_EPS 1e-10
+/* float twin, for the per-pixel float paths. spektrafilm.cl adds 1e-10f in
+   float; adding the double constant here instead promotes the sum to double
+   and rounds it back, which lands one ULP away from the kernel on roughly one
+   deep-shadow value in a thousand -- upstream of the grain sampler. */
+#define SF_LOG_EPS_F 1e-10f
 
 /* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
    exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
@@ -1310,9 +1315,13 @@ bool sf_pack_film_langmuir(const sf_pack_t *pack,
   if(!film || !json_object_has_member(film, "dir_couplers")) return false;
   JsonObject *dc = json_object_get_object_member(film, "dir_couplers");
   if(!dc || !json_object_has_member(dc, "langmuir_donor_k_rgb")) return false;
-  json_read_darray(dc, "langmuir_donor_k_rgb", donor_k, 3);
-  json_read_darray(dc, "langmuir_receiver_k_rgb", receiver_k, 3);
-  return true;
+  /* Either array can be absent, null or the wrong length, and
+     json_read_darray() then leaves its output untouched. Mark both as unread
+     first so the caller sees NaN, not whatever was on its stack. */
+  for(int c = 0; c < 3; c++) donor_k[c] = receiver_k[c] = NAN;
+  const gboolean have_donor = json_read_darray(dc, "langmuir_donor_k_rgb", donor_k, 3);
+  const gboolean have_recv = json_read_darray(dc, "langmuir_receiver_k_rgb", receiver_k, 3);
+  return have_donor || have_recv;
 }
 
 bool sf_pack_film_defaults(const sf_pack_t *pack,
@@ -3596,6 +3605,17 @@ void sf_sim_free(sf_sim_t *s)
   g_free(s);
 }
 
+void sf_sim_set_output_gain(sf_sim_t *sim,
+                            const float out_luminance_boost,
+                            const float out_scale)
+{
+  if(!sim) return;
+  /* widened from float exactly as sf_sim_build() receives them, so a sim
+     updated here is the sim a rebuild with these values would produce */
+  sim->out_luminance_boost = sim->p.out_luminance_boost = (double)out_luminance_boost;
+  sim->out_scale = sim->p.out_scale = (double)out_scale;
+}
+
 double sf_sim_film_dmax(const sf_sim_t *sim,
                         int ch)
 {
@@ -3686,11 +3706,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   }
 
   /* ----- filming: input matrix and tc_lut ------------------------------- */
-  const double *illu_ref = g_hash_table_lookup(pack->illuminants, film->reference_illuminant);
+  /* a profile that names no illuminant must not reach the lookup: the table
+     hashes its key with g_str_hash(), which dereferences it */
+  const double *illu_ref = film->reference_illuminant
+      ? g_hash_table_lookup(pack->illuminants, film->reference_illuminant) : NULL;
   if(!illu_ref)
   {
     set_error(errmsg, "spektra_sim: pack misses reference illuminant '%s'",
-              film->reference_illuminant);
+              film->reference_illuminant ? film->reference_illuminant : "(none declared)");
     sf_sim_free(s);
     return NULL;
   }
@@ -3936,9 +3959,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        once at the end of the build, together with raw_scale. */
     for(int c = 0; c < 9; c++) s->m_in_f[c] = (float)s->m_in[c];
     s->tc_lut_f = malloc((size_t)n * n * 3 * sizeof(float));
-    if(s->tc_lut_f)
-      for(size_t i = 0; i < (size_t)n * n * 3; i++)
-        s->tc_lut_f[i] = (float)s->tc_lut[i];
+    if(!s->tc_lut_f)
+    {
+      /* sf_sim_expose() reads this table unconditionally */
+      set_error(errmsg, "spektra_sim: out of memory for the spectral exposure table");
+      sf_sim_free(s);
+      return NULL;
+    }
+    for(size_t i = 0; i < (size_t)n * n * 3; i++)
+      s->tc_lut_f[i] = (float)s->tc_lut[i];
   }
 
   /* ----- film develop ---------------------------------------------------- */
@@ -4130,10 +4159,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       s->coupler_tail_um = 0.0;
       s->coupler_tail_w = 0.0;
     }
-    double lm_donor[3], lm_recv[3];
+    double lm_donor[3] = { NAN, NAN, NAN }, lm_recv[3] = { NAN, NAN, NAN };
     if(sf_pack_film_langmuir(pack, film->stock, lm_donor, lm_recv))
     {
-      if(s->film_positive)
+      /* a factor that did not parse (absent, null, wrong length) is NaN; the
+         side it belongs to then stays on the linear model */
+      const gboolean donor_ok = isfinite(lm_donor[0]) && isfinite(lm_donor[1])
+                                && isfinite(lm_donor[2]);
+      const gboolean recv_ok = isfinite(lm_recv[0]) && isfinite(lm_recv[1])
+                               && isfinite(lm_recv[2]);
+      if(s->film_positive && recv_ok)
       {
         s->couplers_recv_lm = 1;
         for(int m = 0; m < 3; m++)
@@ -4154,7 +4189,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
           s->couplers_recv_Kr[m] = Kr > 0.0 ? Kr : 1.0e30;
         }
       }
-      else
+      else if(!s->film_positive && donor_ok)
       {
         s->couplers_donor_lm = 1;
         for(int c = 0; c < 3; c++)
@@ -4282,12 +4317,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         sf_sim_free(s);
         return NULL;
       }
-    const double *illu_src = g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant);
-    const double *filters = g_hash_table_lookup(pack->dichroics, p->dichroic_brand);
+    const double *illu_src = p->enlarger_illuminant
+        ? g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant) : NULL;
+    const double *filters = p->dichroic_brand
+        ? g_hash_table_lookup(pack->dichroics, p->dichroic_brand) : NULL;
     if(!illu_src || !filters)
     {
       set_error(errmsg, "spektra_sim: pack misses enlarger illuminant '%s' or dichroic '%s'",
-                p->enlarger_illuminant, p->dichroic_brand);
+                p->enlarger_illuminant ? p->enlarger_illuminant : "(none)",
+                p->dichroic_brand ? p->dichroic_brand : "(none)");
       sf_sim_free(s);
       return NULL;
     }
@@ -4362,11 +4400,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     const sf_profile_t *sp = s->has_print ? print : film;
     memcpy(s->scan_chan_density, sp->channel_density, sizeof(s->scan_chan_density));
     memcpy(s->scan_base_density, sp->base_density, sizeof(s->scan_base_density));
-    const double *illu_view = g_hash_table_lookup(pack->illuminants, sp->viewing_illuminant);
+    const double *illu_view = sp->viewing_illuminant
+        ? g_hash_table_lookup(pack->illuminants, sp->viewing_illuminant) : NULL;
     if(!illu_view)
     {
       set_error(errmsg, "spektra_sim: pack misses viewing illuminant '%s'",
-                sp->viewing_illuminant);
+                sp->viewing_illuminant ? sp->viewing_illuminant : "(none declared)");
       sf_sim_free(s);
       return NULL;
     }
@@ -4760,7 +4799,13 @@ void sf_sim_expose(const sf_sim_t *sim,
     float *out = raw + px * nch_out;
     float r[3];
     expose_pixel_f(sim->m_in_f, sim->tc_lut_f, sim->tc_n, in, r);
-    for(int c = 0; c < 3; c++) out[c] = r[c] * sim->ev_scale_f;
+    /* negative exposure is not light: the pre-film blurs would spread it as a
+       dark halo over its neighbours, so a single outlier from upstream
+       becomes a black disc the size of the diffusion or halation kernel.
+       Development floors exposure at 0 per pixel anyway (sf_sim_lograw), so
+       pixels no blur reaches are unchanged. Twin of the clamp in
+       spektrafilm_expose. */
+    for(int c = 0; c < 3; c++) out[c] = fmaxf(r[c] * sim->ev_scale_f, 0.0f);
   }
 }
 
@@ -4777,7 +4822,7 @@ void sf_sim_lograw(const sf_sim_t *sim,
   {
     float *v = raw + px * nch;
     for(int c = 0; c < 3; c++)
-      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS);
+      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS_F);
   }
 }
 
@@ -5411,44 +5456,45 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
   }
 }
 
-/* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
- * sub-layer's RAW absolute sample (before dmin subtraction, before
- * summing across sub-layers) into raw_out[0..layers->n-1], so the caller
- * can run the per-sub-layer dye-cloud blur (upstream's
- * layer_particle_model blur_particle) on each one independently before
- * combining -- a spatial blur needs a whole-image buffer per sub-layer,
- * which this single-pixel function can't do itself, so it just hands
- * back the un-combined per-sub-layer values for the caller to buffer,
- * blur, and combine afterward. channel_idx is 1 for mono (matching
- * sf_grain_delta_ml's own convention of using channel 1's curve/params
- * for the achromatic draw) or 0/1/2 for color; seed_ch is the seed
- * component sf_grain_delta_ml adds on top of sl*10 (0 for mono, the
- * real channel index for color) -- kept as a separate parameter rather
- * than reusing channel_idx so the mono case still seeds like sl*10, not
- * (1 + sl*10), matching sf_grain_delta_ml exactly. */
-void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
-                             float density,
+/* Same per-sub-layer sampling as sf_grain_delta_ml, split in two so the
+ * caller can run the per-sub-layer dye-cloud blur (upstream's
+ * layer_particle_model blur_particle) on each sub-layer independently before
+ * combining -- a spatial blur needs a whole-image buffer of a sub-layer's
+ * samples, which a single-pixel function can't hold itself.
+ * sf_grain_curve_pos() is the position of `density` on the channel's total
+ * curve, which all sub-layers of a pixel share; sf_grain_raw_sample_sl() is
+ * sub-layer sl's RAW absolute sample at that position (before dmin
+ * subtraction, before summing across sub-layers).
+ * channel_idx is 1 for mono (matching sf_grain_delta_ml's own convention of
+ * using channel 1's curve/params for the achromatic draw) or 0/1/2 for
+ * color; seed_ch is the seed component sf_grain_delta_ml adds on top of
+ * sl*10 (0 for mono, the real channel index for color) -- kept as a separate
+ * parameter rather than reusing channel_idx so the mono case still seeds
+ * like sl*10, not (1 + sl*10), matching sf_grain_delta_ml exactly. */
+float sf_grain_curve_pos(const sf_grain_layers_t *layers,
+                         float density,
+                         int channel_idx)
+{
+  return _sf_grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], SF_NLE, 3, density);
+}
+
+float sf_grain_raw_sample_sl(const sf_grain_layers_t *layers,
+                             float pos,
                              int channel_idx,
                              int seed_ch,
+                             int sl,
                              uint32_t xi,
                              uint32_t yi,
                              float unif_c,
                              float npart_scale,
-                             uint32_t salt,
-                             float *raw_out)
+                             uint32_t salt)
 {
-  const int nsub = layers->n;
   const int nle = SF_NLE;
   const int lstride = SF_GRAIN_MAX_SUBLAYERS * 3;
-  const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], nle, 3,
-                                            density);
-  for(int sl = 0; sl < nsub; sl++)
-  {
-    const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
-                                             lstride, pos);
-    const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
-    raw_out[sl] = grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
-                                    (float)layers->layer_npart[sl][channel_idx] * npart_scale,
-                                    unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10), salt));
-  }
+  const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
+                                           lstride, pos);
+  const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
+  return grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
+                              (float)layers->layer_npart[sl][channel_idx] * npart_scale,
+                              unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10), salt));
 }

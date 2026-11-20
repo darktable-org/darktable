@@ -47,7 +47,7 @@ static inline float gamut_map_HSB(const float4 HSB, global float *gamut_LUT, con
 {
   const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
   const float max_colorfulness = lookup_gamut(gamut_LUT, JCH.z);
-  const float max_chroma = 15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
+  const float max_chroma = 15.932993652962535f * pow(JCH.x * L_white, 0.6523997524738018f) * fp32_div(pow(max_colorfulness, 0.6007557017508491f), L_white);
   const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.0f };
   const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
@@ -108,7 +108,7 @@ __kernel void prepare_prefilter(global float2 *uv,
 
   if(fabs(det) > 4.0f * FLT_EPSILON)
   {
-    const float4 sigma_inv = { sigma.w / det, -sigma.y / det, -sigma.z / det, sigma.x / det };
+    const float4 sigma_inv = { fp32_div(sigma.w, det), fp32_div(-sigma.y, det), fp32_div(-sigma.z, det), fp32_div(sigma.x, det) };
     a[k].x = covariance[k].x * sigma_inv.x + covariance[k].y * sigma_inv.y;
     a[k].y = covariance[k].x * sigma_inv.z + covariance[k].y * sigma_inv.w;
     a[k].z = covariance[k].z * sigma_inv.x + covariance[k].w * sigma_inv.y;
@@ -212,7 +212,7 @@ __kernel void final_guide(global float4 *covariance,
 
   if(fabs(det) > 4.0f * FLT_EPSILON)
   {
-    const float4 sigma_inv = { sigma.w / det, -sigma.y / det, -sigma.z / det, sigma.x / det };
+    const float4 sigma_inv = { fp32_div(sigma.w, det), fp32_div(-sigma.y, det), fp32_div(-sigma.z, det), fp32_div(sigma.x, det) };
     a[k].x = correlations[k].x * sigma_inv.x + correlations[k].y * sigma_inv.y;
     a[k].y = correlations[k].x * sigma_inv.z + correlations[k].y * sigma_inv.w;
     a[k].z = correlations[k].z * sigma_inv.x + correlations[k].w * sigma_inv.y;

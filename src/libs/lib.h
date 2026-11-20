@@ -95,7 +95,24 @@ typedef struct dt_lib_t
 
     struct
     {
+      // a snapshot, or a compared history step, is shown
       gboolean enabled;
+      struct dt_lib_module_t *module;
+      // compare the edit as it was after history_end items with the live
+      // edit, side by side; again for the same entry ends the comparison
+      void (*compare_history)(struct dt_lib_module_t *self,
+                              const int history_end);
+      // the history_end being compared, -1 if none
+      int (*compared_history_end)(struct dt_lib_module_t *self);
+      // side by side (else overlaid with a split line), and the turn of the
+      // split from left/right to top/bottom
+      void (*set_sidebyside)(struct dt_lib_module_t *self,
+                             const gboolean sidebyside);
+      gboolean (*get_sidebyside)(struct dt_lib_module_t *self);
+      void (*rotate_layout)(struct dt_lib_module_t *self);
+      // called when the comparison starts, changes or ends
+      void (*compare_changed)(gpointer user_data);
+      gpointer compare_user_data;
     } snapshots;
   } proxy;
 } dt_lib_t;

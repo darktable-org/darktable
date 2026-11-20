@@ -26,6 +26,7 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/format.h"
+#include "develop/frame.h"
 #include "develop/imageop_math.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -286,11 +287,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->processed_width = pipe->backbuf_width = pipe->iwidth = pipe->final_width = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = pipe->final_height = 0;
   pipe->nodes = NULL;
-  pipe->backbuf_size = size;
   pipe->cache_obsolete_order = INT_MAX;
   pipe->backbuf = NULL;
-  pipe->backbuf_scale = 0.0f;
-  memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
+  pipe->frame = NULL;
   pipe->output_imgid = NO_IMGID;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
@@ -300,6 +299,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->opencl_error = FALSE;
   pipe->tiling = FALSE;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  pipe->mask_display_empty = FALSE;
   pipe->bypass_blendif = FALSE;
   pipe->average_delay = 1000 * delay;
   pipe->input_timestamp = 0;
@@ -319,6 +319,14 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_profile_info = NULL;
   pipe->export_profile_info = NULL;
   pipe->output_headroom = 1.0f;
+  memset(&pipe->output, 0, sizeof(pipe->output));
+  pipe->output.image.type = DT_COLORSPACE_NONE;
+  pipe->output.device.type = DT_COLORSPACE_NONE;
+  pipe->window = DT_COLORSPACE_NONE;
+  memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
+  pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
+  memset(&pipe->output_encoding, 0, sizeof(pipe->output_encoding));
+  pipe->output_encoding.type = DT_COLORSPACE_NONE;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_size = 0;
@@ -441,7 +449,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
 
-  if(dt_pipe_is_screen(pipe)) g_free(pipe->backbuf);
+  dt_frame_unref(pipe->frame);
+  pipe->frame = NULL;
   pipe->backbuf = NULL;
   pipe->backbuf_width = 0;
   pipe->backbuf_height = 0;
@@ -1380,17 +1389,26 @@ error:
 #endif
 
 static void _pixelpipe_pick_samples(dt_develop_t *dev,
+                                    dt_dev_pixelpipe_t *pipe,
                                     dt_iop_module_t *module,
                                     const dt_iop_buffer_dsc_t *dsc,
                                     const float *const input,
                                     const dt_iop_roi_t *roi_in)
 {
+  // the preview's own run: its encoding, not the frame it published last
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
-    dt_ioppr_get_histogram_profile_info(dev);
+    dt_ioppr_get_scope_profile_info(dev, &pipe->output_encoding);
   const dt_iop_order_iccprofile_info_t *const display_profile =
-    dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                      darktable.color_profiles->display_filename,
-                                      INTENT_RELATIVE_COLORIMETRIC);
+    dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
+                                          pipe->output_encoding.filename,
+                                          pipe->output_encoding.profile,
+                                          INTENT_RELATIVE_COLORIMETRIC);
+  // the swatches are drawn by GTK, in what untagged values mean in the
+  // window: the same profile on cairo, where the conversion is skipped
+  const dt_color_encoding_t *device = &pipe->output.device;
+  const dt_iop_order_iccprofile_info_t *const gtk_profile =
+    dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename,
+                                          device->profile, INTENT_RELATIVE_COLORIMETRIC);
 
   // if we have a primary picker, prepend to the list of any live
   // samples, so that we don't have to differentiate when looping
@@ -1435,6 +1453,14 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
         dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 3, 1,
                                                 display_profile, histogram_profile,
                                                 "primary picker");
+      if(display_profile && gtk_profile && gtk_profile != display_profile)
+      {
+        lib_colorpicker_stats picked;
+        memcpy(picked, sample->display, sizeof(picked));
+        dt_ioppr_transform_image_colorspace_rgb(picked[0], sample->display[0], 3, 1,
+                                                display_profile, gtk_profile,
+                                                "picker swatch");
+      }
     }
     samples = g_slist_next(samples);
   }
@@ -2060,7 +2086,8 @@ static void _diff_statistics(const dt_iop_module_t *self,
                              float *const dat_b,  // output OpenCL
                              const int ch,
                              const int devid,
-                             const gboolean visualize)
+                             const gboolean visualize,
+                             const float scale)
 {
   const int width = roi->width;
   const int height = roi->height;
@@ -2095,12 +2122,13 @@ static void _diff_statistics(const dt_iop_module_t *self,
   int outrange_2 = 0;
   int outrange_4 = 0;
   int outliers = 0;
+  int critical = 0;
 
   const size_t per32 = DT_CACHELINE_BYTES / 4;
   int32_t *errpos = dt_calloc_aligned(dt_get_num_threads() * DT_CACHELINE_BYTES);
   float *errlevel = dt_calloc_aligned(dt_get_num_threads() * DT_CACHELINE_BYTES);
 
-  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4, outliers))
+  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4, outliers, critical))
   for(size_t i = 0; i < npix * ch; i+=ch)
   {
     const float a = ch == 1 ? dat_a[i] : (dat_a[i] + dat_a[i+1] + dat_a[i+2]) / 3.0f;
@@ -2116,12 +2144,13 @@ static void _diff_statistics(const dt_iop_module_t *self,
     outrange_2 += ad > 2.0f * stddev ? 1 : 0;
     outrange_4 += ad > 4.0f * stddev ? 1 : 0;
     outliers += ad > 8.0f * stddev ? 1 : 0;
+    critical += ad > 1e-4f * scale ? 1 : 0;
     if(visualize)
     {
       /** We are interested in locations with an error > 2S having a signal above "black".
           As we bypass the data through the pipe we nomalize the dark background.
       */
-      const gboolean relevant = stddev > 1e-10f && ad > 2.0f * stddev && b > 1e-8f;
+      const gboolean relevant = stddev / scale > 1e-10f && ad > 2.0f * stddev && b > 1e-8f * scale;
       const float sigerror = relevant ? MAX(0.0f, ad / stddev - 2.0f)  : 0.0f;
       const float viserror = relevant ? 0.2f * sqrf(0.5f * sigerror) : 0.0f;
       for(int c = 0; c < MIN(ch, 3); c++)
@@ -2133,26 +2162,104 @@ static void _diff_statistics(const dt_iop_module_t *self,
   }
 
   int maxpnt = 0;
-  for(int i = 1; i < dt_get_num_threads()*per32; i += per32)
+  for(int i = per32; i < dt_get_num_threads() * per32; i += per32)
     if(errlevel[i] > errlevel[maxpnt]) maxpnt = i;
 
   char position[64] = { 0 };
   if(errlevel[maxpnt] > 1e-8)
     snprintf(position, sizeof(position), "%d/%d", errpos[maxpnt] % width, errpos[maxpnt] / width);
 
+  char criticals[256] = { 0 };
+  if(critical > 0)
+    snprintf(criticals, sizeof(criticals), "  critical: %d %3.1f%%", critical, 100.0f * (float)critical / (float)npix);
+
   dt_free_align(errpos);
   dt_free_align(errlevel);
   dt_print_pipe(DT_DEBUG_ALWAYS, "OpenCL diff stats", NULL, self, devid, NULL, NULL,
-           "(%4dx%4d) max=%.5e %10s  std=%.5e  mean=%+.5e  S2:%7d %4.1f%%   S4:%7d %4.1f%%   S8:%6d %3.1f%%",
-           width, height, max_abs, position, stddev, mean,
+           "(%4dx%4d) max=%.5e %10s  std=%.5e  mean=%+.5e  S2:%7d %4.1f%%   S4:%7d %4.1f%%   S8:%6d %3.1f%%%s",
+           width, height, max_abs / scale, position, stddev / scale, mean / scale,
            outrange_2, 100.0f * (float)outrange_2 / (float)npix,
            outrange_4, 100.0f * (float)outrange_4 / (float)npix,
-           outliers, 100.0f * (float)outliers / (float)npix);
+           outliers, 100.0f * (float)outliers / (float)npix,
+           criticals);
+}
+
+static gboolean _want_diff_against_cpu(const dt_iop_module_t *module,
+                                      const int ch,
+                                      const int cho,
+                                      gboolean *do_diffstat,
+                                      gboolean *do_dumpfile)
+{
+  *do_diffstat = darktable.cldiff_stats && (cho == 1 || cho == 4);
+  *do_dumpfile = (ch == 4 || ch == 16 || ch == 2) // input supports 1/4 channel floats and 1ch uint16
+              && (cho == 1 || cho == 4)           // output for 1/4 channel floats
+              && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
+                || dt_str_commasubstring(darktable.dump_diff_pipe, "complete"));
+  return *do_diffstat || *do_dumpfile;
+}
+
+// runs the module's CPU process() on the input and pipe dsc the OpenCL code
+// got and compares the result with clout, which holds the error image
+// afterwards if visualize is set. ch is the input's bytes per pixel, cho the
+// output's floats per pixel
+static void _diff_against_cpu(dt_dev_pixelpipe_t *pipe,
+                              dt_iop_module_t *module,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              const dt_iop_buffer_dsc_t *dsc_in,
+                              const void *clin,
+                              float *clout,
+                              const dt_iop_roi_t *roi_out,
+                              const dt_iop_roi_t *roi_in,
+                              const int ch,
+                              const int cho,
+                              const int cst,
+                              const gboolean visualize)
+{
+  gboolean do_diffstat, do_dumpfile;
+  if(!_want_diff_against_cpu(module, ch, cho, &do_diffstat, &do_dumpfile))
+    return;
+
+  const int ow = roi_out->width;
+  const int oh = roi_out->height;
+  float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
+  if(!cpudata) return;
+
+  // modules like exposure update pipe->dsc in process_cl() and again in
+  // process(), so the CPU code has to start from what the OpenCL code got
+  pipe->dsc = *dsc_in;
+  module->process(module, piece, clin, cpudata, roi_in, roi_out);
+  if(cst == IOP_CS_LAB)
+  {
+    for(size_t k = 0; k < (size_t)ow * oh * cho; k+=cho)
+    {
+      dt_aligned_pixel_t XYZ;
+      dt_Lab_to_XYZ(cpudata + k, XYZ);
+      dt_XYZ_to_linearRGB(XYZ, cpudata + k);
+      dt_Lab_to_XYZ(clout + k, XYZ);
+      dt_XYZ_to_linearRGB(XYZ, clout + k);
+    }
+  }
+  if(do_diffstat)
+    _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid, visualize, dt_iop_get_processed_maximum(piece));
+  if(do_dumpfile)
+    dt_dump_pipe_diff_pfm(module->op, clout, cpudata, ow, oh, cho,
+                                    dt_dev_pixelpipe_type_to_str(pipe->type));
+  if(do_diffstat && visualize && cst == IOP_CS_LAB)
+  {
+    for(size_t k = 0; k < (size_t)ow * oh * cho; k+=cho)
+    {
+      dt_aligned_pixel_t XYZ;
+      dt_linearRGB_to_XYZ(clout + k, XYZ);
+      dt_XYZ_to_Lab(XYZ, clout + k);
+    }
+  }
+  dt_free_align(cpudata);
 }
 
 static float *_opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
                                        dt_iop_module_t *module,
                                        dt_dev_pixelpipe_iop_t *piece,
+                                       const dt_iop_buffer_dsc_t *dsc_in,
                                        cl_mem in,
                                        cl_mem out,
                                        const dt_iop_roi_t *roi_out,
@@ -2163,13 +2270,9 @@ static float *_opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
   const int ch = dt_opencl_get_image_element_size(in);
   const int cho = dt_opencl_get_image_element_size(out) / sizeof(float);
 
-  const gboolean do_diffstat = darktable.cldiff_stats && (cho == 1 || cho == 4);
-  const gboolean do_dumpfile = (ch == 4 || ch == 16 || ch == 2) // input supports 1/4 channel floats and 1ch uint16
-                            && (cho == 1 || cho == 4)           // output for 1/4 channel floats
-                            && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
-                              || dt_str_commasubstring(darktable.dump_diff_pipe, "complete"));
+  gboolean do_diffstat, do_dumpfile;
   float *clout = NULL;
-  if(do_diffstat || do_dumpfile)
+  if(_want_diff_against_cpu(module, ch, cho, &do_diffstat, &do_dumpfile))
   {
     const int ow = roi_out->width;
     const int oh = roi_out->height;
@@ -2177,45 +2280,10 @@ static float *_opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
     const int ih = roi_in->height;
     float *clin = dt_alloc_aligned((size_t)iw * ih * ch);
     clout = dt_alloc_align_float((size_t)ow * oh * cho);
-    float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
-    if(clin && clout && cpudata)
-    {
-      cl_int err = dt_opencl_copy_image_to_host(pipe->devid, clout, out, ow, oh, cho * sizeof(float));
-      if(err == CL_SUCCESS)
-      {
-        err = dt_opencl_copy_image_to_host(pipe->devid, clin, in, iw, ih, ch);
-        if(err == CL_SUCCESS)
-        {
-          module->process(module, piece, clin, cpudata, roi_in, roi_out);
-          if(cst == IOP_CS_LAB)
-          {
-            for(size_t k = 0; k < (size_t)ow * oh * cho; k+=cho)
-            {
-              dt_aligned_pixel_t XYZ;
-              dt_Lab_to_XYZ(cpudata + k, XYZ);
-              dt_XYZ_to_linearRGB(XYZ, cpudata + k);
-              dt_Lab_to_XYZ(clout + k, XYZ);
-              dt_XYZ_to_linearRGB(XYZ, clout + k);
-            }
-          }
-          if(do_diffstat)
-            _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid, visualize);
-          if(do_dumpfile)
-            dt_dump_pipe_diff_pfm(module->op, clout, cpudata, ow, oh, cho,
-                                            dt_dev_pixelpipe_type_to_str(pipe->type));
-          if(do_diffstat && visualize && cst == IOP_CS_LAB)
-          {
-            for(size_t k = 0; k < (size_t)ow * oh * cho; k+=cho)
-            {
-              dt_aligned_pixel_t XYZ;
-              dt_linearRGB_to_XYZ(clout + k, XYZ);
-              dt_XYZ_to_Lab(XYZ, clout + k);
-            }
-          }
-        }
-      }
-    }
-    dt_free_align(cpudata);
+    if(clin && clout
+       && dt_opencl_copy_image_to_host(pipe->devid, clout, out, ow, oh, cho * sizeof(float)) == CL_SUCCESS
+       && dt_opencl_copy_image_to_host(pipe->devid, clin, in, iw, ih, ch) == CL_SUCCESS)
+      _diff_against_cpu(pipe, module, piece, dsc_in, clin, clout, roi_out, roi_in, ch, cho, cst, visualize);
     dt_free_align(clin);
   }
   return clout;
@@ -2904,6 +2972,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
 
           cl_int err = CL_SUCCESS;
+
+          // keep track of status before processing OpenCL code as it might have to be reverted
+          // if we process also on CPU for debugging
+          const dt_iop_buffer_dsc_t was_dsc = pipe->dsc;
           if(bcaching)
           {
             *cl_mem_output = dt_opencl_copy_host_to_image(pipe->devid, pipe->bcache_data, roi_out->width, roi_out->height, out_bpp);
@@ -2973,7 +3045,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               const gboolean visualize = darktable.cldiff_stats
                                     && dt_pipe_is_full(pipe)
                                     && dt_iop_has_focus(module);
-              float *clout = _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out, visualize);
+              float *clout = _opencl_dump_diff_pipe_pfm(pipe, module, piece, &was_dsc, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out, visualize);
               if(visualize)
               {
                 cl_mem dev_clout = *cl_mem_output;
@@ -3127,6 +3199,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           cl_int err = CL_SUCCESS;
 
           const size_t nfloats = out_bpp * roi_out->width * roi_out->height / sizeof(float);
+          const dt_iop_buffer_dsc_t was_dsc = pipe->dsc;
           if(bcaching)
           {
             dt_iop_image_copy(*output, pipe->bcache_data, nfloats);
@@ -3155,6 +3228,33 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                           "device=%i (%s), %s",
                           pipe->devid, darktable.opencl->dev[pipe->devid].cname,
                           cl_errstr(err));
+          else if((darktable.dump_diff_pipe || darktable.cldiff_stats)
+              && _is_debug_pipe(pipe)
+              && !((module->flags() & IOP_FLAGS_HIDDEN) && (darktable.unmuted & DT_DEBUG_VERBOSE) == 0)
+              && piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+          {
+            // the tiles leave input and output on the host, so the CPU code
+            // can be compared on the whole image
+            const gboolean visualize = darktable.cldiff_stats
+                                  && dt_pipe_is_full(pipe)
+                                  && dt_iop_has_focus(module);
+            gboolean do_diffstat, do_dumpfile;
+            float *clout = _want_diff_against_cpu(module, in_bpp, out_bpp / sizeof(float), &do_diffstat, &do_dumpfile)
+                           ? dt_alloc_align_float(nfloats) : NULL;
+            if(clout)
+            {
+              dt_iop_image_copy(clout, *output, nfloats);
+              _diff_against_cpu(pipe, module, piece, &was_dsc, tmp, clout, roi_out, &roi_in,
+                                in_bpp, out_bpp / sizeof(float), cst_out, visualize);
+              if(visualize)
+              {
+                dt_iop_image_copy(*output, clout, nfloats);
+                dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, NULL);
+                piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+              }
+              dt_free_align(clout);
+            }
+          }
 
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU
                              | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -3512,14 +3612,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     if(darktable.lib->proxy.colorpicker.picker_proxy
        || darktable.lib->proxy.colorpicker.live_samples)
     {
-      _pixelpipe_pick_samples(dev, module, *out_format, input, &roi_in);
+      _pixelpipe_pick_samples(dev, pipe, module, *out_format, input, &roi_in);
     }
 
-    // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
     const dt_iop_order_iccprofile_info_t *const display_profile
-      = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                          darktable.color_profiles->display_filename,
-                                          INTENT_RELATIVE_COLORIMETRIC);
+      = dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
+                                              pipe->output_encoding.filename,
+                                              pipe->output_encoding.profile,
+                                              INTENT_RELATIVE_COLORIMETRIC);
 
     // Since histogram is being treated as the second-to-last link
     // in the pixelpipe and has a "process" call, why not treat it
@@ -3528,7 +3628,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
                                            roi_in.width, roi_in.height,
                                            display_profile,
-                                           dt_ioppr_get_histogram_profile_info(dev));
+                                           dt_ioppr_get_scope_profile_info(dev, &pipe->output_encoding));
   }
   return FALSE;
 }
@@ -3638,6 +3738,48 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe
   return ret;
 }
 
+// what the pipe's output values mean, from the nodes this run processes.
+// without colorout the values stay in the working RGB, as for
+// dt_dev_image() with no output. colorout cannot record that profile
+// itself: history replay can commit colorin after it
+static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
+                                     dt_develop_t *dev)
+{
+  // synchronization writes these under it, and GUI readers take it
+  dt_pthread_mutex_lock(&pipe->busy_mutex);
+  gboolean colorout = FALSE;
+  for(GList *n = pipe->nodes; n && !colorout; n = g_list_next(n))
+  {
+    const dt_dev_pixelpipe_iop_t *piece = n->data;
+    colorout = piece->enabled && dt_iop_module_is(piece->module, "colorout");
+  }
+  const dt_iop_order_iccprofile_info_t *const work = dt_ioppr_get_pipe_work_profile_info(pipe);
+  dt_color_encoding_t *const encoding = &pipe->output_encoding;
+  if(colorout)
+    *encoding = pipe->colorout_encoding;
+  else if(work)
+  {
+    // for the modules after colorout
+    const dt_iop_order_iccprofile_info_t *const info =
+      dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
+                                            work->profile, work->intent);
+    pipe->output_headroom = fmaxf(pipe->output.image.headroom,
+                                  dt_ioppr_profile_headroom(info->type));
+    memset(encoding, 0, sizeof(*encoding));
+    encoding->type = work->type;
+    g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));
+    encoding->profile = work->profile;
+    encoding->intent = work->intent;
+    encoding->headroom = pipe->output_headroom;
+  }
+  else
+  {
+    memset(encoding, 0, sizeof(*encoding));
+    encoding->type = DT_COLORSPACE_NONE;
+  }
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+}
+
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   dt_develop_t *dev,
                                   const int x,
@@ -3693,6 +3835,10 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
 // re-entry point: in case of late opencl errors we start all over
 // again with opencl-support disabled
 restart:
+
+  // after every resync, the OpenCL restart's too, and the export filters'
+  // disabling, before the cache keys hash output_profile_info
+  _resolve_output_encoding(pipe, dev);
 
   // check if we should obsolete caches
   if(pipe->cache_obsolete_order != INT_MAX)
@@ -3797,39 +3943,41 @@ restart:
   if(err)
     return TRUE;
 
-  // terminate
-  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
-
-  //FIXME lock/release cache line instead of copying
+  // terminate. a screen pipe publishes a frame, a copy: the cache line it
+  // comes from is not pinned and changes with the next run
+  dt_frame_t *frame = NULL;
   if(dt_pipe_is_screen(pipe))
   {
-    // dt_dev_image(want_float) keeps gamma terminal but lets it pass the
-    // 4-channel linear float working RGB through unpacked. In that case the
-    // backbuf is 16 B/px (4 floats) rather than the usual 8-bit ARGB.
-    const size_t bbpp =
-      (pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT) ? 4 * sizeof(float) : 4 * sizeof(uint8_t);
-    if(pipe->backbuf == NULL || pipe->backbuf_width * pipe->backbuf_height != width * height ||
-       pipe->backbuf_size != bbpp * width * height)
-    {
-      g_free(pipe->backbuf);
-      pipe->backbuf = g_malloc0(bbpp * width * height);
-      pipe->backbuf_size = bbpp * width * height;
-    }
-
-    if(pipe->backbuf)
-    {
-      memcpy(pipe->backbuf, buf, bbpp * width * height);
-      pipe->backbuf_scale = scale;
-      for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
-      pipe->output_imgid = pipe->image.id;
-    }
+    dt_frame_geometry_t geometry = { .width = width, .height = height, .scale = scale };
+    for(int i = 0; i < 6; i++) geometry.zoom_pos[i] = pts[i] * pipe->iscale;
+    frame = dt_frame_new(buf, &geometry, pipe->output.format, &pipe->output_encoding,
+                         pipe->output.serial);
+    // what GTK will draw it as, made here rather than in a GUI thread draw:
+    // the preview in navigation and the filmstrip, the canvas under focus
+    // peaking. on a cairo window it is the frame itself and costs nothing,
+    // unless the frame is an RGB proof's, tagged with the proof profile
+    if(frame && !dt_pipe_is_image(pipe)
+       && (dt_pipe_is_preview(pipe)
+           || (darktable.gui && g_atomic_int_get(&darktable.gui->show_focus_peaking))))
+      dt_frame_surface(frame, &pipe->output.device);
   }
-  else
+
+  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
+  if(frame)
+  {
+    dt_frame_t *old = pipe->frame;
+    pipe->frame = frame;
+    frame = old;
+    pipe->output_imgid = pipe->image.id;
+  }
+  else if(!dt_pipe_is_screen(pipe))
     pipe->backbuf = buf;
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  // the frame it replaced, still shown by whoever holds it
+  dt_frame_unref(frame);
 
   if(!claimed)
     dt_dev_pixelpipe_cache_report(pipe);
@@ -3840,6 +3988,14 @@ restart:
   dt_print_mem_usage("after pixelpipe process");
 
   return FALSE;
+}
+
+dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe)
+{
+  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+  dt_frame_t *frame = dt_frame_ref(pipe->frame);
+  dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  return frame;
 }
 
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,

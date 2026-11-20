@@ -1786,10 +1786,12 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   const int64_t per_line = (ibpp + obpp) * width * tiling->factor;
   const int tile_height = MIN(_align_up((int)(avail / per_line), aligner), height);
   const int valid_rows = tile_height - 2*border;
-  if(valid_rows < 1) // should never happen - just make sure, see dt_opencl_image_fits_device()
+  // a single tile covers the whole image and needs no border rows
+  if(valid_rows < 1 && tile_height < height) // see dt_opencl_image_fits_device()
     return DT_OPENCL_PROCESS_CL;
 
-  const int num_tiles = (height + valid_rows - 1) / valid_rows;
+  // the first and the last tile end at the image, where they need no border
+  const int num_tiles = tile_height >= height ? 1 : (height - 2*border + valid_rows - 1) / valid_rows;
   dt_print_pipe(DT_DEBUG_TILING,
     "  fast tiling", pipe, module, devid, roi, NULL,
     "tavail=%dMB tiles=%d validrows=%d border=%d perline=%dKB",
@@ -1808,16 +1810,19 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   for_four_channels(k) processed_maximum_saved[k] = piece->pipe->dsc.processed_maximum[k];
   dt_aligned_pixel_t processed_maximum_new = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+  int group = 0;
   for(int tile_nr = 0; tile_nr < num_tiles; tile_nr++)
   {
-    const int group = tile_nr * valid_rows ;
-    const int last_in = MIN(height, group + valid_rows + border);
-    const int topline = group - border;
-    const int first_in = MAX(0, topline);
-    const int t_rows = last_in - first_in;
-    const int missing = topline < 0 ? -topline : 0;
-    const int first_out = border - missing;
-    const int out_height = t_rows - first_out;
+    // every tile has the height of t_in and t_out, so the last one starts
+    // earlier. A shorter tile leaves rows of the previous tile below its
+    // roi, which kernels reading past the roi through a clamping sampler
+    // took for the bottom of the image
+    const int first_in = CLAMP(group - border, 0, height - tile_height);
+    const int last_in = first_in + tile_height;
+    const int t_rows = tile_height;
+    const int first_out = group - first_in;
+    const int last_out = last_in >= height ? height : last_in - border;
+    const int out_height = last_out - group;
 
     if(out_height > 0)
     {
@@ -1853,6 +1858,7 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
       err = dt_opencl_enqueue_copy_image(devid, t_out, (cl_mem)cl_out, tsrc, odest, oarea);
       if(err != CL_SUCCESS) goto finish;
     }
+    group = last_out;
   }
   for_four_channels(k)
     pipe->dsc.processed_maximum[k] = processed_maximum_new[k];

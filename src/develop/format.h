@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 
 struct dt_dev_pixelpipe_iop_t;
@@ -94,6 +95,18 @@ typedef struct dt_iop_buffer_dsc_t
 
 } dt_iop_buffer_dsc_t;
 
+// whether a module after temperature must complete its late correction on
+// this buffer. pipe->wb is set by temperature's commit_params(), but raw
+// restore (_run_demosaic_pipe()) and export filters
+// (dt_imageio_export_with_flags()) disable temperature after that commit,
+// so only dsc->temperature.enabled, set by its process(), tells that this
+// buffer was white balanced
+static inline gboolean dt_dev_wb_late_correction(const dt_dev_wb_t *wb,
+                                                 const dt_iop_buffer_dsc_t *dsc)
+{
+  return dsc->temperature.enabled && wb->late_correction;
+}
+
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc);
 
 void default_input_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
@@ -102,9 +115,9 @@ void default_input_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_
 void default_output_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                            struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
 
-int default_input_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-int default_output_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-int default_blend_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+dt_iop_colorspace_type_t default_input_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+dt_iop_colorspace_type_t default_output_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+dt_iop_colorspace_type_t default_blend_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 
 
 // clang-format off

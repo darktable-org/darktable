@@ -164,7 +164,35 @@ __kernel void kernel_9x9_div(global float *in,
       }
     }
   }
-  out[i] = luminance[i] / fmax(val, CAPTURE_YMIN);
+  out[i] = fp32_div(luminance[i], fmax(val, CAPTURE_YMIN));
+}
+
+static float _mask_dilated(global float *in, const int w1)
+{
+  const int w2 = 2*w1;
+  return (             in[-w2-1] || in[-w2] || in[-w2+1]
+       || in[-w1-2] || in[-w1-1] || in[-w1] || in[-w1+1] || in[-w1+2]
+       || in[-2]    || in[-1]    || in[0]   || in[1]     || in[2]
+       || in[w1-2]  || in[w1-1]  || in[w1]  || in[w1+1]  || in[w1+2]
+       ||              in[w2-1]  || in[w2]  || in[w2+1] )
+      ? 1.0f : 0.0f;
+}
+
+kernel void capture_dilatemask(global float *in,
+                               global float *out,
+                               const int width,
+                               const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+
+  if(col >= width || row >= height)
+    return;
+
+  int mx = mad24(row, width, col);
+  bool safe = col >= 2 && row >= 2 && col < width - 2 && row < height - 2;
+
+  out[mx] = safe ? _mask_dilated(in + mx, width) : in[mx];
 }
 
 __kernel void prepare_blend(__read_only image2d_t cfa,
@@ -186,26 +214,13 @@ __kernel void prepare_blend(__read_only image2d_t cfa,
   float4 rgb = Areadpixel(dev_out, col, row);
   // Photometric/digital ITU BT.709
   rgb *= (float4)( 0.212671f, 0.715160f, 0.072169f, 0.0f );
-  const float Y = fmax(0.0f, rgb.x + rgb.y + rgb.z);
+  const float Y = clipf(rgb.x + rgb.y + rgb.z);
   const int k = mad24(row, w, col);
   Yold[k] = Y;
 
-  if(row > 1 && col > 1 && (row < height-2) && (col < w -2))
-  {
-    const int w2 = 2 * w;
-    const int color = fcol(row, col, filters, xtrans);
-    const float val = Areadsingle(cfa, col, row);
-    if(val > whites[color] || Y < CAPTURE_YMIN)
-    {
-      mask[k-w2-1] = mask[k-w2]  = mask[k-w2+1] =
-      mask[k-w-2]  = mask[k-w-1] = mask[k-w ]   = mask[k-w+1] = mask[k-w+2] =
-      mask[k-2]    = mask[k-1]   = mask[k]      = mask[k+1]   = mask[k+2] =
-      mask[k+w-2]  = mask[k+w-1] = mask[k+w]    = mask[k+w+1] = mask[k+w+2] =
-      mask[k+w2-1] = mask[k+w2]  = mask[k+w2+1] = 0.0f;
-    }
-  }
-  else
-    mask[k] = 0.0f;
+  const int color = fcol(row, col, filters, xtrans);
+  const float val = Areadsingle(cfa, col, row);
+  mask[k] = val > whites[color] || Y < CAPTURE_YMIN ? 0.0f : 1.0f;
 }
 
 __kernel void modify_blend(global float *blend,
@@ -228,28 +243,33 @@ __kernel void modify_blend(global float *blend,
 
   float sum = 0.0f;
   float sum_sq = 0.0f;
+  const float reference = Yold[mad24(row, width, col)];
   for(int y = row-1; y < row+2; y++)
   {
     for(int x = col-2; x < col+3; x++)
     {
-      sum += Yold[mad24(y, width, x)];
-      sum_sq += fsquare(Yold[mad24(y, width, x)]);
+      const float delta = Yold[mad24(y, width, x)] - reference;
+      sum += delta;
+      sum_sq += delta*delta;
     }
   }
   for(int x = col-1; x < col+2; x++)
   {
-    sum += Yold[mad24(row-2, width, x)];
-    sum_sq += fsquare(Yold[mad24(row-2, width, x)]);
-    sum += Yold[mad24(row+2, width, x)];
-    sum_sq += fsquare(Yold[mad24(row+2, width, x)]);
+    float delta = Yold[mad24(row-2, width, x)] - reference;
+    sum += delta;
+    sum_sq += delta*delta;
+    delta = Yold[mad24(row+2, width, x)] - reference;
+    sum += delta;
+    sum_sq += delta*delta;
   }
+  const float mean_delta = fp32_div(sum, 21.0f);
+  const float mean = fmax(NORM_MIN, reference + mean_delta);
+  const float variance = fmax(0.0f, fp32_div(sum_sq, 21.0f) - mean_delta * mean_delta);
+  const float modified_coef_variation = sqrt(fp32_div(variance, mean));
 
+  const float t = log(1.0f + modified_coef_variation);
+  const float weight = fp32_div(1.0f, 1.0f + exp(offset - tscale * t));
   const int k = mad24(irow, width, icol);
-  const float sum_of_squares = fmax(0.0f, sum_sq - fsquare(sum) / 21.0f);
-  const float std_deviation = dtcl_sqrt(sum_of_squares / 21.0f);
-  const float modified_coef_variation = std_deviation / dtcl_sqrt(fmax(NORM_MIN, sum / 21.0f));
-  const float t = dtcl_log(1.0f + modified_coef_variation);
-  const float weight = 1.0f / (1.0f + dtcl_exp(offset - tscale * t));
   blend[k] = clipf(blend[k] * 1.01011f * (weight - 0.01f));
   luminance[k] = Yold[k];
 }
@@ -262,7 +282,7 @@ __kernel void final_blend(global float *blendmask,
   if(k >= pixels) return;
 
   const float diff = unblurred[k] - blendmask[k];
-  const float w_tmp2 = 1.0f / (1.0f + dtcl_exp(5.0f - 10.0f * diff));
+  const float w_tmp2 = fp32_div(1.0f, (1.0f + exp(5.0f - 10.0f * diff)));
   blendmask[k] = clipf(w_tmp2 * unblurred[k] + (1.0f - w_tmp2) * blendmask[k]);
 }
 
@@ -304,7 +324,8 @@ __kernel void capture_result( __read_only image2d_t in,
   {
     const float mixer = clipf(blendmask[k]);
     const float luminance_new = mix(luminance[k], tmp[k], mixer);
-    pix *= (float4)(luminance_new / fmax(luminance[k], CAPTURE_YMIN));
+    const float lumcorr = fp32_div(luminance_new, fmax(luminance[k], CAPTURE_YMIN));
+    pix *= (float4)lumcorr;
   }
   write_imagef(out, (int2)(col, row), pix);
 }
@@ -319,9 +340,9 @@ static inline float _radius_val(read_only image2d_t in,
                                 const int row,
                                 const int col)
 {
-  const int c = filters == 9u ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  const int c = fcol(row, col, filters, xtrans);
   const float f = c == 0 ? coeff.x : (c == 1 ? coeff.y : (c == 2 ? coeff.z : coeff.w));
-  return f * read_imagef(in, sampleri, (int2)(col + dx, row + dy)).x;
+  return f * readsingle(in, col + dx, row + dy);
 }
 
 #define RAWEPS 0.005f

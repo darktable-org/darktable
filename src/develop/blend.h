@@ -553,9 +553,6 @@ typedef struct dt_iop_gui_blend_data_t
   // own is (_select_mask_group_if_none), so it is never INVALID while the mask
   // has a group
   dt_mask_id_t panel_selected_group_cid;
-  // the element under the cursor on the canvas. The selection panel shows it
-  // in place of the selection, which it leaves alone; INVALID = none
-  dt_mask_id_t canvas_hovered_formid;
   // where dt_masks_group_insert_point puts the next element, while
   // insert_active: after the point insert_after_fid, the group's top member,
   // or its marker for an empty group
@@ -616,13 +613,16 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_selection_compose_btn;
   GtkWidget *masks_selection_delete_btn;
   GtkWidget *masks_selection_presets_btn;
-  // the members picked together with shift+click (see _pick_toggle): ids as
+  // the members picked together with ctrl/cmd+click or shift+click (see _pick_toggle): ids as
   // the rows carry them, an element's form id or a group's cid, in the order
   // they were picked. NULL unless two or more are picked, which
   // dt_masks_model_pick_toggle keeps true; then the "multiple selection"
   // panel (masks_multi_area, see _multi_panel_sync) stands in for the
   // selection panel above. Touched on the GUI thread only
   GList *masks_picked;
+  // the pick id a shift+click range starts from while there are picks: the
+  // row last picked with ctrl/cmd+click (see _range_anchor)
+  dt_mask_id_t masks_range_anchor;
   // what the bulk actions took away from the picks (see _picks_undo_t), newest
   // first: an undo that brings back the mask as it was before one brings the
   // picks back with it. masks_picks_undo_check asks the next list build to
@@ -1072,7 +1072,9 @@ void dt_iop_gui_blend_masks_panel_peek(dt_iop_module_t *module);
 // arrow, the shortcut and the toolbar button all come here, so they cannot
 // drift apart. Does nothing unless the focused module has a masks panel
 void dt_iop_gui_blend_masks_panel_toggle(void);
-// open the focused module's mask panel where it is hosted, if it is folded
+// open the focused module's mask panel where it is hosted, if it is folded on
+// screen, expanding the module first in the embedded position, and bring it
+// into view. Does nothing if it already shows in place
 void dt_iop_gui_blend_masks_panel_show(void);
 // the canvas panel changed sides: lay its header out for the new one
 void dt_iop_gui_blend_masks_panel_side_changed(void);

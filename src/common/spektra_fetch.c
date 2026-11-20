@@ -1489,9 +1489,13 @@ static gpointer _fetch_worker(gpointer data)
     if(!ok || !_verify(dest, f->sha256))
     {
       g_free(dest);
+      /* A cancel lands here too: the progress callback aborts the transfer,
+         which reads as a failed GET. The flag is still set at this point (it
+         is cleared in the out: block), so say what actually happened. */
       _set_status(SF_FETCH_FAILED, -1.0,
-                  ok ? _("a downloaded file failed its checksum")
-                     : _("a file could not be downloaded"));
+                  ok             ? _("a downloaded file failed its checksum")
+                  : _cancelled() ? _("cancelled")
+                                 : _("a file could not be downloaded"));
       goto out;
     }
     g_free(dest);

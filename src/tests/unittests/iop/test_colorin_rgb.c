@@ -326,6 +326,7 @@ static void test_white_balance_and_blue_mapping(void **state)
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_iop_t piece;
   init_piece(&pipe, &piece, &p);
+  pipe.dsc.temperature.enabled = TRUE;
   pipe.wb.late_correction = TRUE;
   pipe.wb.coeffs[0] = 2.0f;
   pipe.wb.coeffs[1] = 0.5f;
@@ -423,6 +424,7 @@ static void test_opencl(void **state)
           d->hsm_encode = look % 2;
         }
         print_message("input %d, working %d, clipping %d, look %d\n", p.type, p.type_work, clipping, look);
+        pipe.dsc.temperature.enabled = look >= 2;
         pipe.wb.late_correction = look >= 2;
         if(pipe.wb.late_correction)
         {
@@ -432,7 +434,11 @@ static void test_opencl(void **state)
         dt_aligned_pixel_t cpu[6], gpu[6];
         process(&module, &piece, pixels, cpu, &roi, &roi);
         for_four_channels(c) pipe.dsc.processed_maximum[c] = 1.0f;
-        cl_mem src = dt_opencl_copy_host_to_image(device, (void *)pixels, 3, 2, 4 * sizeof(float));
+        // upload from a writable copy: on Apple's OpenCL a blocking write from
+        // the binary's const data crashes the next call through a nearby stub
+        dt_aligned_pixel_t upload[6];
+        memcpy(upload, pixels, sizeof(upload));
+        cl_mem src = dt_opencl_copy_host_to_image(device, upload, 3, 2, 4 * sizeof(float));
         cl_mem dst = dt_opencl_alloc_device(device, 3, 2, 4 * sizeof(float));
         assert_non_null(src);
         assert_non_null(dst);

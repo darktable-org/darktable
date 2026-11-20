@@ -100,7 +100,6 @@ typedef struct dt_iop_temperature_gui_data_t
 typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
-  int preset;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -556,12 +555,47 @@ static inline void _update_pipe_dsc(dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
+// "as shot" and "camera reference" apply the multipliers of the image being
+// processed, not the stored ones: those belong to the image on which the mode
+// was chosen, and a pasted history, a style or a preset can carry them to
+// another image. NULL for the other modes, which apply the stored multipliers
+static const double *_own_coeffs(const int preset,
+                                 const double *const as_shot,
+                                 const double *const D65coeffs)
+{
+  switch(preset)
+  {
+    case DT_IOP_TEMP_AS_SHOT: return as_shot;
+    case DT_IOP_TEMP_D65:     return D65coeffs;
+    default:                  return NULL;
+  }
+}
+
+// the mode that decides which multipliers params p apply, in the pipe and the
+// GUI alike. Legacy params have none: they take "as shot" or "camera reference"
+// if their multipliers are the image's own for that mode. A saved mode is kept
+// even where its multipliers equal those, or it would ignore them from then on
+static int _params_mode(const dt_iop_temperature_params_t *p,
+                        const double *const as_shot,
+                        const double *const D65coeffs)
+{
+  if(p->preset != DT_IOP_TEMP_UNKNOWN)
+    return p->preset;
+  if(dt_dev_equal_chroma((const float *)p, as_shot))
+    return DT_IOP_TEMP_AS_SHOT;
+  if(dt_dev_equal_chroma((const float *)p, D65coeffs))
+    return DT_IOP_TEMP_D65;
+  return DT_IOP_TEMP_UNKNOWN;
+}
+
 // the WB that temperature applies with params p, for the modules that
 // complete the correction: pipe->wb at commit time, and color calibration's
-// GUI before any pipe has committed
+// GUI before any pipe has committed. as_shot and D65coeffs are the image's
+// own multipliers, from dev->chroma
 static void _wb_from_params(const dt_iop_temperature_params_t *p,
                             const gboolean enabled,
                             const gboolean true_monochrome,
+                            const double *const as_shot,
                             const double *const D65coeffs,
                             dt_dev_wb_t *wb)
 {
@@ -569,13 +603,16 @@ static void _wb_from_params(const dt_iop_temperature_params_t *p,
   // image; nothing is applied there, whatever enabled says
   const gboolean applied = enabled && !true_monochrome;
   const float *const pcoeffs = (const float *)p;
+  const int mode = _params_mode(p, as_shot, D65coeffs);
+  const double *const own = _own_coeffs(mode, as_shot, D65coeffs);
 
   for_four_channels(k)
   {
-    wb->coeffs[k] = applied ? pcoeffs[k] : 1.0f;
+    const float coeff = own ? (float)own[k] : pcoeffs[k];
+    wb->coeffs[k] = applied ? coeff : 1.0f;
     wb->D65coeffs[k] = D65coeffs[k];
   }
-  wb->camera_reference = applied && p->preset == DT_IOP_TEMP_D65;
+  wb->camera_reference = applied && mode == DT_IOP_TEMP_D65;
   // no late correction in 'camera reference' mode; if not applied,
   // nothing for a later module to finish
   wb->late_correction = applied && !wb->camera_reference && p->late_correction;
@@ -743,10 +780,6 @@ void commit_params(dt_iop_module_t *self,
 {
   const dt_iop_temperature_params_t *const p = p1;
   dt_iop_temperature_data_t *const d = piece->data;
-  // first items in the struct are the coefficients
-  const float *const pcoeffs = (const float *)p;
-
-  d->preset = p->preset;
 
   dt_dev_chroma_t *const chr = &self->dev->chroma;
 
@@ -758,12 +791,15 @@ void commit_params(dt_iop_module_t *self,
     piece->enabled = FALSE;
   }
 
-  for_four_channels(k)
-    d->coeffs[k] = true_monochrome ? 1.0f : pcoeffs[k];
+  // as_shot and D65coeffs are the values read from dev->chroma here: only
+  // reload_defaults() writes them, on the GTK thread at image load
+  _wb_from_params(p, piece->enabled, true_monochrome,
+                  chr->as_shot, chr->wb.D65coeffs, &pipe->wb);
 
-  // D65coeffs is the one value read from dev->chroma here: only
-  // reload_defaults() writes it, on the GTK thread at image load
-  _wb_from_params(p, piece->enabled, true_monochrome, chr->wb.D65coeffs, &pipe->wb);
+  // process() applies the multipliers that later modules are told about; they
+  // are 1.0 only for a disabled piece, which doesn't process
+  for_four_channels(k)
+    d->coeffs[k] = pipe->wb.coeffs[k];
 
   // color calibration's reload_defaults() still reads the shared copy
   for_four_channels(k)
@@ -1253,6 +1289,55 @@ static void _update_preset(dt_iop_module_t *self, int mode)
   }
 }
 
+// whether camera preset j, a position in the "settings" combobox, has the
+// multipliers of p at one of its listed tunings or, with interpolate, at one
+// between two listed tunings. On a match, *tuning is that tuning
+static gboolean _match_camera_preset(const dt_iop_module_t *self,
+                                     const dt_iop_temperature_params_t *p,
+                                     const int j,
+                                     const gboolean interpolate,
+                                     int *tuning)
+{
+  const dt_iop_temperature_gui_data_t *g = self->gui_data;
+  const char *maker = self->dev->image_storage.camera_maker;
+  const char *model = self->dev->image_storage.camera_model;
+  const char *name = dt_wb_preset(g->preset_num[j])->name;
+
+  for(int i = g->preset_num[j] + (interpolate ? 1 : 0);
+      i < dt_wb_presets_count()
+      && !strcmp(dt_wb_preset(i)->make, maker)
+      && !strcmp(dt_wb_preset(i)->model, model)
+      && !strcmp(dt_wb_preset(i)->name, name);
+      i++)
+  {
+    if(!interpolate)
+    {
+      if(dt_dev_equal_chroma((const float *)p, dt_wb_preset(i)->channels))
+      {
+        *tuning = dt_wb_preset(i)->tuning;
+        return TRUE;
+      }
+      continue;
+    }
+
+    // the tuning that was set is not stored, so try each one in the gap
+    // between two listed tunings
+    for(int tune = dt_wb_preset(i - 1)->tuning + 1;
+        tune < dt_wb_preset(i)->tuning;
+        tune++)
+    {
+      dt_wb_data interpolated = { .tuning = tune };
+      dt_wb_preset_interpolate(dt_wb_preset(i - 1), dt_wb_preset(i), &interpolated);
+      if(dt_dev_equal_chroma((const float *)p, interpolated.channels))
+      {
+        *tuning = tune;
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
@@ -1271,6 +1356,20 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  // the pipe already processes legacy params in this mode (_wb_from_params());
+  // stored here, it labels them, and the next history item saves it
+  p->preset = _params_mode(p, chr->as_shot, chr->wb.D65coeffs);
+
+  // "as shot" and "camera reference" show the image's own multipliers, which
+  // processing applies (_own_coeffs()), and a slider edit starts from them.
+  // Only self->params changes: the history keeps the stored multipliers until
+  // the next history item, which renders the same
+  const double *const own = _own_coeffs(p->preset, chr->as_shot, chr->wb.D65coeffs);
+  if(own)
+    _temp_params_from_array(p, own);
+
   float tempK, tint;
   _mul2temp(self, p, &tempK, &tint);
 
@@ -1286,148 +1385,66 @@ void gui_update(dt_iop_module_t *self)
 
   gboolean show_finetune = FALSE;
 
-  gboolean found = FALSE;
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  // a saved "camera reference" stays one, even if its coefficients (pasted,
-  // or from a preset or style) differ from this image's reference: relabeling
-  // it would enable its stored late_correction (_wb_from_params())
-  if(p->preset == DT_IOP_TEMP_D65)
+  // "as shot" and "camera reference" are labeled by their mode
+  gboolean found = own != NULL;
+
+  // only legacy params and saved camera presets are matched against the camera
+  // presets. For another mode a match would only show that preset's finetune
+  // slider under that mode's label: the as shot of a camera set to a preset
+  // often matches one
+  if(p->preset == DT_IOP_TEMP_UNKNOWN
+     || p->preset >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
   {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
-    found = TRUE;
+    // a saved camera preset is tried first: another preset can have the same
+    // multipliers at some tuning, and its finetune slider would then be shown
+    // under the saved label. The camera presets follow the section header with
+    // the camera's name, which has no preset_num[] and no preset data
+    const int saved = p->preset > DT_IOP_NUM_OF_STD_TEMP_PRESETS
+                      && p->preset < g->preset_cnt
+                      ? p->preset
+                      : DT_IOP_TEMP_UNKNOWN;
+    int match = DT_IOP_TEMP_UNKNOWN;
+    int tuning = 0;
+
+    // exact tunings first, then those interpolated between two of them
+    for(int interpolate = 0; match < 0 && saved > 0 && interpolate < 2; interpolate++)
+      if(_match_camera_preset(self, p, saved, interpolate, &tuning))
+        match = saved;
+    for(int interpolate = 0; match < 0 && interpolate < 2; interpolate++)
+      for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS + 1;
+          match < 0 && j < g->preset_cnt;
+          j++)
+        if(_match_camera_preset(self, p, j, interpolate, &tuning))
+          match = j;
+
+    if(match > 0)
+    {
+      // the match is the mode: legacy params have none, and a saved camera
+      // preset that its own tunings do not match came from another camera or
+      // from an older list of presets
+      p->preset = match;
+      dt_bauhaus_combobox_set(g->presets, match);
+      const dt_iop_temperature_preset_data_t *preset =
+        dt_bauhaus_combobox_get_data(g->presets);
+      show_finetune = preset->min_ft_pos != preset->max_ft_pos;
+      if(show_finetune)
+      {
+        const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
+        const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
+        const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
+
+        dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
+        dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
+        dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
+      }
+      dt_bauhaus_slider_set(g->finetune, tuning);
+      found = TRUE;
+    }
   }
 
-  // is this a "as shot" white balance?
-  else if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
-  {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
-    p->preset = DT_IOP_TEMP_AS_SHOT;
-    found = TRUE;
-  }
-
-  // is this a "D65 white balance"? Only legacy params have no saved mode;
-  // a saved camera preset or user WB that equals the reference stays as it is
-  else if(p->preset == DT_IOP_TEMP_UNKNOWN
-          && dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
-  {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
-    p->preset = DT_IOP_TEMP_D65;
-    found = TRUE;
-  }
-
+  // without a match, the other modes are labeled "user modified"
   if(!found)
-  {
-    // look through all added presets
-    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
-    {
-      // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[j];
-          !found
-          && (i < dt_wb_presets_count())
-          && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
-          && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
-          && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(g->preset_num[j])->name);
-          i++)
-      {
-        const dt_wb_data *wbp = dt_wb_preset(i);
-        if(dt_dev_equal_chroma((const float *)p, wbp->channels))
-        {
-          // got exact match!
-          dt_bauhaus_combobox_set(g->presets, j);
-          dt_iop_temperature_preset_data_t *preset =
-            dt_bauhaus_combobox_get_data(g->presets);
-          if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
-          {
-            show_finetune = preset->min_ft_pos != preset->max_ft_pos;
-            if(show_finetune)
-            {
-              const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
-              const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
-              const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
-
-              dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
-              dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
-              dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
-            }
-          }
-
-          dt_bauhaus_slider_set(g->finetune, wbp->tuning);
-          found = TRUE;
-          break;
-        }
-      }
-    }
-
-    if(!found)
-    {
-      // ok, we haven't found exact match, maybe this was interpolated?
-
-      // look through all added presets
-      for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
-      {
-        // look through all variants of this preset, with different tuning
-        int i = g->preset_num[j] + 1;
-        while(!found
-              && (i < dt_wb_presets_count())
-              && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
-              && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
-              && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(g->preset_num[j])->name))
-        {
-          // let's find gaps
-          if(dt_wb_preset(i - 1)->tuning + 1 == dt_wb_preset(i)->tuning)
-          {
-            i++;
-            continue;
-          }
-
-          // we have a gap!
-
-          // we do not know what finetuning value was set, we need to
-          // bruteforce to find it
-          for(int tune = dt_wb_preset(i - 1)->tuning + 1;
-              !found && (tune < dt_wb_preset(i)->tuning);
-              tune++)
-          {
-            dt_wb_data interpolated = {.tuning = tune };
-            dt_wb_preset_interpolate(dt_wb_preset(i - 1),
-                                     dt_wb_preset(i), &interpolated);
-
-            if(dt_dev_equal_chroma((const float *)p, interpolated.channels))
-            {
-              // got exact match!
-
-              dt_bauhaus_combobox_set(g->presets, j);
-              dt_iop_temperature_preset_data_t *preset =
-                dt_bauhaus_combobox_get_data(g->presets);
-              if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
-              {
-                show_finetune = preset->min_ft_pos != preset->max_ft_pos;
-                if(show_finetune)
-                {
-                  const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
-                  const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
-                  const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
-
-                  dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
-                  dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
-                  dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
-                }
-              }
-              dt_bauhaus_slider_set(g->finetune, tune);
-              found = TRUE;
-              break;
-            }
-          }
-          i++;
-        }
-      }
-    }
-    if(!found) //since we haven't got a match - it's user-set
-    {
-      dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
-      p->preset = DT_IOP_TEMP_USER;
-    }
-  }
+    p->preset = DT_IOP_TEMP_USER;
 
   if(!found || g->mod_temp != -FLT_MAX) // reset or initialize user-defined
   {
@@ -1901,7 +1918,8 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
     case DT_IOP_TEMP_UNKNOWN: // just un-setting.
       return;
     case DT_IOP_TEMP_AS_SHOT: // as shot wb
-      _temp_params_from_array(p, chr->as_shot);
+    case DT_IOP_TEMP_D65:     // camera reference d65
+      _temp_params_from_array(p, _own_coeffs(pos, chr->as_shot, chr->wb.D65coeffs));
       break;
     case DT_IOP_TEMP_SPOT: // from image area wb, expose callback will set p->rgbg2.
       if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->colorpicker)))
@@ -1911,9 +1929,6 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
                            // sliders also changes the mod_coeff so it
                            // can be read here
       _temp_params_from_array(p, g->mod_coeff);
-      break;
-    case DT_IOP_TEMP_D65: // camera reference d65
-      _temp_params_from_array(p, chr->wb.D65coeffs);
       break;
     default: // camera WB presets
     {
@@ -2154,8 +2169,10 @@ static void _gui_wb_proxy(const dt_iop_module_t *self, dt_dev_wb_t *wb)
   }
 
   const dt_iop_temperature_params_t *p = self->params;
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
 
-  _wb_from_params(p, self->enabled, self->hide_enable_button, self->dev->chroma.wb.D65coeffs, wb);
+  _wb_from_params(p, self->enabled, self->hide_enable_button,
+                  chr->as_shot, chr->wb.D65coeffs, wb);
 }
 
 // channelmixerrgb doesn't report changes: every change of its params runs the

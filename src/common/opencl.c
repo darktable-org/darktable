@@ -29,6 +29,7 @@
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/heal.h"
+#include "common/dng_opcode.h"
 #include "common/histogram.h"
 #include "common/interpolation.h"
 #include "common/locallaplaciancl.h"
@@ -339,6 +340,14 @@ unsigned int dt_opencl_tiling_align(const int devid)
   return 4;
 }
 
+static void _opencl_found_free(gpointer data)
+{
+  dt_opencl_found_t *found = data;
+  g_free(found->cname);
+  g_free(found->name);
+  free(found);
+}
+
 static void _opencl_write_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return;
@@ -374,8 +383,9 @@ static void _opencl_write_device_config(const int devid)
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
-  // Take care of headroom, this is defined per device and devid to support systems with two similar cards.
-  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
+  // Take care of headroom, this is defined per device and the driver's device position to support systems
+  // with two similar cards. Unlike devid, the position does not change when dt_opencl_init() renumbers the devices
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, cl->dev[devid].driver_id);
   g_snprintf(dat, sizeof(dat), "headroom: %i", cl->dev[devid].headroom);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
@@ -441,7 +451,7 @@ static gboolean _opencl_read_device_config(const int devid)
   cldid->avoid = dt_conf_key_not_empty(key) ? dt_conf_get_string(key) : NULL;
 
   // Take care of headroom
-  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, cldid->driver_id);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
@@ -468,6 +478,20 @@ static gboolean _opencl_read_device_config(const int devid)
   _opencl_write_device_config(devid);
 
   return !existing_device || !safety_ok;
+}
+
+// sort key for the device numbering in dt_opencl_init()
+static int _opencl_device_rank(dt_opencl_t *cl,
+                               const cl_device_id devid)
+{
+  cl_device_type type = 0;
+  cl_bool unified_memory = CL_FALSE;
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE,
+                                           sizeof(cl_device_type), &type, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_HOST_UNIFIED_MEMORY,
+                                           sizeof(cl_bool), &unified_memory, NULL);
+  if(type & CL_DEVICE_TYPE_CPU) return 2;
+  return unified_memory ? 1 : 0;
 }
 
 // returns 0 if all ok or an error if we failed to init this device
@@ -784,6 +808,16 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
+  // PoCL is the only platform allowed to run OpenCL on the CPU: macOS'
+  // CPU device fails to allocate images and its exports came out wrong
+  if((type & CL_DEVICE_TYPE_CPU) && strcmp(pname, "portablecomputinglanguage"))
+  {
+    dt_print_nts(DT_DEBUG_OPENCL,
+                 "   *** discarding CPU device, only PoCL may run on the CPU ***\n");
+    res = TRUE;
+    goto end;
+  }
+
   if(strlen(deviceversion) < 9)
   {
      dt_print_nts(DT_DEBUG_OPENCL,
@@ -1045,7 +1079,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "grain.h",
                                                      "bilinear.h",
                                                      "lut3d.h",
-                                                     "hdr-transfer.h" };
+                                                     "hdr_transfer.h" };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   _opencl_md5sum(clincludes, includemd5);
@@ -1148,6 +1182,16 @@ end:
   // we always write the device config to keep track of disabled devices
   _opencl_write_device_config(dev);
 
+  if(cl->dev[dev].cname)
+  {
+    dt_opencl_found_t *found = calloc(1, sizeof(dt_opencl_found_t));
+    found->cname = g_strdup(cl->dev[dev].cname);
+    found->name = g_strdup(cl->dev[dev].fullname);
+    found->unified_memory = cl->dev[dev].unified_memory;
+    found->devid = res ? -1 : dev;
+    cl->found = g_list_append(cl->found, found);
+  }
+
   if(res)
     dt_pthread_mutex_destroy(&cl->dev[dev].lock);
 
@@ -1218,6 +1262,8 @@ void dt_opencl_init(dt_opencl_t *cl,
                     const gboolean print_statistics)
 {
   const gboolean exclude_opencl = options & DT_OPENCL_OPTION_EXCLUDE;
+  g_list_free_full(cl->found, _opencl_found_free);
+  cl->found = NULL;
   dt_pthread_mutex_init(&cl->lock);
   cl->inited = FALSE;
   cl->enabled = FALSE;
@@ -1383,7 +1429,10 @@ void dt_opencl_init(dt_opencl_t *cl,
       platform_key[j] = 0;
 
       if(dt_conf_key_exists(platform_key))
-        valid_platform = dt_conf_get_bool(platform_key);
+        // PoCL used to be one of the other platforms, so that still enables it
+        valid_platform = dt_conf_get_bool(platform_key)
+          || (strcmp(platform_key, "clplatform_portablecomputinglanguage") == 0
+              && dt_conf_get_bool("clplatform_other"));
       /* In some cases it is safe to assume platform aliases instead of adding
           an additional conf key or falling back to clplatform_other
       */
@@ -1506,9 +1555,48 @@ void dt_opencl_init(dt_opencl_t *cl,
     goto finally;
   }
 
+  // number the devices dedicated-memory GPUs first, then unified-memory
+  // ones, then CPU devices, as the driver's order says nothing about
+  // speed: macOS lists its CPU device, then the integrated GPU, then the
+  // discrete one. The default priorities give device 0 to the darkroom
+  // and export pipes
+  int *rank = malloc(sizeof(int) * num_devices);
+  int *driver_id = malloc(sizeof(int) * num_devices);
+  if(rank && driver_id)
+  {
+    for(int k = 0; k < num_devices; k++)
+    {
+      rank[k] = _opencl_device_rank(cl, devices[k]);
+      driver_id[k] = k;
+    }
+    for(int k = 1; k < num_devices; k++)
+    {
+      const cl_device_id d = devices[k];
+      const int r = rank[k];
+      const int id = driver_id[k];
+      int j = k - 1;
+      for(; j >= 0 && rank[j] > r; j--)
+      {
+        devices[j + 1] = devices[j];
+        rank[j + 1] = rank[j];
+        driver_id[j + 1] = driver_id[j];
+      }
+      devices[j + 1] = d;
+      rank[j + 1] = r;
+      driver_id[j + 1] = id;
+    }
+  }
+  else
+  {
+    free(driver_id);
+    driver_id = NULL;
+  }
+  free(rank);
+
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
   {
+    cl->dev[dev].driver_id = driver_id ? driver_id[k] : k;
     if(_opencl_device_init(cl, dev, devices, k))
       continue;
     // increase dev only if _opencl_device_init was successful
@@ -1516,6 +1604,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   }
   free(devices);
   devices = NULL;
+  free(driver_id);
 
   if(dev > 0)
   {
@@ -1583,6 +1672,7 @@ finally:
     cl->bilinear = dt_bilinear_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
+    cl->dng_gain_map = dt_dng_gain_map_init_cl_global();
     cl->local_laplacian = dt_local_laplacian_init_cl_global();
     cl->dwt = dt_dwt_init_cl_global();
     cl->color_picker = dt_color_picker_init_cl_global();
@@ -1640,6 +1730,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_bilinear_free_cl_global(cl->bilinear);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
+    dt_dng_gain_map_free_cl_global(cl->dng_gain_map);
     dt_dwt_free_cl_global(cl->dwt);
     dt_color_picker_free_cl_global(cl->color_picker);
     dt_heal_free_cl_global(cl->heal);
@@ -1698,6 +1789,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   }
 
   free(cl->dev);
+  g_list_free_full(cl->found, _opencl_found_free);
+  cl->found = NULL;
   dt_pthread_mutex_destroy(&cl->lock);
 }
 
@@ -3853,6 +3946,56 @@ gboolean dt_opencl_running(void)
 gboolean dt_opencl_running_fast(void)
 {
   return _cl_running() ? darktable.opencl->fastcl : FALSE;
+}
+
+gboolean dt_opencl_device_conf_enabled(const char *cname)
+{
+  gchar *key = g_strdup_printf("%s%s", DT_CLDEVICE_HEAD, cname);
+  const gboolean enabled = !dt_conf_key_not_empty(key)
+                           || !strstr(dt_conf_get_string_const(key), "device:off");
+  g_free(key);
+  return enabled;
+}
+
+void dt_opencl_device_conf_set_enabled(const char *cname,
+                                       const gboolean enabled)
+{
+  gchar *key = g_strdup_printf("%s%s", DT_CLDEVICE_HEAD, cname);
+  if(dt_conf_key_not_empty(key))
+  {
+    // only the device:on/off token changes, the other settings are kept
+    gchar **tokens = g_strsplit(dt_conf_get_string_const(key), " ", -1);
+    for(gchar **t = tokens; *t; t++)
+    {
+      if(g_str_has_prefix(*t, "device:"))
+      {
+        g_free(*t);
+        *t = g_strdup(enabled ? "device:on" : "device:off");
+      }
+    }
+    gchar *dat = g_strjoinv(" ", tokens);
+    dt_conf_set_string(key, dat);
+    g_free(dat);
+    g_strfreev(tokens);
+  }
+  g_free(key);
+}
+
+int dt_opencl_get_device_headroom(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0 || devid >= cl->num_devs) return 0;
+  return cl->dev[devid].headroom;
+}
+
+void dt_opencl_set_device_headroom(const int devid,
+                                   const int headroom)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0 || devid >= cl->num_devs) return;
+  cl->dev[devid].headroom = headroom;
+  _opencl_write_device_config(devid);
+  dt_opencl_update_settings();
 }
 
 /** update enabled flag and profile with value from preferences */

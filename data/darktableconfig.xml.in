@@ -18,6 +18,7 @@
     <section name="cpugpu" title="CPU / memory"/>
     <section name="opencl" title="OpenCL GPU acceleration"/>
     <section name="platform" title="OpenCL drivers"/>
+    <section name="cldevices" title="OpenCL devices"/>
   </dttab>
   <dttab name="security" title="security">
     <section title="general"/>
@@ -574,7 +575,7 @@
     <shortdescription>OpenCL scheduling profile</shortdescription>
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems:\n - 'default': GPU processes full and CPU processes preview pipe (adaptable by config parameters),\n - 'multiple GPUs': process both pixelpipes in parallel on two different GPUs,\n - 'very fast GPU': process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="opencl" capability="multiopencl">
+  <dtconfig>
     <name>opencl_tune_headroom</name>
     <type>bool</type>
     <default>false</default>
@@ -615,6 +616,13 @@
     <default>${DEFCONFIG_APPLE}</default>
     <shortdescription>Apple</shortdescription>
     <longdescription>Apple OpenCL (vendor provided)</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="platform" restart="true">
+    <name>clplatform_portablecomputinglanguage</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>PoCL</shortdescription>
+    <longdescription>portable computing language, runs OpenCL on the CPU. usually slower than darktable's own CPU code, mostly useful for testing. the only platform allowed to use CPU devices</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="windows" restart="true">
     <name>clplatform_openclon12</name>
@@ -998,6 +1006,13 @@
     <type>boolean</type>
     <default>false</default>
     <shortdescription>display large colorpicker patch</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/color/softproof_bpc</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1636,6 +1651,13 @@
     <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • ISO &lt;b&gt;$(EXIF.ISO)&lt;/b&gt;</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/thumbnail_history_tooltip_max</name>
+    <type min="0" max="1000">int</type>
+    <default>20</default>
+    <shortdescription>maximum number of history items in the thumbnail tooltip</shortdescription>
+    <longdescription>the history tooltip of a thumbnail shows only the most recent items, followed by the number of items left out. 0 shows all items.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pressure_sensitivity</name>
@@ -4073,6 +4095,20 @@
     <shortdescription>method to use for getting the display profile</shortdescription>
     <longdescription>this option allows to force a specific means of getting the current display profile.\nthis is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>ui_last/display_force_cairo</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>convert to the display profile in darktable</shortdescription>
+    <longdescription>convert images to the display profile in darktable, and do not give them to the color management of the system. use this setting only as a workaround for compositor or driver bugs</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>ui_last/display_profile_file</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>display profile file</shortdescription>
+    <longdescription>the absolute path of an ICC profile. darktable uses this profile as the display profile for both windows, instead of the profile from the system. if the field is empty, or the file is not a readable RGB profile, darktable uses the system profile.\nthis setting has no effect on a window that darktable gives to the color management of the system. where the system converts the colors of all applications itself, as macOS does, the colors are then converted twice</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>
     <type min="72" max="9600">int</type>
@@ -4535,6 +4571,27 @@
     <longdescription>maximum height the snapshots list in darkroom will grow to before scrolling</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/snapshots/sidebyside</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>snapshot side-by-side</shortdescription>
+    <longdescription>show snapshots and compared history steps side by side instead of overlaid with a split line</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/snapshots/vertical</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>snapshot split is vertical</shortdescription>
+    <longdescription>split the comparison left/right instead of top/bottom</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/snapshots/inverted</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>snapshot sides swapped</shortdescription>
+    <longdescription>show the snapshot on the opposite side of the split</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/style/windowheight</name>
     <type>int</type>
     <default>400</default>
@@ -4575,6 +4632,13 @@
     <default>false</default>
     <shortdescription>whether to expand the curve graph</shortdescription>
     <longdescription>this is just to store whether to show the curve graph or not</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/contrastntexture/expand_gain_graph</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to expand the total gain graph</shortdescription>
+    <longdescription>this is just to store whether to show the gain graph of contrast and texture or not</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/agx/curve_graph_height</name>

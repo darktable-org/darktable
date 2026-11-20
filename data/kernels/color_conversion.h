@@ -18,7 +18,7 @@
 
 #include "common.h"
 #include "colorspace.h"
-#include "hdr-transfer.h"
+#include "hdr_transfer.h"
 
 // must be in synch with dt_iop_colorspace_type_t in colorspaces.h
 typedef enum dt_iop_colorspace_type_t

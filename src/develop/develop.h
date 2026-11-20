@@ -98,22 +98,15 @@ typedef enum dt_clipping_preview_mode_t
 } dt_clipping_preview_mode_t;
 
 // Cross-module access to the current settings of the exposure module, registered by
-// its gui_init() and currently used by the histogram, channelmixerrgb and agx.
+// its gui_init() and currently used by the histogram and agx.
 //
 // Thread contract: must only be called from the GTK main thread -- the accessors read the
 // exposure module's live `params` and the `module` pointer itself, both owned by that
 // thread. See dev-doc/GUI_Threading.md, "Publishing gui_data Through a Proxy".
-//
-// TODO: Known violation tracked as #22005 (remove this when fixed):
-// channelmixerrgb calls dt_dev_exposure_get_exposure() and dt_dev_exposure_get_black()
-// from _extract_patches(), which runs in process() on the preview pipe thread during
-// ColorChecker profiling.
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
-  float (*get_exposure)(struct dt_iop_module_t *exp);
   float (*get_effective_exposure)(struct dt_iop_module_t *exp);
-  float (*get_black)(struct dt_iop_module_t *exp);
   void (*handle_event)(int, gdouble, GdkModifierType, const gboolean);
 } dt_dev_proxy_exposure_t;
 
@@ -169,7 +162,7 @@ typedef struct dt_dev_viewport_t
 
 /* white balance and chromatic adaptation state, shared by all pipes of a dev
    - temperature, adaptation: pipe threads set them
-   - as_shot: only temperature's GUI reads it
+   - as_shot: only temperature reads it, in its GUI and in commit_params()
    - wb: what temperature's commit_params() last wrote, in any pipe. processing code reads
      pipe->wb instead. GUI code calls dt_dev_get_gui_wb(). the exceptions are
      temperature.c commit_params() and channelmixerrgb.c reload_defaults(), see their
@@ -205,6 +198,7 @@ typedef struct dt_develop_t
   double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
 
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
+  gboolean history_sealed; // the next change starts a new item, see dt_dev_history_seal()
   gboolean history_updating, image_force_reload, first_load;
   gboolean autosaving;
   double autosave_time;
@@ -414,7 +408,6 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
-    GtkWidget *display_intent_widget, *display2_intent_widget;    // TODO (#18559): remove gtk stuff from here
   } profile;
 
   GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
@@ -475,6 +468,9 @@ void dt_dev_add_history_item_target(dt_develop_t *dev,
                                     struct dt_iop_module_t *module,
                                     const gboolean enable,
                                     const gpointer target);
+// make the next change start a new history item instead of merging into the
+// top one (or cancel that); repeating it before that change makes no difference
+void dt_dev_history_seal(dt_develop_t *dev, const gboolean sealed);
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable);
@@ -576,14 +572,10 @@ void dt_dev_set_occlusion(dt_dev_viewport_t *port,
                           const int32_t left,
                           const int32_t right);
 
-/** the four calls below go through dt_dev_proxy_exposure_t: GTK main thread only,
+/** the two calls below go through dt_dev_proxy_exposure_t: GTK main thread only,
     see the thread contract on that struct */
-/** get exposure level */
-float dt_dev_exposure_get_exposure(dt_develop_t *dev);
 /** get final effective exposure level including compensations */
 float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
-/** get exposure black level */
-float dt_dev_exposure_get_black(dt_develop_t *dev);
 
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,
                                   GdkModifierType state,
@@ -722,25 +714,27 @@ void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
 /*
- * develop an image and returns the buf and processed width / height.
- * this is done as in the context of the darkroom, meaning that the
- * final processed sizes will align perfectly on the darkroom view.
+ * develop an image and returns the frame it published, NULL if nothing was
+ * rendered: fit into width x height, or else as in the context of the
+ * darkroom, meaning that the final processed sizes will align perfectly
+ * on the darkroom view.
+ * output is the sink: the frame is rendered for its image encoding, or
+ * stays in the pipe's working RGB if that is DT_COLORSPACE_NONE and
+ * colorout is filtered out, and is made in its format. the frame's
+ * encoding says what its values are: output's profile, the sRGB colorout
+ * replaced it with, or the working RGB.
  * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
-void dt_dev_image(const dt_imgid_t imgid,
-                  const size_t width,
-                  const size_t height,
-                  const int history_end,
-                  uint8_t **buf,
-                  float *scale,
-                  size_t *buf_width,
-                  size_t *buf_height,
-                  dt_dev_zoom_pos_t zoom_pos,
-                  const int32_t snapshot_id,
-                  GList *module_filter_out,
-                  const int devid,
-                  const gboolean finalscale,
-                  const gboolean want_float);
+struct dt_frame_t *dt_dev_image(const dt_imgid_t imgid,
+                                const size_t width,
+                                const size_t height,
+                                const gboolean fit,
+                                const int history_end,
+                                const int32_t snapshot_id,
+                                GList *module_filter_out,
+                                const int devid,
+                                const gboolean finalscale,
+                                const dt_display_output_t *output);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

@@ -30,6 +30,7 @@
 #define TYPE_USHORT16 RawImageType::UINT16
 
 #include <memory>
+#include <mutex>
 
 #define __STDC_LIMIT_MACROS
 
@@ -84,21 +85,22 @@ static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img,
                                                           dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
 
+static std::once_flag meta_once;
+
 static void dt_rawspeed_load_meta()
 {
   /* Load rawspeed cameras.xml meta file once */
-  if(meta == NULL)
+  // not under plugin_threadsafe: import gets here holding the image's cache
+  // write lock, and disk export takes image cache locks while holding
+  // plugin_threadsafe (storage/disk.c)
+  std::call_once(meta_once, []
   {
-    const _mutex_guard lock(&darktable.plugin_threadsafe);
-    if(meta == NULL)
-    {
-      char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
-      dt_loc_get_datadir(datadir, sizeof(datadir));
-      snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
-      // never cleaned up (only when dt closes)
-      meta = new CameraMetaData(camfile);
-    }
-  }
+    char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
+    // never cleaned up (only when dt closes)
+    meta = new CameraMetaData(camfile);
+  });
 }
 
 gboolean dt_rawspeed_lookup_makermodel(const char *maker,

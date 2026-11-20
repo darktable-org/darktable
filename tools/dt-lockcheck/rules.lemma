@@ -41,9 +41,10 @@ rule discipline_gap(M,F,Fn) :- has_discipline(M,F), access(M,F,Fn,"none",_), !se
 
 # pointer_share is last in the cascade, so unlike the four above it has to
 # exclude all of them explicitly instead of relying on a pairwise disagreement.
-# It asks for no unlocked site at all, because the lock protects the pointer
-# load, not the object, which the other thread may free while the reader uses
-# it.
+# It does not ask for an unlocked site, so it reports a shared pointer whose
+# every access is locked, and one that is never locked and only read.  A lock
+# protects the pointer load, not the object, which the other thread may free
+# while the reader uses it.
 rule reported_above(M,F) :- reported_widget(M,F).
 rule reported_above(M,F) :- violation(M,F,_).
 rule reported_above(M,F) :- no_lock_share(M,F).

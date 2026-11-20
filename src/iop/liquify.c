@@ -2684,6 +2684,12 @@ static void unselect_all(dt_iop_liquify_params_t *p)
       p->nodes[k].header.selected = 0;
 }
 
+gboolean canvas_overlay_active(dt_iop_module_t *self)
+{
+  const dt_iop_liquify_gui_data_t *g = self->gui_data;
+  return g && _layers_showing(g);
+}
+
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const float bb_width,

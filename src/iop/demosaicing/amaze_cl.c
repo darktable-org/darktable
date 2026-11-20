@@ -19,12 +19,13 @@
 #ifdef HAVE_OPENCL
 
 // amaze_demosaic() on the OpenCL device, see data/kernels/demosaic_amaze.cl.
-// The buffers cover the image plus the 16 pixel border of the CPU tiles,
-// zeroed because the passes read the margins they don't write, as the CPU
-// does in its tiles. Twelve of them are live at the peak; later passes reuse
-// the ones whose contents are no longer read, as the CPU code does with its
-// tile buffers. The passes that update in place on the CPU run one 16x16
-// work group per CPU tile of 160 pixels, 128 apart.
+// Every CPU tile of 160 pixels, 128 apart, has its own 160x160 part of the
+// buffers. The passes write zeros where they compute nothing, because later
+// passes read those margins as the CPU does in its tiles; that is much
+// cheaper than clearing the buffers first. Twelve buffers are live at the
+// peak; later passes reuse the ones whose contents are no longer read, as
+// the CPU code does with its tile buffers. The passes that update in place
+// on the CPU run one 16x16 work group per tile.
 static int process_amaze_cl(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *piece,
                             cl_mem dev_in,
@@ -37,10 +38,13 @@ static int process_amaze_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int pw = width + 32;
   const int ph = height + 32;
-  const size_t bsize = sizeof(float) * pw * ph;
+  const int ntx = (pw - 16 + 127) / 128;
+  const int nty = (ph - 16 + 127) / 128;
+  const int gw = 160 * ntx, gh = 160 * nty;
+  const size_t bsize = sizeof(float) * gw * gh;
   const float clip_pt = dt_iop_get_processed_minimum(piece);
   const float clip_pt8 = 0.8f * clip_pt;
-  const size_t tiles[2] = { 16 * ((pw - 16 + 127) / 128), 16 * ((ph - 16 + 127) / 128) };
+  const size_t tiles[2] = { 16 * ntx, 16 * nty };
   const size_t local[2] = { 16, 16 };
   const int m8 = 8, m10 = 10;
 
@@ -50,8 +54,7 @@ static int process_amaze_cl(dt_iop_module_t *self,
   for(int k = 0; k < NBUF && err == CL_SUCCESS; k++)
   {
     b[k] = dt_opencl_alloc_device_buffer(devid, bsize);
-    err = b[k] ? dt_opencl_fill_buffer(devid, b[k], (size_t)pw * ph, 1, 0.0f)
-               : CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    if(!b[k]) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   }
   if(err != CL_SUCCESS) goto error;
 
@@ -66,13 +69,13 @@ static int process_amaze_cl(dt_iop_module_t *self,
   cl_mem rbm = b[8], rbp = b[1], pmwt = b[11], pmwt2 = b[10], rbint = b[2];
   cl_mem dgr = b[6], dgb = b[7];
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_init, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_init, gw, gh,
           CLARG(dev_in), CLARG(cfa), CLARG(width), CLARG(height), CLARG(pw), CLARG(ph));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_grad, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_grad, gw, gh,
           CLARG(cfa), CLARG(delhvsqsum), CLARG(pw), CLARG(ph));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_cd, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_cd, gw, gh,
           CLARG(cfa), CLARG(vcd), CLARG(hcd), CLARG(vcdalt), CLARG(hcdalt), CLARG(dgintv), CLARG(dginth),
           CLARG(pw), CLARG(ph), CLARG(filters), CLARG(clip_pt8));
   if(err != CL_SUCCESS) goto error;
@@ -80,43 +83,43 @@ static int process_amaze_cl(dt_iop_module_t *self,
           CLARG(cfa), CLARG(vcd), CLARG(hcd), CLARG(vcdalt), CLARG(hcdalt), CLARG(vcd2), CLARG(hcd2),
           CLARG(pw), CLARG(ph), CLARG(filters), CLARG(clip_pt));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_hvwt, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_hvwt, gw, gh,
           CLARG(cfa), CLARG(vcd2), CLARG(hcd2), CLARG(dgintv), CLARG(dginth), CLARG(delhvsqsum),
           CLARG(hvwt), CLARG(nyquist), CLARG(pw), CLARG(ph), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_nyquist2, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_nyquist2, gw, gh,
           CLARG(nyquist), CLARG(nyquist2), CLARG(pw), CLARG(ph), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_area, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_area, gw, gh,
           CLARG(cfa), CLARG(nyquist2), CLARG(hvwt), CLARG(pw), CLARG(ph), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_amaze_vote, tiles, local,
           CLARG(hvwt), CLARG(hvwt2), CLARG(pw), CLARG(ph), CLARG(filters), CLARG(m8));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_green, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_green, gw, gh,
           CLARG(cfa), CLARG(vcd2), CLARG(hcd2), CLARG(hvwt2), CLARG(nyquist2), CLARG(dgrb), CLARG(green),
           CLARG(dgrb2h), CLARG(dgrb2v), CLARG(pw), CLARG(ph), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_nyquist_refine, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_nyquist_refine, gw, gh,
           CLARG(cfa), CLARG(vcd2), CLARG(hcd2), CLARG(nyquist2), CLARG(dgrb2h), CLARG(dgrb2v),
           CLARG(dgrb), CLARG(green), CLARG(pw), CLARG(ph), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_diag, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_diag, gw, gh,
           CLARG(cfa), CLARG(rbm), CLARG(rbp), CLARG(pmwt), CLARG(pw), CLARG(ph), CLARG(filters),
           CLARG(clip_pt));
   if(err != CL_SUCCESS) goto error;
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_amaze_vote, tiles, local,
           CLARG(pmwt), CLARG(pmwt2), CLARG(pw), CLARG(ph), CLARG(filters), CLARG(m10));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_rbint, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_rbint, gw, gh,
           CLARG(cfa), CLARG(rbm), CLARG(rbp), CLARG(pmwt2), CLARG(rbint), CLARG(pw), CLARG(ph),
           CLARG(filters));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_green_diag, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_green_diag, gw, gh,
           CLARG(cfa), CLARG(hvwt2), CLARG(pmwt2), CLARG(rbint), CLARG(dgrb), CLARG(green),
           CLARG(pw), CLARG(ph), CLARG(filters), CLARG(clip_pt));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_chroma, pw, ph,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_chroma, gw, gh,
           CLARG(dgrb), CLARG(dgr), CLARG(dgb), CLARG(pw), CLARG(ph), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_amaze_output, width, height,

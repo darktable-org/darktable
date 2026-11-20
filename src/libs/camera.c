@@ -254,7 +254,7 @@ static void _camera_property_accessibility_changed(const dt_camera_t *camera,
 
 static gboolean _bailout_of_tethering(gpointer user_data)
 {
-  // Consider all error types as failure and bailout of tethering mode
+  /* Idle callback from CAMERA_CONNECTION_BROKEN only. */
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
   dt_camctl_tether_mode(darktable.camctl, NULL, FALSE);
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
@@ -270,13 +270,15 @@ static void _camera_error_callback(const dt_camera_t *camera,
                                    dt_camera_error_t error,
                                    void *user_data)
 {
+  if(error != CAMERA_CONNECTION_BROKEN)
+    return;
+
   dt_control_log(_("connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering, user_data);
 }
 
 static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  const char *jobcode = NULL;
   const dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
   const uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.timer))
@@ -291,10 +293,8 @@ static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
                              : 0;
 
-  // Create background capture job
-  jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
   dt_control_add_job(DT_JOB_QUEUE_USER_FG,
-                     dt_camera_capture_job_create(jobcode, delay, count, brackets, steps));
+                     dt_camera_capture_job_create(delay, count, brackets, steps));
 }
 
 

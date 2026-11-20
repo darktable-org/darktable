@@ -38,6 +38,7 @@
 #include "dtgtk/thumbnail_btn.h"
 #include "gui/drag_and_drop.h"
 #include "gui/accelerators.h"
+#include "develop/frame.h"
 #include "views/view.h"
 
 static void _thumb_resize_overlays(dt_thumbnail_t *thumb);
@@ -102,7 +103,10 @@ static void _thumb_update_altered_tooltip(dt_thumbnail_t *thumb)
   gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
   if(thumb->is_altered)
   {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
+    // one line per history item: cap it so that a long history does not
+    // make the tooltip taller than the screen, which clips it and makes it flicker
+    char *tooltip = dt_history_get_items_as_string
+      (thumb->imgid, dt_conf_get_int("plugins/lighttable/thumbnail_history_tooltip_max"));
     if(tooltip)
     {
       gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
@@ -706,7 +710,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
   dt_develop_t *dev = darktable.develop;
   if(thumb->img_surf_preview
      && (dt_view_get_current() != DT_VIEW_DARKROOM
-         || !dev->preview_pipe->backbuf
+         || !dev->preview_pipe->frame
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
     dt_thumbnail_surface_destroy(thumb);
@@ -729,32 +733,20 @@ static gboolean _event_image_draw(GtkWidget *widget,
 
     if(dt_view_get_current() == DT_VIEW_DARKROOM
        && dev->preview_pipe->output_imgid == thumb->imgid
-       && dev->preview_pipe->backbuf)
+       && dev->preview_pipe->frame)
     {
       // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
       dt_thumbnail_surface_destroy(thumb);
 
-      // make sure we use all backbuf data here with local copies in a protected state
-      // to protect against darkroom image switching to next/previous for example.
-      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-      dt_pthread_mutex_lock(mutex);
+      // a reference keeps the frame as it is, whatever darkroom does next,
+      // switching to the next or previous image for example
+      dt_frame_t *frame = dt_dev_pixelpipe_frame(dev->preview_pipe);
+      const int buf_width = frame ? dt_frame_geometry(frame)->width : 0;
+      const int buf_height = frame ? dt_frame_geometry(frame)->height : 0;
 
-      // get new surface with preview image
-      const int buf_width = dev->preview_pipe->backbuf_width;
-      const int buf_height = dev->preview_pipe->backbuf_height;
-
-      const size_t bbufsize = sizeof(uint8_t) * 4 * buf_width * buf_height;
-      uint8_t *rgbbuf = dt_alloc_align_uint8(bbufsize);
-
-      memcpy(rgbbuf, dev->preview_pipe->backbuf, bbufsize);
-      dt_pthread_mutex_unlock(mutex);
-
-      const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_width);
-      cairo_surface_t *tmp_surface
-          = cairo_image_surface_create_for_data(rgbbuf,
-                                                CAIRO_FORMAT_RGB24,
-                                                buf_width, buf_height, stride);
+      // the colors GTK's surface shows
+      cairo_surface_t *tmp_surface = dt_frame_device_surface(frame, DT_COLORSPACE_DISPLAY);
 
       // copy preview image into final surface
       if(tmp_surface)
@@ -789,10 +781,9 @@ static gboolean _event_image_draw(GtkWidget *widget,
                           cairo_image_surface_get_data(thumb->img_surf));
           cairo_restore(cr2);
         }
-        cairo_surface_destroy(tmp_surface);
         cairo_destroy(cr2);
       }
-      dt_free_align(rgbbuf);
+      dt_frame_unref(frame);
       thumb->img_surf_preview = TRUE;
     }
     else
@@ -1254,7 +1245,7 @@ static void _dt_preview_updated_callback(gpointer instance,
   if(dt_view_get_current() == DT_VIEW_DARKROOM
      && (thumb->img_surf_preview
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
-     && darktable.develop->preview_pipe->backbuf)
+     && darktable.develop->preview_pipe->frame)
   {
     // reset surface and invalidate native mipmap cache (content changed)
     thumb->img_surf_dirty = TRUE;
@@ -1724,17 +1715,6 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
   if(dt_control_get_mouse_over_id() == thumb->imgid)
     dt_thumbnail_set_mouseover(thumb, TRUE);
 
-  // set tooltip for altered icon if needed
-  if(thumb->is_altered)
-  {
-    char *tooltip_txt = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip_txt)
-    {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip_txt);
-      g_free(tooltip_txt);
-    }
-  }
-
   // update tooltips
   _image_update_group_tooltip(thumb);
   _thumb_update_tooltip_text(thumb);
@@ -1835,6 +1815,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_top(thumb->w_bottom, thumb->img_margin->bottom);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
+    // margins set by the other overlay layout must be cleared, see dt_thumbnail_set_overlay()
+    gtk_widget_set_margin_top(thumb->w_bottom_eb, 0);
     gtk_widget_set_margin_start(thumb->w_bottom_eb, 0);
 
     // reject icon
@@ -1845,6 +1827,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // align on the left of the thumb
     gtk_widget_set_margin_start(thumb->w_reject, pos);
     gtk_widget_set_margin_bottom(thumb->w_reject, margin_b_icons);
+    gtk_widget_set_margin_top(thumb->w_reject, 0);
 
     // stars
     for(int i = 0; i < MAX_STARS; i++)
@@ -1852,6 +1835,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       gtk_widget_set_size_request(thumb->w_stars[i], icon_size, icon_size);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_margin_bottom(thumb->w_stars[i], margin_b_icons);
+      gtk_widget_set_margin_top(thumb->w_stars[i], 0);
       gtk_widget_set_margin_start(
           thumb->w_stars[i],
           thumb->img_margin->left
@@ -1865,6 +1849,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(thumb->w_color, margin_b_icons);
+    gtk_widget_set_margin_top(thumb->w_color, 0);
     pos = width - thumb->img_margin->right - icon_size + icon_size * 0.125;
     // align on the right
     gtk_widget_set_margin_start(thumb->w_color, pos);
@@ -1873,30 +1858,36 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     _set_flag(thumb->w_local_copy, GTK_STATE_FLAG_ACTIVE, FALSE);
     gtk_widget_set_size_request(thumb->w_local_copy, 1.618 * r1, 1.618 * r1);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_local_copy, 0);
+    gtk_widget_set_margin_start(thumb->w_local_copy, 0);
 
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_altered, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_altered, thumb->img_margin->right);
+    gtk_widget_set_margin_start(thumb->w_altered, 0);
 
     // the tags icon
     gtk_widget_set_size_request(thumb->w_tags, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_tags, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_tags, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_tags, thumb->img_margin->right + 2.5 * r1);
+    gtk_widget_set_margin_start(thumb->w_tags, 0);
 
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_group, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_group, thumb->img_margin->right + 5.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_group, 0);
 
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_audio, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 7.5 * r1);
+    gtk_widget_set_margin_start(thumb->w_audio, 0);
 
     // the filmstrip cursor
     gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 3.0 * r1);
@@ -1975,6 +1966,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_reject,
                                 padding - icon_size / 8.0 + border_l + px);
     gtk_widget_set_margin_top(thumb->w_reject, line2 + py);
+    // margins set by the other overlay layout must be cleared, see dt_thumbnail_set_overlay()
+    gtk_widget_set_margin_bottom(thumb->w_reject, 0);
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
@@ -1984,6 +1977,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       gtk_widget_set_margin_start
         (thumb->w_stars[i],
          padding - icon_size / 8.0 + border_l + r1 + (i + 1) * 3.0 * r1 + px);
+      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0);
     }
     // the color labels
     gtk_widget_set_size_request(thumb->w_color, icon_size, icon_size);
@@ -1993,6 +1987,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start
       (thumb->w_color,
        padding - icon_size / 8.0 + border_l + 2.0 * r1 + (MAX_STARS + 1) * 3.0 * r1 + px);
+    gtk_widget_set_margin_bottom(thumb->w_color, 0);
     // the local copy indicator
     _set_flag(thumb->w_local_copy, GTK_STATE_FLAG_ACTIVE, TRUE);
     gtk_widget_set_size_request(thumb->w_local_copy, icon_size2, icon_size2);
@@ -2004,21 +1999,25 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_altered, line3 + py);
     gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1 + px);
+    gtk_widget_set_margin_end(thumb->w_altered, 0);
     // the tags icon
     gtk_widget_set_size_request(thumb->w_tags, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_tags, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_tags, line3 + py);
     gtk_widget_set_margin_start(thumb->w_tags, 7.0 * r1 + px);
+    gtk_widget_set_margin_end(thumb->w_tags, 0);
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_group, line3 + py);
     gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1 + px);
+    gtk_widget_set_margin_end(thumb->w_group, 0);
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_audio, line3 + py);
     gtk_widget_set_margin_start(thumb->w_audio, r1 + px);
+    gtk_widget_set_margin_end(thumb->w_audio, 0);
     // the zoomming indicator
     gtk_widget_set_margin_top(thumb->w_zoom_eb, line3 + py);
     gtk_widget_set_margin_start(thumb->w_zoom_eb, 18.0 * r1 + px);

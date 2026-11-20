@@ -226,6 +226,7 @@ end:
 
 GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
 {
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   JsonParser *parser = darktable.noiseprofile_parser;
   JsonReader *reader = NULL;
   GList *result = NULL;
@@ -360,6 +361,7 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
 end:
   if(reader) g_object_unref(reader);
   if(result) result = g_list_sort(result, _sort_by_iso);
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   return result;
 }
 

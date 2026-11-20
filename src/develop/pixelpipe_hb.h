@@ -67,6 +67,18 @@ typedef struct dt_dev_refine_bypass_t
   int nkeys;
 } dt_dev_refine_bypass_t;
 
+// the uniform transform out = (in - offset) * scale that a piece applies, published from
+// commit_params() on the pipe thread so that a later module of the same pipe can undo
+// it without reading another module's GUI-owned params. Only the exposure module fills it.
+// compensation lets a later module report a value in the module's own (slider) units
+typedef struct dt_dev_pixelpipe_linear_t
+{
+  gboolean valid; // FALSE if the transform is not known for the current params
+  float offset;
+  float scale;
+  float compensation; // EV the module adds on its own on top of its exposure setting
+} dt_dev_pixelpipe_linear_t;
+
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -123,6 +135,9 @@ typedef struct dt_dev_pixelpipe_iop_t
   // the refinements previewed as off, copied at commit time so that the
   // renderer never reads the GUI's set from a worker thread
   dt_dev_refine_bypass_t refine_bypass;
+
+  // see dt_dev_pixelpipe_linear_t
+  dt_dev_pixelpipe_linear_t linear;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -245,6 +260,21 @@ typedef struct dt_dev_pixelpipe_t
   /** peak luminance of the output relative to the 203 nit reference white,
       1.0 for SDR; set with the output profile, read by tone mappers **/
   float output_headroom;
+  /** the window the pipe renders for, DT_COLORSPACE_DISPLAY or DISPLAY2,
+      recorded where the pipe is created; DT_COLORSPACE_NONE if none **/
+  dt_colorspaces_color_profile_type_t window;
+  /** what a presented pipe renders to, its window's output taken at the
+      start of each run; image type DT_COLORSPACE_NONE for pipes nobody
+      presents **/
+  dt_display_output_t output;
+  /** what the transform colorout built produces, recorded by its
+      commit_params(); type DT_COLORSPACE_NONE when no profile describes
+      what it writes **/
+  dt_color_encoding_t colorout_encoding;
+  /** what the pipe's output values mean, resolved when a run starts:
+      colorout_encoding, or the final working profile when colorout does
+      not run. output_profile_info is its stand-in for matrix-only code **/
+  dt_color_encoding_t output_encoding;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
@@ -254,12 +284,12 @@ typedef struct dt_dev_pixelpipe_t
   dt_dev_pixelpipe_status_t status;
   gboolean loading;
   gboolean input_changed;
-  // backbuffer (output)
-  uint8_t *backbuf;
-  size_t backbuf_size;
+  // output: the last frame a screen pipe published, under backbuf_mutex
+  // (dt_dev_pixelpipe_frame()), which holds its geometry; the last
+  // module's output for the others. the size describes either
+  struct dt_frame_t *frame;
+  void *backbuf;
   int backbuf_width, backbuf_height;
-  float backbuf_scale;
-  dt_dev_zoom_pos_t backbuf_zoom_pos;
   dt_hash_t backbuf_hash;
   dt_pthread_mutex_t mutex, backbuf_mutex, busy_mutex;
   int final_width, final_height;
@@ -290,6 +320,9 @@ typedef struct dt_dev_pixelpipe_t
   gboolean tiling;
   // should this pixelpipe display a mask in the end?
   dt_dev_pixelpipe_display_mask_t mask_display;
+  // the focused module's requested mask overlay is empty (uniform mask), so
+  // none is drawn; kept from the last run that reached its blend step
+  gboolean mask_display_empty;
   // should this pixelpipe completely suppressed the blendif module?
   gboolean bypass_blendif;
   // input data based on this timestamp:
@@ -437,6 +470,10 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
                               const dt_colorspaces_color_profile_type_t icc_type,
                               const gchar *icc_filename,
                               const dt_iop_color_intent_t icc_intent);
+
+/** a reference to the last frame a screen pipe published, or NULL: release
+ * it with dt_frame_unref() */
+struct dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,

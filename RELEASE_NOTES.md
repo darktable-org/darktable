@@ -87,6 +87,21 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
+- Wide gamut and HDR display on Wayland compositors that support color
+  management, in the darkroom, with its snapshots and second window,
+  and in the slideshow. With "follow output peak" on, AgX and sigmoid
+  render for the brightness the screen offers. Thumbnails, culling and
+  full preview are not shown in wide gamut or HDR. Where the compositor
+  does not manage the colors of the window, darktable converts to the
+  display profile as before.
+
+- Wide gamut and HDR display on macOS, in the darkroom, with its
+  snapshots and second window, and in the slideshow. With "follow
+  output peak" on, AgX and sigmoid render for the EDR headroom of the
+  screen, as on the XDR displays of MacBook Pros. Screens without EDR
+  still get wide gamut. Thumbnails, culling and full preview are not
+  shown in wide gamut or HDR.
+
 - New module saturation curve: remaps saturation and brilliance via
   two independent curves plotted against each pixel's own perceptually
   normalized saturation (darktable UCS or JzAzBz): a scene-referred
@@ -117,11 +132,46 @@ changes (where available).
   manager now drive the same controls in the panel. Existing masks are
   converted when an edit is opened and render as before.
 
+- DNG files carrying an OpcodeList3 GainMap, such as those written
+  by DJI drones, now have it applied during demosaicing. This
+  corrects the lens shading the camera recorded but left in the raw
+  data. Existing edits are left unchanged; new edits get it by
+  default.
+
 ## UI/UX Improvements
 
 - Added back and forward navigation in collections, with user-assignable
   shortcuts. Navigation remembers collection rules and thumbnail scroll
   positions for up to 32 visits during the current session.
+
+- Added a compare icon to each step of the history module. It shows the
+  image as it was at that step next to the live edit, side by side or
+  as an overlay with a split line, and the live edit stays fully
+  editable while comparing. The mode and rotate buttons of the history
+  toolbar turn the view, and the comparison ends when an edit discards
+  the compared step.
+
+- Added a "commit to history" button and action to the history module.
+  The next change then starts a new history item instead of merging
+  into the current one, so a long series of edits to one module can be
+  saved in increments. The button stays lit until that change is made,
+  and pressing it again cancels.
+
+- The history module no longer shows an on/off icon on each step. A
+  small icon now marks a module that is turned off, always on or
+  deprecated, and the step's tooltip says what the module is.
+
+- Snapshots now leave the image editable, like the history compare. In
+  the side-by-side view clicks go through to the darkroom, and in the
+  overlay only the split line and its rotate handle take input. A click
+  on the split line swaps the two sides, and dragging it off the
+  canvas or under the masks panel ends the comparison. The snapshots
+  module has a rotate button, and the mode and rotate buttons of the
+  snapshots and history modules show the same state.
+
+- The comparison layout (side by side or overlay, and the direction of
+  the split) is remembered across snapshots and sessions, and is shared
+  by the snapshots and history modules.
 
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
@@ -136,6 +186,10 @@ changes (where available).
 
 - Escape now cancels a mask shape that is being drawn, as a right-click
   does.
+
+- A mask shape that is ready to be placed is no longer drawn in the
+  middle of the image while the pointer is off the canvas. It shows up
+  again under the pointer as soon as the pointer comes back.
 
 - Mask nodes close or outside the image boundaries are now editable.
   When "edit shapes on canvas" is enabled, the node editing area is
@@ -238,6 +292,18 @@ changes (where available).
 - The recent collections module now handles single or double click
   according to the preference setting for collections.
 
+- The color checker frame placed in color calibration's "calibrate
+  with a color checker" section is now saved with the edit when
+  calibrating or validating. It is restored when the image is opened
+  again and follows the module through copy/paste of the history
+  stack and styles.
+
+- The processing tab of the preferences lists the OpenCL devices darktable
+  found. Each one can be switched off or back on, and their headroom can
+  be set, without editing darktablerc. The 'tuned GPU memory' option
+  moved into that section, and the headroom fields are grayed out while
+  it is off or only one device is in use.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
@@ -298,13 +364,21 @@ changes (where available).
 
 - Drawn masks render faster, most of all masks with nested groups or
   shapes reused by several modules: each group no longer clears and
-  combines a full-size buffer just to copy in its first shape.
+  combines a full-size buffer just to copy in its first shape, and
+  folds each shape only over the part of the image it covers.
 
 - Lens correction with lensfun is faster on the OpenCL path: lensfun
   is now asked for its corrections on a coarse grid instead of for
   every pixel, so the CPU no longer computes and uploads hundreds of
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
+
+## Documentation updates
+
+- The stable documentation for 5.8 can be found [here](https://docs.darktable.org/usermanual/5.8/en/)
+- The theme has been refreshed: It is more colorful, has better handling of wide screens, a table of contents in the right panel and more tweaks.
+- If you find room for improvement on the manual, you are welcome to open an [issue](https://github.com/darktable-org/dtdocs/issues), post to [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
+- Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). Lots of work has been done, among others Ukranian and French translations have now hit 100%.
 
 - The raw denoise module can now run on the OpenCL device for Bayer
   sensors.
@@ -348,13 +422,25 @@ changes (where available).
   pipeline moves the image from the CPU to the GPU.
 
 - Softproofing, gamut check and LUT-based ICC profiles in input and
-  output color profile can now run on the OpenCL device, through a 3D
-  LUT sampled from LittleCMS, instead of sending the image back to the
-  CPU. The "always use LittleCMS 2" export preference still applies the
-  exact transform on the CPU.
+  output color profile can now run on the OpenCL device, LUT profiles
+  through a 3D LUT sampled from LittleCMS, instead of sending the image
+  back to the CPU. Some soft proofs and gamut checks, such as a proof
+  to a CMYK profile, still run on the CPU, and the "always use
+  LittleCMS 2" export preference still applies the exact transform on
+  the CPU.
 
 - The LMMSE demosaicer can now run on the OpenCL device instead of
   sending the image back to the CPU for the demosaic.
+
+- On systems with several OpenCL devices, a discrete GPU is now used
+  by default ahead of an integrated one. On an Intel Mac with a Radeon
+  Pro 5500M an export used to run on the integrated GPU at about 2.5 s;
+  it now runs on the Radeon at about 0.4 s.
+
+- PoCL has its own entry in the OpenCL platform preferences and is the
+  only platform still allowed to run OpenCL on the CPU. Other CPU
+  OpenCL devices, like the one macOS provides, are no longer used:
+  macOS' one produced wrong exports.
 
 ## Other Changes
 
@@ -422,6 +508,10 @@ changes (where available).
 - Added a preference to disable automatic AI model update checks,
   with a manual check button for when it is off.
 
+- Added css classes for individual processing and utility modules to
+  enable styling of individual modules (e.g. coloring the header of
+  just the export module to make navigation of the panels easier).
+
 - Added a compression option for the TIFF files written by neural
   restore denoise and upscale, matching the TIFF export module.
 
@@ -438,6 +528,40 @@ changes (where available).
     'ProfileHueSatMapData' is provided.
   If one of these new input profiles is selected, the pipe gets its
   data corrected according to DNG specs matching the intended look.
+
+- Improved support for DNGs from smartphones:
+  - The default exposure includes the 'BaselineExposure' of the DNG.
+  - The DNG input profiles interpolate the forward matrix and the
+    'ProfileHueSatMapData' tables for the as-shot white balance.
+  - A single DNG gain map for all photosites is now supported.
+  - Profiled denoise falls back to the 'NoiseProfile' of the DNG when
+    no measured profile is available.
+
+- darktable now takes the display profile from the system. The
+  darkroom's display profile selectors and lighttable's "set display
+  profile" button have been removed, and earlier selections are no
+  longer used. Install monitor profiles in the operating system, and
+  use soft proof to preview another display or a print. A new "display
+  profile file" preference names a profile file to use instead.
+
+- On Windows, darktable uses the profile that Windows assigns to the
+  monitor, or sRGB when Windows reports none. On macOS, darktable
+  renders to sRGB and macOS converts to the screen, except for the
+  wide gamut and HDR display described above.
+
+- A new "convert to the display profile in darktable" preference is a
+  workaround for compositor or driver bugs. With it, darktable does not
+  give its images to the color management of the system.
+
+- The histogram profile no longer offers the system display profile.
+  Previous selections of that profile now use sRGB.
+
+- Soft proof now has its own rendering intent and a "black point
+  compensation" switch.
+
+- The display rendering intent setting has been removed. The display
+  uses the relative colorimetric intent, and a stored setting becomes
+  the soft proof intent.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
@@ -534,12 +658,29 @@ changes (where available).
   ARW 6.0 compressed and compressed (HQ) files. Bayer DNGs RawSpeed can't
   decode are loaded with LibRaw as well, e.g. lossless JPEG with
   unsupported predictors or uncompressed files with inconsistent strip
-  sizes as written by some DJI drones. All other files are still loaded with RawSpeed.
+  sizes as written by some DJI drones. This includes CinemaDNG lossless
+  (Blackmagic, DJI) and lossy (Blackmagic) files. All other files are
+  still loaded with RawSpeed.
 
 - The LibRaw loader now supports X-Trans sensors. Previously, RAFs
   routed to LibRaw via the libraw_extensions setting came out red.
 
+- White balance set to "as shot" or "camera reference" now uses the
+  edited image's own multipliers when it is pasted from another image,
+  or applied through a style or preset, instead of the multipliers of
+  the image it was copied from. This also changes existing edits that
+  received such a white balance from another image, which mostly
+  removes a color cast. To give several images the same multipliers,
+  for example a series shot under one light, switch the white balance
+  of the image to copy from to "user modified" first. Series that got
+  one white balance by pasting "as shot" in an earlier version now use
+  each image's own as-shot multipliers, and need to be pasted again
+  that way.
+
 ## Bug Fixes
+
+- Fixed bands of slightly wrong colors in images demosaiced with AMaZE
+  whose height or width is 1 to 15 pixels more than a multiple of 128.
 
 - Fixed faint seams on a 112 pixel grid in images demosaiced with
   LMMSE, where each tile read leftover data from the previous tile.
@@ -547,6 +688,8 @@ changes (where available).
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
   the device.
+
+- Fixed a crash in noise profile lookup due to missing thread safety.
 
 - Fixed Lightroom develop import which was not done. Only the tags,
   color labels, stars where imported.
@@ -726,6 +869,28 @@ changes (where available).
 - Fixed auto calculation of capture radius and jumping of capture
   radius sliders in UI.
 
+- Fixed stale display profiles after changing monitors or removing a
+  system profile. Missing or non-RGB monitor profiles now fall back to
+  sRGB.
+
+- Fixed stale colors in the duplicate preview, slideshow and pinned
+  second-window image after a display-profile change. Snapshots and the
+  duplicate preview also follow changes to softproof settings.
+
+- Soft proof now uses the proof profile's HDR headroom and clips
+  colors and highlights as an integer export, such as JPEG or 16-bit
+  TIFF, would.
+
+- With soft proof enabled, the scopes, the color picker and the
+  navigation thumbnail now show the proof.
+
+- Gamut check now correctly marks colors clipped by integer exports to
+  profiles such as sRGB, Adobe RGB and Rec. 2020, independently of the
+  display's gamut.
+
+- Fixed incorrect lighttable thumbnail colors when the system display
+  profile arrives after startup.
+
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
 
@@ -771,6 +936,8 @@ changes (where available).
 
 - Fixed various interpolating issues at top & lest image border.
 
+- Fixed calculation of green data at R/B photosites in RCD demosaicer.
+
 - Fixed a bug in OpenCL demosaicer leading to slighly increased chroma
   differences compared with CPU code.
 
@@ -793,6 +960,9 @@ changes (where available).
 - Copying a whole history stack no longer carries over the module order
   that was selected in an earlier "copy parts of the history" dialog.
 
+- Fixed lens correction with lensfun on the OpenCL path producing
+  different pixels from the CPU path along the image border.
+
 - Fixed the lens correction module reporting distortion correction as
   applied from embedded metadata when the file only carries chromatic
   aberration correction data.
@@ -804,6 +974,13 @@ changes (where available).
 
 - Fixed raw denoise using pixels of the wrong color near the top
   corners of some X-Trans images.
+
+- Fixed raw denoise on X-Trans images giving different results
+  depending on white balance's "prepare data for color calibration"
+  setting: with highlight reconstruction in inpaint opposed or
+  segmentation mode, clipped highlights were rebuilt with a white
+  balance correction meant for white-balanced data, although raw
+  denoise runs without white balance.
 
 - Fixed possible crashes after removing an image that had snapshots
   from the library, while either a snapshot was shown for comparison
@@ -930,6 +1107,10 @@ changes (where available).
 - Fixed memory leaks of libgphoto2 event data, CameraFile objects, and
   strdup'd filenames during tether polling and download.
 
+- Fixed tether mode treating non-fatal PTP errors as a lost camera
+  connection; only clear I/O / claim / missing-device failures now force
+  remount and leave tethering.
+
 - Fixed diffuse or sharpen giving a different result on the CPU than
   with OpenCL whenever an anisotropy was set: the CPU path computed the
   diffusion weights with a coarse approximation of the exponential.
@@ -945,6 +1126,8 @@ changes (where available).
   denoise giving a different result with OpenCL than on the CPU: the
   OpenCL path gave the horizontal neighbors twice their weight. Edits
   using them may look slightly different when exported with OpenCL.
+
+- Fixed tethered bracket capture progress using the wrong image total.
 
 - The non-local means modes of denoise (profiled) and astrophoto
   denoise now treat the image edges the same way on the CPU and with
@@ -967,6 +1150,9 @@ changes (where available).
   as sRAW and linear DNG, taking the clipped areas of every channel
   from the red channel alone.
 
+- Fixed collections operator filters (e.g. rating `>=1`) being rewritten
+  to the single visible value when pressing Enter.
+
 - Fixed floating-point raw files with embedded DNG gain maps coming out
   wrong with OpenCL. The gain maps of other raw files are now also
   applied the same way with OpenCL as on the CPU.
@@ -981,6 +1167,9 @@ changes (where available).
   SuperCCD raws, using the scaling interpolator instead of the warp
   interpolator set in the preferences, as the other rotating and
   distorting modules do.
+
+- Fixed workspace deletion ignoring filesystem errors, which could hide
+  an entry that still existed on disk.
 
 - Fixed random dither giving a slightly different noise pattern
   depending on the number of CPU threads. Its noise pattern changed,
@@ -1003,6 +1192,66 @@ changes (where available).
 
 - Fixed scale pixels output shifted by a fraction of a pixel in each
   tile when the image was processed in tiles.
+
+- Fixed a crash when double-clicking while adding gradient masks
+  continuously (ctrl+click on the gradient shape button).
+
+- Fixed defining a key + right-click shortcut in shortcut mapping mode.
+  The mouse button release was taken as mapping mode's own right-click
+  instead of completing the shortcut, so the shortcut was only assigned
+  when the key was let go, as a long key press if the key had been held
+  longer than a double-click.
+
+- Fixed a crash when defining a key + mouse click shortcut in the
+  shortcuts dialog and letting go of the key quickly after the click.
+
+- Fixed color picker means drifting over large areas on the CPU. A hue
+  mean over an area of reds, whose hues sit on both sides of the hue
+  wrap-around, could be off by several percent.
+
+- Fixed Quick Access panel entries being duplicated each time the
+  module layout manager was reopened, for layouts with no module
+  groups other than the Quick Access panel. Entries already
+  duplicated by this bug are merged when the layout is loaded.
+
+- Fixed the local copy indicator, and other thumbnail overlay icons, being
+  misplaced after switching away from the "overlays block on mouse hover"
+  mode, and the local copy indicator showing in "no overlays" mode.
+
+- Fixed white balance on edits made with darktable 4.7 or older whose
+  multipliers match one of the camera's presets: "settings" was empty
+  and the finetune slider had no effect.
+
+- Fixed a crash when opening an image from a Canon PowerShot A630 in the
+  darkroom, if its white balance was the camera's "daylight" preset.
+
+- Fixed the finetune slider of a white balance camera preset showing the
+  tuning of another preset with the same multipliers, for example
+  "cloudy" showing +10 mired on a Nikon D3400. Moving the slider then
+  jumped to the other preset's settings.
+
+- Fixed images from 4-color sensors (CYGM, RGBE) rendering as a flat
+  colored field when an edit made with darktable 4.7 or older had white
+  balance at the camera's as-shot or reference multipliers.
+
+- Fixed the history tooltip of a lighttable thumbnail growing taller
+  than the screen and flickering for images with a long history. It
+  now shows the newest 20 items and how many more there are.
+
+- Fixed the normalization values (exposure compensation and black
+  offset) in color calibration's color checker report, which are meant
+  to be set in exposure as-is: they were off when the black level was
+  not zero, and in validation. They are now shown as not available
+  when exposure before color calibration has several instances, is
+  masked or blended, or is in automatic (deflicker) mode, and when the
+  fitted values cannot be set in exposure.
+
+- Fixed darktable freezing when dragging a Bézier handle of a path or
+  AI object mask node whose other handle sits on the node itself.
+
+- Fixed nodes of a drawn path that could not be selected or moved
+  after a large feather was given to a sharp corner where the path
+  turns inward, such as the middle nodes of a sunglasses-shaped path.
 
 ## Lua
 
@@ -1068,16 +1317,22 @@ changes (where available).
 - libarchive, previously only needed for AI model downloads, is now
   required for the `.dtdata` sidecar
 
+- macOS requires at least GTK 3.24.37
+
 ### Optional
 
 - OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the
   core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
   or features/geometry on OpenCV 5)
 
+- libwayland-client 1.20 and wayland-scanner, with GTK's Wayland
+  backend, for wide gamut and HDR display on Wayland
+
 ## Camera support, compared to 5.6
 
 ### Base Support
 
+- Canon EOS C50 (requires LibRaw 0.23 or newer)
 - Canon EOS R50 V (requires LibRaw 0.23 or newer)
 - Canon EOS R6 Mark III (requires LibRaw 0.23 or newer)
 - Canon PowerShot V1 (requires LibRaw 0.23 or newer)
@@ -1093,7 +1348,6 @@ changes (where available).
 ### Missing Compression Mode Support
 
 - Apple ProRAW DNGs
-- CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
 - Nikon high efficiency NEFs, except from the Z6 III, Z8, Z9 and Z f
   with LibRaw 0.23 or newer

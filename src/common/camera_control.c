@@ -190,9 +190,31 @@ static gboolean _camctl_ptp_error_is_transient(const char *text)
 {
   if(!text) return FALSE;
   /* 0x2019 and similar: camera temporarily busy (common during live view) */
-  if(strstr(text, "Device Busy")) return TRUE;
-  if(strstr(text, "0x2019")) return TRUE;
-  return FALSE;
+  gchar *h = g_ascii_strdown(text, -1);
+  const gboolean hit =
+      g_strstr_len(h, -1, "device busy")
+      || g_strstr_len(h, -1, "0x2019");
+  g_free(h);
+  return hit;
+}
+
+static gboolean _camctl_ptp_error_is_fatal(const char *text)
+{
+  if(!text) return FALSE;
+  /* Unplug / unusable connection - allowlist not "any PTP". */
+  gchar *h = g_ascii_strdown(text, -1);
+  const gboolean hit =
+      g_strstr_len(h, -1, "i/o error")
+      || g_strstr_len(h, -1, "io error")
+      || g_strstr_len(h, -1, "could not claim")
+      || g_strstr_len(h, -1, "no such device")
+      || g_strstr_len(h, -1, "device not found")
+      || g_strstr_len(h, -1, "usb claim")
+      || g_strstr_len(h, -1, "usb_claim")
+      || g_strstr_len(h, -1, "ptp no device")
+      || g_strstr_len(h, -1, "0x02f9");
+  g_free(h);
+  return hit;
 }
 
 static void _error_func_dispatch25(GPContext *context,
@@ -200,6 +222,10 @@ static void _error_func_dispatch25(GPContext *context,
                                    void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
+
+  if(camctl->active_camera && camctl->active_camera->ptperror)
+    return;
+
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 error: %s", text);
 
   if(!text || !strstr(text, "PTP"))
@@ -212,11 +238,21 @@ static void _error_func_dispatch25(GPContext *context,
     return;
   }
 
+  if(!_camctl_ptp_error_is_fatal(text))
+  {
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] non-fatal PTP error: %s", text);
+    dt_control_log(_("camera error: %s"), text);
+    return;
+  }
+
   /* Fatal PTP: mark remount needed and tear the session down. */
   GList *ci = g_list_find(camctl->cameras, camctl->active_camera);
   if(ci)
   {
     dt_camera_t *cam = (dt_camera_t *)ci->data;
+    if(cam->ptperror)
+      return;
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] PTP error `%s' for camera %s on port %s",
              text, cam->model, cam->port);

@@ -32,9 +32,11 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
+
 #ifdef HAVE_LIBJXL
 #include "imageio/imageio_jpegxl.h"
 #endif
+
 #include "imageio/imageio_tiff.h"
 
 #ifdef HAVE_LIBAVIF
@@ -905,7 +907,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   const dt_dev_wb_t *wb = &pipe->wb;
-  const gboolean corrected = wb->late_correction && d->type != DT_COLORSPACE_LAB;
+  const gboolean corrected = dt_dev_wb_late_correction(wb, &pipe->dsc) && d->type != DT_COLORSPACE_LAB;
   dt_aligned_pixel_t coeffs;
   dt_dev_wb_get_rgb_correction(wb, corrected, coeffs);
 
@@ -1560,7 +1562,7 @@ void process(dt_iop_module_t *self,
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   const dt_dev_wb_t *wb = &pipe->wb;
   const dt_iop_colorin_data_t *const d = piece->data;
-  const gboolean corrected = wb->late_correction && d->type != DT_COLORSPACE_LAB;
+  const gboolean corrected = dt_dev_wb_late_correction(wb, &pipe->dsc) && d->type != DT_COLORSPACE_LAB;
   dt_aligned_pixel_t coeffs;
   dt_dev_wb_get_rgb_correction(wb, corrected, coeffs);
 
@@ -2367,6 +2369,7 @@ void reload_defaults(dt_iop_module_t *self)
       g_free(tooltip_part_profile_dirs);
       if(bufsize)
         free(iccCopyr);
+      cmsCloseProfile(cmsprofile);
     }
 
     // Make a generic tooltip if there is no ICC profile in the current image,

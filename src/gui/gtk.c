@@ -31,6 +31,7 @@
 #include "common/image.h"
 #include "common/gimp.h"
 #include "gui/guides.h"
+#include "gui/presenter.h"
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
@@ -363,7 +364,8 @@ static void _focuspeaking_switch_button_callback(GtkWidget *button,
 
   if(state_memory == state_new) return; // nothing to change, bypass
 
-  darktable.gui->show_focus_peaking = state_new;
+  // the pipe workers read it when they publish a frame
+  g_atomic_int_set(&darktable.gui->show_focus_peaking, state_new);
 
   gtk_widget_queue_draw(button);
 
@@ -901,7 +903,9 @@ static gboolean _draw(GtkWidget *da,
   darktable.gui->drawing_snapshot = da == ss;
   if(!darktable.gui->drawing_snapshot) gtk_widget_queue_draw(ss);
 
-  dt_control_expose(da, cr);
+  cairo_t *pcr = dt_presenter_begin(da, cr);
+  dt_control_expose(da, pcr);
+  dt_presenter_end(da, pcr);
 
   return TRUE;
 }
@@ -909,6 +913,16 @@ static gboolean _draw(GtkWidget *da,
 static GdkDevice *_touchpad = NULL;
 static gint64 _touchpad_last_gesture = 0;
 #define DT_TOUCHPAD_ASSOCIATION_USEC (500 * G_TIME_SPAN_MILLISECOND)
+
+static void _display_pref_changed(gpointer instance,
+                                  gpointer user_data)
+{
+  // the display profile file preference applies without a restart; asking
+  // again with the file unchanged changes nothing
+  dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
+  if(darktable.develop && darktable.develop->second_wnd)
+    dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY2);
+}
 
 static void _touchpad_gestures_pref_changed(gpointer instance,
                                             gpointer user_data)
@@ -1738,6 +1752,7 @@ static void _button_pressed(GtkGestureSingle *gesture,
       gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure);
   }
   GtkWidget *w = dt_gui_get_widget(gesture);
+  darktable.gui->press_in_snapshot = w == dt_ui_snapshot(darktable.gui->ui);
   // n_press replaces the old GDK_BUTTON_PRESS/GDK_2BUTTON_PRESS/GDK_3BUTTON_PRESS
   // event-type distinction that dt_control_button_pressed() stores
   dt_control_button_pressed(x, y, pressure,
@@ -1784,6 +1799,8 @@ static void _mouse_moved(GtkEventControllerMotion *controller,
       gui->have_pen_pressure = pressure != 1.0;
     }
   }
+  darktable.gui->pointer_in_snapshot =
+    dt_gui_get_widget(controller) == dt_ui_snapshot(darktable.gui->ui);
   dt_control_mouse_moved(x, y, pressure,
                          dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & 0xf);
 #if !GTK_CHECK_VERSION(4, 0, 0)
@@ -2049,7 +2066,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkWidget *widget;
   if(!gui->ui)
     gui->ui = g_malloc0(sizeof(dt_ui_t));
-  gui->surface = NULL;
   gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
@@ -2075,6 +2091,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
                             _touchpad_gestures_pref_changed, gui);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _display_pref_changed, NULL);
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
@@ -2385,11 +2403,6 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
     g_main_loop_unref(gui->main_loop);
     gui->main_loop = NULL;
     g_atomic_int_set(&darktable.gui_running, 0);
-  }
-  if(darktable.gui->surface)
-  {
-    cairo_surface_destroy(darktable.gui->surface);
-    darktable.gui->surface = NULL;
   }
 }
 
@@ -3196,6 +3209,26 @@ GtkWidget *dt_ui_snapshot(const dt_ui_t *ui)
 {
   return ui->snapshot;
 }
+
+// asks GDK rather than trusting enter and leave: under a GTK grab (a popup, a
+// modal popover) the center view's leave goes to the grab widget instead, and
+// the ungrab does not replay it once the pointer is elsewhere
+gboolean dt_ui_pointer_on_canvas(const dt_ui_t *ui)
+{
+  if(!ui->center || !gtk_widget_get_realized(ui->center)) return FALSE;
+
+  GdkDevice *pointer =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(ui->center)));
+  GdkWindow *under = pointer ? gdk_device_get_window_at_position(pointer, NULL, NULL) : NULL;
+  if(!under) return FALSE;
+
+  GtkWidget *canvas[] = { ui->center, ui->snapshot, ui->flexi_halo[0], ui->flexi_halo[1] };
+  for(int i = 0; i < G_N_ELEMENTS(canvas); i++)
+    if(canvas[i] && gtk_widget_get_visible(canvas[i])
+       && under == gtk_widget_get_window(canvas[i]))
+      return TRUE;
+  return FALSE;
+}
 dt_thumbtable_t *dt_ui_thumbtable(const struct dt_ui_t *ui)
 {
   return ui->thumbtable;
@@ -3893,6 +3926,17 @@ static gboolean _flexi_shape_highlighted(void)
   return FALSE;
 }
 
+// the halo has nothing to offer a focused module that cannot be masked, and
+// would sit on top of the interactive overlay a module draws on the canvas
+// (a chart, a crop frame, ...) when that reaches the border, swallowing the
+// clicks meant for it
+static gboolean _flexi_halo_unwanted(void)
+{
+  const dt_iop_module_t *module = darktable.develop ? darktable.develop->gui_module : NULL;
+  if(!module) return FALSE;
+  if(!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)) return TRUE;
+  return module->canvas_overlay_active && module->canvas_overlay_active((dt_iop_module_t *)module);
+}
 
 // clicking a sliver pins the panel open on that side. Like the toolbar button
 // and the "blend mask" caption (dt_masks_gui_flexi_inline_collapse_clicked in
@@ -4683,6 +4727,25 @@ static void _flexi_halo_motion(GtkEventControllerMotion *controller,
   }
 }
 
+// the halo passes its motion on to the canvas, so for the canvas the pointer
+// is still on it: entering the halo undoes the canvas leave that comes just
+// before, and leaving it, possibly straight off the window edge, is a canvas
+// leave. Otherwise an armed shape stays drawn where the halo saw it last
+static void _flexi_halo_enter(GtkEventControllerMotion *controller,
+                              gdouble x,
+                              gdouble y,
+                              GtkWidget *w)
+{
+  dt_control_mouse_enter();
+  _flexi_sliver_enter(controller, x, y, w);
+}
+
+static void _flexi_halo_leave(GtkEventControllerMotion *controller, GtkWidget *w)
+{
+  _flexi_sliver_leave(controller, w);
+  dt_control_mouse_leave();
+}
+
 // the wide band the hairline grows into on approach. An overlay child of the
 // canvas, not a column: a column would push the image sideways every time the
 // pointer wandered near an edge. Carries the same handlers as the hairline, so
@@ -4704,8 +4767,8 @@ static GtkWidget *_flexi_build_halo(dt_ui_t *ui, const gboolean right)
   gtk_widget_set_events(h, GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK
                            | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(h), "draw", G_CALLBACK(_flexi_sliver_draw), NULL);
-  dt_gui_connect_motion(h, (GCallback)_flexi_halo_motion, _flexi_sliver_enter,
-                        _flexi_sliver_leave, h);
+  dt_gui_connect_motion(h, (GCallback)_flexi_halo_motion, _flexi_halo_enter,
+                        _flexi_halo_leave, h);
   dt_gui_connect_click(h, _flexi_sliver_pressed, NULL, h);
   gtk_widget_set_no_show_all(h, TRUE);
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(ui)), h);
@@ -4720,7 +4783,8 @@ static GtkWidget *_flexi_build_halo(dt_ui_t *ui, const gboolean right)
 // While it is shown it takes clicks over that strip of canvas, so it stands
 // down for a canvas gesture the panel itself started -- reaching the canvas
 // means leaving the panel, and a band in the way would break the very operation
-// the user came to finish.
+// the user came to finish. The same goes for a focused module that cannot be
+// masked, or that is showing an interactive overlay (_flexi_halo_unwanted).
 //
 // It deliberately does NOT stand down for armed mask editing generally, even
 // though shape nodes are editable right up to and past the image border and the
@@ -4753,7 +4817,8 @@ static gboolean _flexi_proximity_poll(gpointer user_data)
   gboolean live[2] = { collapsed || ui->flexi_panel_right,
                        collapsed || !ui->flexi_panel_right };
 
-  if(!_flexi_canvas_op_pending() && !_flexi_shape_highlighted() && gtk_widget_get_realized(base))
+  if(!_flexi_canvas_op_pending() && !_flexi_shape_highlighted()
+     && !_flexi_halo_unwanted() && gtk_widget_get_realized(base))
   {
     GdkWindow *win = gtk_widget_get_window(base);
     GdkDisplay *display = gtk_widget_get_display(base);
@@ -5204,6 +5269,31 @@ gboolean dt_ui_flexi_panel_is_collapsed(dt_ui_t *ui)
 gboolean dt_ui_flexi_panel_is_right(dt_ui_t *ui)
 {
   return ui && ui->flexi_panel_right;
+}
+
+void dt_ui_flexi_panel_get_cover(dt_ui_t *ui, int *left, int *right)
+{
+  int cover[2] = { 0, 0 };
+  if(ui)
+  {
+    const gboolean collapsed = dt_ui_flexi_panel_is_collapsed(ui);
+    if(!collapsed && !ui->flexi_column)
+      cover[ui->flexi_panel_right ? 1 : 0] =
+        MAX(0, gtk_widget_get_allocated_width(ui->flexi_panel_overlay));
+
+    // a halo is only up while the pointer is at its edge, but it comes up
+    // under any pointer that goes there to reach for the canvas. Which edges
+    // are live is as in _flexi_proximity_poll
+    if(ui->flexi_has_content && !_flexi_halo_unwanted())
+    {
+      const gboolean live[2] = { collapsed || ui->flexi_panel_right,
+                                 collapsed || !ui->flexi_panel_right };
+      for(int i = 0; i < 2; i++)
+        if(live[i]) cover[i] = MAX(cover[i], _flexi_halo_width(ui->flexi_halo[i]));
+    }
+  }
+  if(left) *left = cover[0];
+  if(right) *right = cover[1];
 }
 
 
@@ -7681,6 +7771,7 @@ GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_na
     if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
     else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
     else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "pointer"))   type = GDK_HAND2;
     else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
     else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
     else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
@@ -7714,6 +7805,52 @@ void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor)
   if(window) gdk_window_set_cursor(window, cursor);
 #endif
 }
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+GdkCursor *dt_gui_cursor_rename(GtkWidget *widget)
+{
+  static GdkCursor *cursor = NULL;
+  if(cursor) return cursor;
+  const int size = 24, scale = gtk_widget_get_scale_factor(widget);
+  cairo_surface_t *surface =
+    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size * scale, size * scale);
+  cairo_surface_set_device_scale(surface, scale, scale);
+  cairo_t *cr = cairo_create(surface);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+  cairo_set_line_width(cr, 1.2);
+  // the arrow
+  cairo_move_to(cr, 1.5, 1.5);
+  cairo_line_to(cr, 1.5, 16.5);
+  cairo_line_to(cr, 5.5, 12.5);
+  cairo_line_to(cr, 8.5, 19.5);
+  cairo_line_to(cr, 11, 18.5);
+  cairo_line_to(cr, 8, 11.5);
+  cairo_line_to(cr, 13.5, 11.5);
+  cairo_close_path(cr);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_stroke(cr);
+  // the pencil, tip down and left
+  cairo_move_to(cr, 12, 22);
+  cairo_line_to(cr, 12.85, 18.61);
+  cairo_line_to(cr, 19.22, 12.24);
+  cairo_line_to(cr, 21.76, 14.78);
+  cairo_line_to(cr, 15.39, 21.15);
+  cairo_close_path(cr);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 12.85, 18.61);
+  cairo_line_to(cr, 15.39, 21.15);
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(widget), surface, 1.5, 1.5);
+  cairo_surface_destroy(surface);
+  return cursor;
+}
+#endif
 
 void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner)
 {

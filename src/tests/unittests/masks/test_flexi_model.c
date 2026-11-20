@@ -1056,10 +1056,13 @@ static void test_controls_follow_the_hover_when_asked(void **state)
   flexi_conf_init();
   flexi_build("u{1,5}");
   flexi_bd.panel_selected_formid = 1;
-  flexi_bd.canvas_hovered_formid = 5;
+  dt_masks_form_gui_t gui;
+  dt_masks_init_form_gui(&gui);
+  flexi_dev.form_gui = &gui;
+  gui.canvas_hover_formid = 5;
   assert_int_equal(dt_masks_model_controls_target(&flexi_bd, TRUE).id, 5);
   assert_int_equal(dt_masks_model_controls_target(&flexi_bd, FALSE).id, 1);
-  flexi_bd.canvas_hovered_formid = INVALID_MASKID;
+  flexi_dev.form_gui = NULL;
 }
 
 // a group selected on its own isolates its members. The mask's own group holds
@@ -1941,6 +1944,40 @@ static void test_pick_toggle_joins_the_selection(void **state)
   assert_null(picked);
 }
 
+// shift+click: the rows between the anchor and the click are picked, in
+// either direction, replacing the picks or (ctrl/cmd+shift) joining them
+static void test_pick_range(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{1,2,3,4,5}");
+  GList *order = NULL;
+  for(int i = 1; i <= 5; i++) order = g_list_append(order, GINT_TO_POINTER(i));
+  GList *picked = NULL;
+
+  dt_masks_pick_result_t r = dt_masks_model_pick_range(grp, &picked, order, 2, 4, FALSE);
+  assert_int_equal(r.outcome, DT_MASKS_PICK_CHANGED);
+  assert_int_equal(g_list_length(picked), 3);
+
+  // upwards, replacing
+  r = dt_masks_model_pick_range(grp, &picked, order, 5, 4, FALSE);
+  assert_int_equal(g_list_length(picked), 2);
+  assert_null(g_list_find(picked, GINT_TO_POINTER(2)));
+
+  // adding keeps the others
+  r = dt_masks_model_pick_range(grp, &picked, order, 1, 2, TRUE);
+  assert_int_equal(g_list_length(picked), 4);
+
+  // a range of one row is a plain click on it
+  r = dt_masks_model_pick_range(grp, &picked, order, 3, 3, FALSE);
+  assert_int_equal(r.outcome, DT_MASKS_PICK_SELECT);
+  assert_int_equal(r.id, 3);
+  assert_null(picked);
+
+  // an end that is not listed does nothing
+  r = dt_masks_model_pick_range(grp, &picked, order, 3, 9, FALSE);
+  assert_int_equal(r.outcome, DT_MASKS_PICK_IGNORED);
+  g_list_free(order);
+}
+
 // a group is picked whole: with it, all it holds at any depth, and the
 // members shown as the picks that act are the group alone
 static void test_pick_toggle_picks_a_group_whole(void **state)
@@ -2570,6 +2607,7 @@ int main(void)
     cmocka_unit_test_teardown(test_compose_stops_where_nesting_does, _teardown_composed),
     cmocka_unit_test(test_picked_points_are_members_bottom_up),
     cmocka_unit_test(test_pick_toggle_joins_the_selection),
+    cmocka_unit_test(test_pick_range),
     cmocka_unit_test(test_pick_toggle_picks_a_group_whole),
     cmocka_unit_test(test_pick_toggle_takes_a_group_off_whole),
     cmocka_unit_test(test_pick_toggle_can_leave_no_picks),

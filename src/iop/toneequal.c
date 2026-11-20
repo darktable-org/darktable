@@ -790,26 +790,6 @@ static void _get_point(const dt_iop_module_t *self,
   *y = pts[1];
 }
 
-static float _luminance_from_module_buffer(const dt_iop_module_t *self)
-{
-  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-
-  const size_t c_x = g->cursor_pos_x;
-  const size_t c_y = g->cursor_pos_y;
-
-  // get buffer x,y given the cursor position
-  int b_x = 0;
-  int b_y = 0;
-
-  _get_point(self, c_x, c_y, &b_x, &b_y);
-
-  return get_luminance_from_buffer(g->pd.buf,
-                                   g->pd.width,
-                                   g->pd.height,
-                                   b_x,
-                                   b_y);
-}
-
 /***
  * Exposure compensation computation
  *
@@ -2577,14 +2557,15 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
     return;
   }
 
+  dt_iop_gui_enter_critical_section(self);
   if(!g->luminance_valid || dt_pipe_processing(self->dev->full.pipe) || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
+    dt_iop_gui_leave_critical_section(self);
     return;
   }
 
   // The goal is to spread 90 % of the exposure histogram in the [-7, -1] EV
-  dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = FALSE;
 
   update_histogram(self);
@@ -2750,10 +2731,18 @@ int mouse_moved(dt_iop_module_t *self,
 
   const int x_pointer = pzx * wd;
   const int y_pointer = pzy * ht;
+  const gboolean inside = x_pointer >= 0 && x_pointer < wd && y_pointer >= 0 && y_pointer < ht;
+
+  // get buffer x,y given the cursor position
+  int b_x = 0;
+  int b_y = 0;
+
+  if(inside)
+    _get_point(self, x_pointer, y_pointer, &b_x, &b_y);
 
   dt_iop_gui_enter_critical_section(self);
   // Cursor is valid if it's inside the picture frame
-  if(x_pointer >= 0 && x_pointer < wd && y_pointer >= 0 && y_pointer < ht)
+  if(inside)
   {
     g->cursor_valid = TRUE;
     g->cursor_pos_x = x_pointer;
@@ -2768,7 +2757,7 @@ int mouse_moved(dt_iop_module_t *self,
 
   // store the actual exposure too, to spare I/O op
   if(g->cursor_valid && !dt_pipe_processing(dev->full.pipe) && g->luminance_valid)
-    g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
+    g->cursor_exposure = log2f(get_luminance_from_buffer(g->pd.buf, g->pd.width, g->pd.height, b_x, b_y));
   dt_iop_gui_leave_critical_section(self);
 
   switch_cursors(self);
@@ -2885,16 +2874,25 @@ int scrolled(dt_iop_module_t *self,
                      || !g->user_param_valid
                      || dt_pipe_processing(dev->full.pipe)
                      || !g->has_focus;
-
+  const int c_x = g->cursor_pos_x;
+  const int c_y = g->cursor_pos_y;
   dt_iop_gui_leave_critical_section(self);
   if(fail) return 1;
 
+  int b_x = 0;
+  int b_y = 0;
+  _get_point(self, c_x, c_y, &b_x, &b_y);
+
   // re-read the exposure in case it has changed
   // keep critical section as short as possible and avoid mutex locking
-  const float lum = log2f(_luminance_from_module_buffer(self));
   dt_iop_gui_enter_critical_section(self);
-  g->cursor_exposure = lum;
+  const float exposure = g->luminance_valid && !dt_pipe_processing(dev->full.pipe)
+      ? log2f(get_luminance_from_buffer(g->pd.buf, g->pd.width, g->pd.height, b_x, b_y))
+      : NAN;
+  const gboolean ok = dt_isfinite(exposure);
+  if(ok) g->cursor_exposure = exposure;
   dt_iop_gui_leave_critical_section(self);
+  if(!ok) return 1;
 
   // Set the correction from mouse scroll input
   const float increment = (up) ? +1.0f : -1.0f;
@@ -2972,23 +2970,26 @@ void gui_post_expose(dt_iop_module_t *self,
   const gboolean fail = !g->cursor_valid
                      || !g->interpolation_valid
                      || !g->has_focus;
-  gboolean luminance_valid = g->luminance_valid;
-  float cursor_exposure = g->cursor_exposure;
+  const int c_x = g->cursor_pos_x;
+  const int c_y = g->cursor_pos_y;
   dt_iop_gui_leave_critical_section(self);
 
   if(fail) return;
 
+  int b_x = 0;
+  int b_y = 0;
+  _get_point(self, c_x, c_y, &b_x, &b_y);
+
   // Re-read the exposure in case it has changed.  While the pipe is busy
   // the module buffer may be mid-recompute, so keep the last value and
   // stay drawing the indicator (no blinking cursor during reprocess).
-  if(luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
-    cursor_exposure = log2f(_luminance_from_module_buffer(self));
-
   dt_iop_gui_enter_critical_section(self);
-  g->cursor_exposure = cursor_exposure;
+  if(g->luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
+    g->cursor_exposure = log2f(get_luminance_from_buffer(g->pd.buf, g->pd.width, g->pd.height, b_x, b_y));
+
   // Get coordinates
-  const float x_pointer = g->cursor_pos_x;
-  const float y_pointer = g->cursor_pos_y;
+  const double x_pointer = g->cursor_pos_x;
+  const double y_pointer = g->cursor_pos_y;
 
   float exposure_in = 0.0f;
   float luminance_in = 0.0f;
@@ -3006,7 +3007,7 @@ void gui_post_expose(dt_iop_module_t *self,
     exposure_out = exposure_in + correction;
     luminance_out = exp2f(exposure_out);
   }
-  luminance_valid = g->luminance_valid;
+  const gboolean luminance_valid = g->luminance_valid;
   dt_iop_gui_leave_critical_section(self);
 
   if(dt_isnan(exposure_in)) return; // something went wrong
@@ -3332,6 +3333,7 @@ static gboolean area_draw(GtkWidget *widget,
   const gboolean factors_valid = g->factors_valid;
   const gboolean user_param_valid = g->user_param_valid;
   const gboolean nodes_valid = g->valid_nodes_x && g->valid_nodes_y;
+  const gboolean hist_valid = g->histogram_valid;
   const float sigma = g->sigma;
   dt_simd_memcpy(g->gui_lut, gui_lut, UI_SAMPLES);
   dt_simd_memcpy(g->nodes_x, nodes_x, CHANNELS);
@@ -3356,7 +3358,7 @@ static gboolean area_draw(GtkWidget *widget,
   cairo_line_to(g->cr, g->graph_width, 0.5 * g->graph_height);
   cairo_stroke(g->cr);
 
-  if(g->histogram_valid && self->enabled)
+  if(hist_valid && self->enabled)
   {
     // draw the inset histogram
     set_color(g->cr, darktable.bauhaus->inset_histogram);

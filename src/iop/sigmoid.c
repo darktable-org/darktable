@@ -80,7 +80,7 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  typedef struct dt_iop_sigmoid_params_v2_t
+  typedef struct dt_iop_sigmoid_params_v3_t
   {
     float middle_grey_contrast;
     float contrast_skewness;
@@ -114,9 +114,12 @@ int legacy_params(dt_iop_module_t *self,
       float hue_preservation;
     } dt_iop_sigmoid_params_v1_t;
 
-    // Copy the common part of the params struct
+    // Copy the common part of the params struct. Through a pointer, not a
+    // bare sizeof, so that the struct stays in the debug info, where
+    // tools/check-iop-legacy-params.py compares it with stored history
+    const dt_iop_sigmoid_params_v1_t *o = old_params;
     dt_iop_sigmoid_params_v3_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
-    memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v1_t));
+    memcpy(n, o, sizeof(*o));
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_sigmoid_params_v3_t);
@@ -144,9 +147,10 @@ int legacy_params(dt_iop_module_t *self,
       float blue_rotation;
       float purity;
     } dt_iop_sigmoid_params_v2_t;
-    // Copy the common part of the params struct
+    // Copy the common part of the params struct, through a pointer as for v1
+    const dt_iop_sigmoid_params_v2_t *o = old_params;
     dt_iop_sigmoid_params_v3_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
-    memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v2_t));
+    memcpy(n, o, sizeof(*o));
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_sigmoid_params_v3_t);

@@ -147,6 +147,9 @@ OPTIONAL(void, gui_post_expose, struct dt_iop_module_t *self,
                                 float pointerx,
                                 float pointery,
                                 float zoom_scale);
+/** optional: TRUE while the module draws an interactive overlay on the center
+ *  view (handles, a chart, a frame) that must not be covered by other canvas UI */
+OPTIONAL(gboolean, canvas_overlay_active, struct dt_iop_module_t *self);
 /** optional callback to be notified if the module acquires gui focus/loses it. */
 OPTIONAL(void, gui_focus, struct dt_iop_module_t *self, gboolean in);
 
