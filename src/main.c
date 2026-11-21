@@ -32,6 +32,7 @@
 #include "win/main_wrapper.h"
 #include "common/datetime.h"
 
+#ifdef USE_LUA
 typedef struct dt_alloc_console_options_t
 {
   int mode;
@@ -63,6 +64,7 @@ static gboolean _allocate_console(gboolean *visible)
   *visible = AllocConsole();
   return *visible;
 }
+#endif // USE_LUA
 #endif
 
 #ifdef __APPLE__
@@ -75,7 +77,11 @@ int main(int argc, char *argv[])
   dt_osx_prepare_environment();
 #endif
 #ifdef _WIN32
+#ifdef USE_LUA
+  // Lua's os.execute() and io.popen() start their commands through cmd.exe,
+  // which flashes a console window unless darktable keeps one of its own.
   gboolean show_console_notice = FALSE;
+#endif
 
   // On Windows we have a hard time showing stuff printed to stdout/stderr to the user.
   // Because of that we write it to a log file.
@@ -88,6 +94,7 @@ int main(int argc, char *argv[])
 
   // Make sure to not redirect output when the output is already
   // being redirected, either to a file or a pipe.
+#ifdef USE_LUA
   if(GetConsoleCP() == 0)
   {
     const HANDLE initial_input_handle = GetStdHandle(STD_INPUT_HANDLE);
@@ -121,6 +128,7 @@ int main(int argc, char *argv[])
         g_freopen("CONOUT$", "w", stderr);
     }
   }
+#endif
 
   int out_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
   int err_type = GetFileType(GetStdHandle(STD_ERROR_HANDLE));
@@ -150,6 +158,14 @@ int main(int argc, char *argv[])
 
     g_mkdir_with_parents(logdir, 0700);
 
+#ifndef USE_LUA
+    // Without Lua nothing needs the console, so free it. This ensures
+    // that only darktable's main window will be visible. It must happen
+    // before the log file is opened: FreeConsole() closes the original
+    // console handles, and the log file may reuse one of their values.
+    FreeConsole();
+#endif
+
     g_freopen(logfile, "a", stdout);
     dup2(fileno(stdout), STDOUT_FILENO);
     dup2(fileno(stdout), STDERR_FILENO);
@@ -178,6 +194,7 @@ int main(int argc, char *argv[])
     printf("\n");
   }
 
+#ifdef USE_LUA
   // <consoleAllocationPolicy>detached</consoleAllocationPolicy> in the manifest
   // is Windows 11 24H2+. On older Windows the loader gives this console
   // subsystem binary a console before main() runs, so _allocate_console() above
@@ -196,6 +213,7 @@ int main(int argc, char *argv[])
 
   if(show_console_notice)
     dt_request_console_notice();
+#endif
 
   // Make sure GTK client side decoration is disabled,
   // otherwise windows resizing issues can be observed.
