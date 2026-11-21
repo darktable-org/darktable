@@ -84,13 +84,15 @@ jobs:
             name_suffix: _tests
           # The other entries use the skiptest target, which never configures
           # BUILD_TESTING and so never even compiles the unit tests. This one
-          # builds them and runs ctest.
+          # builds them and runs ctest. It also runs the iop struct-size
+          # checks: the flags keep legacy structs that are only used in a
+          # sizeof in the debug info, and change no generated code
           - distro: "ubuntu:26.04"
             btype: Release
             compiler: { compiler: GNU16, CC: gcc-16, CXX: g++-16, packages: gcc-16 g++-16 }
             target: build
             generator: Ninja
-            eco: -DDONT_USE_INTERNAL_LIBRAW=ON
+            eco: -DDONT_USE_INTERNAL_LIBRAW=ON -DCMAKE_C_FLAGS=-fno-eliminate-unused-debug-types -DCMAKE_CXX_FLAGS=-fno-eliminate-unused-debug-types
             name_suffix: _tests
     env:
       DISTRO: ${{ matrix.distro }}
@@ -205,12 +207,13 @@ jobs:
           cd -
       # the catalog unit tests import a few raw files from the integration
       # test images; check out only images/ of the pinned commit (~95 MB),
-      # not the whole test repository (~1 GB)
+      # not the whole test repository (~1 GB). The XMPs are for
+      # check-iop-legacy-params.py, which reads their history entries
       - name: Get the integration test images for the unit tests
         if: matrix.target == 'build'
         run: |
           cd src
-          sparse_update='!f() { git sparse-checkout set --no-cone /images/ && git checkout -f -q "$1"; }; f'
+          sparse_update='!f() { git sparse-checkout set --no-cone /images/ "/0*/*.xmp" && git checkout -f -q "$1"; }; f'
           git -c "submodule.src/tests/integration.update=${sparse_update}" \
               submodule update --init --depth 1 --filter=blob:none src/tests/integration
           du -sh src/tests/integration/images
@@ -231,6 +234,15 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
+      # struct sizes are the same with either compiler, so one job is enough.
+      # Both checks always run, so a failing first one does not hide the second
+      - name: Check iop struct sizes
+        if: matrix.compiler.compiler == 'GNU16' && matrix.btype == 'Release'
+        run: |
+          rc=0
+          python3 "${SRC_DIR}/tools/check-iop-pipe-data-sizes.py" "${BUILD_DIR}" || rc=1
+          python3 "${SRC_DIR}/tools/check-iop-legacy-params.py" "${BUILD_DIR}" || rc=1
+          exit $rc
       - name: Check if it runs
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
