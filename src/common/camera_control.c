@@ -482,14 +482,24 @@ static void _camera_process_job(const dt_camctl_t *c,
           //if(color_space == DT_COLORSPACE_DISPLAY)
           //  color_space = DT_COLORSPACE_SRGB;
           // no embedded colorspace, assume is sRGB
-          uint8_t *const buffer =
-            (uint8_t *)dt_alloc_align_uint8(4 * jpg.width * jpg.height);
-          if(!buffer)
+          const size_t need = (size_t)4 * jpg.width * jpg.height;
+          uint8_t *decode = cam->live_view_spare;
+          if(!decode
+             || cam->live_view_spare_width != jpg.width
+             || cam->live_view_spare_height != jpg.height)
+          {
+            dt_free_align(decode);
+            decode = (uint8_t *)dt_alloc_align_uint8(need);
+            cam->live_view_spare = decode;
+            cam->live_view_spare_width = jpg.width;
+            cam->live_view_spare_height = jpg.height;
+          }
+          if(!decode)
           {
             dt_print(DT_DEBUG_CAMCTL,
                      "[camera_control] live view could not allocate image buffer");
           }
-          else if(dt_imageio_jpeg_decompress(&jpg, buffer))
+          else if(dt_imageio_jpeg_decompress(&jpg, decode))
           {
             dt_print(DT_DEBUG_CAMCTL,
                      "[camera_control] live view failed to decompress jpeg");
@@ -497,12 +507,15 @@ static void _camera_process_job(const dt_camctl_t *c,
           else
           {
             dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
-            // FIXME: don't need to alloc/dealloc if the image dimensions haven't changed
-            if(cam->live_view_buffer) dt_free_align(cam->live_view_buffer);
-            cam->live_view_buffer = buffer;
+            uint8_t *previous = cam->live_view_buffer;
+            const int previous_width = cam->live_view_width;
+            const int previous_height = cam->live_view_height;
+            cam->live_view_buffer = decode;
             cam->live_view_width = jpg.width;
             cam->live_view_height = jpg.height;
-            //cam->live_view_color_space = color_space;
+            cam->live_view_spare = previous;
+            cam->live_view_spare_width = previous_width;
+            cam->live_view_spare_height = previous_height;
             dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
           }
         }
@@ -571,15 +584,26 @@ static void _camera_process_job(const dt_camctl_t *c,
                "[camera_control] executing camera config job to toggle %s",
                spj->name);
 
+      const gboolean pause_live_view =
+        cam->is_live_viewing && strcmp(spj->name, "autofocusdrive") == 0;
+      if(pause_live_view)
+        cam->live_view_suspended = TRUE;
+
       dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
       if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const int value = 1;
         gp_widget_set_value(widget, &value);
+        dt_pthread_mutex_unlock(&cam->config_lock);
         gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
       }
-      dt_pthread_mutex_unlock(&cam->config_lock);
+      else
+        dt_pthread_mutex_unlock(&cam->config_lock);
+
+      if(pause_live_view)
+        cam->live_view_suspended = FALSE;
+
       g_free(spj->name);
     }
       break;
@@ -677,6 +701,11 @@ static void *_camctl_camera_get_live_view(void *data)
 
   while(cam->is_live_viewing)
   {
+    if(cam->live_view_suspended)
+    {
+      g_usleep(G_USEC_PER_SEC / 10);
+      continue;
+    }
     dt_pthread_mutex_BAD_lock(&cam->live_view_synch);
 
     // calculate FPS
@@ -827,6 +856,11 @@ static void _camctl_camera_destroy_struct(dt_camera_t *cam)
   {
     dt_free_align(cam->live_view_buffer);
     cam->live_view_buffer = NULL; // just in case someone else is using this
+  }
+  if(cam->live_view_spare)
+  {
+    dt_free_align(cam->live_view_spare);
+    cam->live_view_spare = NULL;
   }
   g_free(cam->model);
   g_free(cam->port);
@@ -1199,6 +1233,17 @@ static void *_update_cameras_thread(void *ptr)
   return 0;
 }
 
+static void _camctl_flush_config_update(const dt_camctl_t *c, dt_camera_t *cam)
+{
+  if(!cam->config_update_pending) return;
+  const gint64 now = g_get_monotonic_time();
+  if(now - cam->config_update_last_us < 200 * G_TIME_SPAN_MILLISECOND)
+    return;
+  cam->config_update_pending = FALSE;
+  cam->config_update_last_us = now;
+  _camera_configuration_update(c, cam);
+}
+
 static void *_camera_event_thread(void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
@@ -1213,8 +1258,10 @@ static void *_camera_event_thread(void *data)
   while(camera->is_tethering || _camera_jobqueue_pending(camera))
   {
     if(camera->is_tethering)
+    {
       _camera_poll_events(camctl, camera);
-
+      _camctl_flush_config_update(camctl, (dt_camera_t *)camera);
+    }
     // Let's check if there are jobs in queue to process
     gpointer job;
     while((job = _camera_get_job(camctl, camera)) != NULL)
@@ -2278,7 +2325,9 @@ static void _camera_poll_events(const dt_camctl_t *c,
       }
       else
       {
-        _camera_configuration_update(c, cam);
+        dt_camera_t *camera = (dt_camera_t *)cam;
+        camera->config_update_pending = TRUE;
+        _camctl_flush_config_update(c, camera);
       }
     }
   }
