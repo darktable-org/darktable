@@ -2392,7 +2392,14 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   gtkosx_application_ready(g_object_new(GTKOSX_TYPE_APPLICATION, NULL));
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_focus_window();
+  // a window restored fullscreen is already in its own space, which
+  // activated the application. Activating it again leaves the menu bar and
+  // the title bar shown over the top of the window until the pointer
+  // visits the top edge of the screen
+  GdkWindow *main_window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(!main_window
+     || !(gdk_window_get_state(main_window) & GDK_WINDOW_STATE_FULLSCREEN))
+    dt_osx_focus_window();
 #endif
   /* start the event loop */
   if(dt_control_running())
