@@ -1398,7 +1398,7 @@ if(USE_LIBRAW AND NOT (DONT_USE_INTERNAL_LIBRAW AND libraw_FOUND))
 
   # LibRaw sub-module
   add_subdirectory(external/LibRaw-cmake)
-  target_link_libraries(lib_darktable PRIVATE libraw::libraw)
+  target_link_libraries(lib_darktable PRIVATE libraw::libraw_r)
 endif()
 
 #
