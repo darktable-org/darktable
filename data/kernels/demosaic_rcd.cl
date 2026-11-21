@@ -173,7 +173,7 @@ __kernel void rcd_step_3(global float *lpf, global float *cfa, global float *rgb
   const float H_Est = fp32_div(W_Grad * E_Est + E_Grad * W_Est, E_Grad + W_Grad);
 
   // G@B and G@R interpolation
-  rgb1[idx] = mix(V_Est, H_Est, clipf(VH_Disc));
+  rgb1[idx] = dt_mix(V_Est, H_Est, clipf(VH_Disc));
 }
 
 // Step 4.0: Calculate the square of the P/Q diagonals color difference high pass filter
@@ -243,7 +243,7 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *rgb0, global floa
   const float P_Est = fp32_div(NW_Grad * SE_Est + SE_Grad * NW_Est, NW_Grad + SE_Grad);
   const float Q_Est = fp32_div(NE_Grad * SW_Est + SW_Grad * NE_Est, NE_Grad + SW_Grad);
 
-  rgbc[idx]= rgb1[idx] + mix(P_Est, Q_Est, clipf(PQ_Disc));
+  rgbc[idx]= rgb1[idx] + dt_mix(P_Est, Q_Est, clipf(PQ_Disc));
 }
 
 // Step 4.3: Populate the red and blue channels at green CFA positions
@@ -298,7 +298,7 @@ __kernel void rcd_step_4_3(global float *VH_dir, global float *rgb0, global floa
     const float H_Est = fp32_div(E_Grad * W_Est + W_Grad * E_Est, E_Grad + W_Grad);
 
     // R@G and B@G interpolation
-    rgbc[idx] = rgb1[idx] + mix(V_Est, H_Est, clipf(VH_Disc));
+    rgbc[idx] = rgb1[idx] + dt_mix(V_Est, H_Est, clipf(VH_Disc));
   }
 }
 
@@ -319,9 +319,9 @@ __kernel void write_blended_dual(__read_only image2d_t high,
 
   const float4 high_val = Areadpixel(high, col, row);
   const float4 low_val = Areadpixel(low, col, row);
-  const float4 blender = (float4)clipf(mask[mad24(row, w, col)]);
-  float4 data = mix(low_val, high_val, blender);
-  data.w = showmask ? blender.x : 0.0f;
+  const float blender = clipf(mask[mad24(row, w, col)]);
+  float4 data = dt_mix4(low_val, high_val, blender);
+  data.w = showmask ? blender : 0.0f;
   write_imagef(out, (int2)(col, row), data);
 }
 

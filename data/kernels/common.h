@@ -123,6 +123,24 @@ static inline float scharr_gradient(global float *in, const int k, const int w)
   return dt_fast_hypot(gx, gy);
 }
 
+static inline float dt_mix(const float x,
+                           const float y,
+                           const float a)
+{
+  if(a == 0.0f) return x;
+  if(a == 1.0f) return y;
+  return fma(y - x, a, x);
+}
+
+static inline float4 dt_mix4(const float4 x,
+                             const float4 y,
+                             const float a)
+{
+  if(a == 0.0f) return x;
+  if(a == 1.0f) return y;
+  return fma(y - x, (float4)a, x);
+}
+
 static inline float fp32_div(const float a, const float b)
 {
   /** OpenCL accepts an error of ~2.5 for a default division, full IEEE precision

@@ -141,7 +141,9 @@ static inline float mixf(const float x,
                          const float y,
                          const float a)
 {
-  return DT_FMA(y - x, a, x);
+  if(a == 0.0f) return x;
+  if(a == 1.0f) return y;
+  return fmaf(y - x, a, x);
 }
 
 // Kahan summation algorithm
