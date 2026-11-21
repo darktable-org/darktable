@@ -228,7 +228,7 @@ changes (where available).
 - Some safety checks when switching to the quick access panel were
   added.
 
-- On the color equalizer module a new collapside section with the
+- On the color equalizer module a new collapsible section with the
   color sliders has been added.
 
 - The list of color checker charts in the color calibration module now
@@ -262,8 +262,9 @@ changes (where available).
 - In tethering mode, the tethering info bar (located above the live
   camera view) now displays the camera model.
 
-- Pressing ESC or clicking on the dialog X icon (top-right) now exits
-  Darktable instead of launching the previous workspace.
+- On the workspace dialog, pressing ESC or clicking on the dialog X
+  icon (top-right) now exits Darktable instead of launching the
+  previous workspace.
 
 - The settings of the path mask "shrink or grow" (the step per scroll
   tick, the unit, the tracing resolution and the curve smoothing) are
@@ -334,9 +335,6 @@ changes (where available).
 - Add a OpenCL code path to tone equalizer which gives around 6-20x
   faster processing times in comparison to CPU code path, depending on
   CPU & GPU.
-
-- Contrast & texture now runs on OpenCL, so it no longer moves the
-  image back to the CPU in the middle of an otherwise GPU pipeline.
 
 - Highlight reconstruction's inpaint opposed method now runs on OpenCL
   for linear raws, such as sRAW and linear DNG files.
