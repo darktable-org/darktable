@@ -1249,6 +1249,10 @@ changes (where available).
   after a large feather was given to a sharp corner where the path
   turns inward, such as the middle nodes of a sunglasses-shaped path.
 
+- Fixed the filmic rgb graphs cutting off the curve when target white
+  is above 100% for HDR output: the look and mapping views now scale
+  their y axis to fit the curve and mark 100% display.
+
 ## Lua
 
 ### API Version
