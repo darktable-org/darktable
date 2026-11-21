@@ -3,6 +3,7 @@ add_subdirectory(common)
 add_subdirectory(hdr)
 add_subdirectory(iop)
 add_subdirectory(masks)
+add_subdirectory(util)
 
 if(USE_AI)
   add_subdirectory(ai)
