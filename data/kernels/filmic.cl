@@ -258,7 +258,7 @@ static inline float filmic_spline(const float x,
       // rational toe
       const float xi = latitude_min - x;
       const float rat = xi * (xi * M2.x + 1.f);
-      result = M4.x - M1.x * rat / (rat + M3.x);
+      result = M4.x - fp32_div(M1.x * rat, rat + M3.x);
     }
   }
   else if(x > latitude_max)
@@ -325,7 +325,7 @@ static inline float4 Ych_to_pipe_RGB(float4 in, constant const float *const matr
   // rewrite in cartesian coordinates
   const float4 Yrg = Ych_to_Yrg(in);
 
-  // go from Kirk/Filmlight Yrg to CIE LMS 2006
+  // go from Kirk/Filmlight Yrg to CIE LMS 2006
   const float4 LMS = Yrg_to_LMS(Yrg);
 
   // go from CIE LMS 2006 to pipeline RGB
@@ -335,7 +335,7 @@ static inline float4 Ych_to_pipe_RGB(float4 in, constant const float *const matr
 
 static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_final, const float saturation)
 {
-  // Note : Ych is normalized through the LMS conversion,
+  // Note : Ych is normalized through the LMS conversion,
   // meaning c is actually a saturation (saturation ~= chroma / brightness).
   // So copy-pasting c and h from a different Y is equivalent to
   // tonemapping with a norm, which is equivalent to doing exposure compensation :
@@ -671,7 +671,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
   float norm = clamp(get_pixel_norm(i, DT_FILMIC_METHOD_MAX_RGB, profile_info, lut, use_work_profile), norm_min, norm_max);
 
   // Save the ratios
-  float4 ratios = i / (float4)norm;
+  float4 ratios = fp32_div_4(i, (float4)norm);
 
   // Log tonemapping
   norm = log_tonemapping_v2(norm, grey_value, black_exposure, dynamic_range);
@@ -1162,9 +1162,9 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
     case(DT_FILMIC_RECONSTRUCT_RGB):
     {
       const float grey_texture = fmaxabsf(fmaxabsf(TT_c.x, TT_c.y), TT_c.z);
-      const float grey_details = (HF_c.x + HF_c.y + HF_c.z) / 3.f;
+      const float grey_details = fp32_div(HF_c.x + HF_c.y + HF_c.z, 3.f);
       const float grey_HF = beta_comp * (gamma_comp * grey_details + gamma * grey_texture);
-      const float grey_residual = beta_comp * (LF_c.x + LF_c.y + LF_c.z) / 3.f;
+      const float grey_residual = fp32_div(beta_comp * (LF_c.x + LF_c.y + LF_c.z), 3.f);
 
       details = (gamma_comp * HF_c + gamma * TT_c) * beta + grey_HF;
       residual = (s == scales - 1) ? grey_residual + LF_c * beta : (float4)0.f;
@@ -1173,7 +1173,7 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
     case(DT_FILMIC_RECONSTRUCT_RATIOS):
     {
       const float grey_texture = fmaxabsf(fmaxabsf(TT_c.x, TT_c.y), TT_c.z);
-      const float grey_details = (HF_c.x + HF_c.y + HF_c.z) / 3.f;
+      const float grey_details = fp32_div(HF_c.x + HF_c.y + HF_c.z, 3.f);
       const float grey_HF = (gamma_comp * grey_details + gamma * grey_texture);
 
       details = 0.5f * ((gamma_comp * HF_c + gamma * TT_c) + grey_HF);
@@ -1199,7 +1199,7 @@ kernel void compute_ratios(read_only image2d_t in, write_only image2d_t norms,
 
   const float4 i = readpixel(in, x, y);
   const float norm = fmax(pixel_rgb_norm_euclidean(i), NORM_MIN);
-  const float4 ratio = i / norm;
+  const float4 ratio = fp32_div_4(i, (float4)norm);
   write_imagef(norms, (int2)(x, y), norm);
   write_imagef(ratios, (int2)(x, y), ratio);
 }

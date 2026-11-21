@@ -136,9 +136,9 @@ kernel void hazeremoval_transision_map(const int width,
   if(x >= width || y >= height) return;
 
   const float4 pixel = readpixel(in, x, y);
-  float m = pixel.x / A0_r;
-  m = fmin(pixel.y / A0_g, m);
-  m = fmin(pixel.z / A0_b, m);
+  float m = fp32_div(pixel.x, A0_r);
+  m = fmin(fp32_div(pixel.y, A0_g), m);
+  m = fmin(fp32_div(pixel.z, A0_b), m);
   write_imagef(out, (int2)(x, y), 1.f - m * strength);
 }
 
@@ -155,11 +155,11 @@ kernel void hazeremoval_dehaze(const int width,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 pixel = readpixel(in, x, y);
+  const float4 pixel = Areadpixel(in, x, y);
   const float t = fmax(readsingle(trans_map, x, y), t_min);
 
   write_imagef(out, (int2)(x, y),
-      (float4)((pixel.x - A0.x) / t + A0.x, (pixel.y - A0.y) / t + A0.y, (pixel.z - A0.z) / t + A0.z, pixel.w));
+      (float4)(fp32_div(pixel.x - A0.x, t) + A0.x, fp32_div(pixel.y - A0.y, t) + A0.y, fp32_div(pixel.z - A0.z, t) + A0.z, pixel.w));
 }
 
 

@@ -746,9 +746,9 @@ static inline float4 opacity_masks(const float x,
 {
   float4 output;
   const float x_offset = (x - mask_grey_fulcrum);
-  const float x_offset_norm = x_offset / mask_grey_fulcrum;
-  const float alpha = 1.f / (1.f + dtcl_exp(x_offset_norm * shadows_weight));    // opacity of shadows
-  const float beta = 1.f / (1.f + dtcl_exp(-x_offset_norm * highlights_weight)); // opacity of highlights
+  const float x_offset_norm = fp32_div(x_offset, mask_grey_fulcrum);
+  const float alpha = fp32_div(1.f, 1.f + dtcl_exp(x_offset_norm * shadows_weight));    // opacity of shadows
+  const float beta = fp32_div(1.f, 1.f + dtcl_exp(-x_offset_norm * highlights_weight)); // opacity of highlights
   const float gamma = dtcl_exp(-fsquare(x_offset) * midtones_weight / 4.f) * fsquare(1.f - alpha) * fsquare(1.f - beta) * 8.f; // opacity of midtones
 
   output.x = alpha;
@@ -788,7 +788,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   // we clip pipeline RGB while reading; this also ensures a proper alpha
-  float4 pix_in = fmax(0.0f, readpixel(in, x, y));
+  float4 pix_in = fmax(0.0f, Areadpixel(in, x, y));
 
   float4 XYZ_D65 = 0.f;
   float4 LMS = 0.f;
@@ -855,10 +855,10 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   Yrg = LMS_to_Yrg(LMS);
 
   // Y midtones power (gamma)
-  Yrg.x = dtcl_pow(fmax(Yrg.x / white_fulcrum, 0.f), midtones_Y) * white_fulcrum;
+  Yrg.x = dtcl_pow(fmax(fp32_div(Yrg.x, white_fulcrum), 0.f), midtones_Y) * white_fulcrum;
 
   // Y fulcrumed contrast
-  Yrg.x = grey_fulcrum * dtcl_pow(Yrg.x / grey_fulcrum, contrast);
+  Yrg.x = grey_fulcrum * dtcl_pow(fp32_div(Yrg.x, grey_fulcrum), contrast);
 
   LMS = Yrg_to_LMS(Yrg);
   XYZ_D65 = LMS_to_XYZ(LMS);
@@ -901,11 +901,11 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     // Gamut mapping
     const float out_max_sat_h = lookup_gamut(gamut_lut, h);
     // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
-    const float sat = (JC[0] > 0.f) ? soft_clip(JC[1] / JC[0], 0.8f * out_max_sat_h, out_max_sat_h)
+    const float sat = (JC[0] > 0.f) ? soft_clip(fp32_div(JC[1], JC[0]), 0.8f * out_max_sat_h, out_max_sat_h)
                                     : out_max_sat_h;
     const float max_C_at_sat = JC[0] * sat;
     // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
-    const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
+    const float max_J_at_sat = (sat > 0.f) ? fp32_div(JC[1], sat) : JC[0];
     JC[0] = (JC[0] + max_J_at_sat) / 2.f;
     JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
@@ -934,13 +934,13 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     // Clip chroma
     float max_C = JC[1];
     if(LMS.x < 0.f)
-      max_C = fmin(-Iz / (AI[0].y * cos_H + AI[0].z * sin_H), max_C);
+      max_C = fmin(fp32_div(-Iz, AI[0].y * cos_H + AI[0].z * sin_H), max_C);
 
     if(LMS.y < 0.f)
-      max_C = fmin(-Iz / (AI[1].y * cos_H + AI[1].z * sin_H), max_C);
+      max_C = fmin(fp32_div(-Iz, AI[1].y * cos_H + AI[1].z * sin_H), max_C);
 
     if(LMS.z < 0.f)
-      max_C = fmin(-Iz / (AI[2].y * cos_H + AI[2].z * sin_H), max_C);
+      max_C = fmin(fp32_div(-Iz, AI[2].y * cos_H + AI[2].z * sin_H), max_C);
 
     // Project back to JzAzBz for real
     Jab.x = JC[0];
@@ -956,8 +956,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     float4 HCB = dt_UCS_JCH_to_HCB(JCH);
 
     const float radius = hypot(HCB.y, HCB.z);
-    const float sin_T = (radius > 0.f) ? HCB.y / radius : 0.f;
-    const float cos_T = (radius > 0.f) ? HCB.z / radius : 0.f;
+    const float sin_T = (radius > 0.f) ? fp32_div(HCB.y, radius) : 0.f;
+    const float cos_T = (radius > 0.f) ? fp32_div(HCB.z, radius) : 0.f;
     const float M_rot_inv[2][2] = { { cos_T,  sin_T }, { -sin_T, cos_T } };
     // This would be the full matrice of direct rotation if we didn't need only its last row
     //const float M_rot_dir[2][2] = { { cos_T, -sin_T }, {  sin_T, cos_T } };
@@ -968,7 +968,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     float a = fmax(1.f + saturation_global + dot(opacities, saturation), 0.f);
     const float b = fmax(1.f + brilliance_global + dot(opacities, brilliance), 0.f);
 
-    const float max_a = hypot(P, W) / P;
+    const float max_a = fp32_div(hypot(P, W), P);
     a = soft_clip(a, 0.5f * max_a, max_a);
 
     const float P_prime = (a - 1.f) * P;
@@ -981,12 +981,12 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
     // Gamut mapping
     const float max_colorfulness = lookup_gamut(gamut_lut, JCH.z); // WARNING : this is M²
-    const float max_chroma = 15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
+    const float max_chroma = fp32_div(15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f), L_white);
     const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.f };
     const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
     // Clip saturation at constant brightness
-    float4 HSB = { HCB.x, (HCB.z > 0.f) ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
+    float4 HSB = { HCB.x, (HCB.z > 0.f) ? fp32_div(HCB.y, HCB.z) : 0.f, HCB.z, 0.f };
     HSB.y = soft_clip(HSB.y, 0.8f * HSB_gamut_boundary.y, HSB_gamut_boundary.y);
 
     JCH = dt_UCS_HSB_to_JCH(HSB);

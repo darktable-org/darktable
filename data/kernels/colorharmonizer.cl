@@ -45,8 +45,8 @@ static inline float get_weighted_hue_shift(const float px_hue,
     *out_max_weight = 0.0f;
     return 0.0f;
   }
-  const float sigma = zone_width_factor * 0.5f / (float)num_nodes;
-  const float inv_2sigma2 = 1.0f / (2.0f * sigma * sigma);
+  const float sigma = zone_width_factor * fp32_div(0.5f, (float)num_nodes);
+  const float inv_2sigma2 = fp32_div(1.0f, 2.0f * sigma * sigma);
 
   float max_w        = 0.0f;
   int   winning_idx  = 0;
@@ -99,7 +99,7 @@ kernel void colorharmonizer_map(read_only  image2d_t  in,
   float4 xyY = dt_D65_XYZ_to_xyY(XYZ_D65);
   float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
 
-  const float hue = (JCH.z + M_PI_F) / DT_2PI_F;
+  const float hue = fp32_div(JCH.z + M_PI_F, DT_2PI_F);
 
   const int idx = y * width + x;
   jch_out[idx] = (float4)(JCH.x, JCH.y, hue, pix_in.w);
@@ -141,7 +141,7 @@ kernel void colorharmonizer_apply(write_only image2d_t  out,
 
   const float t             = protect_neutral;
   const float cutoff        = t * t * t * 0.03f;
-  const float chroma_weight = chroma / (chroma + cutoff + 1.0e-5f);
+  const float chroma_weight = fp32_div(chroma, chroma + cutoff + 1.0e-5f);
 
   float4 JCH;
   JCH.x = J;

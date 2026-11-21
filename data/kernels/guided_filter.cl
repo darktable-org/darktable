@@ -282,9 +282,9 @@ kernel void guided_filter_solve(const int width,
     const float det3 = Sigma_0_0 * (Sigma_1_1 * cov_imgg_img[2] - Sigma_1_2 * cov_imgg_img[1])
                        - Sigma_0_1 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1])
                        + cov_imgg_img[0] * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
-    a_r_ = det1 / det0;
-    a_g_ = det2 / det0;
-    a_b_ = det3 / det0;
+    a_r_ = fp32_div(det1, det0);
+    a_g_ = fp32_div(det2, det0);
+    a_b_ = fp32_div(det3, det0);
     b_ =  b_
         - a_r_ * Areadsingle(imgg_mean_r, x, y)
         - a_g_ * Areadsingle(imgg_mean_g, x, y)
