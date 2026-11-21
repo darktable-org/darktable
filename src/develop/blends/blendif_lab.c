@@ -1456,8 +1456,7 @@ void dt_develop_blendif_lab_blend(dt_dev_pixelpipe_iop_t *piece,
         for_each_channel(c,aligned(b))
           pixel[c] = b[j+c];
         const float yellow_mask = b[j+3]; // preserve alpha for code which does in-place conversion
-        dt_ioppr_rgb_matrix_to_lab(pixel, b + j, profile->matrix_in_transposed, profile->lut_in,
-                                   profile->unbounded_coeffs_in, profile->lutsize, profile->nonlinearlut);
+        dt_ioppr_rgb_to_lab(pixel, b + j, profile);
         b[j+3] = yellow_mask;
       }
     }

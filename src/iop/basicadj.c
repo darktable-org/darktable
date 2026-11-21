@@ -487,12 +487,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
-  p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color,
-                                                                       work_profile->matrix_in,
-                                                                       work_profile->lut_in,
-                                                                       work_profile->unbounded_coeffs_in,
-                                                                       work_profile->lutsize,
-                                                                       work_profile->nonlinearlut) * 100.f)
+  p->middle_grey = (work_profile) ? (dt_ioppr_rgb_luminance(self->picked_color, work_profile) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
   DT_ENTER_GUI_UPDATE();
@@ -1479,12 +1474,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     // highlight compression
     if(process_hlcompr)
     {
-      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k,
-                                                                           work_profile->matrix_in,
-                                                                           work_profile->lut_in,
-                                                                           work_profile->unbounded_coeffs_in,
-                                                                           work_profile->lutsize,
-                                                                           work_profile->nonlinearlut)
+      const float lum = (work_profile) ? dt_ioppr_rgb_luminance(out + k, work_profile)
                                        : dt_camera_rgb_luminance(out + k);
       if(lum > 0.f)
       {
