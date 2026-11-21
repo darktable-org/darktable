@@ -1250,6 +1250,10 @@ changes (where available).
   after a large feather was given to a sharp corner where the path
   turns inward, such as the middle nodes of a sunglasses-shaped path.
 
+- Fixed an issue where darktable internal tags removed from the metadata
+  editor (Xmp.darktable.version_name, Xmp.xmpMM.PreservedFileName) could
+  not be restored.
+
 ## Lua
 
 ### API Version
