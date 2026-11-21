@@ -1796,14 +1796,15 @@ void dt_imageio_pq_light_level(const float *const rgba,
   float peak = 0.0f;
   double sum = 0.0;
 
-  // dt_hdr_pq_decode() maps NaN to black and clamps Inf to the PQ maximum,
-  // so neither can poison the sum or overflow the writers' integer fields
+  // dt_hdr_pq_decode() extends past code 1.0 and keeps the sign, so clip
+  // the code to what PQ stores: 0 to 10000 nits. CLIP() maps NaN to 0, so
+  // neither NaN nor Inf can poison the sum or overflow the writers' fields
   DT_OMP_FOR_SIMD(reduction(max : peak) reduction(+ : sum))
   for(size_t k = 0; k < npixels; k++)
   {
     const float *const px = &rgba[4 * k];
     const float nits = DT_HDR_REFERENCE_WHITE_NITS
-      * dt_hdr_pq_decode(fmaxf(fmaxf(px[0], px[1]), px[2]));
+      * dt_hdr_pq_decode(CLIP(fmaxf(fmaxf(px[0], px[1]), px[2])));
     peak = fmaxf(peak, nits);
     sum += nits;
   }

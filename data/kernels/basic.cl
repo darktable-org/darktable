@@ -3524,8 +3524,7 @@ colorout_out_of_gamut(const float rgb[3],
   }
   else if(hdr_transfer != DT_HDR_NONE)
   {
-    const float positive[3] = { fmax(rgb[0], 0.0f), fmax(rgb[1], 0.0f), fmax(rgb[2], 0.0f) };
-    const float hlg = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(positive, hdr_transfer));
+    const float hlg = dt_hdr_hlg_scene_scale(fabs(dt_hdr_hlg_luminance(rgb, hdr_transfer)));
     for(int c = 0; c < 3; c++) scale[c] = hlg;
   }
   const float below = -tolerance * fmax(fmax(fmax(rgb[0], rgb[1]), rgb[2]), 0.0f) - black;

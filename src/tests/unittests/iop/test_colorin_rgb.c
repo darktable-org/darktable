@@ -178,13 +178,20 @@ static void init_piece(dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
   commit_params(&module, (dt_iop_params_t *)p, pipe, piece);
 }
 
+// the rounding of a color matrix scales with the pixel's largest channel,
+// so a small channel next to a huge one, as PQ above code 1 decodes to,
+// is only as exact as that largest channel
 static void assert_pixels(const float *actual, const float *expected, const float tolerance)
 {
   for(size_t k = 0; k < G_N_ELEMENTS(pixels); k++)
+  {
+    const float *const e = expected + 4*k;
+    const float scale = MAX(1.0f, MAX(MAX(fabsf(e[0]), fabsf(e[1])), fabsf(e[2])));
     for_each_channel(c)
       if(!isfinite(actual[4*k+c])
-         || fabsf(actual[4*k+c] - expected[4*k+c]) > tolerance * MAX(1.0f, fabsf(expected[4*k+c])))
-        fail_msg("pixel %zu channel %zu: %.8f != %.8f", k, c, actual[4*k+c], expected[4*k+c]);
+         || fabsf(actual[4*k+c] - e[c]) > tolerance * MAX(scale, fabsf(e[c])))
+        fail_msg("pixel %zu channel %zu: %.8f != %.8f", k, c, actual[4*k+c], e[c]);
+  }
 }
 
 static void test_migration(void **state)
