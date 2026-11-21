@@ -3698,6 +3698,13 @@
     <longdescription>while enabled, resting the pointer on one of the add-parametric-element buttons displays that channel in the center view; the preview only starts after a short pause, so passing over the buttons costs nothing</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/preview_operator_on_hover</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>preview the group operator under the cursor</shortdescription>
+    <longdescription>while enabled, resting the pointer on an operator in a group's operator menu displays the mask in the center view as that operator would make it; the preview only starts after a short pause</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/parametric_picker_reuse_area</name>
     <type>bool</type>
     <default>true</default>
