@@ -6,6 +6,20 @@
 #               $ export CODECERT="developer@apple.id"
 #               The mail address is the email/id of your developer certificate.
 #
+#               Additionally define NOTARYPROFILE to submit the signed bundle to
+#               Apple's notary service and staple the ticket to it. As example:
+#               $ export NOTARYPROFILE="darktable-notary"
+#               The name refers to a keychain profile previously created with:
+#               $ xcrun notarytool store-credentials "darktable-notary" \
+#                     --apple-id "developer@apple.id" --team-id "TEAMID1234" \
+#                     --password "app-specific-password"
+#               Notarization requires CODECERT to be set as well.
+#
+#               Alternatively define NOTARYARGS to pass credentials to notarytool
+#               directly, which is how CI supplies an App Store Connect API key:
+#               $ export NOTARYARGS="--key key.p8 --key-id KEYID --issuer UUID"
+#               NOTARYARGS takes precedence over NOTARYPROFILE.
+#
 
 # Exit in case of error
 set -e -o pipefail
@@ -357,11 +371,74 @@ cp -L "$homebrewHome"/share/themes/Mac/gtk-3.0/gtk-keys.css "$dtResourcesDir"/sh
 
 # Sign app bundle
 if [ -n "$CODECERT" ]; then
-    # Use certificate if one has been provided
-    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
-    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" ${dtWorkingDir}
+    # Use certificate if one has been provided.
+    # Sign inside-out rather than with --deep, which Apple deprecated for signing.
+    # --timestamp is mandatory for notarization, and codesign does not add a
+    # secure timestamp unless asked for one.
+
+    # Under Resources only actual Mach-O files need a signature of their own;
+    # everything else there is sealed as a resource by the bundle signature
+    find ${dtWorkingDir}/Contents/Resources/lib -type f | while read -r resourceFile; do
+        if file -b "$resourceFile" | grep -q "Mach-O"; then
+            codesign --verbose --force --timestamp --options runtime -i "org.darktable" -s "${CODECERT}" "$resourceFile"
+        fi
+    done
+
+    # Contents/MacOS is different: codesign treats every file in it as nested
+    # code, so the helper scripts and data files living next to the executables
+    # have to be signed too, or the bundle signature fails on them.
+    # The main executable is skipped here: handing codesign the path of a
+    # bundle's CFBundleExecutable makes it sign the whole bundle instead of just
+    # that file, which would walk the still-unsigned rest of this directory and
+    # fail. The bundle signature below covers it.
+    find ${dtExecDir} -type f ! -name "$dtAppName" | while read -r execFile; do
+        codesign --verbose --force --timestamp --options runtime -i "org.darktable" -s "${CODECERT}" "$execFile"
+    done
+
+    codesign --verbose --force --timestamp --options runtime -i "org.darktable" -s "${CODECERT}" ${dtWorkingDir}
 else
     # Use ad-hoc signing and preserve metadata
     find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
     codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - ${dtWorkingDir}
+fi
+
+# Notarize app bundle and staple the ticket to it.
+# This has to happen here rather than in script 4, because script 4 builds the
+# dmg out of this directory and the app needs to carry its ticket by then.
+# Credentials come either from a keychain profile (NOTARYPROFILE, convenient
+# interactively) or as raw notarytool arguments (NOTARYARGS, used by CI, which
+# passes an App Store Connect API key in from its secrets).
+if [ -n "$NOTARYARGS" ]; then
+    notaryCreds=($NOTARYARGS)
+elif [ -n "$NOTARYPROFILE" ]; then
+    notaryCreds=(--keychain-profile "$NOTARYPROFILE")
+else
+    notaryCreds=()
+fi
+
+if [ -n "$CODECERT" ] && [ ${#notaryCreds[@]} -gt 0 ]; then
+    echo "Notarizing $dtWorkingDir (this takes a few minutes) ..."
+
+    # Use ditto rather than zip: zip mangles the symlinks and resource forks
+    # that the bundle contains, which makes the notary service reject it
+    rm -f "$dtWorkingDir".zip
+    ditto -c -k --sequesterRsrc --keepParent "$dtWorkingDir" "$dtWorkingDir".zip
+
+    notaryOutput=$(xcrun notarytool submit "$dtWorkingDir".zip "${notaryCreds[@]}" --wait 2>&1) || true
+    echo "$notaryOutput"
+    rm -f "$dtWorkingDir".zip
+
+    # notarytool exits 0 even when the submission comes back Invalid, so check
+    # the reported status and pull the rejection reasons if it did not pass
+    if ! echo "$notaryOutput" | grep -q "status: Accepted"; then
+        submissionId=$(echo "$notaryOutput" | grep -m1 "  id:" | awk '{print $2}') || true
+        if [ -n "$submissionId" ]; then
+            echo "Notarization failed, fetching log for submission $submissionId ..."
+            xcrun notarytool log "$submissionId" "${notaryCreds[@]}" || true
+        fi
+        echo "FATAL: notarization of $dtWorkingDir FAILED!"
+        exit 1
+    fi
+
+    xcrun stapler staple "$dtWorkingDir"
 fi
