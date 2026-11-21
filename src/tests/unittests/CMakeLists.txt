@@ -26,6 +26,16 @@ if(WIN32)
     _copy_required_library(test_sample lib_darktable)
 endif(WIN32)
 
+# Single-delta scroll helpers in gui/gtk.c, incl. macOS Shift + mouse wheel
+# arriving as horizontal scroll (#22757). Events are synthesized, no display.
+add_cmocka_test(test_scroll_shift_wheel
+                SOURCES test_scroll_shift_wheel.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
+if(WIN32)
+    _copy_required_library(test_scroll_shift_wheel lib_darktable)
+endif(WIN32)
+
 # HDR exposure-bracket auto-alignment. Calls the public dt_hdr_alignment_* API
 # exported from lib_darktable (which carries the OpenCV-linked objects); the test
 # itself adapts at runtime to OpenCV-present / -absent builds.
