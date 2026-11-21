@@ -546,7 +546,12 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
 
   for(; p && *(p+1); p++)
   {
-    mpath = g_slist_delete_link(mpath, mpath); // pop
+    // pop: the menu stays alive via its parent's submenu item, so only drop
+    // the list's own reference and free the node
+    GSList *link = mpath;
+    mpath = mpath->next;
+    g_object_unref(G_MENU(link->data));
+    g_slist_free_1(link);
     *submenu = mpath ? mpath->data : mainmenu;
   }
 

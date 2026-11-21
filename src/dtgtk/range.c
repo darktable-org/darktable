@@ -1163,6 +1163,8 @@ static GMenu *_popup_get_numeric_menu(GtkDarktableRangeSelect *range,
   {
     section = g_menu_new();
     g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+    // the menu holds its own reference to the section
+    g_object_unref(section);
   }
 
   // and the classic ones

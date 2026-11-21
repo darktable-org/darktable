@@ -2648,6 +2648,8 @@ static void _manage_module_add_popup(GtkWidget *widget,
 
     all_modules_section = g_menu_new();
     g_menu_append_section(menu, _("add module"), G_MENU_MODEL(all_modules_section));
+    // the menu holds its own reference to the section
+    g_object_unref(all_modules_section);
   }
 
   // show the submenu with all the modules

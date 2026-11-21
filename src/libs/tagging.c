@@ -1486,6 +1486,8 @@ static void _pop_menu_attached(GtkWidget *treeview,
       g_menu_append(section, _("attach tag to all"), "tags_attached.attach_all");
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+      // the menu holds its own reference to the section
+      g_object_unref(section);
     }
   }
 
@@ -1497,6 +1499,7 @@ static void _pop_menu_attached(GtkWidget *treeview,
   GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
   GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), DT_LIB_TAGGING_COL_ID);
   gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeview), path, column, &rect);
+  gtk_tree_path_free(path);
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(treeview, menu);
@@ -2621,6 +2624,8 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
 
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+      // the menu holds its own reference to the section
+      g_object_unref(section);
     }
     if(d->tree_flag || !d->suggestion_flag)
     {
@@ -2642,6 +2647,8 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     {
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+      // the menu holds its own reference to the section
+      g_object_unref(section);
 
       g_menu_append(section, _("set as tag"), "tags_dictionary.setastag");
     }
@@ -2650,6 +2657,8 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     {
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+      // the menu holds its own reference to the section
+      g_object_unref(section);
     }
 
     g_menu_append(section, _("copy to entry"), "tags_dictionary.copytoentry");
@@ -2669,6 +2678,8 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     {
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+      // the menu holds its own reference to the section
+      g_object_unref(section);
 
       if(count)
         g_menu_append(section, _("go to tag collection"), "tags_dictionary.goto");
@@ -2681,6 +2692,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
     GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), DT_LIB_TAGGING_COL_ID);
     gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeview), path, column, &rect);
+    gtk_tree_path_free(path);
 
     // popup the menu
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(treeview, menu);
