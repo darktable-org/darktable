@@ -141,6 +141,7 @@ gboolean _styles_tooltip_callback(GtkWidget* widget,
   GtkTreePath* path;
   GtkTreeIter iter;
   dt_imgid_t imgid = NO_IMGID;
+  if(darktable.gui->hide_tooltips) return FALSE;
 
   if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(widget), &x, &y, FALSE, &model, &path, &iter))
   {
