@@ -2962,6 +2962,13 @@ static void _masks_preview_on_hover_toggled(GtkToggleButton *mi,
   _preview_on_hover_set(gtk_toggle_button_get_active(mi));
 }
 
+static void _masks_preview_operator_toggled(GtkToggleButton *mi,
+                                            dt_iop_module_t *module)
+{
+  dt_conf_set_bool("plugins/darkroom/masks/preview_operator_on_hover",
+                   gtk_toggle_button_get_active(mi));
+}
+
 static void _masks_scroll_down_toggled(GtkToggleButton *mi,
                                        dt_iop_module_t *module)
 {
@@ -3091,6 +3098,17 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
     _masks_preview_on_hover_toggled)
 
   dt_masks_gui_pref_section(box, _("editing options"), NULL);
+
+  _MASKS_OPT_CHECK(
+    opprev, _("preview group operator under cursor"),
+    _("when enabled (default), resting the pointer on an operator in\n"
+      "a group's operator menu displays the mask in the center view as\n"
+      "that operator would make it, so you can compare operators before\n"
+      "choosing one. leaving the menu restores the mask.\n"
+      "the preview only starts after a short pause, so passing over\n"
+      "the operators on the way elsewhere costs nothing."),
+    dt_conf_get_bool("plugins/darkroom/masks/preview_operator_on_hover"),
+    _masks_preview_operator_toggled)
 
   _MASKS_OPT_CHECK(
     scrolldown, _("scroll down to increase mask parameters"),
@@ -12470,12 +12488,194 @@ static void _select_mask_group_if_none(dt_iop_gui_blend_data_t *bd)
   bd->panel_selected_group_cid = _mask_group_cid(bd->module);
 }
 
+// the pointer resting on an entry of the operator chooser shows the mask on the
+// canvas as that operator would make it. The operator is written on the groups
+// choosing it would change, in dev->forms, which every pipe run copies (see
+// dt_dev_pixelpipe_process), but into no history item: whatever
+// happens to the chooser, it is given back before anything else is done
+#define FLEXI_OP_PREVIEW_DWELL_MS 250
+
+typedef struct _flexi_op_preview_saved_t
+{
+  dt_mask_id_t cid;
+  dt_masks_state_t op;
+} _flexi_op_preview_saved_t;
+
+// give the previewed groups their operators back. Under history_mutex, as the
+// pipe copies dev->forms under it
+static void _flexi_op_preview_forms_restore(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->op_preview_saved) return;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  for(guint i = 0; grp && i < bd->op_preview_saved->len; i++)
+  {
+    const _flexi_op_preview_saved_t *s =
+      &g_array_index(bd->op_preview_saved, _flexi_op_preview_saved_t, i);
+    dt_masks_point_group_t *marker = dt_masks_gui_group_point(grp, s->cid);
+    if(marker) marker->state = (marker->state & ~DT_MASKS_STATE_FLEXI_OP) | s->op;
+  }
+  g_array_free(bd->op_preview_saved, TRUE);
+  bd->op_preview_saved = NULL;
+}
+
+static void _flexi_op_preview_save_and_set(GArray *saved,
+                                           dt_masks_point_group_t *marker,
+                                           const dt_masks_state_t flexi_op)
+{
+  const _flexi_op_preview_saved_t s = { marker->formid, marker->state & DT_MASKS_STATE_FLEXI_OP };
+  g_array_append_val(saved, s);
+  marker->state = (marker->state & ~DT_MASKS_STATE_FLEXI_OP) | (flexi_op & DT_MASKS_STATE_FLEXI_OP);
+}
+
+// write `flexi_op` where _flexi_op_action would (every picked group when the
+// chooser's is picked, else that group alone), and show the mask
+static void _flexi_op_preview_show(dt_iop_module_t *module, const dt_masks_state_t flexi_op)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  // an off module or mask has no mask on the canvas, and switching either on
+  // is not for a preview to do
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(!grp || !module->enabled || module->blend_params->mask_mode == DEVELOP_MASK_DISABLED)
+    return;
+
+  dt_mask_id_t cid = bd->op_preview_cid;
+  const GList *picked = bd->masks_picked;
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  // the operators to give back are those from before any preview
+  _flexi_op_preview_forms_restore(module);
+  GArray *saved = g_array_new(FALSE, FALSE, sizeof(_flexi_op_preview_saved_t));
+  if(g_list_find((GList *)picked, GINT_TO_POINTER(cid)) && !_pick_is_held(grp, picked, cid))
+  {
+    for(const GList *l = picked; l; l = g_list_next(l))
+    {
+      const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+      dt_masks_point_group_t *marker = dt_masks_gui_group_point(grp, id);
+      if(marker && dt_masks_point_is_marker(marker) && !_pick_is_held(grp, picked, id))
+        _flexi_op_preview_save_and_set(saved, marker, flexi_op);
+    }
+  }
+  else
+  {
+    if(!dt_is_valid_maskid(cid)) cid = _mask_group_cid(module);
+    dt_masks_point_group_t *marker = dt_masks_gui_group_point(grp, cid);
+    if(marker) _flexi_op_preview_save_and_set(saved, marker, flexi_op);
+  }
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+
+  if(!saved->len)
+  {
+    g_array_free(saved, TRUE);
+    return;
+  }
+  bd->op_preview_saved = saved;
+
+  // the mask overlay as a hover preview, so that what was displayed before
+  // comes back and the overlay's buttons keep showing it meanwhile
+  // (_mask_display_buttons_sync)
+  dt_pthread_mutex_lock(&bd->lock);
+  if(!bd->hover_preview_active) bd->save_for_leave = module->request_mask_display;
+  bd->hover_preview_active = TRUE;
+  module->request_mask_display =
+    (bd->save_for_leave & ~(DT_DEV_PIXELPIPE_DISPLAY_MASK
+                            | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
+                            | DT_DEV_PIXELPIPE_DISPLAY_ANY))
+    | DT_DEV_PIXELPIPE_DISPLAY_MASK;
+  dt_pthread_mutex_unlock(&bd->lock);
+  _refresh_mask_display(module);
+}
+
+// take the preview down, if one is up or about to be
+static void _flexi_op_preview_end(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(!bd) return;
+  if(bd->op_preview_timer)
+  {
+    g_source_remove(bd->op_preview_timer);
+    bd->op_preview_timer = 0;
+  }
+  // every focus loss comes through here: take the mutex only with a preview up
+  if(!bd->op_preview_saved) return;
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  _flexi_op_preview_forms_restore(module);
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+
+  dt_pthread_mutex_lock(&bd->lock);
+  if(bd->hover_preview_active) module->request_mask_display = bd->save_for_leave;
+  bd->hover_preview_active = FALSE;
+  dt_pthread_mutex_unlock(&bd->lock);
+  _refresh_mask_display(module);
+}
+
+static gboolean _flexi_op_preview_elapsed(gpointer user_data)
+{
+  dt_iop_module_t *module = user_data;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd) return G_SOURCE_REMOVE;
+  bd->op_preview_timer = 0;
+  if(bd->op_preview_show)
+    _flexi_op_preview_show(module, bd->op_preview_op);
+  else
+    _flexi_op_preview_end(module);
+  return G_SOURCE_REMOVE;
+}
+
+// both moving to another entry and leaving one only take effect once the
+// pointer rests: going from entry to entry swaps one preview for the next
+// without the canvas going back in between, and sweeping past entries starts
+// no render for each
+static void _flexi_op_preview_schedule(dt_iop_module_t *module,
+                                       const gboolean show,
+                                       const dt_masks_state_t flexi_op)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd) return;
+  if(bd->op_preview_timer) g_source_remove(bd->op_preview_timer);
+  bd->op_preview_show = show;
+  bd->op_preview_op = flexi_op;
+  bd->op_preview_timer = g_timeout_add(FLEXI_OP_PREVIEW_DWELL_MS, _flexi_op_preview_elapsed, module);
+}
+
+static void _flexi_op_item_enter(GtkEventControllerMotion *controller,
+                                 const double x,
+                                 const double y,
+                                 dt_iop_module_t *module)
+{
+  if(!dt_conf_get_bool("plugins/darkroom/masks/preview_operator_on_hover")) return;
+  GVariant *target = g_object_get_data(G_OBJECT(dt_gui_get_widget(controller)), "dt-popover-target");
+  if(!target || !g_variant_is_of_type(target, G_VARIANT_TYPE_INT32)) return;
+  _flexi_op_preview_schedule(module, TRUE, (dt_masks_state_t)g_variant_get_int32(target));
+}
+
+static void _flexi_op_item_leave(GtkEventControllerMotion *controller, dt_iop_module_t *module)
+{
+  _flexi_op_preview_schedule(module, FALSE, 0);
+}
+
+// every entry of the chooser, as _masks_import_connect_preview does it
+static void _flexi_op_connect_preview(GtkWidget *w, gpointer module)
+{
+  if(GTK_IS_MODEL_BUTTON(w) && g_object_get_data(G_OBJECT(w), "dt-popover-target"))
+    dt_gui_connect_motion(w, NULL, _flexi_op_item_enter, _flexi_op_item_leave, module);
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_forall(GTK_CONTAINER(w), _flexi_op_connect_preview, module);
+}
+
+static void _flexi_op_menu_closed(GtkPopover *popover, dt_iop_module_t *module)
+{
+  _flexi_op_preview_end(module);
+}
+
 static void _flexi_op_action(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   GtkWidget *anchor = GTK_WIDGET(user_data);
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(anchor), "module");
   const dt_mask_id_t cid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(anchor), "flexi_op_cid"));
   const dt_masks_state_t flexi_op = (dt_masks_state_t)g_variant_get_int32(parameter);
+  // before the history item, which would otherwise record the previewed
+  // operators of the groups this does not change
+  _flexi_op_preview_end(module);
   if(darktable.gui->active_popover_menu)
     gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
   if(module && !_picks_set_op(module, cid, flexi_op)) _flexi_op_apply(module, cid, flexi_op);
@@ -12516,6 +12716,14 @@ static void _build_flexi_op_menu(GtkWidget *anchor, dt_iop_module_t *module, con
   g_menu_append_section(menu, _("select group operator"), G_MENU_MODEL(ops));
   g_object_unref(ops);
   darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(anchor, menu);
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(bd)
+  {
+    bd->op_preview_cid = cid;
+    _flexi_op_connect_preview(darktable.gui->active_popover_menu, module);
+    g_signal_connect(darktable.gui->active_popover_menu, "closed",
+                     G_CALLBACK(_flexi_op_menu_closed), module);
+  }
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
   g_object_unref(menu);
 }
@@ -19255,6 +19463,12 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   }
 
   _preview_on_hover_cancel_dwell(bd);
+  // the forms may be gone by now, so a preview still up is dropped, not
+  // given back: the chooser's "closed" ends it before any ordinary teardown
+  if(bd->op_preview_timer) g_source_remove(bd->op_preview_timer);
+  bd->op_preview_timer = 0;
+  if(bd->op_preview_saved) g_array_free(bd->op_preview_saved, TRUE);
+  bd->op_preview_saved = NULL;
   _row_hover_cancel(module);
   // a throttled commit (_controls_commit) still waiting for this module would
   // reach its freed blend_data
@@ -19695,6 +19909,10 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
   if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && module->blend_data)
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
+
+    // first, so that the overlay carried below is the user's and the forms
+    // hold no previewed operator
+    _flexi_op_preview_end(module);
 
     // a running hover preview is not the overlay the user asked for;
     // save_for_leave holds that one. Channel displays are per-module, so

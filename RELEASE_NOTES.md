@@ -305,6 +305,11 @@ changes (where available).
   moved into that section, and the headroom fields are grayed out while
   it is off or only one device is in use.
 
+- Resting the pointer on an operator in a mask group's operator menu
+  now shows the mask in the center view as that operator would make
+  it, so operators can be compared before choosing one. It can be
+  turned off in the masks panel options.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
