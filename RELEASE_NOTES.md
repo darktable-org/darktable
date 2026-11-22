@@ -1232,8 +1232,9 @@ changes (where available).
   balance at the camera's as-shot or reference multipliers.
 
 - Fixed the history tooltip of a lighttable thumbnail growing taller
-  than the screen and flickering for images with a long history. It
-  now shows the newest 20 items and how many more there are.
+  than the screen and flickering for images with a long history. Users 
+  can now specify the number of history items to be displayed in the 
+  tooltip. To view the rest, use the mouse wheel scroll.
 
 - Fixed the normalization values (exposure compensation and black
   offset) in color calibration's color checker report, which are meant
