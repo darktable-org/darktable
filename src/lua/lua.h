@@ -76,7 +76,8 @@ typedef struct
   pthread_cond_t cond;               // condition variable to wait for the lua lock
   volatile bool exec_lock;           // true if some lua code is running. this is logically a mutex
 
-  bool ending;                       // true if we are in the process of terminating DT
+  int ending;                        // true if we are in the process of terminating DT,
+                                     // read by the lua thread: use g_atomic_int_*
 
   GMainLoop *loop;                   // loop running the lua context
   GMainContext *context;             // the lua context responsible for dispatching tasks

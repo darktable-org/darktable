@@ -64,8 +64,8 @@ static int dt_lua_init_init(lua_State*L)
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State *L)
 {
-  if(darktable.lua_state.ending) return 0;
-  darktable.lua_state.ending = true;
+  if(g_atomic_int_get(&darktable.lua_state.ending)) return 0;
+  g_atomic_int_set(&darktable.lua_state.ending, true);
   dt_cleanup();
   return 0;
 }
@@ -88,7 +88,7 @@ void dt_lua_init_early(lua_State *L)
     L = luaL_newstate();
   }
   darktable.lua_state.state = L;
-  darktable.lua_state.ending = false;
+  g_atomic_int_set(&darktable.lua_state.ending, false);
   darktable.lua_state.loop = NULL;;
   darktable.lua_state.context = NULL;;
   darktable.lua_state.stacked_job_queue = NULL;;
@@ -252,7 +252,7 @@ int luaopen_darktable(lua_State *L)
 
 void dt_lua_finalize_early()
 {
-  darktable.lua_state.ending = true;
+  g_atomic_int_set(&darktable.lua_state.ending, true);
   gboolean running = (darktable.lua_state.loop
                       && g_atomic_int_get(&_lua_fully_initialized)
                       && g_main_loop_is_running(darktable.lua_state.loop));

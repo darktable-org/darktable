@@ -161,7 +161,7 @@ static void run_async_thread(lua_State* L, int thread_num)
    */
 static gboolean end_job_prepare (GSource *source, gint    *timeout)
 {
-  return darktable.lua_state.ending;
+  return g_atomic_int_get(&darktable.lua_state.ending);
 }
 
 static gboolean end_job_dispatch (GSource* source, GSourceFunc callback, gpointer user_data)
@@ -585,7 +585,7 @@ static int dispatch_cb(lua_State *L)
 
 static int ending_cb(lua_State *L)
 {
-  lua_pushboolean(L,darktable.lua_state.ending);
+  lua_pushboolean(L,g_atomic_int_get(&darktable.lua_state.ending));
   return 1;
 }
 
