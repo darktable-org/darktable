@@ -1058,10 +1058,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 #endif
 
   const char* compile_opt = cl->fastcl ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
-  cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
+  cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1 -DDT_OPENCL_FAST=%d",
                                 compile_opt,
                                 cl->dev[dev].cuda && cl->dev[dev].extensions ? " -DNVIDIA_SM_20=1" : "",
-                                _opencl_get_vendor_by_id(vendor_id));
+                                _opencl_get_vendor_by_id(vendor_id),
+                                cl->fastcl ? 1 : 0);
   cl->dev[dev].options = g_strdup_printf("%s -I%s",
                              cl->dev[dev].cflags, escapedkerneldir);
 
