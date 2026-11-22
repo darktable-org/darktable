@@ -1969,7 +1969,6 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
   {
     data->panel_selected_formid = INVALID_MASKID;
     data->panel_selected_group_cid = INVALID_MASKID;
-    data->canvas_hovered_formid = INVALID_MASKID;
     data->insert_active = FALSE;
   }
 
@@ -5198,13 +5197,15 @@ static void _refine_bypass_toggled(GtkToggleButton *btn, gpointer user_data)
   }
 }
 
-// the element hovered on the canvas, if it still exists (see
-// bd->canvas_hovered_formid)
+// the element hovered on the canvas, if it still exists. Read from the canvas'
+// own state (form_gui->canvas_hover_formid) rather than a copy of it, which
+// could outlive the hover when the canvas resets its own
 static dt_mask_id_t _canvas_hovered(const dt_iop_gui_blend_data_t *bd)
 {
-  return dt_is_valid_maskid(bd->canvas_hovered_formid)
-             && dt_masks_get_from_id(darktable.develop, bd->canvas_hovered_formid)
-           ? bd->canvas_hovered_formid
+  const dt_masks_form_gui_t *gui = darktable.develop ? darktable.develop->form_gui : NULL;
+  return gui && dt_is_valid_maskid(gui->canvas_hover_formid)
+             && dt_masks_get_from_id(darktable.develop, gui->canvas_hover_formid)
+           ? gui->canvas_hover_formid
            : INVALID_MASKID;
 }
 
@@ -8299,15 +8300,13 @@ void dt_iop_gui_blend_masks_select_form(dt_iop_module_t *module, const dt_mask_i
 // defined with the rest of the list-row hover machinery further down
 static void _row_hover_wash(dt_iop_gui_blend_data_t *bd, GtkWidget *target);
 
-// show the element the pointer is over on the canvas (`formid`) in the
-// selection panel in place of the selection, which stays what it is: solo edit
-// keeps the selected group's other shapes editable on the canvas. INVALID shows
-// the selection again
-static void _hover_show(dt_iop_module_t *module, const dt_mask_id_t formid)
+// show the element the pointer is over on the canvas (form_gui->canvas_hover_formid,
+// set by the caller) in the selection panel in place of the selection, which
+// stays what it is: solo edit keeps the selected group's other shapes editable
+// on the canvas. INVALID shows the selection again
+static void _hover_show(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
-  if(formid == bd->canvas_hovered_formid) return;
-  bd->canvas_hovered_formid = formid;
   _flexi_refine_follow_selection(bd);
   _controls_panel_sync(module, FALSE);
 }
@@ -8321,7 +8320,7 @@ void dt_iop_gui_blend_masks_hover_form(dt_iop_module_t *module, const dt_mask_id
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd || !bd->masks_list_box || !bd->shapes_support) return;
-  _hover_show(module, formid);
+  _hover_show(module);
   GtkWidget *box = GTK_WIDGET(bd->masks_list_box);
   if(!dt_is_valid_maskid(formid))
   {
@@ -9912,7 +9911,9 @@ static void _clear_stale_formid_refs(dt_iop_gui_blend_data_t *bd, const dt_mask_
   if(bd->panel_selected_formid == id) bd->panel_selected_formid = INVALID_MASKID;
   // a shape deleted from the canvas is the one under the pointer, which takes
   // the selection's place in the selection panel (_canvas_hovered)
-  if(bd->canvas_hovered_formid == id) bd->canvas_hovered_formid = INVALID_MASKID;
+  if(darktable.develop && darktable.develop->form_gui
+     && darktable.develop->form_gui->canvas_hover_formid == id)
+    darktable.develop->form_gui->canvas_hover_formid = INVALID_MASKID;
   if(bd->solo_formid == id) bd->solo_formid = INVALID_MASKID;
   if(bd->soloedit_formid == id) bd->soloedit_formid = INVALID_MASKID;
 }
@@ -16531,9 +16532,10 @@ static gboolean _masks_panel_reconcile(dt_iop_module_t *module,
   if(!rewinding && dt_is_valid_maskid(bd->panel_selected_formid)
      && !dt_masks_gui_group_point(grp, bd->panel_selected_formid))
     bd->panel_selected_formid = INVALID_MASKID;
-  if(dt_is_valid_maskid(bd->canvas_hovered_formid)
-     && !dt_masks_gui_group_point(grp, bd->canvas_hovered_formid))
-    bd->canvas_hovered_formid = INVALID_MASKID;
+  if(darktable.develop && darktable.develop->form_gui
+     && dt_is_valid_maskid(darktable.develop->form_gui->canvas_hover_formid)
+     && !dt_masks_gui_group_point(grp, darktable.develop->form_gui->canvas_hover_formid))
+    darktable.develop->form_gui->canvas_hover_formid = INVALID_MASKID;
   _select_mask_group_if_none(bd);
 
   // refresh the insert hint now (not just at the very end, its other call
@@ -20114,7 +20116,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
 
     bd->masks_refine_scope_kind = REFINE_SCOPE_GLOBAL;
     bd->masks_refine_scope_formid = INVALID_MASKID;
-    bd->canvas_hovered_formid = INVALID_MASKID;
 
     // relocatable_box holds the "blend mask" header (gbox) plus everything
     // below it, and is the unit that dt_iop_gui_blend_masks_panel_relocate() moves between

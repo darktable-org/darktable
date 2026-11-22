@@ -2621,7 +2621,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   for(int k = 0; k < NODES + 1; k++)
   {
     float hue = _get_hue_node(k, 0.0f); // in radians
-    const float xn = (k / ((float)NODES) + dx    ) * graph_width;
+    const float xn = (k / ((float)NODES) + dx ) * graph_width;
     hue = (hue < M_PI_F) ? hue : -DT_2PI_F + hue; // The LUT is defined in [-pi; pi[
     const float yn = (offset - lookup_gamut(g->LUT, hue) * factor) * graph_height;
 
@@ -2655,7 +2655,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   // shifted by hue_shift, so the hue is mapped directly to x.
   if(self->enabled && g->cursor_valid)
   {
-    float x_cursor = (g->cursor_hue / 360.0f + dx) * graph_width;
+    float x_cursor = (g->cursor_hue / 360.0f) * graph_width;
     x_cursor = fmodf(x_cursor, graph_width); // hue is periodic
     if(x_cursor < 0.0f) x_cursor += graph_width;
 

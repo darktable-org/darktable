@@ -1342,12 +1342,15 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
   return g_list_reverse(result);   // list was built in reverse order, so un-reverse it
 }
 
-char *dt_history_get_items_as_string(const dt_imgid_t imgid)
+char *dt_history_get_items_as_string(const dt_imgid_t imgid,
+                                     const int max_items)
 {
   if(!dt_is_valid_imgid(imgid))
     return NULL;
 
   GList *items = NULL;
+  int kept = 0;
+  int skipped = 0;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -1358,9 +1361,16 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid)
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  // collect all the entries in the history from the db
+  // collect the entries in the history from the db, newest first
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    if(max_items > 0 && kept >= max_items)
+    {
+      skipped++;
+      continue;
+    }
+    kept++;
+
     char *multi_name = NULL;
     const char *mn = (char *)sqlite3_column_text(stmt, 2);
 
@@ -1379,6 +1389,12 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid)
   }
   sqlite3_finalize(stmt);
   items = g_list_reverse(items); // list was built in reverse order, so un-reverse it
+  if(skipped > 0)
+    items = g_list_append(items,
+                          g_strdup_printf(ngettext("... and %d more item",
+                                                   "... and %d more items",
+                                                   skipped),
+                                          skipped));
   char *result = dt_util_glist_to_str("\n", items);
   g_list_free_full(items, g_free);
   return result;

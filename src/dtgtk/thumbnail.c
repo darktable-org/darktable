@@ -103,7 +103,10 @@ static void _thumb_update_altered_tooltip(dt_thumbnail_t *thumb)
   gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
   if(thumb->is_altered)
   {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
+    // one line per history item: cap it so that a long history does not
+    // make the tooltip taller than the screen, which clips it and makes it flicker
+    char *tooltip = dt_history_get_items_as_string
+      (thumb->imgid, dt_conf_get_int("plugins/lighttable/thumbnail_history_tooltip_max"));
     if(tooltip)
     {
       gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
@@ -1711,17 +1714,6 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
     thumb->selected = sel;
   if(dt_control_get_mouse_over_id() == thumb->imgid)
     dt_thumbnail_set_mouseover(thumb, TRUE);
-
-  // set tooltip for altered icon if needed
-  if(thumb->is_altered)
-  {
-    char *tooltip_txt = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip_txt)
-    {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip_txt);
-      g_free(tooltip_txt);
-    }
-  }
 
   // update tooltips
   _image_update_group_tooltip(thumb);

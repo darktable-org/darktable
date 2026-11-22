@@ -637,7 +637,9 @@ typedef struct dt_masks_form_gui_t
   // panel_selected_formid: the panel's selection, highlighted on the canvas
   //   while nothing is hovered
   // canvas_hover_formid: the shape under the cursor, whose row the panel
-  //   highlights; kept to skip repeated updates
+  //   highlights and which the selection panel shows in place of the
+  //   selection (_canvas_hovered in blend_gui.c); the only copy of the hover,
+  //   INVALID = none
   // solo_formids: shapes soloed or solo-edited in the panel, highlighted
   //   whatever is hovered (_sync_solo_canvas_highlight in blend_gui.c).
   //   NULL = none
@@ -1161,6 +1163,9 @@ void dt_masks_clear_form_gui(const dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 gboolean dt_masks_cancel_creation(void);
+// drop every reference the mask canvas state holds to `module`, before its GUI
+// or the module itself goes away
+void dt_masks_forget_module(struct dt_iop_module_t *module);
 
 gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
                                      const float x,

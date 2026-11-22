@@ -403,6 +403,24 @@ static void _workspace_copy_template_toggled(GtkToggleButton *check,
     _workspace_selected_template_sync_from_radios(session);
 }
 
+static gboolean _workspace_unlink_path(const char *path, GError **error)
+{
+  GFile *gf = g_file_new_for_path(path);
+  GError *local = NULL;
+  const gboolean ok = g_file_delete(gf, NULL, &local)
+                      || g_error_matches(local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND);
+  g_object_unref(gf);
+
+  if(ok)
+  {
+    g_clear_error(&local);
+    return TRUE;
+  }
+
+  g_propagate_error(error, local);
+  return FALSE;
+}
+
 static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
 {
   GtkWidget *b = g_object_get_data(G_OBJECT(button), "db");
@@ -414,31 +432,28 @@ static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
         "\n\nif XMP writing is not activated, the editing work will be lost."),
       label))
   {
-    char fpath[PATH_MAX] = { 0 };
+    char db_path[PATH_MAX] = { 0 };
+    char rc_path[PATH_MAX] = { 0 };
+    GError *error = NULL;
 
-    // db file
-    snprintf(fpath, sizeof(fpath),
+    snprintf(db_path, sizeof(db_path),
              "%s/library-%s.db", session->datadir, label);
-
-    if(g_file_test(fpath, G_FILE_TEST_EXISTS))
-    {
-      GFile *gf = g_file_new_for_path(fpath);
-      g_file_delete(gf, NULL, NULL);
-      g_object_unref(gf);
-    }
-
-    // resource file
-    snprintf(fpath, sizeof(fpath),
+    snprintf(rc_path, sizeof(rc_path),
              "%s/darktablerc-%s", session->datadir, label);
 
-    if(g_file_test(fpath, G_FILE_TEST_EXISTS))
+    if(!_workspace_unlink_path(db_path, &error)
+       || !_workspace_unlink_path(rc_path, &error))
     {
-      GFile *gf = g_file_new_for_path(fpath);
-      g_file_delete(gf, NULL, NULL);
-      g_object_unref(gf);
+      gchar *msg = g_strdup_printf
+        (_("WARNING\n\ncould not delete workspace '%s'.\n\n%s"),
+         label, error->message);
+      _workspace_show_message(session, _("delete workspace"), msg);
+      g_free(msg);
+      g_clear_error(&error);
+      return;
     }
 
-    // and now, remove/disable the buttons
+    // both targets gone (or never present) - remove from the dialog
     gtk_widget_hide(button);
     gtk_widget_hide(b);
     {

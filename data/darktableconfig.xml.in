@@ -560,7 +560,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>OpenCL fast mode</shortdescription>
-    <longdescription>if set the OpenCL compiler uses aggressive optimizing for better performance with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
+    <longdescription>if set the OpenCL compiler generates slighly faster code with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl_scheduling_profile</name>
@@ -1651,6 +1651,13 @@
     <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • ISO &lt;b&gt;$(EXIF.ISO)&lt;/b&gt;</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/thumbnail_history_tooltip_max</name>
+    <type min="0" max="1000">int</type>
+    <default>20</default>
+    <shortdescription>maximum number of history items in the thumbnail tooltip</shortdescription>
+    <longdescription>the history tooltip of a thumbnail shows only the most recent items, followed by the number of items left out. 0 shows all items.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pressure_sensitivity</name>

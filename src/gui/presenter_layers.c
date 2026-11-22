@@ -1487,8 +1487,10 @@ static void _target(dt_presenter_backend_t *self,
 dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window,
                                                    gchar **reason)
 {
-#ifdef HAVE_WAYLAND
+#if defined HAVE_WAYLAND
   return dt_presenter_wayland_new(window->toplevel, window, reason);
+#elif defined HAVE_QUARTZ_PRESENTER
+  return dt_presenter_quartz_new(window->toplevel, window, reason);
 #else
   *reason = NULL;
   return NULL;

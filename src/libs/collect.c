@@ -3339,6 +3339,24 @@ static void row_activated_with_event(GtkTreeView *view,
   dt_control_queue_redraw_center();
 }
 
+// keep a typed operator (>=1, [1;5], >=1/125); the row text is only the value.
+static gboolean _entry_is_operator_expression(const int property,
+                                              const gchar *text)
+{
+  gchar *operator = NULL, *number1 = NULL, *number2 = NULL;
+
+  if(property == DT_COLLECTION_PROP_EXPOSURE)
+    dt_collection_split_operator_exposure(text, &number1, &number2, &operator);
+  else
+    dt_collection_split_operator_number(text, &number1, &number2, &operator);
+
+  const gboolean is_op = (operator != NULL);
+  g_free(operator);
+  g_free(number1);
+  g_free(number2);
+  return is_op;
+}
+
 static void entry_activated(GtkWidget *entry,
                             dt_lib_collect_rule_t *d)
 {
@@ -3363,7 +3381,9 @@ static void entry_activated(GtkWidget *entry,
     rows = gtk_tree_model_iter_n_children(model, NULL);
 
     // if only one row, press enter in entry box to fill it with the row value
-    if(rows == 1)
+    // keep a typed operator (>=1, [1;5], >=1/125); the row text is only the value.
+    if(rows == 1
+       && !_entry_is_operator_expression(property, gtk_entry_get_text(GTK_ENTRY(d->text))))
     {
       GtkTreeIter iter;
       if(gtk_tree_model_get_iter_first(model, &iter))
