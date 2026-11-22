@@ -591,6 +591,9 @@ changes (where available).
       List of modules that will not process it's OpenCL code.
   OpenCL fast/default kernels are cached at different locations.
 
+- The OpenCL code base has been tuned for precision at many places leading to
+  smaller differences between CPU and GPU processing.
+
 - The aspect ratio chosen on the camera is now applied as a crop when
   the raw was left uncropped, so a frame shot at 1:1 or 16:9 opens
   framed as intended while the full sensor area stays available to

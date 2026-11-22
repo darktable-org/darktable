@@ -59,7 +59,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #define BLUE 2
 #define ALPHA 3
 
-#if(defined(__FAST_RELAXED_MATH__) && __FAST_RELAXED_MATH__ == 1)
+#if defined(DT_OPENCL_FAST) && DT_OPENCL_FAST == 1
   #define dtcl_sin(A) native_sin(A)
   #define dtcl_cos(A) native_cos(A)
   #define dtcl_sqrt(A) native_sqrt(A)
@@ -73,8 +73,27 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_exp(A) native_exp(A)
   #define dtcl_exp10(A) native_exp10(A)
   #define dtcl_log10(A) native_log10(A)
-
+  static inline float fp32_div(const float a, const float b)
+  {
+    return a / b;
+  }
+  static inline float4 fp32_div_4(const float4 a, const float4 b)
+  {
+    return a / b;
+  }
+  static inline float cbrt_refined(const float x)
+  {
+    return cbrt(x);
+  }
+  static inline float4 cbrt_refined_4(const float4 x)
+  {
+    return cbrt(x);
+  }
   static inline float dt_fast_hypot(const float x, const float y)
+  {
+    return sqrt(x * x + y * y);
+  }
+  static inline float _radius_hypotf(const float x, const float y)
   {
     return sqrt(x * x + y * y);
   }
@@ -96,6 +115,94 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_exp(A) exp(A)
   #define dtcl_exp10(A) exp10(A)
   #define dtcl_log10(A) log10(A)
+
+  static inline float fp32_div(const float a, const float b)
+  {
+    /** OpenCL accepts an error of 2.5 for a default division, full IEEE precision
+      can be enforced wit a global compiler flag but that is not supported on all
+      drivers/platforms.
+      As almost all platforms support fma() we can use Newton-Raphson refinement
+      of the quotient for precise results.
+      (See OpenCL manuals like from nvidia, amd ... they use such code)
+      Also rawprepare uses this already.
+
+      Note after code refinement (copilot):
+      0x1p-64f and 0x1p64f are 2^-64 and 2^64. Restricting a, b, and the quotient
+      to this range keeps them well away from FP32 overflow and the
+      normal/subnormal boundaries.
+      0x1p-10f is 2^-10, or about 0.098%. Since e = 1 − b*y, it measures the
+      relative error of the reciprocal seed.
+      In exact arithmetic, the Newton step squares that error: 2⁻¹⁰ becomes 2⁻²⁰.
+      The quotient correction reduces the remaining error further, subject to FP32 rounding.      .
+    */
+    const float lo = 0x1p-64f;  // 5.42101086e-20f
+    const float hi = 0x1p64f;   // 1.84467441e19f
+    if(!(fabs(a) >= lo && fabs(a) <= hi &&
+         fabs(b) >= lo && fabs(b) <= hi))
+      return a / b;
+
+    float y = native_recip(b);
+    const float e = fma(-b, y, 1.0f);
+    if(!(fabs(e) <= 0x1p-10f))  // 0.0009765625f
+      return a / b;
+
+    y = fma(y, e, y);
+    const float q = a * y;
+    if(!(fabs(q) >= lo && fabs(q) <= hi))
+      return a / b;
+
+    const float r = fma(-b, q, a);
+    return fma(r, y, q);
+  }
+
+  static inline float4 fp32_div_4(const float4 a, const float4 b)
+  {
+    return (float4)(fp32_div(a.x, b.x), fp32_div(a.y, b.y), fp32_div(a.z, b.z), fp32_div(a.w, b.w));
+  }
+
+  // a more precise cbrt() variant.
+  // It uses cbrt(x) as a seed and refines it with one FP32 Newton step.
+  // Avoids the refinement for y==zero or infinite
+  static inline float cbrt_refined(const float x)
+  {
+    const float y = cbrt(x);
+    if(y == 0.0f || isinf(y))
+      return y;
+    const float y2 = y * y;
+    const float y2_err = fma(y, y, -y2);
+    // Compensate for rounding in y * y when computing x - y^3.
+    const float residual = fma(-y, y2_err, fma(-y, y2, x));
+    return y + residual / (3.0f * y2);
+  }
+
+  static inline float4 cbrt_refined_4(const float4 x)
+  {
+    return (float4) (cbrt_refined(x.x), cbrt_refined(x.y), cbrt_refined(x.z), cbrt_refined(x.w));
+  }
+
+  static inline float _radius_hypotf(const float x, const float y)
+  {
+    if(!isfinite(x) || !isfinite(y))  // handle exceptions as we do in CPU code
+      return hypot(x, y);
+
+    const float ax = fabs(x), ay = fabs(y);
+    const float a = fmax(ax, ay), b = fmin(ax, ay);
+    if(a == 0.0f)
+      return 0.0f;
+
+    if(a < 0x1p-60f || a > 0x1p60f) // again use the default handling of numerical extremes
+      return hypot(x, y);
+
+    const float aa = a * a;
+    const float bb = b * b;
+    const float s = aa + bb;
+
+    const float e = ((aa - s) + bb) + (fma(a, a, -aa) + fma(b, b, -bb));
+
+    const float h = sqrt(s);
+    const float residual = fma(-h, h, s) + e;
+    return fma(residual, fp32_div(0.5f, h), h);
+  }
 
   static inline float dt_fast_hypot(const float x, const float y)
   {
@@ -130,71 +237,7 @@ static inline float scharr_gradient(global float *in, const int k, const int w)
   return hypot(gx, gy);
 }
 
-static inline float fp32_div(const float a, const float b)
-{
-  /** OpenCL accepts an error of ~2.5 for a default division, full IEEE precision
-      can be enforced wit a global compiler flag but that is not supported on all
-      drivers/platforms.
-      As almost all platforms support fma() we can use Newton-Raphson refinement
-      of the quotient for precise results.
-      (See OpenCL manuals like from nvidia, amd ... they use such code)
-      Also rawprepare uses this already.
-  */
-  float y = native_recip(b);
-  float e = fma(-b, y, 1.0f);
-  y = fma(y, e, y);
-  float q = a * y;
-  float r = fma(-b, q, a);
-  return fma(r, y, q);
-}
 
-static inline float4 fp32_div_4(const float4 a, const float4 b)
-{
-  float4 y = native_recip(b);
-  float4 e = fma(-b, y, 1.0f);
-  y = fma(y, e, y);
-  float4 q = a * y;
-  float4 r = fma(-b, q, a);
-  return fma(r, y, q);
-}
-
-static inline float _radius_hypotf(const float x, const float y)
-{
-  const float ax = fabs(x), ay = fabs(y);
-  const float a = fmax(ax, ay), b = fmin(ax, ay);
-  if(a == 0.0f) return 0.0f;
-
-  const float aa = a * a;
-  const float bb = b * b;
-  const float s = aa + bb;
-
-  const float e = ((aa - s) + bb)
-                + (fma(a, a, -aa) + fma(b, b, -bb));
-
-  const float h = sqrt(s);
-  const float residual = fma(-h, h, s) + e;
-  return fma(residual, fp32_div(0.5f, h), h);
-}
-
-// a more precise cbrt() variant.
-// It uses cbrt(x) as a seed and refines it with one FP32 Newton step.
-// Avoids the refinement for y==zero or infinite
-static inline float cbrt_refined(const float x)
-{
-  const float y = cbrt(x);
-  if(y == 0.0f || isinf(y))
-    return y;
-  const float y2 = y * y;
-  const float y2_err = fma(y, y, -y2);
-  // Compensate for rounding in y * y when computing x - y^3.
-  const float residual = fma(-y, y2_err, fma(-y, y2, x));
-  return y + residual / (3.0f * y2);
-}
-
-static inline float4 cbrt_refined_4(const float4 x)
-{
-  return (float4) { cbrt_refined(x.x), cbrt_refined(x.y), cbrt_refined(x.z), cbrt_refined(x.w) };
-}
 
 static inline int
 FC(const int row, const int col, const unsigned int filters)
