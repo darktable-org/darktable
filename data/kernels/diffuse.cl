@@ -186,7 +186,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
 
   const char opacity = (has_mask) ? read_imageui(mask, sampleri, (int2)(x, y)).x : 1;
 
-  const float4 regularization_factor = regularization * current_radius_square / 9.f;
+  const float4 regularization_factor = fp32_div(regularization * current_radius_square, 9.f);
 
   float4 out;
 
@@ -220,19 +220,19 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
 
     const float4 magnitude_grad = dtcl_sqrt(sqf(gradient[0]) + sqf(gradient[1]));
     // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
-    gradient[0] = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad
+    gradient[0] = (magnitude_grad != 0.f) ? fp32_div_4(gradient[0], magnitude_grad)
                                           : 1.f; // cos(0)
     // Compute sin (arg(grad))= dy / hypot - force arg(grad) = 0 if hypot == 0
-    gradient[1] = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad
+    gradient[1] = (magnitude_grad != 0.f) ? fp32_div_4(gradient[1], magnitude_grad)
                                           : 0.f; // sin(0)
     // Warning : now gradient[2] = { cos(arg(grad)) , sin(arg(grad)) }
 
     const float4 magnitude_lapl = dtcl_sqrt(sqf(laplacian[0]) + sqf(laplacian[1]));
     // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
-    laplacian[0] = (magnitude_lapl != 0.f) ? laplacian[0] / magnitude_lapl
+    laplacian[0] = (magnitude_lapl != 0.f) ? fp32_div_4(laplacian[0], magnitude_lapl)
                                            : 1.f; // cos(0)
     // Compute sin (arg(lapl))= dy / hypot - force arg(lapl) = 0 if hypot == 0
-    laplacian[1] = (magnitude_lapl != 0.f) ? laplacian[1] / magnitude_lapl
+    laplacian[1] = (magnitude_lapl != 0.f) ? fp32_div_4(laplacian[1], magnitude_lapl)
                                            : 0.f; // sin(0)
     // Warning : now laplacian[2] = { cos(arg(lapl)) , sin(arg(lapl)) }
 
@@ -279,17 +279,17 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     // compute the update
     float4 acc = (float4)0.f;
     for(int k = 0; k < 4; k++) acc += derivatives[k] * ((float *)&ABCD)[k];
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    acc = (hf * strength + acc / variance);
+    float4 hf = Areadpixel(HF, x, y);
+    acc = hf * strength + fp32_div_4(acc, variance);
 
     // update the solution
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
+    float4 lf = Areadpixel(LF, x, y);
     out = fmax(acc + lf, 0.f);
   }
   else
   {
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
+    float4 hf = Areadpixel(HF, x, y);
+    float4 lf = Areadpixel(LF, x, y);
     out = hf + lf;
   }
 
