@@ -192,11 +192,11 @@ static inline float _agx_lerp_hue(const float original_hue, const float processe
 // see _hdr_darken() in agx.c
 static inline float _agx_hdr_darken(const float x, const dt_iop_agx_hdr_params_t *hdr)
 {
-    const float log_x = clamp(1.0f - dtcl_log2(fmax(x, 1e-12f)) / hdr->log_min, 0.0f, 1.0f);
+    const float log_x = clipf(1.0f - fp32_div(dtcl_log2(fmax(x, 1e-12f)), hdr->log_min));
     const float u = log_x - hdr->pivot_x;
     const float log_y = u < 0.0f
         ? _agx_scaled_sigmoid(log_x, hdr->toe_scale, 1.0f, 3.0f, hdr->pivot_x, hdr->pivot_y)
-        : hdr->pivot_y + hdr->shoulder_scale * u / (hdr->shoulder_scale + u);
+        : hdr->pivot_y + fp32_div(hdr->shoulder_scale * u, hdr->shoulder_scale + u);
     return x > 0.0f ? dtcl_exp2(hdr->log_min * (1.0f - log_y)) : 0.0f;
 }
 

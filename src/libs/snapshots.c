@@ -492,6 +492,37 @@ static gboolean _compare_passes(dt_lib_module_t *self,
   return d->sidebyside || !_on_split_control(self, x, y);
 }
 
+// the pointer stays grabbed while the split is dragged, so the line can be let
+// go where no press reaches it again: off the view, or under the masks panel
+// or the bands at its edges, which take the presses there
+static gboolean _split_out_of_reach(const dt_lib_snapshots_t *d)
+{
+  if(!d->vertical)
+  {
+    const double y = d->vp_ypointer * d->vp_height;
+    return y <= 0.0 || y >= d->vp_height;
+  }
+  int left = 0, right = 0;
+  dt_ui_flexi_panel_get_cover(darktable.gui->ui, &left, &right);
+  const double x = d->vp_xpointer * d->vp_width;
+  return x <= left || x >= d->vp_width - right;
+}
+
+// a line dragged out of reach ends the comparison, as a click on the
+// snapshot, or on the history entry it compares, would
+static void _split_dismiss(dt_lib_module_t *self)
+{
+  dt_lib_snapshots_t *d = self->data;
+  // or the next comparison would start with the line out of reach
+  d->vp_xpointer = 0.5;
+  d->vp_ypointer = 0.5;
+  const int compared = _compare_history_end(d);
+  if(compared >= 0)
+    _compare_history(self, compared);
+  else
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[d->selected].button), FALSE);
+}
+
 int mouse_leave(struct dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
@@ -553,6 +584,8 @@ int button_released(struct dt_lib_module_t *self,
       d->snap_requested = TRUE;
       dt_control_queue_redraw_center();
     }
+    else if(d->dragging && _split_out_of_reach(d))
+      _split_dismiss(self);
     d->dragging = FALSE;
     return 1;
   }

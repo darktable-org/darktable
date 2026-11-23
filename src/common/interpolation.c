@@ -854,7 +854,6 @@ static gboolean _prepare_resampling_plan(const dt_interpolation_t *itor,
   float *scratchpad = scratchreq ? (float *)blob : NULL;
   blob = (char *)blob + scratchreq;
   int *meta = metareq ? (int *)blob : NULL;
-//   blob = (char *)blob + metareq;
 
   /* setting this as a const should help the compilers trim all unnecessary
    * codepaths */
@@ -976,6 +975,18 @@ static gboolean _prepare_resampling_plan(const dt_interpolation_t *itor,
   return FALSE;
 }
 
+static uint32_t _roundToNextPowerOfTwo(uint32_t x)
+{
+  x--;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  x++;
+  return x;
+}
+
 // xshift and yshift are the position of the first output pixel in the
 // output image, the input buffer starts at input position 0
 static void _resample(const dt_interpolation_t *itor,
@@ -999,6 +1010,7 @@ static void _resample(const dt_interpolation_t *itor,
   int *vlength = NULL;
   float *vkernel = NULL;
   int *vmeta = NULL;
+  dt_aligned_pixel_t *scratch = NULL;
 
   const size_t in_stride_floats = roi_in->width * 4;
   const size_t out_stride_floats = roi_out->width * 4;
@@ -1055,12 +1067,23 @@ static void _resample(const dt_interpolation_t *itor,
                               &vlength, &vkernel, &vindex, &vmeta))
     goto exit;
 
+  int vmaxtaps = 0;
+  for(int oy = 0; oy < roi_out->height; oy++)
+    vmaxtaps = MAX(vmaxtaps, vlength[oy]);
+  const uint32_t vtaps = _roundToNextPowerOfTwo((uint32_t)MAX(1, vmaxtaps));
+  const size_t nthreads = dt_get_num_threads();
+  size_t padded_size = 0;
+  if((size_t)vtaps > (SIZE_MAX / nthreads - (DT_CACHELINE_BYTES - 1)) / sizeof(dt_aligned_pixel_t)
+     || !(scratch = dt_alloc_perthread(vtaps, sizeof(dt_aligned_pixel_t), &padded_size)))
+    dt_print(DT_DEBUG_ALWAYS, "[dt_interpolation_resample] failed to allocate reduction buffer");
+
   dt_get_perf_times(&mid);
 
   // Process each output line
-  DT_OMP_FOR()
+  DT_OMP_FOR_CAP_THREADS(nthreads, )
   for(size_t oy = 0; oy < (size_t)roi_out->height; oy++)
   {
+    dt_aligned_pixel_t *const buffer = scratch ? dt_get_perthread(scratch, padded_size) : NULL;
     // Initialize column resampling indexes
     int vlidx = vmeta[3 * oy + 0]; // V(ertical) L(ength) I(n)d(e)x
     int vkidx = vmeta[3 * oy + 1]; // V(ertical) K(ernel) I(n)d(e)x
@@ -1076,9 +1099,7 @@ static void _resample(const dt_interpolation_t *itor,
     // Process each output column
     for(size_t ox = 0; ox < (size_t)roi_out->width; ox++)
     {
-      // This will hold the resulting pixel
-      dt_aligned_pixel_t vs = { 0.0f, 0.0f, 0.0f, 0.0f };
-
+      dt_aligned_pixel_t vs = { 0.0f };
       // Number of horizontal samples contributing to the output
       const int hl = hlength[hlidx++]; // H(orizontal) L(ength)
 
@@ -1100,18 +1121,35 @@ static void _resample(const dt_interpolation_t *itor,
             vhs[c] += tmp[c] * htap;
         }
 
-        // Accumulate contribution from this line
         const float vtap = vkernel[vkidx++];
-        for_each_channel(c, aligned(vhs,vs:16)) vs[c] += vhs[c] * vtap;
+        if(buffer)
+        {
+          for_each_channel(c, aligned(vhs:16))
+            buffer[iy][c] = vhs[c] * vtap;
+        }
+        else
+        {
+          for_each_channel(c, aligned(vhs,vs:16))
+            vs[c] += vhs[c] * vtap;
+        }
 
         // Reset horizontal resampling context
         hkidx -= hl;
       }
+      // Use the same power-of-two reduction tree as interpolation_resample.
+      for(uint32_t iy = vl; iy < vtaps; iy++)
+        for_each_channel(c)
+          buffer[iy][c] = 0.0f;
+
+      for(uint32_t offset = vtaps / 2; offset > 0; offset >>= 1)
+        for(uint32_t iy = 0; iy < offset; iy++)
+          for_each_channel(c)
+            buffer[iy][c] += buffer[iy + offset][c];
+
 
       // Output pixel is ready
       const size_t baseidx = (size_t)oy * out_stride_floats + (size_t)ox * 4;
-      copy_pixel_nontemporal(out + baseidx, vs);
-
+      copy_pixel_nontemporal(out + baseidx, buffer[0]);
       // Reset vertical resampling context
       viidx -= vl;
       vkidx -= vl;
@@ -1128,6 +1166,7 @@ exit:
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  dt_free_align(scratch);
   _show_2_times(&start, &mid, "resample_plain");
 }
 
@@ -1198,18 +1237,6 @@ void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_interpolation_resample);
   dt_opencl_free_kernel(g->kernel_copy_resample);
   free(g);
-}
-
-static uint32_t _roundToNextPowerOfTwo(uint32_t x)
-{
-  x--;
-  x |= x >> 1;
-  x |= x >> 2;
-  x |= x >> 4;
-  x |= x >> 8;
-  x |= x >> 16;
-  x++;
-  return x;
 }
 
 // as _resample()

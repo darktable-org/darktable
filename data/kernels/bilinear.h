@@ -39,8 +39,8 @@ static inline TYPE dt_bilinear_sample##SUFFIX(global const TYPE *const in,   \
                                               const int height_out)          \
 {                                                                            \
   /* Relative coordinates of the pixel in output space */                    \
-  const float x_out = (float)x / (float)width_out;                           \
-  const float y_out = (float)y / (float)height_out;                          \
+  const float x_out = fp32_div((float)x, (float)width_out);                  \
+  const float y_out = fp32_div((float)y, (float)height_out);                 \
                                                                              \
   /* Corresponding absolute coordinates of the pixel in input space */       \
   const float x_in = x_out * (float)width_in;                                \

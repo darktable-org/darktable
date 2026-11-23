@@ -560,7 +560,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>OpenCL fast mode</shortdescription>
-    <longdescription>if set the OpenCL compiler uses aggressive optimizing for better performance with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
+    <longdescription>if set the OpenCL compiler generates slightly faster code with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl_scheduling_profile</name>
