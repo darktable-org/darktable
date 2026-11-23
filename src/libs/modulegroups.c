@@ -1837,7 +1837,8 @@ void init_presets(dt_lib_module_t *self)
   AM("retouch");
   AM("liquify");
 
-  SMG(C_("modulegroup", "effects"), "effect");
+  SMG(C_("modulegroup", "looks"), "effect");
+  AM("lut3d");
   AM("vignette");
   AM("grain");
   AM("graduatednd");

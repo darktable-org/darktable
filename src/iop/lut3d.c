@@ -84,6 +84,8 @@ typedef struct dt_iop_lut3d_gui_data_t
   GtkWidget *filepath;
   GtkWidget *colorspace;
   GtkWidget *interpolation;
+  GtkWidget *strength;      // custom build: LUT strength (drives blend opacity)
+  GtkWidget *stack_button;  // custom build: add another LUT on top
 #ifdef HAVE_GMIC
   GtkWidget *lutentry;
   GtkWidget *lutname;
@@ -1456,6 +1458,96 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
+/* ---- custom build: friendlier LUT stacking --------------------------- */
+
+// LUTs made for sRGB / Adobe RGB / Rec709 (display-referred) look right only
+// after the tone mapper. Move this instance just after the last enabled tone
+// mapper if it currently sits before it.
+static void _place_after_tonemapper(dt_iop_module_t *self)
+{
+  const dt_iop_lut3d_params_t *p = self->params;
+  if(p->colorspace != DT_IOP_SRGB
+     && p->colorspace != DT_IOP_ARGB
+     && p->colorspace != DT_IOP_REC709)
+    return;
+
+  dt_develop_t *dev = self->dev;
+  dt_iop_module_t *tm = NULL;
+  for(GList *l = dev->iop; l; l = g_list_next(l))
+  {
+    dt_iop_module_t *m = l->data;
+    if(m->enabled
+       && (dt_iop_module_is(m, "sigmoid")
+           || dt_iop_module_is(m, "filmicrgb")
+           || dt_iop_module_is(m, "agx"))
+       && (!tm || m->iop_order > tm->iop_order))
+      tm = m;
+  }
+  if(!tm || self->iop_order > tm->iop_order) return;
+  if(!dt_ioppr_check_can_move_after_iop(dev->iop, self, tm)) return;
+  if(!dt_ioppr_move_iop_after(dev, self, tm)) return;
+
+  GtkBox *panel = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+  int position = 0;
+  gtk_container_child_get(GTK_CONTAINER(panel), tm->expander, "position", &position, NULL);
+  gtk_box_reorder_child(panel, self->expander, position);
+
+  dt_dev_add_history_item(dev, self, TRUE);
+  dt_iop_connect_accels_multi(self->so);
+  dt_dev_pixelpipe_rebuild(dev);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  dt_control_log(_("LUT placed after %s so it looks as intended"), tm->name());
+}
+
+// label the module header with the LUT's file name, e.g. "LUT 3D • teal-and-orange".
+// The name is kept as "hand edited" so darktable's automatic naming does not
+// wipe it, but we still replace it when it is just the previous LUT's name.
+static gchar *_lut_basename(const char *filepath)
+{
+  gchar *base = g_path_get_basename(filepath);
+  char *dot = strrchr(base, '.');
+  if(dot) *dot = '\0';
+  return base;
+}
+
+static void _name_after_lut(dt_iop_module_t *self, const char *old_filepath, const char *filepath)
+{
+  if(!filepath[0]) return;
+  gchar *old_base = old_filepath[0] ? _lut_basename(old_filepath) : g_strdup("");
+  const gboolean ours = !self->multi_name_hand_edited
+    || !self->multi_name[0]
+    || !g_strcmp0(self->multi_name, old_base);
+  g_free(old_base);
+  if(!ours) return;
+  gchar *base = _lut_basename(filepath);
+  dt_iop_update_multi_name(self, base, TRUE, TRUE, TRUE);
+  g_free(base);
+}
+
+static void _strength_callback(GtkWidget *slider, dt_iop_module_t *self)
+{
+  DT_GUARD_GUI_UPDATE();
+  dt_develop_blend_params_t *bp = self->blend_params;
+  const float v = dt_bauhaus_slider_get(slider);
+  if(bp->mask_mode == DEVELOP_MASK_DISABLED)
+  {
+    bp->mask_mode = DEVELOP_MASK_ENABLED;
+    bp->blend_mode = DEVELOP_BLEND_NORMAL2;
+  }
+  bp->opacity = v;
+  dt_iop_gui_update_blending(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _stack_clicked(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_module_t *m = dt_iop_gui_duplicate(self, FALSE);
+  if(!m) return;
+  dt_iop_connect_accels_multi(self->so);
+  dt_iop_request_focus(m);
+  dt_control_log(_("new LUT layer added on top, pick a file for it"));
+}
+
 static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
@@ -1465,6 +1557,7 @@ static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(!g_str_has_prefix(filepath, invalid_filepath_prefix))
   {
     filepath_set_unix_separator(filepath);
+    gchar *old_filepath = g_strdup(p->filepath);
 #ifdef HAVE_GMIC
     dt_iop_lut3d_gui_data_t *g = self->gui_data;
     if(strcmp(filepath, p->filepath) != 0 && !(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ")))
@@ -1482,6 +1575,9 @@ static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
     dt_strlcpy_to_fixed(p->filepath, filepath, sizeof(p->filepath));
 #endif // HAVE_GMIC
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    _name_after_lut(self, old_filepath, filepath);
+    g_free(old_filepath);
+    _place_after_tonemapper(self);
   }
 }
 
@@ -1697,6 +1793,9 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = self->gui_data;
   dt_iop_lut3d_params_t *p = self->params;
+  dt_bauhaus_slider_set(g->strength,
+                        self->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+                        ? 100.0f : self->blend_params->opacity);
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(!lutfolder[0])
   {
@@ -1796,6 +1895,20 @@ void gui_init(dt_iop_module_t *self)
 
   g->interpolation = dt_bauhaus_combobox_from_params(self, N_("interpolation"));
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
+
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1.0f, 100.0f, 0);
+  dt_bauhaus_widget_set_label(g->strength, NULL, N_("strength"));
+  dt_bauhaus_slider_set_format(g->strength, "%");
+  gtk_widget_set_tooltip_text(g->strength, _("how strongly this LUT is applied"));
+  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(_strength_callback), self);
+  dt_gui_box_add(self->widget, g->strength);
+
+  g->stack_button = gtk_button_new_with_label(_("+ stack another LUT"));
+  gtk_widget_set_tooltip_text(g->stack_button,
+                              _("add another LUT layer on top of this one.\n"
+                                "each layer has its own file and strength."));
+  g_signal_connect(G_OBJECT(g->stack_button), "clicked", G_CALLBACK(_stack_clicked), self);
+  dt_gui_box_add(self->widget, g->stack_button);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_MOVED, _module_moved_callback);
 }
