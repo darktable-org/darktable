@@ -247,7 +247,7 @@ void process(dt_iop_module_t *self,
   {
     const float tt = _envelope(in[k]);
     const float t = tt + (1.0f - tt) * (1.0f - highlights);
-    out[k] = (1.0f - t) * in[k] + t * out[k] * (1.0f / 100.0f) * in[k]; // normalized filter * input brightness
+    out[k] = mixf(in[k], out[k] * (1.0f / 100.0f) * in[k], t); // normalized filter * input brightness
   }
 }
 

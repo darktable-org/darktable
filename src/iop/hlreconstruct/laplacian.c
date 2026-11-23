@@ -194,8 +194,7 @@ static void _remosaic_and_replace(const float *const restrict input,
       const size_t idx = i * width + j;
       const size_t index = idx * 4;
       const float opacity = CLIP(clipping_mask[index + ALPHA]);
-      output[idx] = opacity * fmaxf(interpolated[index + c] * wb[c], 0.f)
-                    + (1.f - opacity) * input[idx];
+      output[idx] = mixf(input[idx], fmaxf(interpolated[index + c] * wb[c], 0.f), opacity);
     }
 }
 
