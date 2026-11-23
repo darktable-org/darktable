@@ -22,6 +22,13 @@ build/bin/photographylab [photo]
 On Windows, build in the MSYS2 UCRT64 shell as for darktable, adding
 `mingw-w64-ucrt-x86_64-qt6-base` and `mingw-w64-ucrt-x86_64-qt6-declarative`.
 
+## Downloads
+
+`.github/workflows/photographylab.yml` builds a single-file AppImage
+(`packaging/photographylab/build-appimage.sh`) on every push to the branch
+and publishes it as the `photographylab-nightly` prerelease. To build one
+locally, run that script from the source root.
+
 ## Layout
 
 | file | what it does |

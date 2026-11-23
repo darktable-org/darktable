@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=PhotographyLAB
+GenericName=Photo editor
+Comment=Edit raw photos, on darktable's engine
+Exec=photographylab %f
+Icon=photographylab
+Terminal=false
+Categories=Graphics;Photography;
+MimeType=image/x-sony-arw;image/x-canon-cr2;image/x-canon-cr3;image/x-nikon-nef;image/x-fuji-raf;image/x-olympus-orf;image/x-panasonic-rw2;image/x-adobe-dng;image/jpeg;image/tiff;image/png;
