@@ -44,7 +44,7 @@ float kmix(global const float *k,
   int i = (int) flor;
   // make sure we don't read out of bounds
   i = min(i, kdesc->size * kdesc->resolution - 1);
-  return mix(k[i], k[i+1], t);
+  return dt_mix(k[i], k[i+1], t);
 }
 
 /**

@@ -43,6 +43,7 @@
 
 #define CONF_REPOSITORY "plugins/darkroom/spektrafilm/repository"
 #define CONF_REF "plugins/darkroom/spektrafilm/ref"
+#define CONF_DEFAULT_PACK "plugins/darkroom/spektrafilm/default_pack"
 
 /* Owner/repo holding the exported packs, and the git ref to read them at.
    Both are overridable so a packager can point at a mirror and a developer can
@@ -571,6 +572,40 @@ gboolean sf_fetch_have_lut_hash(const uint32_t lut_hash)
   return _downloaded_dir_for_hash(lut_hash, dldir, sizeof(dldir));
 }
 
+static gboolean _default_pack_override(const gboolean hand_ok,
+                                       const uint32_t hand_hash,
+                                       const char *handdir,
+                                       char *dst,
+                                       const size_t dstsz)
+{
+  if(!dt_conf_key_not_empty(CONF_DEFAULT_PACK)) return FALSE;
+
+  /* the resolver runs for every pipe, so say what is wrong once per value */
+  static gint warned = 0;
+  const char *s = dt_conf_get_string_const(CONF_DEFAULT_PACK);
+  const uint32_t h = (strlen(s) == 8 && strspn(s, "0123456789abcdefABCDEF") == 8)
+                       ? (uint32_t)g_ascii_strtoull(s, NULL, 16)
+                       : 0;
+
+  if(h && sf_fetch_pack_dir_for_pack_hash(h, dst, dstsz)) return TRUE;
+  if(h && hand_ok && hand_hash == h)
+  {
+    g_strlcpy(dst, handdir, dstsz);
+    return TRUE;
+  }
+  if(h && _downloaded_dir_for_hash(h, dst, dstsz)) return TRUE;
+
+  const gint key = h ? (gint)h : -1;
+  if(g_atomic_int_get(&warned) != key)
+  {
+    g_atomic_int_set(&warned, key);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[spektrafilm] %s=%s names no installed pack, using the usual default",
+             CONF_DEFAULT_PACK, s);
+  }
+  return FALSE;
+}
+
 gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
                                    char *dst,
                                    const size_t dstsz,
@@ -583,11 +618,18 @@ gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
   uint32_t hand_hash = 0;
   const gboolean hand_ok = _peek_lut_hash(handdir, &hand_hash);
 
-  /* No recorded preference: whatever is installed by hand is the answer. This
-     is the common path -- a fresh edit on a machine with a pack in place must
-     not consult the network or the downloaded packs at all. */
+  /* No recorded preference: the installed pack default_pack names, else
+     whatever is installed by hand. This is the common path -- a fresh edit on
+     a machine with a pack in place must not consult the network. default_pack
+     is for testing packs copied in by hand, which no manifest lists, so it
+     never reaches the fetch code. */
   if(!wanted_lut_hash)
   {
+    if(_default_pack_override(hand_ok, hand_hash, handdir, dst, dstsz))
+    {
+      if(out_exact) *out_exact = TRUE;
+      return TRUE;
+    }
     if(hand_ok)
     {
       g_strlcpy(dst, handdir, dstsz);

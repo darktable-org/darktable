@@ -560,7 +560,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>OpenCL fast mode</shortdescription>
-    <longdescription>if set the OpenCL compiler uses aggressive optimizing for better performance with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
+    <longdescription>if set the OpenCL compiler generates slightly faster code with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl_scheduling_profile</name>
@@ -2819,6 +2819,13 @@
     <default>main</default>
     <shortdescription>spektrafilm data repository ref</shortdescription>
     <longdescription>tag or branch to read the spektrafilm data packs from. a tag is preferable where one exists: an immutable ref is what lets an old edit fetch the exact spectral table it was developed against, where a branch hands over whatever is current.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spektrafilm/default_pack</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>spektrafilm default data pack</shortdescription>
+    <longdescription>pack hash or table hash, as 8 hex digits, of an installed spektrafilm data pack that new edits use instead of the usual default. only installed packs are used; nothing is downloaded for it. edits that already record a pack are not affected. leave empty for the usual default.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/denoiseprofile/show_compute_variance_mode</name>

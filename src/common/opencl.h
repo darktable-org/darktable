@@ -75,7 +75,7 @@ G_BEGIN_DECLS
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
 #define DT_OPENCL_DEFAULT_COMPILE_DEFAULT ("")
-#define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-mad-enable")
 #define DT_CLDEVICE_HEAD ("cldevice_v7_")
 
 // version for current darktable cl kernels reflected in the kernel directory

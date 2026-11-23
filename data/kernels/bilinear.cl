@@ -65,8 +65,8 @@ kernel void bilinear_image(read_only image2d_t in,
   if(x >= width_out || y >= height_out) return;
 
   // Relative coordinates of the pixel in output space
-  const float x_out = (float)x /(float)width_out;
-  const float y_out = (float)y /(float)height_out;
+  const float x_out = fp32_div((float)x, (float)width_out);
+  const float y_out = fp32_div((float)y, (float)height_out);
 
   // Corresponding absolute coordinates of the pixel in input space
   const float x_in = x_out * (float)width_in;

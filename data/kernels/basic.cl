@@ -954,7 +954,7 @@ remosaic_and_replace(read_only image2d_t input,
 
   const float corrections[4] = { center.x * wb[0], center.y * wb[1], center.z * wb[2], 0.0f};
   const float correction = fmax(corrections[c], 0.0f);
-  write_imagef(output, (int2)(j, i), (float4)(mix(pix_in, correction, opacity), 0.0f, 0.0f, 0.0f));
+  write_imagef(output, (int2)(j, i), (float4)(dt_mix(pix_in, correction, opacity), 0.0f, 0.0f, 0.0f));
 }
 
 kernel void
@@ -3503,7 +3503,7 @@ monochrome(read_only image2d_t in,
   float filter  = dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   float tt = envelope(pixel.x);
   float t  = tt + (1.0f-tt)*(1.0f-highlights);
-  pixel.x = mix(pixel.x, pixel.x*basep.x/100.0f, t);
+  pixel.x = dt_mix(pixel.x, pixel.x*basep.x/100.0f, t);
   pixel.y = pixel.z = 0.0f;
   write_imagef (out, (int2)(x, y), pixel);
 }
