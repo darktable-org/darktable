@@ -406,7 +406,7 @@
   <dtconfig>
     <name>plugins/ai/enabled</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>enable AI features</shortdescription>
     <longdescription>enable AI-powered features such as denoising and upscaling using neural networks</longdescription>
   </dtconfig>
