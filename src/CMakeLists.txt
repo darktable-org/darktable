@@ -1345,6 +1345,11 @@ if(USE_MCP)
   add_subdirectory(mcp)
 endif()
 
+# PhotographyLAB, the Qt 6 front end on this engine
+if(USE_PHOTOGRAPHYLAB)
+  add_subdirectory(plab)
+endif()
+
 # have a command line utility to generate all the thumbnails
 add_subdirectory(generate-cache)
 

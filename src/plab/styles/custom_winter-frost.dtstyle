@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<darktable_style version="1.0">
+ <info>
+  <name>custom|winter frost</name>
+  <description>Pale, icy and desaturated.</description>
+ </info>
+ <style>
+  <plugin>
+   <num>0</num>
+   <module>5</module>
+   <operation>colorbalancergb</operation>
+   <op_params>0ad7233d0ad7233d00005243000000000000000000000000000000000ad7a33c000048430000000000000000000000000000803f000000000000803f000000000000000000000000000000003333b3be000000000000000000000000000000000000000000000000000000000000000091ed3c3e0000000091ed3c3ecdcc4cbd01000000</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+  <plugin>
+   <num>1</num>
+   <module>3</module>
+   <operation>bilat</operation>
+   <op_params>010000000000003f0000003fcdcccc3d0000003f</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+ </style>
+</darktable_style>
