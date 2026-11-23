@@ -8543,32 +8543,6 @@ static gboolean _op_is_bypassed(const int state)
   return (state & DT_MASKS_STATE_OP_BYPASS) != 0;
 }
 
-static GdkPixbuf *_op_pixbuf(DTGTKCairoPaintIconFunc paint)
-{
-  // GTK shows a pixbuf icon at its pixel size divided by the scale factor
-  // (gtkiconhelper.c, ensure_surface_for_gicon), so render it in device
-  // pixels
-  const int w = (int)DT_PIXEL_APPLY_DPI(16), h = w;
-  const double ppd = darktable.gui->ppd;
-  const int pw = (int)(w * ppd), ph = (int)(h * ppd);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, pw, ph);
-  cairo_t *cr = cairo_create(cst);
-  cairo_scale(cr, ppd, ppd);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BUTTON_FG, 1.0);
-  paint(cr, 0, 0, w, h, 0, NULL);
-  cairo_destroy(cr);
-  guchar *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, pw, ph);
-  GdkPixbuf *shared =
-    gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, pw, ph,
-                             cairo_image_surface_get_stride(cst), NULL, NULL);
-  GdkPixbuf *owned = gdk_pixbuf_copy(shared); // own the pixels, then drop the surface
-  g_object_unref(shared);
-  cairo_surface_destroy(cst);
-  return owned;
-}
-
 // "add group": clicking the button opens an operator chooser; picking an
 // operator nests a new, empty group of that operator in the target group (see
 // _stage_new_group). The icon is a fixed "+": it reflects neither the
@@ -8599,12 +8573,7 @@ static GMenuItem *_op_gmenu_item_target(DTGTKCairoPaintIconFunc paint,
   g_menu_item_set_action_and_target_value(it, action, g_variant_new_int32(target));
   if(tooltip)
     g_menu_item_set_attribute(it, "tooltip", "s", _(tooltip));
-  GdkPixbuf *pb = _op_pixbuf(paint);
-  if(pb)
-  {
-    g_menu_item_set_icon(it, G_ICON(pb));
-    g_object_unref(pb);
-  }
+  dt_gui_menu_item_set_paint_icon(it, paint);
   return it;
 }
 
@@ -10448,12 +10417,7 @@ static GMenu *_multi_move_menu(dt_iop_module_t *module, dt_masks_form_t *grp, co
     gchar *label = g_strdup_printf("%*s%s", 2 * _list_depth(grp, _group_of(grp, cid)), "", name);
     GMenuItem *item = g_menu_item_new(label, NULL);
     g_menu_item_set_action_and_target_value(item, "masks_multi_act.move", g_variant_new_int32(cid));
-    GdkPixbuf *icon = _op_pixbuf(_flexi_op_paint(marker->state));
-    if(icon)
-    {
-      g_menu_item_set_icon(item, G_ICON(icon));
-      g_object_unref(icon);
-    }
+    dt_gui_menu_item_set_paint_icon(item, _flexi_op_paint(marker->state));
     g_menu_item_set_attribute(item, "tooltip", "s", _flexi_op_name(marker->state));
     g_menu_append_item(menu, item);
     g_object_unref(item);
