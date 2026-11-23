@@ -1248,18 +1248,16 @@ set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERAT
 # and happily emits vfmadd with it in force; -march=native then guarantees FMA
 # is available on any recent x86. Set the flag these files actually need.
 # Costs FMA in the per-pixel loops, buys a deterministic render across devices.
+#
+# -fno-fast-math comes first so the Release default -ffast-math is fully
+# undone for these files: -ffp-contract=off alone leaves -fassociative-math
+# and -freciprocal-math active on GCC, which reorder and vectorise float
+# reductions and replace divisions by reciprocal multiplies. Clang also
+# requires it, as it rejects -ffp-contract=off while -ffast-math is in effect
+# (-Woverriding-option, a hard error since Clang 18).
 check_c_compiler_flag("-ffp-contract=off" HAVE_FFP_CONTRACT_OFF)
 if(HAVE_FFP_CONTRACT_OFF)
-  set(SPEKTRA_FP_CONTRACT_FLAGS "-ffp-contract=off")
-  if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    # Clang errors out (-Woverriding-option, hard error since Clang 18) if
-    # -ffp-contract=off is requested while -ffast-math (or anything implying
-    # it, e.g. -Ofast) is also in effect for these files -- which can happen
-    # via CMAKE_C_FLAGS or a build-type default regardless of anything this
-    # file sets. Explicitly turn fast-math back off first so there is
-    # nothing left to "override". GCC needs no such workaround.
-    set(SPEKTRA_FP_CONTRACT_FLAGS "-fno-fast-math" "${SPEKTRA_FP_CONTRACT_FLAGS}")
-  endif()
+  set(SPEKTRA_FP_CONTRACT_FLAGS "-fno-fast-math" "-ffp-contract=off")
   set_source_files_properties(
     "common/spektra_core.c"
     "common/spektra_sim.c"
