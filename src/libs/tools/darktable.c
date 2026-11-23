@@ -231,7 +231,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
   layout = gtk_widget_create_pango_layout(widget, NULL);
 
   /* try to use logo text in svg */
-  if(d->text)
+  if(FALSE && d->text) // custom build: draw the PhotographyLAB name as text
   {
     cairo_set_source_surface(cr, d->text, d->image_width + (int)DT_PIXEL_APPLY_DPI(5),
                              (int)DT_PIXEL_APPLY_DPI(12));
@@ -248,7 +248,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
 
     pango_layout_set_font_description(layout, font_desc);
 
-    pango_layout_set_text(layout, PACKAGE_NAME, -1);
+    pango_layout_set_text(layout, "PhotographyLAB", -1);
     cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.7);
     cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(3.0), DT_PIXEL_APPLY_DPI(5.0));
     pango_cairo_show_layout(cr, layout);

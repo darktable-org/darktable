@@ -1799,7 +1799,28 @@ void init_presets(dt_lib_module_t *self)
 
   // custom build: "develop" layout, inspired by greycard / Lightroom's
   // Develop panel: a few task-named tabs in the order you usually edit.
-  SQA(TRUE);
+  // The quick access panel is a Lightroom-style "basic" card: the dozen
+  // sliders a beginner reaches for, in Lightroom's order.
+  g_free(tx);
+  tx = g_strdup("1|0ꬹ1||");
+  AM("channelmixerrgb/temperature");          // white balance
+  AM("exposure/exposure");                    // exposure
+  if(wf_filmic)
+    AM("filmicrgb/contrast");                 // contrast
+  else if(wf_agx)
+    AM("agx/curve/contrast");
+  else
+    AM("sigmoid/contrast");
+  AM("colorbalancergb/brilliance/highlights");// highlights
+  AM("colorbalancergb/brilliance/shadows");   // shadows
+  AM("exposure/black level correction");      // blacks
+  AM("bilat/detail");                         // clarity
+  AM("hazeremoval/strength");                 // dehaze
+  AM("colorbalancergb/global vibrance");      // vibrance
+  AM("colorbalancergb/global saturation");    // saturation
+  AM("denoiseprofile/strength");              // noise reduction
+  AM("ashift/rotation");                      // straighten
+  AM("lens");                                 // lens corrections on/off
 
   SMG(C_("modulegroup", "light"), "tone");
   AM("exposure");

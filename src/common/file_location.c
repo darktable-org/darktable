@@ -191,7 +191,7 @@ gchar *dt_loc_init_generic(const char *absolute_value,
 
 gboolean dt_loc_init_user_config_dir(const char *configdir)
 {
-  char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
+  char *default_config_dir = g_build_filename(g_get_user_config_dir(), "photographylab", NULL);
   darktable.configdir = dt_loc_init_generic(configdir, NULL, default_config_dir);
   g_free(default_config_dir);
   return dt_check_opendir("darktable.configdir", darktable.configdir);
@@ -205,7 +205,7 @@ gboolean dt_loc_init_tmp_dir(const char *tmpdir)
 
 gboolean dt_loc_init_user_cache_dir(const char *cachedir)
 {
-  char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+  char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "photographylab", NULL);
   darktable.cachedir = dt_loc_init_generic(cachedir, NULL, default_cache_dir);
   g_free(default_cache_dir);
   return dt_check_opendir("darktable.cachedir", darktable.cachedir);

@@ -1,5 +1,5 @@
 
-#define MyAppName "darktable"
+#define MyAppName "PhotographyLAB"
 #define MyAppVersion "${PROJECT_VERSION}"
 #define MyAppVersionLength Len(MyAppVersion)
 
@@ -67,7 +67,7 @@ AllowNoIcons=yes
 
 PrivilegesRequiredOverridesAllowed=dialog
 
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
+OutputBaseFilename=PhotographyLAB-{#MyAppVersion}-${ARCH_STRING}
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.

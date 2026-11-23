@@ -29,14 +29,14 @@ void darktable_show_about_dialog()
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
+  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "PhotographyLAB");
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), darktable_package_version);
   char *copyright = g_strdup_printf(_("copyright (c) the authors 2009-%s"),
                                     darktable_last_commit_year);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), copyright);
   g_free(copyright);
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
-                                _("organize and develop images from digital cameras"));
+                                _("organize and develop images from digital cameras\n\nPhotographyLAB is a customized build of darktable,\nfree software under the GNU GPL v3"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://www.darktable.org/");
   gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "website");
   const dt_logo_season_t season = dt_util_get_logo_season();

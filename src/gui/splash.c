@@ -85,7 +85,7 @@ static GtkWidget *_get_program_name()
     g_object_unref(prog_name_image);
   }
   else
-    program_name = GTK_WIDGET(gtk_label_new("darktable"));
+    program_name = GTK_WIDGET(gtk_label_new("PhotographyLAB"));
 
   gtk_widget_set_name(program_name, "splashscreen-program");
   return program_name;

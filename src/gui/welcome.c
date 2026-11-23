@@ -666,7 +666,7 @@ void dt_welcome_screen_show(dt_welcome_screen_t *ws)
   // Use a plain GtkWindow instead of GtkDialog so there is no
   // built-in (empty) action area leaving dead space at the bottom.
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(window), _("Welcome to darktable!"));
+  gtk_window_set_title(GTK_WINDOW(window), _("Welcome to PhotographyLAB!"));
   gtk_window_set_transient_for(GTK_WINDOW(window), main_win);
   gtk_window_set_modal(GTK_WINDOW(window), TRUE);
   gtk_window_set_destroy_with_parent(GTK_WINDOW(window), TRUE);
@@ -686,7 +686,7 @@ void dt_welcome_screen_show(dt_welcome_screen_t *ws)
   // ── static header (logo + app name) – never moves between pages ──────────
   dt_gui_box_add(GTK_BOX(content), _get_logo());
 
-  GtkWidget *app_name = gtk_label_new(_("Welcome to darktable!"));
+  GtkWidget *app_name = gtk_label_new(_("Welcome to PhotographyLAB!"));
   gtk_widget_set_name(app_name, "welcome-title");
   gtk_widget_set_halign(app_name, GTK_ALIGN_CENTER);
   dt_gui_box_add(GTK_BOX(content), app_name);
