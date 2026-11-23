@@ -378,6 +378,9 @@ changes (where available).
 - If you find room for improvement on the manual, you are welcome to open an [issue](https://github.com/darktable-org/dtdocs/issues), post to [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
 - Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). Lots of work has been done, among others Ukranian and French translations have now hit 100%.
 
+
+## Other Changes
+
 - The raw denoise module can now run on the OpenCL device for Bayer
   sensors.
 
@@ -439,8 +442,6 @@ changes (where available).
   only platform still allowed to run OpenCL on the CPU. Other CPU
   OpenCL devices, like the one macOS provides, are no longer used:
   macOS' one produced wrong exports.
-
-## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
