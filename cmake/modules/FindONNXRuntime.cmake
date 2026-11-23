@@ -1,12 +1,13 @@
 # FindONNXRuntime.cmake
 #
-# Find ONNX Runtime pre-built binaries, downloading them automatically if not
-# found. Searches two locations:
+# Find ONNX Runtime pre-built binaries, downloading them automatically from
+# NuGet (Linux, Windows) if not found. Searches these locations in order:
 #
 #   1. Source tree:  ${CMAKE_SOURCE_DIR}/src/external/onnxruntime/
-#      (manually pre-installed)
+#      (manually pre-installed; include/ + lib/ or extracted NuGet package)
 #   2. Build tree:   ${CMAKE_BINARY_DIR}/_deps/onnxruntime/
 #      (auto-download destination)
+#   3. System:       e.g. libonnxruntime-dev on Linux, Homebrew on macOS
 #
 # After this module completes the imported target onnxruntime::onnxruntime is
 # available for linking, along with the standard variables:
@@ -18,8 +19,10 @@
 #
 # Cache variables that influence behaviour:
 #
-#   ONNXRUNTIME_VERSION          - version to download (default 1.23.2)
-#   ONNXRUNTIME_DIRECTML_VERSION - DirectML NuGet version for Windows (default 1.23.0)
+#   ONNXRUNTIME_VERSION          - CPU NuGet version for Linux (default 1.24.4)
+#   ONNXRUNTIME_DIRECTML_VERSION - DirectML NuGet version for Windows (default 1.24.4)
+#   ONNXRUNTIME_SHA512           - SHA512 (hex) of the package, only needed for
+#                                  versions without a pinned hash (default empty)
 #   ONNXRUNTIME_OFFLINE          - if TRUE, never attempt a download (default OFF)
 
 # Skip if already found (avoid re-entry issues with cached variables)
@@ -30,8 +33,9 @@ endif()
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-set(ONNXRUNTIME_VERSION "1.24.4" CACHE STRING "ONNX Runtime version to download")
+set(ONNXRUNTIME_VERSION "1.24.4" CACHE STRING "ONNX Runtime NuGet version to download on Linux")
 set(ONNXRUNTIME_DIRECTML_VERSION "1.24.4" CACHE STRING "DirectML NuGet package version for Windows")
+set(ONNXRUNTIME_SHA512 "" CACHE STRING "SHA512 (hex) of the ONNX Runtime NuGet package for versions without a pinned hash")
 option(ONNXRUNTIME_OFFLINE "Disable automatic download of ONNX Runtime" OFF)
 
 set(_ORT_SRC_ROOT "${CMAKE_SOURCE_DIR}/src/external/onnxruntime")
@@ -50,7 +54,7 @@ endif()
 # Search for existing installation (source tree first, then build tree)
 # ---------------------------------------------------------------------------
 macro(_ort_find_at ROOT)
-  # Standard layout (GitHub releases): include/ + lib/
+  # Standard layout: include/ + lib/
   find_path(_ORT_HEADER
     NAMES onnxruntime_c_api.h
     PATHS "${ROOT}/include"
@@ -73,6 +77,17 @@ macro(_ort_find_at ROOT)
     find_library(_ORT_LIBRARY
       NAMES onnxruntime
       PATHS "${ROOT}/runtimes/win-x64/native" "${ROOT}/runtimes/win-arm64/native"
+      NO_DEFAULT_PATH
+    )
+  elseif(NOT _ORT_LIBRARY AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+      set(_ORT_FIND_RID "linux-arm64")
+    else()
+      set(_ORT_FIND_RID "linux-x64")
+    endif()
+    find_library(_ORT_LIBRARY
+      NAMES onnxruntime
+      PATHS "${ROOT}/runtimes/${_ORT_FIND_RID}/native"
       NO_DEFAULT_PATH
     )
   endif()
@@ -111,35 +126,48 @@ endif()
 # ---------------------------------------------------------------------------
 # Auto-download if not found
 # ---------------------------------------------------------------------------
+# All platforms download the official NuGet package from nuget.org (NuGet
+# packages are ZIP files). The SHA512 of every supported package version is
+# pinned below, so a compromised or replaced upstream package is rejected.
+#
+# To pin a new version, compute the hash of the .nupkg and add a line below:
+#
+#   curl -sSfL https://api.nuget.org/v3-flatcontainer/<id>/<ver>/<id>.<ver>.nupkg | sha512sum
+#
+# and cross-check it against the hash published in the NuGet catalog:
+#
+#   curl -sSfL https://api.nuget.org/v3/registration5-semver1/<id>/<ver>.json \
+#     | jq -r .catalogEntry | xargs curl -sSfL | jq -r .packageHash \
+#     | base64 -d | od -An -tx1 | tr -d ' \n'
+#
+# <id> is microsoft.ml.onnxruntime (Linux) or microsoft.ml.onnxruntime.directml
+# (Windows).
+set(_ORT_SHA512_microsoft.ml.onnxruntime_1.24.4
+  "f5dd415dfcafcb3a7461f10a08f0337ea22c1ba8f8af81316daabf7496075add181aecb0de3cabebebdb9f5da3afbe507480aaf34b76e1189409088ccc5c2eac")
+set(_ORT_SHA512_microsoft.ml.onnxruntime.directml_1.24.4
+  "6633b2bf8f79be17d55e84c9a76bad4729fc8abd53148bc28f407d24ff106460574b4a05c7e958ed9099a927675528505fa12dc588b64f754eb585dc9814d5e0")
+
 if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
   if(ONNXRUNTIME_OFFLINE)
     message(STATUS "ONNX Runtime not found and ONNXRUNTIME_OFFLINE is ON.")
   else()
-  # -- Determine package name for current platform --
-  set(_ORT_VER "${ONNXRUNTIME_VERSION}")
-
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
-      set(_ORT_PACKAGE "onnxruntime-osx-arm64-${_ORT_VER}.tgz")
-    elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-      set(_ORT_PACKAGE "onnxruntime-osx-x86_64-${_ORT_VER}.tgz")
-    else()
-      message(FATAL_ERROR "Unsupported macOS architecture: ${CMAKE_SYSTEM_PROCESSOR}")
-    endif()
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  # -- Determine package for current platform --
+  set(_ORT_SUPPORTED TRUE)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # CPU package; contains runtimes/linux-x64 and runtimes/linux-arm64
+    set(_ORT_VER "${ONNXRUNTIME_VERSION}")
+    set(_ORT_NUGET_ID "microsoft.ml.onnxruntime")
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-      set(_ORT_PACKAGE "onnxruntime-linux-x64-${_ORT_VER}.tgz")
+      set(_ORT_NUGET_RID "linux-x64")
     elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-      set(_ORT_PACKAGE "onnxruntime-linux-aarch64-${_ORT_VER}.tgz")
+      set(_ORT_NUGET_RID "linux-arm64")
     else()
       message(FATAL_ERROR "Unsupported Linux architecture: ${CMAKE_SYSTEM_PROCESSOR}")
     endif()
   elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    # On Windows, download the DirectML NuGet package for GPU support
-    # (AMD/Intel/NVIDIA via DirectX 12). NuGet packages are just ZIP files.
+    # DirectML package for GPU support (AMD/Intel/NVIDIA via DirectX 12)
     set(_ORT_VER "${ONNXRUNTIME_DIRECTML_VERSION}")
-    set(_ORT_PACKAGE "microsoft.ml.onnxruntime.directml.${_ORT_VER}.nupkg")
-    set(_ORT_NUGET TRUE)
+    set(_ORT_NUGET_ID "microsoft.ml.onnxruntime.directml")
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
       set(_ORT_NUGET_RID "win-x64")
     elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64|aarch64")
@@ -147,131 +175,42 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
     else()
       message(FATAL_ERROR "Unsupported Windows architecture: ${CMAKE_SYSTEM_PROCESSOR}")
     endif()
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(_ORT_SUPPORTED FALSE)
+    message(WARNING
+      "ONNX Runtime is not downloaded automatically on macOS. "
+      "Install it with 'brew install onnxruntime'.")
   else()
     message(FATAL_ERROR "Unsupported OS for ONNX Runtime auto-download: ${CMAKE_SYSTEM_NAME}")
   endif()
 
-  if(_ORT_NUGET)
-    set(_ORT_URL "https://www.nuget.org/api/v2/package/Microsoft.ML.OnnxRuntime.DirectML/${_ORT_VER}")
-  else()
-    set(_ORT_URL "https://github.com/microsoft/onnxruntime/releases/download/v${_ORT_VER}/${_ORT_PACKAGE}")
-  endif()
+  if(_ORT_SUPPORTED)
+  set(_ORT_PACKAGE "${_ORT_NUGET_ID}.${_ORT_VER}.nupkg")
+  set(_ORT_URL "https://api.nuget.org/v3-flatcontainer/${_ORT_NUGET_ID}/${_ORT_VER}/${_ORT_PACKAGE}")
   set(_ORT_DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/_deps")
   set(_ORT_ARCHIVE "${_ORT_DOWNLOAD_DIR}/${_ORT_PACKAGE}")
-
-  # -- Fetch integrity hash from package repository --
-  # All auto-downloaded packages must be verified.  The hash is fetched from the
-  # repository API (GitHub Releases or NuGet catalog) and checked after download.
-  set(_ORT_HASH "")
-  set(_ORT_HASH_ALGO "")
   file(MAKE_DIRECTORY "${_ORT_DOWNLOAD_DIR}")
 
-  if(_ORT_NUGET)
-    # NuGet: fetch SHA512 from the catalog API (base64-encoded).
-    # Step 1: registration entry → catalog URL
-    set(_ORT_NUGET_ID "microsoft.ml.onnxruntime.directml")
-    set(_ORT_REG_JSON "${_ORT_DOWNLOAD_DIR}/nuget-reg-${_ORT_VER}.json")
-    set(_ORT_REG_URL "https://api.nuget.org/v3/registration5-semver1/${_ORT_NUGET_ID}/${_ORT_VER}.json")
-    if(NOT EXISTS "${_ORT_REG_JSON}")
-      message(STATUS "Fetching NuGet registration for ${_ORT_NUGET_ID} ${_ORT_VER}...")
-      file(DOWNLOAD "${_ORT_REG_URL}" "${_ORT_REG_JSON}" STATUS _ORT_REG_STATUS)
-      list(GET _ORT_REG_STATUS 0 _ORT_REG_CODE)
-      if(NOT _ORT_REG_CODE EQUAL 0)
-        file(REMOVE "${_ORT_REG_JSON}")
-      endif()
-    endif()
-    if(EXISTS "${_ORT_REG_JSON}")
-      file(READ "${_ORT_REG_JSON}" _ORT_REG_CONTENT)
-      string(REGEX MATCH "\"catalogEntry\" *: *\"([^\"]+)\"" _ORT_CAT_MATCH "${_ORT_REG_CONTENT}")
-      if(_ORT_CAT_MATCH)
-        set(_ORT_CAT_URL "${CMAKE_MATCH_1}")
-        # Step 2: catalog entry → packageHash (base64 SHA512)
-        set(_ORT_CAT_JSON "${_ORT_DOWNLOAD_DIR}/nuget-catalog-${_ORT_VER}.json")
-        if(NOT EXISTS "${_ORT_CAT_JSON}")
-          message(STATUS "Fetching NuGet catalog entry...")
-          file(DOWNLOAD "${_ORT_CAT_URL}" "${_ORT_CAT_JSON}" STATUS _ORT_CAT_STATUS)
-          list(GET _ORT_CAT_STATUS 0 _ORT_CAT_CODE)
-          if(NOT _ORT_CAT_CODE EQUAL 0)
-            file(REMOVE "${_ORT_CAT_JSON}")
-          endif()
-        endif()
-        if(EXISTS "${_ORT_CAT_JSON}")
-          file(READ "${_ORT_CAT_JSON}" _ORT_CAT_CONTENT)
-          string(REGEX MATCH "\"packageHash\" *: *\"([^\"]+)\"" _ORT_HASH_MATCH "${_ORT_CAT_CONTENT}")
-          if(_ORT_HASH_MATCH)
-            set(_ORT_B64_HASH "${CMAKE_MATCH_1}")
-            # Convert base64 SHA512 to hex via PowerShell (NuGet path is Windows-only)
-            execute_process(
-              COMMAND powershell -NoProfile -Command
-                "[BitConverter]::ToString([Convert]::FromBase64String('${_ORT_B64_HASH}')).Replace('-','').ToLower()"
-              OUTPUT_VARIABLE _ORT_HASH
-              OUTPUT_STRIP_TRAILING_WHITESPACE
-              RESULT_VARIABLE _ORT_PS_RESULT
-            )
-            if(_ORT_PS_RESULT EQUAL 0 AND _ORT_HASH)
-              set(_ORT_HASH_ALGO "SHA512")
-              message(STATUS "NuGet package ${_ORT_PACKAGE} SHA512: ${_ORT_HASH}")
-            else()
-              set(_ORT_HASH "")
-            endif()
-          endif()
-        endif()
-      endif()
-    endif()
+  # -- Integrity hash: user-supplied (ONNXRUNTIME_SHA512) or pinned table above --
+  if(ONNXRUNTIME_SHA512)
+    set(_ORT_HASH "${ONNXRUNTIME_SHA512}")
   else()
-    # GitHub: fetch SHA256 from the Releases API (hex-encoded digest field).
-    set(_ORT_API_JSON "${_ORT_DOWNLOAD_DIR}/ort-release-${_ORT_VER}.json")
-    set(_ORT_API_URL "https://api.github.com/repos/microsoft/onnxruntime/releases/tags/v${_ORT_VER}")
-    if(NOT EXISTS "${_ORT_API_JSON}")
-      message(STATUS "Fetching ONNX Runtime v${_ORT_VER} release metadata from GitHub API...")
-      set(_ORT_DOWNLOAD_ARGS
-        "${_ORT_API_URL}"
-        "${_ORT_API_JSON}"
-        STATUS _ORT_API_STATUS
-        HTTPHEADER "Accept: application/vnd.github+json"
-      )
-      if(DEFINED ENV{GITHUB_TOKEN})
-        list(APPEND _ORT_DOWNLOAD_ARGS HTTPHEADER "Authorization: Bearer $ENV{GITHUB_TOKEN}")
-      endif()
-      file(DOWNLOAD ${_ORT_DOWNLOAD_ARGS})
-      list(GET _ORT_API_STATUS 0 _ORT_API_CODE)
-      if(NOT _ORT_API_CODE EQUAL 0)
-        list(GET _ORT_API_STATUS 1 _ORT_API_MSG)
-        message(WARNING "Failed to fetch release metadata from GitHub: ${_ORT_API_MSG}")
-        file(REMOVE "${_ORT_API_JSON}")
-      endif()
-    endif()
-    if(EXISTS "${_ORT_API_JSON}")
-      file(READ "${_ORT_API_JSON}" _ORT_API_CONTENT)
-      # Two-step extraction: locate the package name, then find the first
-      # "digest" field that follows it within the same asset JSON object.
-      string(FIND "${_ORT_API_CONTENT}" "\"name\":\"${_ORT_PACKAGE}\"" _ORT_NAME_POS)
-      if(_ORT_NAME_POS EQUAL -1)
-        # Try with spaces around colon (GitHub API may format either way)
-        string(FIND "${_ORT_API_CONTENT}" "\"name\": \"${_ORT_PACKAGE}\"" _ORT_NAME_POS)
-      endif()
-      if(NOT _ORT_NAME_POS EQUAL -1)
-        string(SUBSTRING "${_ORT_API_CONTENT}" ${_ORT_NAME_POS} 2000 _ORT_ASSET_TAIL)
-        string(REGEX MATCH "\"digest\" *: *\"sha256:([a-f0-9]+)\"" _ORT_DIGEST_MATCH "${_ORT_ASSET_TAIL}")
-        if(_ORT_DIGEST_MATCH)
-          set(_ORT_HASH "${CMAKE_MATCH_1}")
-          set(_ORT_HASH_ALGO "SHA256")
-          message(STATUS "ONNX Runtime ${_ORT_PACKAGE} SHA256: ${_ORT_HASH}")
-        endif()
-      endif()
-    endif()
+    set(_ORT_HASH "${_ORT_SHA512_${_ORT_NUGET_ID}_${_ORT_VER}}")
   endif()
+  string(TOLOWER "${_ORT_HASH}" _ORT_HASH)
 
-  if(NOT _ORT_HASH)
+  string(LENGTH "${_ORT_HASH}" _ORT_HASH_LEN)
+  if(NOT _ORT_HASH MATCHES "^[0-9a-f]+$" OR NOT _ORT_HASH_LEN EQUAL 128)
     message(WARNING
-      "Could not obtain integrity hash for ${_ORT_PACKAGE} from package repository. "
+      "No valid pinned SHA512 for ${_ORT_PACKAGE}. "
       "Refusing to download without verification. "
-      "Install ONNX Runtime manually or set ONNXRUNTIME_OFFLINE=ON.")
-  else() # _ORT_HASH obtained — proceed with verified download
+      "Set ONNXRUNTIME_SHA512 to the package's SHA512 (hex), "
+      "install ONNX Runtime manually, or set ONNXRUNTIME_OFFLINE=ON.")
+  else() # valid hash — proceed with verified download
 
   # -- Verify cached archive if it exists --
   if(EXISTS "${_ORT_ARCHIVE}")
-    file(${_ORT_HASH_ALGO} "${_ORT_ARCHIVE}" _ORT_CACHED_HASH)
+    file(SHA512 "${_ORT_ARCHIVE}" _ORT_CACHED_HASH)
     if(NOT _ORT_CACHED_HASH STREQUAL "${_ORT_HASH}")
       message(STATUS "Cached ONNX Runtime archive has wrong checksum, re-downloading...")
       file(REMOVE "${_ORT_ARCHIVE}")
@@ -279,26 +218,28 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
   endif()
 
   # -- Download --
+  set(_ORT_DL_OK TRUE)
   if(NOT EXISTS "${_ORT_ARCHIVE}")
-    message(STATUS "Downloading ONNX Runtime ${_ORT_VER} (${_ORT_PACKAGE})...")
+    message(STATUS "Downloading ONNX Runtime ${_ORT_VER} (${_ORT_PACKAGE}) from NuGet...")
     file(DOWNLOAD
       "${_ORT_URL}"
       "${_ORT_ARCHIVE}"
       STATUS _ORT_DL_STATUS
       SHOW_PROGRESS
-      EXPECTED_HASH "${_ORT_HASH_ALGO}=${_ORT_HASH}"
+      EXPECTED_HASH "SHA512=${_ORT_HASH}"
     )
     list(GET _ORT_DL_STATUS 0 _ORT_DL_CODE)
     list(GET _ORT_DL_STATUS 1 _ORT_DL_MSG)
     if(NOT _ORT_DL_CODE EQUAL 0)
       file(REMOVE "${_ORT_ARCHIVE}")
+      set(_ORT_DL_OK FALSE)
       message(WARNING
         "Failed to download ONNX Runtime from ${_ORT_URL}: ${_ORT_DL_MSG}. "
-        "Install ONNX Runtime manually or download from: "
-        "https://github.com/microsoft/onnxruntime/releases")
+        "Install ONNX Runtime manually or set ONNXRUNTIME_OFFLINE=ON.")
     endif()
   endif()
 
+  if(_ORT_DL_OK)
   # -- Extract to a temporary directory --
   set(_ORT_EXTRACT_DIR "${_ORT_DOWNLOAD_DIR}/onnxruntime-extract")
   if(EXISTS "${_ORT_EXTRACT_DIR}")
@@ -311,31 +252,23 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
   )
 
   # -- Install into build tree --
+  # NuGet package layout:
+  #   build/native/include/  -> headers
+  #   runtimes/<RID>/native/ -> shared libraries (and .lib files on Windows)
   if(EXISTS "${_ORT_BUILD_ROOT}")
     file(REMOVE_RECURSE "${_ORT_BUILD_ROOT}")
   endif()
   file(MAKE_DIRECTORY "${_ORT_BUILD_ROOT}/include")
   file(MAKE_DIRECTORY "${_ORT_BUILD_ROOT}/lib")
-
-  if(_ORT_NUGET)
-    # NuGet package layout:
-    #   build/native/include/  -> headers
-    #   runtimes/<RID>/native/ -> DLLs and .lib files
-    file(GLOB _ORT_NUGET_HEADERS "${_ORT_EXTRACT_DIR}/build/native/include/*")
-    file(COPY ${_ORT_NUGET_HEADERS} DESTINATION "${_ORT_BUILD_ROOT}/include")
-    file(GLOB _ORT_NUGET_LIBS "${_ORT_EXTRACT_DIR}/runtimes/${_ORT_NUGET_RID}/native/*")
-    file(COPY ${_ORT_NUGET_LIBS} DESTINATION "${_ORT_BUILD_ROOT}/lib")
+  file(GLOB _ORT_NUGET_HEADERS "${_ORT_EXTRACT_DIR}/build/native/include/*")
+  file(GLOB _ORT_NUGET_LIBS "${_ORT_EXTRACT_DIR}/runtimes/${_ORT_NUGET_RID}/native/*")
+  if(NOT _ORT_NUGET_HEADERS OR NOT _ORT_NUGET_LIBS)
+    message(WARNING
+      "Unexpected layout in ${_ORT_PACKAGE}: missing build/native/include "
+      "or runtimes/${_ORT_NUGET_RID}/native.")
   else()
-    # GitHub release layout: single top-level directory with lib/ and include/
-    file(GLOB _ORT_INNER_DIRS "${_ORT_EXTRACT_DIR}/*")
-    list(LENGTH _ORT_INNER_DIRS _ORT_INNER_COUNT)
-    if(_ORT_INNER_COUNT EQUAL 1)
-      list(GET _ORT_INNER_DIRS 0 _ORT_INNER)
-    else()
-      set(_ORT_INNER "${_ORT_EXTRACT_DIR}")
-    endif()
-    file(COPY "${_ORT_INNER}/lib" DESTINATION "${_ORT_BUILD_ROOT}")
-    file(COPY "${_ORT_INNER}/include" DESTINATION "${_ORT_BUILD_ROOT}")
+    file(COPY ${_ORT_NUGET_HEADERS} DESTINATION "${_ORT_BUILD_ROOT}/include")
+    file(COPY ${_ORT_NUGET_LIBS} DESTINATION "${_ORT_BUILD_ROOT}/lib")
   endif()
 
   # -- Cleanup extraction directory --
@@ -357,7 +290,9 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
     PATHS "${_ORT_ROOT}/lib"
     NO_DEFAULT_PATH
   )
-  endif() # _ORT_HASH
+  endif() # _ORT_DL_OK
+  endif() # valid hash
+  endif() # _ORT_SUPPORTED
   endif() # NOT ONNXRUNTIME_OFFLINE
 endif()
 
