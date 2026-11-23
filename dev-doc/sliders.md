@@ -417,3 +417,14 @@ Control the increment when using keyboard arrows or mouse scroll:
 // Default is (soft_max - soft_min) / 100
 dt_bauhaus_slider_set_step(widget, 0.1f);
 ```
+
+For a slider with a positive range, the increment can instead be a constant
+amount of 1/value. The white balance and color calibration temperature sliders
+use this to step by 1 mired:
+
+```c
+dt_bauhaus_slider_set_step_reciprocal(widget, 1e-6f);
+```
+
+Scrolling, keys and shortcuts then ignore the `set_step()` value, which only
+sets how far a drag with a modifier has to move per step.
