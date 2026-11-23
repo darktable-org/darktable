@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT OFF
 
 // process() of src/iop/cacorrect.c.
 //
@@ -35,16 +36,6 @@
 
 #define CA_EPS 1e-5f
 #define CA_TILE 112 // ts - 2 * border in cacorrect.c
-
-static inline float _ca_sqrf(const float x)
-{
-  return x * x;
-}
-
-static inline float _ca_interpolatef(const float a, const float b, const float c)
-{
-  return a * (b - c) + c;
-}
 
 kernel void
 cacorrect_load(read_only image2d_t in,
@@ -142,16 +133,16 @@ cacorrect_green(global const float *raw,
   const int v1 = ewidth;
   const int v2 = 2 * ewidth;
   const int v3 = 3 * ewidth;
-  const float wtu = fp32_div(1.0f, _ca_sqrf(CA_EPS + fabs(raw[i + v1] - raw[i - v1])
+  const float wtu = fp32_div(1.0f, fsquare(CA_EPS + fabs(raw[i + v1] - raw[i - v1])
                                             + fabs(raw[i] - raw[i - v2])
                                             + fabs(raw[i - v1] - raw[i - v3])));
-  const float wtd = fp32_div(1.0f, _ca_sqrf(CA_EPS + fabs(raw[i - v1] - raw[i + v1])
+  const float wtd = fp32_div(1.0f, fsquare(CA_EPS + fabs(raw[i - v1] - raw[i + v1])
                                             + fabs(raw[i] - raw[i + v2])
                                             + fabs(raw[i + v1] - raw[i + v3])));
-  const float wtl = fp32_div(1.0f, _ca_sqrf(CA_EPS + fabs(raw[i + 1] - raw[i - 1])
+  const float wtl = fp32_div(1.0f, fsquare(CA_EPS + fabs(raw[i + 1] - raw[i - 1])
                                             + fabs(raw[i] - raw[i - 2])
                                             + fabs(raw[i - 1] - raw[i - 3])));
-  const float wtr = fp32_div(1.0f, _ca_sqrf(CA_EPS + fabs(raw[i - 1] - raw[i + 1])
+  const float wtr = fp32_div(1.0f, fsquare(CA_EPS + fabs(raw[i - 1] - raw[i + 1])
                                             + fabs(raw[i] - raw[i + 2])
                                             + fabs(raw[i + 1] - raw[i + 3])));
   green[i] = fp32_div(wtu * raw[i - v1] + wtd * raw[i + v1] + wtl * raw[i - 1] + wtr * raw[i + 1],
@@ -201,9 +192,10 @@ cacorrect_filters(global const float *raw,
   filt[5 * plane + h] = glpfh + rblh;
 }
 
-// the color variance coefficients of one tile per 16x16 work group, into
-// sums[tile * 12 + dir * 6 + k * 2 + color], as coeff[dir][k][color] in
-// cacorrect.c. The host launches it with a local size of 16x16.
+// per tile and direction, the color variance coefficients in exactly the
+// order of the CPU loop in process(), so the float sums are bit-identical:
+// sums[tile * 12 + dir * 6 + k * 2 + color] as coeff[dir][k][color].
+// global size: (2 * htiles, vtiles), no local memory.
 kernel void
 cacorrect_tile_sums(global const float *raw,
                     global const float *green,
@@ -213,69 +205,64 @@ cacorrect_tile_sums(global const float *raw,
                     const int height,
                     const int hwidth,
                     const int htiles,
-                    const unsigned int filters,
-                    local float *buffer)
+                    const int vtiles,
+                    const unsigned int filters)
 {
-  const int lx = get_local_id(0);
-  const int ly = get_local_id(1);
-  const int l = mad24(ly, 16, lx);
+  const int gx = get_global_id(0);
+  const int kv = get_global_id(1);
+  const int kh = gx >> 1;
+  const int dir = gx & 1;
+  if(kh >= htiles || kv >= vtiles) return;
+
   const int ewidth = width + 16;
   const int plane = (height + 16) * hwidth;
-  const int row0 = (int)get_group_id(1) * CA_TILE;
-  const int col0 = (int)get_group_id(0) * CA_TILE;
+  const int hv = 2 * hwidth;
+  const int row0 = kv * CA_TILE;
+  const int col0 = kh * CA_TILE;
   const int row1 = min(row0 + CA_TILE, height);
   const int col1 = min(col0 + CA_TILE, width);
 
-  float s[12];
-  for(int k = 0; k < 12; k++) s[k] = 0.0f;
+  // planes and neighbour offsets for this direction
+  const int hp  = dir == 0 ? 0 : plane;          // rbhpfv / rbhpfh
+  const int lp  = dir == 0 ? 2 * plane : 3 * plane; // rblpfv / rblpfh
+  const int gp  = dir == 0 ? 4 * plane : 5 * plane; // grblpfv / grblpfh
+  const int hn  = dir == 0 ? 1 : hv;             // neighbours in the hpf average
+  const int ln  = dir == 0 ? hv : 1;             // neighbours in the lpf terms
+  const int gn  = dir == 0 ? ewidth : 1;         // gradient direction in green
+  const int gt  = dir == 0 ? 1 : ewidth;         // transverse offset in green
 
-  for(int row = row0 + ly; row < row1; row += 16)
+  float s0[2] = { 0.0f, 0.0f }, s1[2] = { 0.0f, 0.0f }, s2[2] = { 0.0f, 0.0f };
+
+  for(int row = row0; row < row1; row++)
   {
     const int y = row + 8;
-    for(int col = col0 + (FC(row, 0, filters) & 1) + 2 * lx; col < col1; col += 32)
+    for(int col = col0 + (FC(row, 0, filters) & 1); col < col1; col += 2)
     {
       const int x = col + 8;
       const int i = mad24(y, ewidth, x);
       const int h = mad24(y, hwidth, x >> 1);
-      const int hv = 2 * hwidth; // two rows up or down in the filter planes
       const int ci = FC(row, col, filters) >> 1;
 
-      // vertical
-      float gdiff = 0.3125f * (green[i + ewidth] - green[i - ewidth])
-                    + 0.09375f * (green[i + ewidth + 1] - green[i - ewidth + 1]
-                                  + green[i + ewidth - 1] - green[i - ewidth - 1]);
+      const float gdiff = 0.3125f * (green[i + gn] - green[i - gn])
+                          + 0.09375f * (green[i + gn + gt] - green[i - gn + gt]
+                                        + green[i + gn - gt] - green[i - gn - gt]);
       const float deltgrb = raw[i] - green[i];
-      float gradwt = fp32_div(fabs(0.25f * filt[h] + 0.125f * (filt[h + 1] + filt[h - 1]))
-                              * (filt[4 * plane + h - hv] + filt[4 * plane + h + hv]),
-                              CA_EPS + 0.1f * (filt[4 * plane + h - hv] + filt[4 * plane + h + hv])
-                              + filt[2 * plane + h - hv] + filt[2 * plane + h + hv]);
-      s[ci] += gradwt * deltgrb * deltgrb;
-      s[2 + ci] += gradwt * gdiff * deltgrb;
-      s[4 + ci] += gradwt * gdiff * gdiff;
+      const float num = fabs(0.25f * filt[hp + h] + 0.125f * (filt[hp + h + hn] + filt[hp + h - hn]))
+                        * (filt[gp + h - ln] + filt[gp + h + ln]);
+      const float den = CA_EPS + 0.1f * (filt[gp + h - ln] + filt[gp + h + ln])
+                        + filt[lp + h - ln] + filt[lp + h + ln];
+      const float gradwt = fp32_div(num, den);
 
-      // horizontal
-      gdiff = 0.3125f * (green[i + 1] - green[i - 1])
-              + 0.09375f * (green[i + 1 + ewidth] - green[i - 1 + ewidth]
-                            + green[i + 1 - ewidth] - green[i - 1 - ewidth]);
-      gradwt = fp32_div(fabs(0.25f * filt[plane + h] + 0.125f * (filt[plane + h + hv] + filt[plane + h - hv]))
-                        * (filt[5 * plane + h - 1] + filt[5 * plane + h + 1]),
-                        CA_EPS + 0.1f * (filt[5 * plane + h - 1] + filt[5 * plane + h + 1])
-                        + filt[3 * plane + h - 1] + filt[3 * plane + h + 1]);
-      s[6 + ci] += gradwt * deltgrb * deltgrb;
-      s[8 + ci] += gradwt * gdiff * deltgrb;
-      s[10 + ci] += gradwt * gdiff * gdiff;
+      s0[ci] += gradwt * deltgrb * deltgrb;
+      s1[ci] += gradwt * gdiff * deltgrb;
+      s2[ci] += gradwt * gdiff * gdiff;
     }
   }
 
-  for(int k = 0; k < 12; k++) buffer[k * 256 + l] = s[k];
-  barrier(CLK_LOCAL_MEM_FENCE);
-  for(int offset = 128; offset > 0; offset >>= 1)
-  {
-    if(l < offset)
-      for(int k = 0; k < 12; k++) buffer[k * 256 + l] += buffer[k * 256 + l + offset];
-    barrier(CLK_LOCAL_MEM_FENCE);
-  }
-  if(l < 12) sums[mad24((int)get_group_id(1), htiles, (int)get_group_id(0)) * 12 + l] = buffer[l * 256];
+  global float *o = sums + mad24(kv, htiles, kh) * 12 + dir * 6;
+  o[0] = s0[0]; o[1] = s0[1];
+  o[2] = s1[0]; o[3] = s1[1];
+  o[4] = s2[0]; o[5] = s2[1];
 }
 
 typedef struct
@@ -287,11 +274,9 @@ typedef struct
 // green at the CA shift point of extended sensel i
 static inline float _ca_gint(global const float *green, const int i, const int ewidth, const ca_shift_t s)
 {
-  const float gfloor = _ca_interpolatef(s.hfrac, green[i + s.vfloor * ewidth + s.hceil],
-                                        green[i + s.vfloor * ewidth + s.hfloor]);
-  const float gceil = _ca_interpolatef(s.hfrac, green[i + s.vceil * ewidth + s.hceil],
-                                       green[i + s.vceil * ewidth + s.hfloor]);
-  return _ca_interpolatef(s.vfrac, gceil, gfloor);
+  const float gfloor = dt_mix(green[i + s.vfloor * ewidth + s.hfloor], green[i + s.vfloor * ewidth + s.hceil], s.hfrac);
+  const float gceil = dt_mix(green[i + s.vceil * ewidth + s.hfloor], green[i + s.vceil * ewidth + s.hceil], s.hfrac);
+  return dt_mix(gfloor,  gceil, s.vfrac);
 }
 
 // the correction pass: red and blue from the color differences at their
@@ -362,9 +347,9 @@ cacorrect_correct(global const float *raw,
   const float g = green[i];
   float o = raw[i];
   const float grbdiffold = g - o;
-  const float grbdiffinthfloor = _ca_interpolatef(hfrac, grbdiff[1], grbdiff[0]);
-  const float grbdiffinthceil = _ca_interpolatef(hfrac, grbdiff[3], grbdiff[2]);
-  float grbdiffint = _ca_interpolatef(vfrac, grbdiffinthceil, grbdiffinthfloor);
+  const float grbdiffinthfloor = dt_mix(grbdiff[0], grbdiff[1], hfrac);
+  const float grbdiffinthceil = dt_mix(grbdiff[2], grbdiff[3], hfrac);
+  float grbdiffint = dt_mix(grbdiffinthfloor, grbdiffinthceil, vfrac);
 
   const float RBint = g - grbdiffint;
   if(fabs(RBint - o) < 0.25f * (RBint + o))

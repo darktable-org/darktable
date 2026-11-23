@@ -141,8 +141,8 @@ __kernel void apply_prefilter(global float2 *uv,
                              a[k].z * UV.x + a[k].w * UV.y + b[k].y);
 
   const float satweight = _get_satweight(saturation[k] - sat_shift, weights);
-  uv[k].x = mix(UV.x, cv.x, satweight);
-  uv[k].y = mix(UV.y, cv.y, satweight);
+  uv[k].x = dt_mix(UV.x, cv.x, satweight);
+  uv[k].y = dt_mix(UV.y, cv.y, satweight);
 }
 
 __kernel void prepare_correlations(global float2 *corrections,

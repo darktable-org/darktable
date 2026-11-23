@@ -16,11 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// fast-math changes results enough to fail the integration test, and isn't even any faster...
-#ifdef __GNUC__
-#pragma GCC optimize ("no-fast-math")
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/imagebuf.h"
@@ -1587,8 +1582,7 @@ int process_cl(dt_iop_module_t *self,
 
     const int origin = border * ewidth + border;
     const int zero = 0;
-    const size_t tsizes[2] = { 16 * htiles, 16 * vtiles };
-    const size_t tlocal[2] = { 16, 16 };
+
     gboolean processpasstwo = TRUE;
     for(int it = 0; it < iterations && processpasstwo; it++)
     {
@@ -1602,10 +1596,10 @@ int process_cl(dt_iop_module_t *self,
               CLARG(raw), CLARG(green), CLARG(filt), CLARG(ewidth), CLARG(eheight), CLARG(hwidth),
               CLARG(filters));
       if(err != CL_SUCCESS) goto error;
-      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_cacorrect_tile_sums, tsizes, tlocal,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_cacorrect_tile_sums, 2 * htiles, vtiles,
               CLARG(raw), CLARG(green), CLARG(filt), CLARG(tsums),
-              CLARG(width), CLARG(height), CLARG(hwidth), CLARG(htiles), CLARG(filters),
-              CLLOCAL(sizeof(float) * 12 * 256));
+              CLARG(width), CLARG(height), CLARG(hwidth), CLARG(htiles), CLARG(vtiles),
+              CLARG(filters));
       if(err != CL_SUCCESS) goto error;
       err = dt_opencl_read_buffer_from_device(devid, sums, tsums, 0, sizeof(float) * 12 * vtiles * htiles, TRUE);
       if(err != CL_SUCCESS) goto error;
