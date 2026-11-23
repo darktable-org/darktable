@@ -3783,7 +3783,7 @@
   <dtconfig common="yes">
     <name>ui_last/theme</name>
     <type>string</type>
-    <default>darktable-elegant-grey</default>
+    <default>darktable-friendly</default>
     <shortdescription>darktable theme</shortdescription>
     <longdescription><![CDATA[the shade around your photo affects how you see its colors and tones while editing. grey is recommended because it's the most neutral – it doesn't push your eye in any direction\n\n<b>grey:</b> best for accurate color work\n\n<b>dark:</b> less distracting around your image\n\n<b>darker:</b> good for dimly-lit rooms]]></longdescription>
     <welcomescreen pagenum="6" questionnum="1" options="darktable-elegant-grey|grey,darktable-elegant-dark|dark,darktable-elegant-darker|darker"/>

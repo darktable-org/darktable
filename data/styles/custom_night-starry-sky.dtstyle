@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<darktable_style version="1.0">
+ <info>
+  <name>custom|night starry sky</name>
+  <description>Neutral-cool night sky with lifted detail and contrast.</description>
+ </info>
+ <style>
+  <plugin>
+   <num>0</num>
+   <module>5</module>
+   <operation>colorbalancergb</operation>
+   <op_params>000000000ad7233d00006b430000000000000000000000000000000000000000000000000000000000000000000000000000803f000000000000803f00000000000000000000000000000000cdccccbd00000000000000000000000000000000000000000000000000000000cdcc4c3d91ed3c3e0000000091ed3c3e9a99193e01000000</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+  <plugin>
+   <num>1</num>
+   <module>3</module>
+   <operation>bilat</operation>
+   <op_params>010000000000003f0000003f9a99993e0000003f</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+ </style>
+</darktable_style>

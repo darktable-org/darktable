@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<darktable_style version="1.0">
+ <info>
+  <name>custom|spring pastel</name>
+  <description>Soft pastel colors with lifted shadows.</description>
+ </info>
+ <style>
+  <plugin>
+   <num>0</num>
+   <module>5</module>
+   <operation>colorbalancergb</operation>
+   <op_params>8fc2753d0000000000000000000000000000000000000000000000000ad7a33c0000a5430000000000000000000000000000803f000000000000803f00000000000000000000000000000000cdccccbd0000000000000000cdcc4cbe000000000000000000000000000000000000000091ed3c3ecdcccc3d91ed3c3e9a9919be01000000</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+ </style>
+</darktable_style>

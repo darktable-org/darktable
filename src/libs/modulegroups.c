@@ -39,8 +39,8 @@
 DT_MODULE(1)
 
 // the T_ macros are for the translation engine to take them into account
-#define FALLBACK_PRESET_NAME     "workflow: scene-referred"
-#define T_FALLBACK_PRESET_NAME _("workflow: scene-referred")
+#define FALLBACK_PRESET_NAME     "workflow: develop"
+#define T_FALLBACK_PRESET_NAME _("workflow: develop")
 
 #define DEPRECATED_PRESET_NAME     "modules: deprecated"
 #define T_DEPRECATED_PRESET_NAME _("modules: deprecated")
@@ -1795,6 +1795,57 @@ void init_presets(dt_lib_module_t *self)
   AM("diffuse");
 
   dt_lib_presets_add(_("workflow: scene-referred"),
+                     self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
+
+  // custom build: "develop" layout, inspired by greycard / Lightroom's
+  // Develop panel: a few task-named tabs in the order you usually edit.
+  SQA(TRUE);
+
+  SMG(C_("modulegroup", "light"), "tone");
+  AM("exposure");
+  if(wf_filmic || wf_none)
+    AM("filmicrgb");
+  if(wf_sigmoid || wf_none)
+    AM("sigmoid");
+  if(wf_agx || wf_none)
+    AM("agx");
+  AM("toneequal");
+  AM("highlights");
+  AM("rgbcurve");
+  AM("rgblevels");
+
+  SMG(C_("modulegroup", "color"), "color");
+  AM("temperature");
+  AM("channelmixerrgb");
+  AM("colorbalancergb");
+  AM("colorequal");
+  AM("primaries");
+
+  SMG(C_("modulegroup", "detail"), "correct");
+  AM("sharpen");
+  AM("bilat");
+  AM("denoiseprofile");
+  AM("diffuse");
+  AM("hazeremoval");
+  AM("cacorrectrgb");
+
+  SMG(C_("modulegroup", "lens & crop"), "basic");
+  AM("lens");
+  AM("crop");
+  AM("ashift");
+  AM("flip");
+  AM("retouch");
+  AM("liquify");
+
+  SMG(C_("modulegroup", "effects"), "effect");
+  AM("vignette");
+  AM("grain");
+  AM("graduatednd");
+  AM("blurs");
+  AM("borders");
+  AM("watermark");
+
+  dt_lib_presets_add(_("workflow: develop"),
                      self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
 
   // search only (only active modules visible)

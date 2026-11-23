@@ -1788,6 +1788,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                         N_("toggle focus peaking"),
                         darktable.gui->focus_peaking_button, &dt_action_def_toggle);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  // custom build: greycard-style focus peaking key
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_j, GDK_SHIFT_MASK);
 
   return 0;
 }

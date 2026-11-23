@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<darktable_style version="1.0">
+ <info>
+  <name>custom|melanin bronze</name>
+  <description>Golden highlights and bronzed midtones for sunlit portraits.</description>
+ </info>
+ <style>
+  <plugin>
+   <num>0</num>
+   <module>5</module>
+   <operation>colorbalancergb</operation>
+   <op_params>000000000000000000000000000000008fc2753c00006842000000008fc2f53c00008c420000000000000000000000000000803f000000000000803f0000000000000000000000000000000000000000cdccccbd00000000cdcccc3d000000000000000000000000000000000ad7a33d91ed3c3e8fc2753d91ed3c3ecdcccc3d01000000</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+  <plugin>
+   <num>1</num>
+   <module>3</module>
+   <operation>bilat</operation>
+   <op_params>010000000000003f0000003f9a99193e0000003f</op_params>
+   <enabled>1</enabled>
+   <blendop_params></blendop_params>
+   <blendop_version>13</blendop_version>
+   <multi_priority>0</multi_priority>
+   <multi_name></multi_name>
+   <multi_name_hand_edited>0</multi_name_hand_edited>
+  </plugin>
+ </style>
+</darktable_style>

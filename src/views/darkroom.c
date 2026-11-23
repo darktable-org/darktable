@@ -3069,6 +3069,8 @@ void gui_init(dt_view_t *self)
                           dev->overexposed.button,
                           &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, 0);
+    // custom build: greycard/Lightroom-style clipping warning key
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_j, 0);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright-click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",

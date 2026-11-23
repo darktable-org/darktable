@@ -27,6 +27,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/image_cache.h"
 #include "common/interpolation.h"
 #include "common/file_location.h"
 #include "common/imagebuf.h"
@@ -3441,6 +3442,9 @@ void reload_defaults(dt_iop_module_t *self)
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
+  // custom build: switch lens correction on automatically for raws when
+  // we know how to correct this camera/lens (embedded or lensfun profile)
+  gboolean have_profile = FALSE;
 
   new_lens = _lens_sanitize(img->exif_lens);
   dt_strlcpy_to_fixed(d->lens, new_lens, sizeof(d->lens));
@@ -3534,6 +3538,7 @@ void reload_defaults(dt_iop_module_t *self)
 
         d->target_geom = _lenstype_from_lensfun_lenstype(lens[lens_i]->Type);
         lf_free(lens);
+        have_profile = TRUE;
       }
 
       d->crop = cam[0]->CropFactor;
@@ -3551,7 +3556,19 @@ void reload_defaults(dt_iop_module_t *self)
     // use new metadata algorithm
     d->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
     d->scale_md = 1.0f;
+    have_profile = TRUE;
   }
+
+  // Only for images opened in darkroom for the first time, so existing
+  // edits made without lens correction keep looking exactly the same.
+  gboolean first_open = FALSE;
+  const dt_image_t *cimg = dt_image_cache_get(img->id, 'r');
+  if(cimg)
+  {
+    first_open = !(cimg->flags & DT_IMAGE_AUTO_PRESETS_APPLIED);
+    dt_image_cache_read_release(cimg);
+  }
+  self->default_enabled = have_profile && first_open && dt_image_is_raw(img);
 
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   if(g)

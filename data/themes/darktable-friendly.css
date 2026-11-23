@@ -1,0 +1,255 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2021-2026 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+   "friendly" theme
+
+   Goals compared to the stock grey themes:
+   - panels are a calm, very low-saturation slate instead of flat grey,
+     so the interface has depth without tinting your judgement of color
+   - ONE accent color (soft sky blue) marks everything that is "on":
+     slider fills, active module headers, selected tabs, checked buttons
+   - higher text contrast and slightly larger type
+   - the image surround in darkroom stays neutral middle grey, as every
+     darktable theme must, so color decisions are not skewed
+*/
+
+@import url("darktable.css");
+@import url("chunk-fonts.css");
+
+/* Palette */
+@define-color slate_05 #121418;
+@define-color slate_10 #181b20;
+@define-color slate_15 #1d2026;
+@define-color slate_20 #23272e;
+@define-color slate_25 #2a2f37;
+@define-color slate_30 #323843;
+@define-color slate_35 #3b424e;
+@define-color slate_40 #465060;
+@define-color slate_50 #5d6778;
+@define-color slate_60 #7a8494;
+@define-color slate_70 #9ba4b2;
+@define-color slate_80 #c3c9d2;
+@define-color slate_90 #e3e6ea;
+
+@define-color accent #5fb0ef;
+@define-color accent_dim alpha(@accent, 0.22);
+@define-color accent_text #0d1a26;
+
+/* General */
+@define-color selected_bg_color @slate_40;
+@define-color border_color @slate_10;
+@define-color bg_color @slate_15;
+@define-color fg_color @slate_90;
+@define-color text_color @slate_05;
+@define-color placeholder_text_color @slate_60;
+@define-color disabled_fg_color @slate_50;
+
+/* Scroll bars */
+@define-color scroll_bar_inactive @slate_40;
+@define-color scroll_bar_active @accent;
+@define-color scroll_bar_bg @slate_15;
+
+/* Modules box (plugins) */
+@define-color plugin_bg_color @slate_20;
+@define-color plugin_label_color @slate_80;
+@define-color section_label @slate_70;
+@define-color collapsible_bg_color @slate_25;
+
+/* Module controls (sliders and comboboxes) */
+@define-color bauhaus_bg @slate_15;
+@define-color bauhaus_fill @accent;
+@define-color bauhaus_fg @slate_90;
+@define-color bauhaus_border @slate_10;
+@define-color bauhaus_indicator_border @slate_10;
+@define-color bauhaus_bg_hover @slate_40;
+@define-color bauhaus_fg_hover #ffffff;
+@define-color bauhaus_fg_selected @accent;
+@define-color bauhaus_fg_insensitive alpha(@fg_color, 0.4);
+
+/* GTK buttons and tabs */
+@define-color button_bg @slate_30;
+@define-color button_fg @slate_80;
+@define-color button_border @slate_35;
+@define-color button_hover_bg @slate_50;
+@define-color button_hover_fg #ffffff;
+
+/* Text fields */
+@define-color field_bg @slate_15;
+@define-color field_fg @fg_color;
+@define-color field_active_bg @slate_25;
+@define-color field_active_fg @slate_90;
+@define-color field_selected_bg @accent;
+@define-color field_selected_fg @accent_text;
+@define-color field_hover_bg @slate_40;
+@define-color field_hover_fg #ffffff;
+
+/* Tooltips */
+@define-color tooltip_bg_color @slate_10;
+@define-color tooltip_fg_color @slate_90;
+@define-color really_dark_bg_color @slate_05;
+@define-color log_fg_color @slate_90;
+
+/* Views (darkroom_bg_color is intentionally NOT changed: it must stay middle grey) */
+@define-color lighttable_bg_color @slate_25;
+@define-color lighttable_bg_font_color @slate_80;
+
+/* Lighttable and film-strip */
+@define-color thumbnail_font_color @slate_20;
+@define-color thumbnail_bg_color @slate_35;
+@define-color thumbnail_star_bg_color @slate_25;
+@define-color thumbnail_star_hover_color @accent;
+@define-color thumbnail_fg_color @slate_60;
+@define-color thumbnail_selected_bg_color @slate_60;
+@define-color thumbnail_hover_bg_color @slate_70;
+@define-color thumbnail_hover_fg_color #ffffff;
+@define-color thumbnail_localcopy_color @slate_80;
+
+@define-color range_bg_color alpha(@accent, 0.10);
+
+/* Graphs: histogram, navigation, curves */
+@define-color graph_bg @slate_15;
+@define-color graph_border @slate_10;
+@define-color graph_fg @slate_90;
+@define-color graph_grid @slate_30;
+@define-color inset_histogram alpha(@slate_80, 0.50);
+
+/* ---------- Friendlier details ---------- */
+
+/* Slightly larger, easier to read text */
+.dt_plugin_ui,
+.dt_bauhaus,
+.dt_bauhaus_popup
+{
+  font-size: 1.04em;
+}
+
+/* Module headers: rounded, clearly separated cards */
+#module-header
+{
+  border-bottom: none;
+  border-radius: 6px;
+  margin: 2px 4px;
+  padding: 0.55em;
+  background-color: @slate_25;
+}
+
+#module-header:hover
+{
+  background-color: @slate_30;
+}
+
+/* Modules that are switched on get an accent stripe on the left */
+#iop-expander.dt_module_active #module-header
+{
+  box-shadow: inset 3px 0 0 0 @accent;
+}
+
+/* The module you are working in is highlighted */
+#iop-expander.dt_module_focus #module-header
+{
+  background-color: @slate_35;
+}
+
+#iop-expander.dt_module_active.dt_module_focus #module-header
+{
+  background-color: @slate_35;
+  box-shadow: inset 3px 0 0 0 @accent;
+}
+
+.dt_module_focus #iop-panel-label
+{
+  color: #ffffff;
+  font-weight: bold;
+}
+
+#iop-module-name,
+#lib-module-name
+{
+  color: @slate_60;
+}
+
+/* Section labels inside modules */
+.dt_section_label:not(#blending-box)
+{
+  color: @slate_70;
+  border-bottom: 1px solid @slate_30;
+}
+
+/* Tabs (module groups, blending tabs, notebooks): accent underline */
+notebook tab:checked label
+{
+  border-bottom-color: @accent;
+  color: @accent;
+}
+
+#modules-tabs .dt_module_btn:checked
+{
+  background-color: @accent;
+  color: @accent_text;
+}
+
+.dt_plugin_ui #blending-tabs .dt_module_btn:checked
+{
+  color: @accent;
+}
+
+/* Checked buttons and selected rows use the accent */
+.dt_history_items:checked,
+button:checked:not(:disabled):not(.dt_transparent_background):not(.dt_ignore_fg_state),
+treeview *:selected:not(check),
+menuitem:selected,
+combobox window *:selected
+{
+  background-color: @accent;
+  color: @accent_text;
+}
+
+/* Rounded buttons */
+button:not(.dt_transparent_background):not(.dt_module_btn)
+{
+  border-radius: 5px;
+}
+
+/* Tooltips: readable, rounded */
+tooltip,
+tooltip *
+{
+  border-radius: 6px;
+}
+
+#picker-grey
+{
+  color: @slate_70;
+}
+
+/* Thumbnail hover overlay background (must match thumbnail hover colour) */
+.dt_overlays_hover_extended #thumb-main:hover #thumb-bottom,
+.dt_overlays_mixed #thumb-main:hover #thumb-bottom,
+.dt_overlays_hover #thumb-main:hover #thumb-bottom
+{
+  background-image: linear-gradient(rgba(155, 164, 178, 0.7) 0%, rgba(155, 164, 178, 0.7) 90%, rgba(155, 164, 178, 0) 100%);
+}
+
+.dt_overlays_always#culling #thumb-bottom,
+.dt_overlays_always_extended#culling #thumb-bottom,
+.dt_overlays_always#preview #thumb-bottom,
+.dt_overlays_always_extended#preview #thumb-bottom
+{
+  background-color: shade(@lighttable_bg_color, 1.05);
+}
