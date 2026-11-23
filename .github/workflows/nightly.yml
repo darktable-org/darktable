@@ -20,14 +20,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04-arm]
+        os: [ubuntu-22.04]  # custom build: x86_64 only
         branch:
           - { code: master, label: gitmaster }
         include:
           - os: ubuntu-22.04
             compiler: { compiler: GNU12, CC: gcc-12, CXX: g++-12, packages: gcc-12 g++-12 }
-          - os: ubuntu-24.04-arm
-            compiler: { compiler: GNU14, CC: gcc-14, CXX: g++-14, packages: gcc-14 g++-14 }
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -204,8 +202,7 @@ jobs:
         btype:
           - Release
         msystem:
-          - UCRT64
-          - CLANGARM64
+          - UCRT64  # custom build: x86_64 only
         target:
           - skiptest
         generator:
@@ -214,8 +211,6 @@ jobs:
         include:
           - msystem: UCRT64
             os: windows-latest
-          - msystem: CLANGARM64
-            os: windows-11-arm
     defaults:
       run:
         shell: msys2 {0}
