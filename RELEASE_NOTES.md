@@ -390,6 +390,9 @@ changes (where available).
 
 - Module color pickers now compute their statistics on the OpenCL
   device instead of copying the picked area back to the CPU.
+  
+- Updated the quick access panel defaults to reflect the new workflow
+  for white-balancing and included contrast & texture.
 
 - darktable-cli uses less memory when exporting many images: it no
   longer keeps the decoded raw of every exported image in memory
