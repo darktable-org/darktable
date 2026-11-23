@@ -1822,12 +1822,15 @@ void init_presets(dt_lib_module_t *self)
   AM("primaries");
 
   SMG(C_("modulegroup", "detail"), "correct");
+  AM("demosaic");   // RawTherapee-style capture sharpening lives here
   AM("sharpen");
   AM("bilat");
   AM("denoiseprofile");
   AM("diffuse");
   AM("hazeremoval");
+  AM("cacorrect");
   AM("cacorrectrgb");
+  AM("defringe");
 
   SMG(C_("modulegroup", "lens & crop"), "basic");
   AM("lens");
