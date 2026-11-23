@@ -305,6 +305,13 @@ changes (where available).
   moved into that section, and the headroom fields are grayed out while
   it is off or only one device is in use.
 
+- The temperature sliders of the white balance and color calibration
+  modules now change by 1 mired per scroll step or key press instead
+  of 1 K, so that a step makes a similar visible change at any
+  temperature: about 4 K at 2000 K, 25 K at 5000 K and 100 K at
+  10000 K. As with other sliders, the steps get finer when the slider
+  is zoomed in.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
