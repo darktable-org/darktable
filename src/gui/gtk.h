@@ -1047,6 +1047,11 @@ GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
                                                GMenu *menu,
                                                dt_gui_popover_tooltip_factory_t tooltip_factory,
                                                gpointer tooltip_user_data);
+// give a menu item an icon drawn by `paint`, which the popover menu
+// functions above draw straight into the item's button. Unlike a pixbuf
+// passed to g_menu_item_set_icon(), it is never encoded to PNG and decoded
+// again. GTK3 only: the GTK4 branch shows no such icon yet
+void dt_gui_menu_item_set_paint_icon(GMenuItem *item, DTGTKCairoPaintIconFunc paint);
 
 
 #if !defined(__cplusplus)
