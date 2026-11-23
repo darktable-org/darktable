@@ -177,9 +177,13 @@ for an earlier serial.
 - colorout renders to `pipe->output.image`. It uses the profile the
   encoding names and does not look the type up again.
 - `pipe->output_headroom` is the peak that sigmoid and agx tone map to. It
-  follows `output.image.headroom`. With "follow output peak" on, the
-  darkroom on a native window therefore depends on the headroom of the
-  screen and not on the PQ peak of an export.
+  follows `output.image.headroom`, but at most the headroom of the image's
+  output profile in colorout (`dt_ioppr_pipe_output_headroom()`). A
+  screen's headroom is no target for the edit: it grows as the brightness
+  goes down, up to 16 on an XDR display. With "follow output peak" on, the
+  darkroom on a native window therefore renders as an export in the
+  image's output profile would: SDR for sRGB, and for a PQ or HLG output
+  up to its peak, unless the screen shows less.
 - `pipe->output_encoding` says what the output values of the pipe are. See
   below.
 - `dt_dev_image()` takes the output of its sink and returns the frame its
