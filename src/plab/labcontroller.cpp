@@ -22,7 +22,61 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QRunnable>
 #include <QSettings>
+
+#include "plab_engine.h"
+
+namespace
+{
+class ThumbResponse : public QQuickImageResponse, public QRunnable
+{
+public:
+  ThumbResponse(int imgid, QSize size, bool ready)
+    : m_imgid(imgid), m_size(size), m_ready(ready)
+  {
+    setAutoDelete(false);
+  }
+  QQuickTextureFactory *textureFactory() const override
+  {
+    return QQuickTextureFactory::textureFactoryForImage(m_image);
+  }
+  void run() override
+  {
+    if(m_ready && m_imgid > 0)
+    {
+      int w = 0, h = 0;
+      uint8_t *buf = plab_thumbnail(m_imgid, m_size.width(), m_size.height(), &w, &h);
+      // the thumbnail cache keeps RGBA byte order, unlike the export path
+      if(buf) m_image = QImage(buf, w, h, w * 4, QImage::Format_RGBX8888, plab_free, buf);
+    }
+    emit finished();
+  }
+
+private:
+  int m_imgid;
+  QSize m_size;
+  bool m_ready;
+  QImage m_image;
+};
+} // namespace
+
+ThumbnailProvider::ThumbnailProvider()
+{
+  // raw files decode on the CPU; two at a time keeps the editor responsive
+  m_pool.setMaxThreadCount(2);
+}
+
+QQuickImageResponse *ThumbnailProvider::requestImageResponse(const QString &id,
+                                                             const QSize &requested)
+{
+  // id is "<imgid>/<version>": the version only defeats QML's image cache
+  const int imgid = id.section(QLatin1Char('/'), 0, 0).toInt();
+  const QSize size = requested.isValid() && !requested.isEmpty() ? requested : QSize(400, 400);
+  auto *r = new ThumbResponse(imgid, size, ready.load());
+  m_pool.start(r);
+  return r;
+}
 
 QImage PreviewProvider::requestImage(const QString &, QSize *size, const QSize &)
 {
@@ -37,8 +91,9 @@ void PreviewProvider::set(const QImage &img)
   m_image = img;
 }
 
-LabController::LabController(PreviewProvider *provider, QObject *parent)
-  : QObject(parent), m_provider(provider), m_adjust(defaultAdjust())
+LabController::LabController(PreviewProvider *provider, ThumbnailProvider *thumbs,
+                             QObject *parent)
+  : QObject(parent), m_provider(provider), m_adjust(defaultAdjust()), m_thumbs(thumbs)
 {
   m_worker = new EngineWorker;
   m_worker->moveToThread(&m_thread);
@@ -50,10 +105,62 @@ LabController::LabController(PreviewProvider *provider, QObject *parent)
   connect(this, &LabController::requestStyle, m_worker, &EngineWorker::applyStyle);
   connect(this, &LabController::requestImportStyles, m_worker, &EngineWorker::importStyles);
   connect(this, &LabController::requestExport, m_worker, &EngineWorker::exportImage);
+  connect(this, &LabController::requestOpenId, m_worker, &EngineWorker::openId);
+  connect(this, &LabController::requestImportFolder, m_worker, &EngineWorker::importFolder);
+  connect(this, &LabController::requestFolders, m_worker, &EngineWorker::listFolders);
+  connect(this, &LabController::requestImages, m_worker, &EngineWorker::listImages);
+  connect(this, &LabController::requestRating, m_worker, &EngineWorker::setRating);
+  connect(this, &LabController::requestLabel, m_worker, &EngineWorker::toggleLabel);
+  connect(this, &LabController::requestAddLuts, m_worker, &EngineWorker::addLuts);
+  connect(this, &LabController::requestStyleImages, m_worker, &EngineWorker::styleImages);
+  connect(this, &LabController::requestPaste, m_worker, &EngineWorker::pasteEdit);
+  connect(this, &LabController::requestExportImages, m_worker, &EngineWorker::exportImages);
+
+  connect(m_worker, &EngineWorker::foldersListed, this, [this](const QVariantList &f) {
+    m_folders = f;
+    emit foldersChanged();
+  });
+  connect(m_worker, &EngineWorker::imagesListed, this, [this](const QVariantList &imgs, int gen) {
+    if(gen != m_listGeneration) return; // an older filter's answer
+    m_images = imgs;
+    // keep only what is still shown selected
+    QList<int> keep;
+    for(const QVariant &v : imgs)
+    {
+      const int id = v.toMap().value(QStringLiteral("id")).toInt();
+      if(m_selected.contains(id)) keep << id;
+    }
+    if(keep != m_selected)
+    {
+      m_selected = keep;
+      emit selectionChanged();
+    }
+    emit imagesChanged();
+  });
+  connect(m_worker, &EngineWorker::imagesChanged, this, [this](const QList<int> &ids) {
+    for(int id : ids)
+    {
+      const QString k = QString::number(id);
+      m_thumbVersions.insert(k, m_thumbVersions.value(k).toInt() + 1);
+    }
+    emit thumbsChanged();
+    if(m_mode == QLatin1String("library")) refreshImages();
+  });
+  connect(m_worker, &EngineWorker::batchDone, this, [this](const QString &m) {
+    setInFlight(false);
+    setMessage(m);
+    refreshImages();
+  });
 
   connect(m_worker, &EngineWorker::started, this, [this](bool ok, const QStringList &styles) {
     m_ready = ok;
+    m_thumbs->ready = ok;
     m_styles = styles;
+    if(ok)
+    {
+      emit requestFolders();
+      refreshImages();
+    }
     emit stylesChanged();
     emit readyChanged();
     setMessage(ok ? QString() : tr("the darktable engine could not start"));
@@ -77,6 +184,8 @@ LabController::LabController(PreviewProvider *provider, QObject *parent)
     for(auto it = saved.begin(); it != saved.end(); ++it) m_adjust.insert(it.key(), it.value());
     m_luts = edit.value(QStringLiteral("luts")).toList();
     emit imageChanged();
+    setMode(QStringLiteral("develop"));
+    emit requestFolders();
     emit adjustChanged();
     emit lutsChanged();
     emit currentStyleChanged();
@@ -247,17 +356,9 @@ void LabController::importStyles(const QUrl &url)
 
 void LabController::addLut(const QUrl &url)
 {
-  const QString src = url.toLocalFile();
-  const QFileInfo fi(src);
-  if(!fi.isFile()) return;
-  // lut3d reads paths relative to one folder, so every LUT is kept there
-  const QString dst = QDir(m_lutDir).filePath(fi.fileName());
-  if(QFileInfo(dst).canonicalFilePath() != fi.canonicalFilePath())
-  {
-    QFile::remove(dst);
-    QFile::copy(src, dst);
-  }
-  m_luts.append(QVariantMap{ { QStringLiteral("file"), fi.fileName() },
+  const QString file = copyLut(url);
+  if(file.isEmpty()) return;
+  m_luts.append(QVariantMap{ { QStringLiteral("file"), file },
                              { QStringLiteral("strength"), 100.0 } });
   emit lutsChanged();
   scheduleRender();
@@ -306,4 +407,208 @@ void LabController::showOriginal(bool on)
   if(on == m_original) return;
   m_original = on;
   scheduleRender();
+}
+
+// ---------------------------------------------------------------------------
+// library
+// ---------------------------------------------------------------------------
+
+void LabController::setMode(const QString &mode)
+{
+  if(mode == m_mode) return;
+  m_mode = mode;
+  emit modeChanged();
+  if(m_mode == QLatin1String("library")) refreshImages();
+}
+
+QVariantList LabController::selection() const
+{
+  QVariantList out;
+  for(int id : m_selected) out << id;
+  return out;
+}
+
+void LabController::refreshImages()
+{
+  if(!m_ready) return;
+  emit requestImages(m_folder, m_minRating, m_rejected, ++m_listGeneration);
+}
+
+QList<int> LabController::selectedOrCurrent() const
+{
+  if(m_mode == QLatin1String("develop") && m_imgid >= 0) return { m_imgid };
+  return m_selected;
+}
+
+void LabController::importFolder(const QUrl &url, bool recursive)
+{
+  const QString folder = url.toLocalFile();
+  if(folder.isEmpty()) return;
+  setInFlight(true);
+  setMessage(tr("importing %1...").arg(QFileInfo(folder).fileName()));
+  emit requestImportFolder(folder, recursive);
+}
+
+void LabController::showFolder(int filmId)
+{
+  m_folder = filmId;
+  emit filterChanged();
+  refreshImages();
+}
+
+void LabController::setMinRating(int stars)
+{
+  m_minRating = qBound(0, stars, 5);
+  emit filterChanged();
+  refreshImages();
+}
+
+void LabController::setShowRejected(bool on)
+{
+  m_rejected = on;
+  emit filterChanged();
+  refreshImages();
+}
+
+void LabController::select(int imgid, int how)
+{
+  if(how == 1)
+  {
+    if(m_selected.contains(imgid)) m_selected.removeAll(imgid);
+    else m_selected << imgid;
+    m_anchor = imgid;
+  }
+  else if(how == 2 && m_anchor >= 0)
+  {
+    int a = -1, b = -1;
+    for(int i = 0; i < m_images.size(); i++)
+    {
+      const int id = m_images[i].toMap().value(QStringLiteral("id")).toInt();
+      if(id == m_anchor) a = i;
+      if(id == imgid) b = i;
+    }
+    if(a < 0 || b < 0) return select(imgid, 0);
+    m_selected.clear();
+    for(int i = qMin(a, b); i <= qMax(a, b); i++)
+      m_selected << m_images[i].toMap().value(QStringLiteral("id")).toInt();
+  }
+  else
+  {
+    m_selected = { imgid };
+    m_anchor = imgid;
+  }
+  emit selectionChanged();
+}
+
+void LabController::selectAll()
+{
+  m_selected.clear();
+  for(const QVariant &v : std::as_const(m_images))
+    m_selected << v.toMap().value(QStringLiteral("id")).toInt();
+  emit selectionChanged();
+}
+
+void LabController::clearSelection()
+{
+  m_selected.clear();
+  emit selectionChanged();
+}
+
+void LabController::rateSelected(int stars)
+{
+  const QList<int> ids = selectedOrCurrent();
+  if(!ids.isEmpty()) emit requestRating(ids, qBound(0, stars, 5));
+}
+
+void LabController::rejectSelected()
+{
+  const QList<int> ids = selectedOrCurrent();
+  if(!ids.isEmpty()) emit requestRating(ids, 6);
+}
+
+void LabController::toggleLabelSelected(int color)
+{
+  const QList<int> ids = selectedOrCurrent();
+  if(!ids.isEmpty()) emit requestLabel(ids, color);
+}
+
+QString LabController::copyLut(const QUrl &url)
+{
+  const QString src = url.toLocalFile();
+  const QFileInfo fi(src);
+  if(!fi.isFile()) return {};
+  // lut3d reads paths relative to one folder, so every LUT is kept there
+  const QString dst = QDir(m_lutDir).filePath(fi.fileName());
+  if(QFileInfo(dst).canonicalFilePath() != fi.canonicalFilePath())
+  {
+    QFile::remove(dst);
+    QFile::copy(src, dst);
+  }
+  return fi.fileName();
+}
+
+void LabController::addLutToSelected(const QUrl &url)
+{
+  const QString file = copyLut(url);
+  if(file.isEmpty() || m_selected.isEmpty()) return;
+  setInFlight(true);
+  setMessage(tr("adding %1 to %n photo(s)...", nullptr, int(m_selected.size())).arg(file));
+  emit requestAddLuts(m_selected, { QVariantMap{ { QStringLiteral("file"), file },
+                                                 { QStringLiteral("strength"), 100.0 } } });
+}
+
+void LabController::styleSelected(const QString &name)
+{
+  if(m_selected.isEmpty()) return;
+  setInFlight(true);
+  setMessage(tr("styling %n photo(s)...", nullptr, int(m_selected.size())));
+  emit requestStyleImages(m_selected, name);
+}
+
+void LabController::copyEdit()
+{
+  if(m_imgid < 0) return;
+  m_copied = editState();
+  m_copiedStyle = m_style;
+  emit copiedEditChanged();
+  setMessage(tr("edit copied"));
+}
+
+void LabController::pasteEditToSelected()
+{
+  if(m_copied.isEmpty() || m_selected.isEmpty()) return;
+  setInFlight(true);
+  setMessage(tr("pasting to %n photo(s)...", nullptr, int(m_selected.size())));
+  emit requestPaste(m_selected, m_copied, m_copiedStyle);
+}
+
+void LabController::exportSelected(const QUrl &folder, int quality)
+{
+  if(m_selected.isEmpty()) return;
+  setInFlight(true);
+  setMessage(tr("exporting %n photo(s)...", nullptr, int(m_selected.size())));
+  emit requestExportImages(m_selected, folder.toLocalFile(), quality);
+}
+
+void LabController::openImage(int imgid)
+{
+  if(imgid == m_imgid)
+  {
+    setMode(QStringLiteral("develop"));
+    return;
+  }
+  setInFlight(true);
+  emit requestOpenId(imgid);
+}
+
+void LabController::openNeighbour(int step)
+{
+  for(int i = 0; i < m_images.size(); i++)
+    if(m_images[i].toMap().value(QStringLiteral("id")).toInt() == m_imgid)
+    {
+      const int j = i + step;
+      if(j >= 0 && j < m_images.size())
+        openImage(m_images[j].toMap().value(QStringLiteral("id")).toInt());
+      return;
+    }
 }

@@ -21,7 +21,12 @@
 
 #include "plab/plab_engine.h"
 
+#include "common/colorlabels.h"
 #include "common/darktable.h"
+#include "common/database.h"
+#include "common/mipmap_cache.h"
+#include "common/ratings.h"
+#include "views/view.h"
 #include "common/film.h"
 #include "common/history.h"
 #include "common/illuminants.h"
@@ -58,7 +63,10 @@ int plab_init(int argc, char **argv)
   char **args = g_new0(char *, argc + 2);
   args[0] = g_strdup("photographylab");
   for(int i = 0; i < argc; i++) args[i + 1] = g_strdup(argv[i]);
-  return dt_init(argc + 1, args, FALSE, TRUE, NULL);
+  const int rc = dt_init(argc + 1, args, FALSE, TRUE, NULL);
+  // new photos come in unrated, as in Lightroom; darktable gives them a star
+  if(rc == 0) dt_conf_set_int("ui_last/import_initial_rating", 0);
+  return rc;
 }
 
 void plab_shutdown(void)
@@ -421,6 +429,8 @@ int plab_apply(int imgid, int base_end, const plab_layer_t *layers, int n_layers
     }
     dt_dev_write_history_ext(&dev, imgid);
     dt_image_write_sidecar_file(imgid);
+    // the library's thumbnail shows the old edit until it is dropped
+    dt_mipmap_cache_remove(imgid);
   }
   dt_dev_cleanup(&dev);
   return ok ? 0 : -1;
@@ -518,6 +528,142 @@ int plab_export(int imgid, const char *out_path, int quality, char **err)
   fmt->free_params(fmt, fdata);
   if(failed) _seterr(err, "could not write '%s'", out_path);
   return failed ? -1 : 0;
+}
+
+// ---------------------------------------------------------------------------
+// library
+// ---------------------------------------------------------------------------
+
+static int _import_dir(const char *folder, const gboolean recursive)
+{
+  GDir *dir = g_dir_open(folder, 0, NULL);
+  if(!dir) return 0;
+  int n = 0;
+  dt_filmid_t filmid = NO_FILMID;
+  const gchar *f;
+  while((f = g_dir_read_name(dir)))
+  {
+    if(f[0] == '.') continue;
+    gchar *full = g_build_filename(folder, f, NULL);
+    if(g_file_test(full, G_FILE_TEST_IS_DIR))
+    {
+      if(recursive) n += _import_dir(full, recursive);
+    }
+    else if(dt_supported_image(f))
+    {
+      if(!dt_is_valid_filmid(filmid))
+      {
+        dt_film_t film;
+        dt_film_init(&film);
+        filmid = dt_film_new(&film, folder);
+        dt_film_cleanup(&film);
+      }
+      if(dt_is_valid_filmid(filmid)
+         && dt_is_valid_imgid(dt_image_import(filmid, full, FALSE, FALSE)))
+        n++;
+    }
+    g_free(full);
+  }
+  g_dir_close(dir);
+  return n;
+}
+
+int plab_import_folder(const char *folder, int recursive)
+{
+  GFile *gf = g_file_new_for_path(folder);
+  gchar *canon = g_file_get_path(gf);
+  g_object_unref(gf);
+  const int n = g_file_test(canon, G_FILE_TEST_IS_DIR) ? _import_dir(canon, recursive) : -1;
+  g_free(canon);
+  return n;
+}
+
+char *plab_list_folders(void)
+{
+  GString *s = g_string_new(NULL);
+  sqlite3_stmt *st = NULL;
+  // clang-format off
+  sqlite3_prepare_v2(dt_database_get(darktable.db),
+                     "SELECT f.id, f.folder, COUNT(i.id)"
+                     " FROM main.film_rolls AS f"
+                     " JOIN main.images AS i ON i.film_id = f.id"
+                     " GROUP BY f.id ORDER BY f.folder",
+                     -1, &st, NULL);
+  // clang-format on
+  while(st && sqlite3_step(st) == SQLITE_ROW)
+    g_string_append_printf(s, "%d\t%s\t%d\n", sqlite3_column_int(st, 0),
+                           (const char *)sqlite3_column_text(st, 1),
+                           sqlite3_column_int(st, 2));
+  sqlite3_finalize(st);
+  return g_string_free(s, FALSE);
+}
+
+char *plab_list_images(int film_id, int min_rating, int rejected_only)
+{
+  GString *s = g_string_new(NULL);
+  sqlite3_stmt *st = NULL;
+  // clang-format off
+  sqlite3_prepare_v2(dt_database_get(darktable.db),
+                     "SELECT i.id, f.folder || '/' || i.filename, i.flags & 7,"
+                     "       (SELECT IFNULL(SUM(1 << c.color), 0)"
+                     "          FROM main.color_labels AS c WHERE c.imgid = i.id),"
+                     "       i.history_end > 0"
+                     " FROM main.images AS i"
+                     " JOIN main.film_rolls AS f ON f.id = i.film_id"
+                     " WHERE (?1 < 0 OR i.film_id = ?1)"
+                     "   AND ((?3 = 1 AND i.flags & 7 = 6)"
+                     "        OR (?3 = 0 AND i.flags & 7 != 6 AND i.flags & 7 >= ?2))"
+                     " ORDER BY i.datetime_taken, i.filename",
+                     -1, &st, NULL);
+  // clang-format on
+  if(st)
+  {
+    sqlite3_bind_int(st, 1, film_id);
+    sqlite3_bind_int(st, 2, min_rating);
+    sqlite3_bind_int(st, 3, rejected_only ? 1 : 0);
+  }
+  while(st && sqlite3_step(st) == SQLITE_ROW)
+    g_string_append_printf(s, "%d\t%s\t%d\t%d\t%d\n", sqlite3_column_int(st, 0),
+                           (const char *)sqlite3_column_text(st, 1),
+                           sqlite3_column_int(st, 2), sqlite3_column_int(st, 3),
+                           sqlite3_column_int(st, 4));
+  sqlite3_finalize(st);
+  return g_string_free(s, FALSE);
+}
+
+void plab_set_rating(int imgid, int rating)
+{
+  dt_ratings_apply_on_image(imgid, CLAMP(rating, 0, DT_VIEW_REJECT), FALSE, FALSE, FALSE);
+  dt_image_write_sidecar_file(imgid);
+}
+
+void plab_toggle_color_label(int imgid, int color)
+{
+  GList *l = g_list_prepend(NULL, GINT_TO_POINTER(imgid));
+  dt_colorlabels_toggle_label_on_list(l, color, FALSE);
+  g_list_free(l);
+  dt_image_write_sidecar_file(imgid);
+}
+
+uint8_t *plab_thumbnail(int imgid, int max_w, int max_h, int *out_w, int *out_h)
+{
+  const dt_mipmap_size_t size = dt_mipmap_cache_get_matching_size(max_w, max_h);
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(&buf, imgid, size, DT_MIPMAP_BLOCKING, 'r');
+  uint8_t *out = NULL;
+  if(buf.buf && buf.width > 0 && buf.height > 0)
+  {
+    const size_t bytes = (size_t)buf.width * buf.height * 4;
+    out = g_try_malloc(bytes);
+    if(out)
+    {
+      memcpy(out, buf.buf, bytes);
+      *out_w = buf.width;
+      *out_h = buf.height;
+    }
+  }
+  dt_mipmap_cache_release(&buf);
+  return out;
 }
 
 void plab_set_lut_folder(const char *folder)

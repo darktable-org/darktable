@@ -36,7 +36,7 @@ locally, run that script from the source root.
 | `plab_engine.c/.h` | the only code that calls darktable: import, history, render to memory, styles, export |
 | `engineworker.*` | runs the engine on its own thread; turns slider values into module parameters |
 | `labcontroller.*` | the state QML binds to; sends one render at a time, always the newest |
-| `qml/` | the window: photo, and Basic / Looks / Detail / Optics tabs |
+| `qml/` | the window: Library (folders, grid, batch actions) and Develop (photo, filmstrip, Basic / Looks / Detail / Optics) |
 | `styles/` | the bundled `custom|...` styles, imported into the library on first start |
 
 Edits are ordinary darktable history on top of what darktable applies by

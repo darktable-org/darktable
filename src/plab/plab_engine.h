@@ -97,6 +97,27 @@ int plab_export(int imgid, const char *out_path, int quality, char **err);
 /** where lut3d resolves relative LUT paths; the app keeps its LUTs there */
 void plab_set_lut_folder(const char *folder);
 
+// --- library (darktable's catalog) ---
+
+/** import every supported image in a folder; returns how many are in the
+    catalog from it afterwards, or -1 */
+int plab_import_folder(const char *folder, int recursive);
+
+/** catalog folders as "film_id\tfolder\tcount" lines, g_malloc'd */
+char *plab_list_folders(void);
+
+/** images as "imgid\tpath\trating\tlabels\tedited" lines, by capture time.
+    film_id < 0 means every folder. rating is 0..5, or 6 when rejected;
+    labels is a bitmask of darktable's color labels (red 1, yellow 2 ...) */
+char *plab_list_images(int film_id, int min_rating, int rejected_only);
+
+/** 0..5 stars, or 6 to reject */
+void plab_set_rating(int imgid, int rating);
+void plab_toggle_color_label(int imgid, int color);
+
+/** darktable's cached thumbnail (RGBx byte order) at about the given size, g_malloc'd */
+uint8_t *plab_thumbnail(int imgid, int max_w, int max_h, int *out_w, int *out_h);
+
 void plab_free(void *p);
 
 #ifdef __cplusplus

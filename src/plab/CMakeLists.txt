@@ -20,7 +20,7 @@ qt_add_executable(photographylab
 set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 # served next to the module's qmldir, so Main.qml's implicit import of its own
 # folder finds the Theme singleton
-foreach(f Main AdjustSlider SectionHeader Theme)
+foreach(f Main LibraryView AdjustSlider SectionHeader Theme)
   set_source_files_properties(qml/${f}.qml PROPERTIES QT_RESOURCE_ALIAS ${f}.qml)
 endforeach()
 
@@ -29,6 +29,7 @@ qt_add_qml_module(photographylab
   VERSION 1.0
   QML_FILES
     qml/Main.qml
+    qml/LibraryView.qml
     qml/AdjustSlider.qml
     qml/SectionHeader.qml
     qml/Theme.qml)

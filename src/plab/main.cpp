@@ -55,6 +55,10 @@ int main(int argc, char *argv[])
   QCommandLineOption exportOpt(QStringLiteral("export"),
                                QStringLiteral("export the image to <file> once the preview is up, then quit"),
                                QStringLiteral("file"));
+  QCommandLineOption importOpt(QStringLiteral("import"),
+                               QStringLiteral("import a folder into the library at start"),
+                               QStringLiteral("folder"));
+  cli.addOption(importOpt);
   cli.addOption(size);
   cli.addOption(exportOpt);
   cli.addOption(screenshot);
@@ -77,11 +81,14 @@ int main(int argc, char *argv[])
     QStringLiteral("--cachedir"), cache,
   };
 
-  auto *provider = new PreviewProvider; // the engine takes ownership
-  LabController lab(provider);
+  // the QML engine takes ownership of both providers
+  auto *provider = new PreviewProvider;
+  auto *thumbs = new ThumbnailProvider;
+  LabController lab(provider, thumbs);
 
   QQmlApplicationEngine engine;
   engine.addImageProvider(QStringLiteral("preview"), provider);
+  engine.addImageProvider(QStringLiteral("thumb"), thumbs);
   engine.rootContext()->setContextProperty(QStringLiteral("lab"), &lab);
   engine.rootContext()->setContextProperty(QStringLiteral("startTab"),
                                            cli.value(tab).toInt());
@@ -95,6 +102,14 @@ int main(int argc, char *argv[])
   }
 
   lab.start(core, QDir::cleanPath(styles), QDir(data).filePath(QStringLiteral("luts")), data);
+
+  if(cli.isSet(importOpt))
+  {
+    const QString folder = QFileInfo(cli.value(importOpt)).absoluteFilePath();
+    QObject::connect(&lab, &LabController::readyChanged, &lab, [&lab, folder] {
+      if(lab.ready()) lab.importFolder(QUrl::fromLocalFile(folder), true);
+    });
+  }
 
   const QStringList files = cli.positionalArguments();
   const QStringList sets = cli.values(set);
@@ -129,13 +144,36 @@ int main(int argc, char *argv[])
   if(cli.isSet(screenshot))
   {
     const QString out = cli.value(screenshot);
-    QObject::connect(&lab, &LabController::previewChanged, &lab, [window, out, &lab] {
-      if(lab.busy()) return;
-      QTimer::singleShot(800, window, [window, out] {
+    auto shoot = [window, out](int delay) {
+      QTimer::singleShot(delay, window, [window, out] {
         window->grabWindow().save(out);
         QCoreApplication::quit();
       });
-    });
+    };
+    if(!files.isEmpty())
+      QObject::connect(&lab, &LabController::previewChanged, &lab, [shoot, &lab] {
+        if(!lab.busy()) shoot(800);
+      });
+    else
+    {
+      // the library: once the grid is filled, give the thumbnails time to load
+      auto armed = std::make_shared<bool>(false);
+      QObject::connect(&lab, &LabController::imagesChanged, &lab, [shoot, &lab, armed] {
+        if(lab.busy() || lab.images().isEmpty() || *armed) return;
+        *armed = true;
+        // batch actions on everything shown, for checking them without a person
+        const QString lut = qEnvironmentVariable("PLAB_BATCH_LUT");
+        const QString style = qEnvironmentVariable("PLAB_BATCH_STYLE");
+        const QString rate = qEnvironmentVariable("PLAB_BATCH_RATE");
+        if(qEnvironmentVariableIsSet("PLAB_SELECT_ALL") || !lut.isEmpty() || !style.isEmpty()
+           || !rate.isEmpty())
+          lab.selectAll();
+        if(!rate.isEmpty()) lab.rateSelected(rate.toInt());
+        if(!lut.isEmpty()) lab.addLutToSelected(QUrl::fromLocalFile(lut));
+        if(!style.isEmpty()) lab.styleSelected(style);
+        shoot(lut.isEmpty() && style.isEmpty() ? 6000 : 25000);
+      });
+    }
   }
 
   if(cli.isSet(exportOpt))

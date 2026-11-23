@@ -22,6 +22,8 @@
 #include <QMutex>
 #include <QObject>
 #include <QQuickImageProvider>
+#include <QThreadPool>
+#include <atomic>
 #include <QThread>
 #include <QUrl>
 #include <QVariantMap>
@@ -41,6 +43,19 @@ private:
   QImage m_image;
 };
 
+// library thumbnails from darktable's own thumbnail cache, loaded off the UI
+// thread. darktable's GUI reads that cache from many threads too
+class ThumbnailProvider : public QQuickAsyncImageProvider
+{
+public:
+  ThumbnailProvider();
+  QQuickImageResponse *requestImageResponse(const QString &id, const QSize &requested) override;
+  std::atomic<bool> ready{ false };
+
+private:
+  QThreadPool m_pool;
+};
+
 // the state QML binds to, and the queue between it and the engine thread
 class LabController : public QObject
 {
@@ -56,9 +71,20 @@ class LabController : public QObject
   Q_PROPERTY(QStringList styles READ styles NOTIFY stylesChanged)
   Q_PROPERTY(QString currentStyle READ currentStyle NOTIFY currentStyleChanged)
   Q_PROPERTY(QString message READ message NOTIFY messageChanged)
+  Q_PROPERTY(QString mode READ mode WRITE setMode NOTIFY modeChanged)
+  Q_PROPERTY(QVariantList folders READ folders NOTIFY foldersChanged)
+  Q_PROPERTY(QVariantList images READ images NOTIFY imagesChanged)
+  Q_PROPERTY(int currentFolder READ currentFolder NOTIFY filterChanged)
+  Q_PROPERTY(int minRating READ minRating NOTIFY filterChanged)
+  Q_PROPERTY(bool showRejected READ showRejected NOTIFY filterChanged)
+  Q_PROPERTY(QVariantList selection READ selection NOTIFY selectionChanged)
+  Q_PROPERTY(int currentImage READ currentImage NOTIFY imageChanged)
+  Q_PROPERTY(QVariantMap thumbVersions READ thumbVersions NOTIFY thumbsChanged)
+  Q_PROPERTY(bool hasCopiedEdit READ hasCopiedEdit NOTIFY copiedEditChanged)
 
 public:
-  explicit LabController(PreviewProvider *provider, QObject *parent = nullptr);
+  LabController(PreviewProvider *provider, ThumbnailProvider *thumbs,
+                QObject *parent = nullptr);
   ~LabController() override;
 
   void start(const QStringList &coreArgs, const QString &stylesDir,
@@ -75,6 +101,37 @@ public:
   QStringList styles() const { return m_styles; }
   QString currentStyle() const { return m_style; }
   QString message() const { return m_message; }
+  QString mode() const { return m_mode; }
+  void setMode(const QString &mode);
+  QVariantList folders() const { return m_folders; }
+  QVariantList images() const { return m_images; }
+  int currentFolder() const { return m_folder; }
+  int minRating() const { return m_minRating; }
+  bool showRejected() const { return m_rejected; }
+  QVariantList selection() const;
+  int currentImage() const { return m_imgid; }
+  QVariantMap thumbVersions() const { return m_thumbVersions; }
+  bool hasCopiedEdit() const { return !m_copied.isEmpty(); }
+
+  // library
+  Q_INVOKABLE void importFolder(const QUrl &url, bool recursive);
+  Q_INVOKABLE void showFolder(int filmId);
+  Q_INVOKABLE void setMinRating(int stars);
+  Q_INVOKABLE void setShowRejected(bool on);
+  // how: 0 select only this, 1 toggle it (ctrl), 2 extend from the last (shift)
+  Q_INVOKABLE void select(int imgid, int how);
+  Q_INVOKABLE void selectAll();
+  Q_INVOKABLE void clearSelection();
+  Q_INVOKABLE void rateSelected(int stars);
+  Q_INVOKABLE void rejectSelected();
+  Q_INVOKABLE void toggleLabelSelected(int color);
+  Q_INVOKABLE void addLutToSelected(const QUrl &url);
+  Q_INVOKABLE void styleSelected(const QString &name);
+  Q_INVOKABLE void copyEdit();
+  Q_INVOKABLE void pasteEditToSelected();
+  Q_INVOKABLE void exportSelected(const QUrl &folder, int quality);
+  Q_INVOKABLE void openImage(int imgid);
+  Q_INVOKABLE void openNeighbour(int step);
 
   Q_INVOKABLE void openFile(const QUrl &url);
   Q_INVOKABLE void setValue(const QString &key, const QVariant &value);
@@ -98,6 +155,13 @@ signals:
   void stylesChanged();
   void currentStyleChanged();
   void messageChanged();
+  void modeChanged();
+  void foldersChanged();
+  void imagesChanged();
+  void filterChanged();
+  void selectionChanged();
+  void thumbsChanged();
+  void copiedEditChanged();
 
   // to the engine thread
   void requestOpen(const QString &path);
@@ -106,6 +170,16 @@ signals:
   void requestStyle(const QString &name);
   void requestImportStyles(const QString &path);
   void requestExport(const QString &path, int quality);
+  void requestOpenId(int imgid);
+  void requestImportFolder(const QString &folder, bool recursive);
+  void requestFolders();
+  void requestImages(int filmId, int minRating, bool rejectedOnly, int generation);
+  void requestRating(const QList<int> &ids, int rating);
+  void requestLabel(const QList<int> &ids, int color);
+  void requestAddLuts(const QList<int> &ids, const QVariantList &luts);
+  void requestStyleImages(const QList<int> &ids, const QString &style);
+  void requestPaste(const QList<int> &ids, const QVariantMap &edit, const QString &style);
+  void requestExportImages(const QList<int> &ids, const QString &folder, int quality);
 
 private:
   static QVariantMap defaultAdjust();
@@ -114,6 +188,9 @@ private:
   void kick();
   void setMessage(const QString &m);
   void setInFlight(bool on);
+  void refreshImages();
+  QList<int> selectedOrCurrent() const;
+  QString copyLut(const QUrl &url);
 
   PreviewProvider *m_provider;
   QThread m_thread;
@@ -136,4 +213,18 @@ private:
   bool m_dirty = false;    // a render was asked for while one was running
   int m_generation = 0;
   int m_shown = 0;
+
+  ThumbnailProvider *m_thumbs;
+  QString m_mode = QStringLiteral("library");
+  QVariantList m_folders;
+  QVariantList m_images;
+  int m_folder = -1;
+  int m_minRating = 0;
+  bool m_rejected = false;
+  int m_listGeneration = 0;
+  QList<int> m_selected;
+  int m_anchor = -1;
+  QVariantMap m_thumbVersions;
+  QVariantMap m_copied;
+  QString m_copiedStyle;
 };

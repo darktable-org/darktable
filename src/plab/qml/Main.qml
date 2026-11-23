@@ -33,6 +33,19 @@ ApplicationWindow {
                 color: Theme.text
                 font.pixelSize: 18
                 font.bold: true
+                visible: win.wide
+            }
+            TabBar {
+                id: modeBar
+                Material.background: Theme.panel
+                currentIndex: lab.mode === "library" ? 0 : 1
+                TabButton { text: "Library"; width: implicitWidth; onClicked: lab.mode = "library" }
+                TabButton {
+                    text: "Develop"
+                    width: implicitWidth
+                    enabled: lab.hasImage
+                    onClicked: lab.mode = "develop"
+                }
             }
             Text {
                 text: lab.hasImage && win.wide ? "  " + lab.imageName : ""
@@ -42,7 +55,15 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             ToolButton {
+                text: "Copy edit"
+                visible: lab.mode === "develop"
+                onClicked: lab.copyEdit()
+                ToolTip.visible: hovered
+                ToolTip.text: "copy this photo's sliders, LUTs and style, to paste onto others in the Library"
+            }
+            ToolButton {
                 text: "Before"
+                visible: lab.mode === "develop"
                 enabled: lab.hasImage
                 onPressed: lab.showOriginal(true)
                 onReleased: lab.showOriginal(false)
@@ -53,14 +74,22 @@ ApplicationWindow {
             ToolButton { text: "Open"; onClicked: openDialog.open() }
             ToolButton {
                 text: "Export"
+                visible: lab.mode === "develop"
                 enabled: lab.hasImage
                 onClicked: exportDialog.open()
             }
         }
     }
 
-    GridLayout {
+    StackLayout {
         anchors.fill: parent
+        currentIndex: lab.mode === "library" ? 0 : 1
+
+    LibraryView {
+        wide: win.wide
+    }
+
+    GridLayout {
         columns: win.wide ? 2 : 1
         rowSpacing: 0
         columnSpacing: 0
@@ -84,10 +113,53 @@ ApplicationWindow {
             }
             Component.onCompleted: sizeTimer.start()
 
+            ListView {
+                id: filmstrip
+                visible: win.wide && lab.images.length > 1
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: visible ? 96 : 0
+                orientation: ListView.Horizontal
+                clip: true
+                spacing: 4
+                model: lab.images
+                currentIndex: {
+                    for(let i = 0; i < lab.images.length; i++)
+                        if(lab.images[i].id === lab.currentImage) return i
+                    return -1
+                }
+                onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+                delegate: Rectangle {
+                    required property var modelData
+                    width: 120
+                    height: filmstrip.height
+                    color: modelData.id === lab.currentImage ? Theme.panelRaised : Theme.window
+                    border.width: modelData.id === lab.currentImage ? 2 : 0
+                    border.color: Theme.accent
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        fillMode: Image.PreserveAspectFit
+                        asynchronous: true
+                        cache: false
+                        sourceSize.width: 240
+                        sourceSize.height: 240
+                        source: "image://thumb/" + parent.modelData.id + "/"
+                                + (lab.thumbVersions[String(parent.modelData.id)] || 0)
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: lab.openImage(parent.modelData.id)
+                    }
+                }
+            }
+
             Image {
                 id: photo
                 anchors.fill: parent
                 anchors.margins: 12
+                anchors.bottomMargin: 12 + filmstrip.height
                 source: lab.previewSource
                 fillMode: Image.PreserveAspectFit
                 cache: false
@@ -375,6 +447,12 @@ ApplicationWindow {
             }
         }
     }
+
+    }
+
+    Shortcut { sequences: ["Right"]; enabled: lab.mode === "develop"; onActivated: lab.openNeighbour(1) }
+    Shortcut { sequences: ["Left"]; enabled: lab.mode === "develop"; onActivated: lab.openNeighbour(-1) }
+    Shortcut { sequences: [StandardKey.Copy]; enabled: lab.mode === "develop"; onActivated: lab.copyEdit() }
 
     FileDialog {
         id: openDialog
