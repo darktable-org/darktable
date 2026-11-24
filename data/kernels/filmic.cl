@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018-2025 darktable developers.
+    copyright (c) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT ON
+
 #include "colorspace.h"
 #include "color_conversion.h"
 #include "noise_generator.h"
