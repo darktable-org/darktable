@@ -29,6 +29,9 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
 
 uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint32_t crop_y);
 
+// TRUE if rawspeed knows a headerless raw format of exactly this file size
+gboolean dt_rawspeed_has_headerless_camera(uint64_t filesize);
+
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *buf);
 
