@@ -1445,9 +1445,12 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                           IOP_CS_RGB, IOP_CS_LAB, &converted_cst,
                                           display_profile);
       if(display_profile && histogram_profile)
+      {
         dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 3, 1,
                                                 display_profile, histogram_profile,
                                                 "primary picker");
+        sample->scope_profile = histogram_profile;
+      }
       if(display_profile && gtk_profile && gtk_profile != display_profile)
       {
         lib_colorpicker_stats picked;

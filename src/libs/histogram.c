@@ -158,21 +158,15 @@ static void _scope_process
     }
   }
 
-  // Convert pixelpipe output in display RGB to histogram profile. If
-  // in tether view, then the image is already converted by the
-  // caller.
+  // convert the pixels to the profile the scopes show them in
+  // (dt_ioppr_get_scope_profile_info()), which has matrices
 
   float *img_display = dt_alloc_align_float((size_t)4 * width * height);
   if(!img_display) return;
 
   // FIXME: we might get called with profile_info_to == NULL due to caller errors
   if(!profile_info_to)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-       "[histogram] no histogram profile, replaced with linear Rec2020");
-    dt_control_log(_("unsupported profile selected for histogram,"
-                     " it will be replaced with linear Rec2020"));
-  }
+    dt_print(DT_DEBUG_ALWAYS, "[histogram] no scope profile, replaced with linear Rec2020");
 
   const dt_iop_order_iccprofile_info_t *fallback =
     dt_ioppr_add_profile_info_to_list(darktable.develop,
@@ -186,10 +180,7 @@ static void _scope_process
   dt_pthread_mutex_lock(&s->lock);
 
   s->update_counter++;
-  // if using a non-rgb profile_info_out as in cmyk softproofing we pass
-  // DT_COLORSPACE_LIN_REC2020 for calculating the vertex_rgb data.
-  dt_scopes_call(s->cur_mode, process, img_display, &roi,
-                 profile_info_out->type ? profile_info_out : fallback);
+  dt_scopes_call(s->cur_mode, process, img_display, &roi, profile_info_out);
 
   dt_pthread_mutex_unlock(&s->lock);
   dt_free_align(img_display);

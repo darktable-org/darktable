@@ -27,7 +27,6 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/develop.h"
-#include "develop/frame.h"
 #include "develop/pixelpipe.h"
 
 #include <stdio.h>
@@ -889,35 +888,19 @@ dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_scope_profile_info(struct dt_develop_t *dev,
                                                                 const dt_color_encoding_t *rendered)
 {
-  // in proof mode the scopes show what the preview pipe rendered: the
-  // proof profile, sRGB where colorout replaced a missing or unusable one,
-  // and the window's output for an ink proof, which is proofed already
-  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL
-     && rendered && rendered->type != DT_COLORSPACE_NONE)
-    return dt_ioppr_add_profile_info_for_content(dev, rendered->type, rendered->filename,
-                                                 rendered->profile,
-                                                 DT_INTENT_RELATIVE_COLORIMETRIC);
-
-  dt_colorspaces_color_profile_type_t histogram_profile_type;
-  const char *histogram_profile_filename;
-  dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
-  return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
+  // the vectorscope and the luminance modes of the clipping indicator need
+  // matrices, which a lookup table profile, as a system display profile
+  // may be, does not have: its values are shown in linear Rec2020 instead
+  dt_iop_order_iccprofile_info_t *profile =
+    dt_ioppr_add_profile_info_for_content(dev, rendered->type, rendered->filename,
+                                          rendered->profile,
+                                          DT_INTENT_RELATIVE_COLORIMETRIC);
+  if(profile
+     && dt_is_valid_colormatrix(profile->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile->matrix_out[0][0]))
+    return profile;
+  return dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "",
                                            DT_INTENT_RELATIVE_COLORIMETRIC);
-}
-
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
-{
-  // the encoding of the preview's last frame, which the pickers' samples
-  // and the scopes were made from; none before the preview has run
-  dt_color_encoding_t rendered = { .type = DT_COLORSPACE_NONE };
-  dt_dev_pixelpipe_t *const preview = dev ? dev->preview_pipe : NULL;
-  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL && preview)
-  {
-    dt_frame_t *frame = dt_dev_pixelpipe_frame(preview);
-    if(frame) rendered = *dt_frame_encoding(frame);
-    dt_frame_unref(frame);
-  }
-  return dt_ioppr_get_scope_profile_info(dev, &rendered);
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(const struct dt_dev_pixelpipe_t *pipe)
@@ -1017,9 +1000,9 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
     if(_type && _filename)
     {
       // stored params need not terminate the file name, and callers read it as
-      // a C string. Terminate it rather than returning NULL: the histogram
-      // profile path hands the name to strcmp() in
-      // dt_ioppr_get_profile_info_from_list() without a NULL check
+      // a C string. Terminate it rather than returning NULL:
+      // dt_ioppr_get_profile_info_from_list() hands the name to strcmp()
+      // without a NULL check
       const size_t size = colorin_so->get_f("filename_work")->header.size;
       if(!memchr(_filename, '\0', size)) _filename[size - 1] = '\0';
       *profile_type = *_type;
@@ -1088,29 +1071,6 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
   else
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_ioppr_get_export_profile_type] can't find colorout iop");
-}
-
-void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
-                                         const char **profile_filename)
-{
-  if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
-  {
-    *profile_type = darktable.color_profiles->softproof.type;
-    *profile_filename = darktable.color_profiles->softproof.filename;
-  }
-  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
-  {
-    dt_ioppr_get_work_profile_type(darktable.develop, profile_type, profile_filename);
-  }
-  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-  {
-    dt_ioppr_get_export_profile_type(darktable.develop, profile_type, profile_filename);
-  }
-  else
-  {
-    *profile_type = darktable.color_profiles->histogram_type;
-    *profile_filename = darktable.color_profiles->histogram_filename;
-  }
 }
 
 gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name)

@@ -72,7 +72,6 @@ typedef enum dt_colorspaces_profile_type_t
   DT_COLORSPACES_PROFILE_TYPE_EXPORT = 3,
   DT_COLORSPACES_PROFILE_TYPE_DISPLAY = 4,
   DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF = 5,
-  DT_COLORSPACES_PROFILE_TYPE_HISTOGRAM = 6,
   DT_COLORSPACES_PROFILE_TYPE_DISPLAY2 = 7
 } dt_colorspaces_profile_type_t;
 
@@ -95,9 +94,6 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_VENDOR_MATRIX = 13,
   DT_COLORSPACE_ALTERNATE_MATRIX = 14,
   DT_COLORSPACE_BRG = 15,
-  DT_COLORSPACE_EXPORT = 16, // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
-  DT_COLORSPACE_SOFTPROOF = 17,
-  DT_COLORSPACE_WORK = 18,
   DT_COLORSPACE_DISPLAY2 = 19,
   DT_COLORSPACE_REC709 = 20,
   DT_COLORSPACE_PROPHOTO_RGB = 21,
@@ -353,9 +349,6 @@ typedef struct dt_colorspaces_t
   // whether the log has said that a window got no profile, once a session
   gboolean system_display_hinted[2];
 
-  // the current set of selected profiles
-  dt_colorspaces_color_profile_type_t histogram_type;
-  char histogram_filename[512];
   // the soft proof's source, and its own target for
   // DT_PROOF_SOURCE_CUSTOM
   dt_colorspaces_proof_source_t softproof_source;
@@ -395,7 +388,6 @@ typedef struct dt_colorspaces_color_profile_t
   int out_pos;                              // position in output combo box, -1 if not applicable
   gboolean display;                         // found by DT_PROFILE_DIRECTION_DISPLAY lookups
   gboolean display2;                        // found by DT_PROFILE_DIRECTION_DISPLAY2 lookups
-  int category_pos;                         // position in category combo box, -1 if not applicable
   int work_pos;                             // position in working combo box, -1 if not applicable
 } dt_colorspaces_color_profile_t;
 

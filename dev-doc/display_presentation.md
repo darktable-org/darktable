@@ -124,7 +124,7 @@ preview.
 No menu offers the two entries. Where the platform converts, darktable
 cannot tell what reaches the screen, so no result can claim to be in the
 display's profile. At startup, `_drop_unoffered_choices()` replaces a
-stored histogram or soft proof profile that no menu offers by sRGB.
+stored soft proof profile that its menu does not offer by sRGB.
 
 A replaced profile stays valid for the session (`system_display_profiles`
 in `dt_colorspaces_t`). Pixels made for the old screen then still convert
@@ -266,9 +266,6 @@ renders for the scene's display, which the screen only emulates.
   clip. The gamut check marks what the clip changes.
 - The proof of the preview pipe has no gamut marks, because the scopes, the
   color pickers, navigation and the filmstrip thumbnail read it.
-- In proof mode the scopes and pickers show values in the output encoding
-  of the preview, whatever the histogram setting
-  (`dt_ioppr_get_scope_profile_info()`).
 
 A presented pipe, proofed or not, equals a darktable export with the same
 target to an integer format, such as JPEG, PNG or 16-bit TIFF, where the
@@ -289,6 +286,30 @@ Then it converts the ink values to linear Rec2020, relative colorimetric,
 which holds the gamut of any print. A frame holds RGB, so the output
 encoding is linear Rec2020, whatever the window, and the scopes show the
 values in it.
+
+## Scopes and Pickers
+
+The scopes, the color pickers and the clipping indicator inspect what the
+preview renders, proofing or not, and so what the export holds. They show
+its values in its output encoding (`dt_ioppr_get_scope_profile_info()`):
+the image's target, or the proof's when proofing. They read the preview
+pipe at gamma's input, the frame's pixels before the mask and channel
+views, clipped as gamma clips them (`output_clip`), while the clipping
+indicator, which runs before gamma, sees what the clip changes. There is
+no setting of their own. A profile chosen for them alone
+would re-express a render made for another target, whose tone mapping and
+headroom belong to that target; to inspect values for a target, proof
+against it.
+
+The clipping indicator's upper threshold is a fraction of the target's
+peak, of the peak's signal for the channels and of its light for the
+luminance: where an SDR or HLG export clips, and past the light a PQ
+export is mastered for, which PQ itself encodes up to 10000 nits. It
+marks the same on every screen.
+
+The vectorscope and the luminance modes of the clipping indicator need
+matrices. Where the output profile has none, as a lookup table profile
+may, the values convert to linear Rec2020.
 
 ## Headroom Target
 

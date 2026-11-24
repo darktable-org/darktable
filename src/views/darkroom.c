@@ -2459,7 +2459,7 @@ static void _softproof_source_callback(GtkWidget *combo,
   // as for the profile
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                           DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
-  dt_dev_reprocess_all(d);
+  // only a proof renders for it
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
     dt_dev_reprocess_proof(d);
 }
@@ -2547,9 +2547,7 @@ end:
     _update_softproof_widgets(d);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
-    dt_dev_reprocess_all(d);
-    // as for the intent: an ink proof's output encoding is the window's,
-    // whatever the proof profile
+    // only a proof renders for it
     if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
       dt_dev_reprocess_proof(d);
   }
@@ -2560,50 +2558,6 @@ static void _display2_color_assessment_callback(GtkToggleButton *checkbutton, dt
   dev->preview2.color_assessment = gtk_toggle_button_get_active(checkbutton);
   dt_conf_set_bool("second_window/color_assessment", dev->preview2.color_assessment);
   dt_dev_configure(&dev->preview2);
-}
-
-static void _histogram_profile_callback(GtkWidget *combo,
-                                        gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gboolean profile_changed = FALSE;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  for(GList *profiles = darktable.color_profiles->profiles;
-      profiles;
-      profiles = g_list_next(profiles))
-  {
-    dt_colorspaces_color_profile_t *pp = profiles->data;
-    if(pp->category_pos == pos)
-    {
-      if(darktable.color_profiles->histogram_type != pp->type
-        || (darktable.color_profiles->histogram_type == DT_COLORSPACE_FILE
-            && strcmp(darktable.color_profiles->histogram_filename, pp->filename)))
-      {
-        darktable.color_profiles->histogram_type = pp->type;
-        g_strlcpy(darktable.color_profiles->histogram_filename, pp->filename,
-                  sizeof(darktable.color_profiles->histogram_filename));
-        profile_changed = TRUE;
-      }
-      goto end;
-    }
-  }
-
-  // profile not found, fall back to export profile. shouldn't happen
-  dt_print(DT_DEBUG_ALWAYS,
-           "can't find histogram profile `%s', using export profile instead",
-           dt_bauhaus_combobox_get_text(combo));
-  profile_changed = darktable.color_profiles->histogram_type != DT_COLORSPACE_WORK;
-  darktable.color_profiles->histogram_type = DT_COLORSPACE_WORK;
-  darktable.color_profiles->histogram_filename[0] = '\0';
-
-end:
-  if(profile_changed)
-  {
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            DT_COLORSPACES_PROFILE_TYPE_HISTOGRAM);
-    dt_dev_reprocess_all(d);
-  }
 }
 
 static void _preference_changed(gpointer instance,
@@ -3630,15 +3584,11 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_toggle_set(softproof_bpc, darktable.color_profiles->softproof.bpc);
 
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    GtkWidget *histogram_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
     dt_bauhaus_widget_set_label(softproof_profile,
                                 N_("profiles"), N_("softproof profile"));
-    dt_bauhaus_widget_set_label(histogram_profile,
-                                N_("profiles"), N_("histogram profile"));
 
     dt_bauhaus_combobox_set_entries_ellipsis(softproof_profile, PANGO_ELLIPSIZE_MIDDLE);
-    dt_bauhaus_combobox_set_entries_ellipsis(histogram_profile, PANGO_ELLIPSIZE_MIDDLE);
 
     GtkWidget *display2_color_assessment = gtk_check_button_new_with_label(_("second preview window color assessment"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(display2_color_assessment),
@@ -3659,25 +3609,10 @@ void gui_init(dt_view_t *self)
               || !strcmp(prof->filename, darktable.color_profiles->softproof.filename)))
           dt_bauhaus_combobox_set(softproof_profile, prof->out_pos);
       }
-      if(prof->category_pos > -1)
-      {
-        dt_bauhaus_combobox_add(histogram_profile, prof->name);
-        if(prof->type == darktable.color_profiles->histogram_type
-          && (prof->type != DT_COLORSPACE_FILE
-              || !strcmp(prof->filename, darktable.color_profiles->histogram_filename)))
-        {
-          dt_bauhaus_combobox_set(histogram_profile, prof->category_pos);
-        }
-      }
     }
 
     char *tooltip = dt_ioppr_get_location_tooltip("out", _("softproof ICC profiles"));
     gtk_widget_set_tooltip_markup(softproof_profile, tooltip);
-    g_free(tooltip);
-
-    tooltip = dt_ioppr_get_location_tooltip("out",
-                                            _("histogram and color picker ICC profiles"));
-    gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
 
     g_signal_connect(G_OBJECT(display2_color_assessment), "toggled",
@@ -3688,8 +3623,6 @@ void gui_init(dt_view_t *self)
                      G_CALLBACK(_softproof_bpc_callback), dev);
     g_signal_connect(G_OBJECT(softproof_pq_peak), "value-changed",
                      G_CALLBACK(_softproof_pq_peak_callback), dev);
-    g_signal_connect(G_OBJECT(histogram_profile), "value-changed",
-                     G_CALLBACK(_histogram_profile_callback), dev);
 
     _update_softproof_gamut_checking(dev);
 
@@ -3700,7 +3633,7 @@ void gui_init(dt_view_t *self)
     GtkWidget *vbox = dt_gui_vbox
       (display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       softproof_source, dev->profile.proof_custom, histogram_profile);
+       softproof_source, dev->profile.proof_custom);
 
     gtk_widget_show_all(vbox);
     // _toolbar_show_popup() shows the popover with gtk_widget_show_all()

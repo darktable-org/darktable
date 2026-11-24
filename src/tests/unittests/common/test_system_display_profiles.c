@@ -86,18 +86,18 @@ static int _setup(void **state)
     = f->placeholder;
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY, f->placeholder,
-                                                 "display", -1, -1, TRUE, -1, -1, FALSE));
+                                                 "display", -1, -1, TRUE, -1, FALSE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY2, f->placeholder,
-                                                 "display2", -1, -1, FALSE, -1, -1, TRUE));
+                                                 "display2", -1, -1, FALSE, -1, TRUE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_SRGB,
                                                  dt_colorspaces_create_srgb_profile(),
-                                                 "sRGB", -1, 0, TRUE, 2, 0, TRUE));
+                                                 "sRGB", -1, 0, TRUE, 0, TRUE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_ADOBERGB,
                                                  dt_colorspaces_create_adobergb_profile(),
-                                                 "Adobe RGB", 0, 1, TRUE, 3, 1, TRUE));
+                                                 "Adobe RGB", 0, 1, TRUE, 1, TRUE));
   // every window has an output from the start, as dt_colorspaces_init()
   // gives it
   for(int w = 0; w < 2; w++)
@@ -410,26 +410,22 @@ static void test_owner_is_no_output(void **state)
   _assert_raised(1, 1);
 }
 
-static void test_display_is_no_histogram_choice(void **state)
+static void test_display_is_no_softproof_choice(void **state)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
 
   // stored by a version that listed the system display profiles
-  self->histogram_type = DT_COLORSPACE_DISPLAY;
-  self->softproof.type = DT_COLORSPACE_DISPLAY2;
+  self->softproof.type = DT_COLORSPACE_DISPLAY;
   _drop_unoffered_choices(self);
-  assert_int_equal(self->histogram_type, DT_COLORSPACE_SRGB);
   assert_int_equal(self->softproof.type, DT_COLORSPACE_SRGB);
 
-  self->histogram_type = DT_COLORSPACE_DISPLAY2;
+  self->softproof.type = DT_COLORSPACE_DISPLAY2;
   _drop_unoffered_choices(self);
-  assert_int_equal(self->histogram_type, DT_COLORSPACE_SRGB);
+  assert_int_equal(self->softproof.type, DT_COLORSPACE_SRGB);
 
-  // what the menus offer stays
-  self->histogram_type = DT_COLORSPACE_ADOBERGB;
+  // what the menu offers stays
   self->softproof.type = DT_COLORSPACE_ADOBERGB;
   _drop_unoffered_choices(self);
-  assert_int_equal(self->histogram_type, DT_COLORSPACE_ADOBERGB);
   assert_int_equal(self->softproof.type, DT_COLORSPACE_ADOBERGB);
 }
 
@@ -454,7 +450,7 @@ int main(int argc, char *argv[])
                                     _teardown),
     cmocka_unit_test_setup_teardown(test_platform_owned_entry_is_device, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_owner_is_no_output, _setup, _teardown),
-    cmocka_unit_test_setup_teardown(test_display_is_no_histogram_choice, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_display_is_no_softproof_choice, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_display_lookup_eligibility, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);

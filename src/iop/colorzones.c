@@ -905,14 +905,12 @@ static void _draw_color_picker(dt_iop_module_t *self,
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
     if(samples)
     {
-      const dt_iop_order_iccprofile_info_t *const histogram_profile
-          = dt_ioppr_get_histogram_profile_info(self->dev);
       const dt_iop_order_iccprofile_info_t *const work_profile
           = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
       dt_aligned_pixel_t pick_mean, pick_min, pick_max;
       int converted_cst;
 
-      if(work_profile && histogram_profile)
+      if(work_profile)
       {
         dt_colorpicker_sample_t *sample = NULL;
         for(; samples; samples = g_slist_next(samples))
@@ -933,13 +931,13 @@ static void _draw_color_picker(dt_iop_module_t *self,
           pick_mean[3] = pick_min[3] = pick_max[3] = 1.f;
 
           dt_ioppr_transform_image_colorspace_rgb(pick_mean, pick_mean,
-                                                  1, 1, histogram_profile, work_profile,
+                                                  1, 1, sample->scope_profile, work_profile,
                                                   "color zones");
           dt_ioppr_transform_image_colorspace_rgb(pick_min, pick_min,
-                                                  1, 1, histogram_profile, work_profile,
+                                                  1, 1, sample->scope_profile, work_profile,
                                                   "color zones");
           dt_ioppr_transform_image_colorspace_rgb(pick_max, pick_max,
-                                                  1, 1, histogram_profile, work_profile,
+                                                  1, 1, sample->scope_profile, work_profile,
                                                   "color zones");
 
           dt_ioppr_transform_image_colorspace(self, pick_mean, pick_mean,

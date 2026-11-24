@@ -140,9 +140,6 @@ static void icc_types()
   fprintf(stderr, " VENDOR_MATRIX\n");
   fprintf(stderr, " ALTERNATE_MATRIX\n");
   fprintf(stderr, " BRG\n");
-  fprintf(stderr, " EXPORT\n"); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
-  fprintf(stderr, " SOFTPROOF\n");
-  fprintf(stderr, " WORK\n");
   fprintf(stderr, " DISPLAY2\n");
   fprintf(stderr, " REC709\n");
   fprintf(stderr, " PROPHOTO_RGB\n");
@@ -173,9 +170,6 @@ static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
   ICC_FROM_STR(VENDOR_MATRIX);
   ICC_FROM_STR(ALTERNATE_MATRIX);
   ICC_FROM_STR(BRG);
-  ICC_FROM_STR(EXPORT); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
-  ICC_FROM_STR(SOFTPROOF);
-  ICC_FROM_STR(WORK);
   ICC_FROM_STR(DISPLAY2);
   ICC_FROM_STR(REC709);
   ICC_FROM_STR(PROPHOTO_RGB);

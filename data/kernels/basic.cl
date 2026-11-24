@@ -3838,6 +3838,8 @@ overexposed (read_only image2d_t in,
              const int height,
              const float lower,
              const float upper,
+             const float upper_signal,
+             const float upper_luminance,
              const float4 lower_color,
              const float4 upper_color,
              constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
@@ -3855,7 +3857,7 @@ overexposed (read_only image2d_t in,
 
   if(mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
-    if(pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+    if(pixel_tmp.x >= upper_signal || pixel_tmp.y >= upper_signal || pixel_tmp.z >= upper_signal)
       pixel.xyz = upper_color.xyz;
 
     else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
@@ -3864,9 +3866,9 @@ overexposed (read_only image2d_t in,
   }
   else if(mode == DT_CLIPPING_PREVIEW_GAMUT && use_work_profile)
   {
-    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+    const float luminance = get_rgb_matrix_luminance(pixel_tmp, profile_info, profile_info->matrix_in, lut);
 
-    if(luminance >= upper)
+    if(luminance >= upper_luminance)
     {
       pixel.xyz = upper_color.xyz;
     }
@@ -3881,7 +3883,7 @@ overexposed (read_only image2d_t in,
       saturation = dtcl_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
 
       if(saturation.x > upper || saturation.y > upper || saturation.z > upper ||
-         pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+         pixel_tmp.x >= upper_signal || pixel_tmp.y >= upper_signal || pixel_tmp.z >= upper_signal)
         pixel.xyz = upper_color.xyz;
 
       else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
@@ -3890,9 +3892,9 @@ overexposed (read_only image2d_t in,
   }
   else if(mode == DT_CLIPPING_PREVIEW_LUMINANCE && use_work_profile)
   {
-    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+    const float luminance = get_rgb_matrix_luminance(pixel_tmp, profile_info, profile_info->matrix_in, lut);
 
-    if(luminance >= upper)
+    if(luminance >= upper_luminance)
       pixel.xyz = upper_color.xyz;
 
     else if(luminance <= lower)
@@ -3900,16 +3902,16 @@ overexposed (read_only image2d_t in,
   }
   else if(mode == DT_CLIPPING_PREVIEW_SATURATION && use_work_profile)
   {
-    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+    const float luminance = get_rgb_matrix_luminance(pixel_tmp, profile_info, profile_info->matrix_in, lut);
 
-    if(luminance < upper && luminance > lower)
+    if(luminance < upper_luminance && luminance > lower)
     {
       float4 saturation = { 0.f, 0.f, 0.f, 0.f};
       saturation = pixel_tmp - (float4)luminance;
       saturation = dtcl_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
 
       if(saturation.x > upper || saturation.y > upper || saturation.z > upper ||
-         pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+         pixel_tmp.x >= upper_signal || pixel_tmp.y >= upper_signal || pixel_tmp.z >= upper_signal)
         pixel.xyz = upper_color.xyz;
 
       else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)

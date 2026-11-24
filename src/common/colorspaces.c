@@ -1159,7 +1159,6 @@ static dt_colorspaces_color_profile_t *_create_profile
    const int in_pos,
    const int out_pos,
    const gboolean display,
-   const int category_pos,
    const int work_pos,
    const gboolean display2)
 {
@@ -1172,7 +1171,6 @@ static dt_colorspaces_color_profile_t *_create_profile
     prof->in_pos = in_pos;
     prof->out_pos = out_pos;
     prof->display = display;
-    prof->category_pos = category_pos;
     prof->work_pos = work_pos;
     prof->display2 = display2;
   }
@@ -1530,17 +1528,15 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
   return TRUE;
 }
 
-// whether the histogram menu (category_pos) or the soft proof menu
-// (out_pos) offers this profile
+// whether the soft proof menu offers this profile
 static gboolean _offered(const dt_colorspaces_t *self,
                          const dt_colorspaces_color_profile_type_t type,
-                         const char *filename,
-                         const gboolean histogram)
+                         const char *filename)
 {
   for(const GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     const dt_colorspaces_color_profile_t *p = iter->data;
-    if((histogram ? p->category_pos : p->out_pos) > -1
+    if(p->out_pos > -1
        && p->type == type
        && (type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(p->filename, filename)))
       return TRUE;
@@ -1548,21 +1544,12 @@ static gboolean _offered(const dt_colorspaces_t *self,
   return FALSE;
 }
 
-// a stored histogram or soft proof profile its menu does not offer, such
-// as the system display profile an earlier version listed for the
-// histogram, becomes sRGB, the default, so that the menu and what is used
-// agree
+// a stored soft proof profile its menu does not offer, such as a system
+// display profile, becomes sRGB, the default, so that the menu and what is
+// used agree
 static void _drop_unoffered_choices(dt_colorspaces_t *self)
 {
-  if(!_offered(self, self->histogram_type, self->histogram_filename, TRUE))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[colorspaces] histogram profile `%s' is no histogram choice,"
-             " using sRGB", dt_colorspaces_get_name(self->histogram_type,
-                                                    self->histogram_filename));
-    self->histogram_type = DT_COLORSPACE_SRGB;
-    self->histogram_filename[0] = '\0';
-  }
-  if(!_offered(self, self->softproof.type, self->softproof.filename, FALSE))
+  if(!_offered(self, self->softproof.type, self->softproof.filename))
   {
     dt_print(DT_DEBUG_ALWAYS, "[colorspaces] soft proof profile `%s' is no soft proof"
              " choice, using sRGB", dt_colorspaces_get_name(self->softproof.type,
@@ -1645,7 +1632,6 @@ static GList *load_profile_from_dir(const char *subdir)
             // these will be set after sorting!
             prof->in_pos = -1;
             prof->out_pos = -1;
-            prof->category_pos = -1;
             prof->work_pos = -1;
             temp_profiles = g_list_prepend(temp_profiles, prof);
           }
@@ -1752,25 +1738,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   int in_pos = -1,
       out_pos = -1,
-      category_pos = -1,
       work_pos = -1;
-
-  // init the category profile with NULL profile, the actual profile
-  // must be retrieved dynamically by the caller
-  res->profiles = g_list_append
-    (res->profiles,
-     _create_profile(DT_COLORSPACE_WORK, NULL, _("work profile"), -1, -1,
-                     FALSE, ++category_pos, -1, FALSE));
-
-  res->profiles = g_list_append
-    (res->profiles, _create_profile(DT_COLORSPACE_EXPORT, NULL,
-                                    _("export profile"), -1,
-                                    -1, FALSE, ++category_pos, -1, FALSE));
-
-  res->profiles = g_list_append
-    (res->profiles, _create_profile(DT_COLORSPACE_SOFTPROOF, NULL,
-                                    _("softproof profile"), -1, -1,
-                                    FALSE, ++category_pos, -1, FALSE));
 
   // init the display profile with srgb so some stupid code that runs
   // before the real profile could be fetched has something to work
@@ -1778,52 +1746,47 @@ dt_colorspaces_t *dt_colorspaces_init()
   cmsHPROFILE display = dt_colorspaces_create_srgb_profile();
   _system_profile_add(res, NULL, 0, display);
   res->system_display[0] = res->system_display[1] = res->system_display_srgb = display;
-  // no histogram choice: darktable cannot say what reaches the screen
-  // where the platform converts, so a histogram cannot claim to be the
-  // display's. Krita names no monitor profile where the OS manages color
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY,
                      display,
                      _("system display profile"), -1, -1,
-                     TRUE, -1, -1, FALSE));
+                     TRUE, -1, FALSE));
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY2, display,
                      _("system display profile (second window)"), -1, -1, FALSE,
-                     -1, -1, TRUE));
+                     -1, TRUE));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
   // TODO: what about display?
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_SRGB, dt_colorspaces_create_srgb_profile_v4(),
-                     _("sRGB"), ++in_pos, -1, FALSE, -1, -1, FALSE));
+                     _("sRGB"), ++in_pos, -1, FALSE, -1, FALSE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_SRGB, dt_colorspaces_create_srgb_profile(),
-                     _("sRGB (web-safe)"), -1, ++out_pos, TRUE,
-                     ++category_pos, ++work_pos, TRUE));
+                     _("sRGB (web-safe)"), -1, ++out_pos, TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_ADOBERGB, dt_colorspaces_create_adobergb_profile(),
                      _("Adobe RGB (compatible)"), ++in_pos, ++out_pos, TRUE,
-                     ++category_pos, ++work_pos, TRUE));
+                     ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_LIN_REC709,
                      dt_colorspaces_create_linear_rec709_rgb_profile(),
                      _("linear Rec709 RGB"), ++in_pos, ++out_pos,
-                     TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_REC709, _colorspaces_create_gamma_rec709_rgb_profile(),
-                     _("Rec709 RGB"), ++in_pos, ++out_pos, FALSE, -1,
+                     _("Rec709 RGB"), ++in_pos, ++out_pos, FALSE,
                      ++work_pos, FALSE));
 
   res->profiles = g_list_append
@@ -1831,78 +1794,70 @@ dt_colorspaces_t *dt_colorspaces_init()
      _create_profile(DT_COLORSPACE_LIN_REC2020,
                      _colorspaces_create_linear_rec2020_rgb_profile(),
                      _("linear Rec2020 RGB"), ++in_pos, ++out_pos,
-                     TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_PQ_REC2020,
                      _colorspaces_create_pq_rec2020_rgb_profile(),
                      _("PQ Rec2020 RGB"), ++in_pos, ++out_pos,
-                     TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_HLG_REC2020,
                      _colorspaces_create_hlg_rec2020_rgb_profile(),
                      _("HLG Rec2020 RGB"), ++in_pos, ++out_pos,
-                     TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_PQ_P3, _colorspaces_create_pq_p3_rgb_profile(),
-                     _("PQ P3 RGB"), ++in_pos, ++out_pos, TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     _("PQ P3 RGB"), ++in_pos, ++out_pos, TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_HLG_P3, _colorspaces_create_hlg_p3_rgb_profile(),
-                     _("HLG P3 RGB"), ++in_pos, ++out_pos, TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     _("HLG P3 RGB"), ++in_pos, ++out_pos, TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY_P3,
                      _colorspaces_create_display_p3_rgb_profile(),
                      _("Display P3 RGB"), ++in_pos, ++out_pos,
-                     TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_PROPHOTO_RGB,
                      _colorspaces_create_linear_prophoto_rgb_profile(),
                      _("linear ProPhoto RGB"), ++in_pos, ++out_pos,
-                     TRUE, ++category_pos,
-                     ++work_pos, TRUE));
+                     TRUE, ++work_pos, TRUE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_XYZ,
                      _colorspaces_create_xyz_profile(), _("linear XYZ"), ++in_pos,
                      dt_conf_get_bool("allow_lab_output") ? ++out_pos : -1,
-                     FALSE, -1, -1, FALSE));
+                     FALSE, -1, FALSE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_LAB,
                      _colorspaces_create_lab_profile(), _("Lab"), ++in_pos,
                      dt_conf_get_bool("allow_lab_output") ? ++out_pos : -1,
-                     FALSE, -1, -1, FALSE));
+                     FALSE, -1, FALSE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_INFRARED,
                      _colorspaces_create_linear_infrared_profile(),
-                     _("linear infrared BGR"), ++in_pos, -1, FALSE, -1, -1, FALSE));
+                     _("linear infrared BGR"), ++in_pos, -1, FALSE, -1, FALSE));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_BRG, _colorspaces_create_brg_profile(),
-                     _("BRG (for testing)"), ++in_pos, ++out_pos, TRUE,
-                     -1, -1, TRUE));
+                     _("BRG (for testing)"), ++in_pos, ++out_pos, TRUE, -1, TRUE));
 
   _migrate_display_selection(res);
 
@@ -1911,11 +1866,8 @@ dt_colorspaces_t *dt_colorspaces_init()
     dt_conf_get_int("ui_last/color/softproof_source") == DT_PROOF_SOURCE_CUSTOM
     ? DT_PROOF_SOURCE_CUSTOM : DT_PROOF_SOURCE_EXPORT;
   res->softproof.type = dt_conf_get_int("ui_last/color/softproof_type");
-  res->histogram_type = dt_conf_get_int("ui_last/color/histogram_type");
   const char *tmp = dt_conf_get_string_const("ui_last/color/softproof_filename");
   g_strlcpy(res->softproof.filename, tmp, sizeof(res->softproof.filename));
-  tmp = dt_conf_get_string_const("ui_last/color/histogram_filename");
-  g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
   res->softproof.intent = dt_conf_get_int("ui_last/color/softproof_intent");
   res->softproof.bpc = dt_conf_get_bool("ui_last/color/softproof_bpc");
   // the setting is in nits, as its slider shows it
@@ -1933,12 +1885,6 @@ dt_colorspaces_t *dt_colorspaces_init()
          && (!res->softproof.filename[0]
              || !g_file_test(res->softproof.filename, G_FILE_TEST_IS_REGULAR))))
     res->softproof.type = DT_COLORSPACE_SRGB;
-
-  if((unsigned int)res->histogram_type >= DT_COLORSPACE_LAST
-     || (res->histogram_type == DT_COLORSPACE_FILE
-         && (!res->histogram_filename[0]
-             || !g_file_test(res->histogram_filename, G_FILE_TEST_IS_REGULAR))))
-    res->histogram_type = DT_COLORSPACE_SRGB;
 
   // temporary list of profiles to be added, we keep this separate to
   // be able to sort it before adding
@@ -1958,19 +1904,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *prof = iter->data;
-    // FIXME: do want to filter out non-RGB profiles for cases besides
-    // histogram profile? colorin is OK with RGB or XYZ, print is OK
-    // with anything which LCMS likes, otherwise things are more
-    // choosey
     const cmsColorSpaceSignature color_space = cmsGetColorSpace(prof->profile);
-    // The histogram profile is used for histogram, clipping
-    // indicators and the global color picker.  Some of these also
-    // assume a matrix profile. LUT profiles don't make much sense in
-    // these applications so filter out any profile that doesn't
-    // implement the relative colorimetric intent as a matrix (+ TRC).
-    // For discussion, see e.g.
-    // https://github.com/darktable-org/darktable/issues/7660#issuecomment-760143437
-    // For the working profile we also require a matrix profile.
+    // the working profile requires a matrix profile
     const gboolean is_valid_matrix_profile = dt_colorspaces_get_matrix_from_output_profile
       (prof->profile, NULL, NULL, NULL, NULL, 0) == 0
       && dt_colorspaces_get_matrix_from_input_profile
@@ -1978,12 +1913,8 @@ dt_colorspaces_t *dt_colorspaces_init()
     prof->out_pos = ++out_pos;
     prof->display = prof->display2 = TRUE;
     if(is_valid_matrix_profile)
-    {
-      prof->category_pos = ++category_pos;
       prof->work_pos = ++work_pos;
-    }
     else
-    {
       dt_print(DT_DEBUG_DEV,
                "output profile `%s' color space `%c%c%c%c'"
                " not supported for work profile",
@@ -1991,23 +1922,6 @@ dt_colorspaces_t *dt_colorspaces_init()
                (char)(color_space >> 16),
                (char)(color_space >> 8),
                (char)(color_space));
-
-      if(res->histogram_type == prof->type
-         && (prof->type != DT_COLORSPACE_FILE
-             || dt_colorspaces_is_profile_equal(prof->filename, res->histogram_filename)))
-      {
-        // bad histogram profile selected, we must reset it to sRGB
-        const char *name = dt_colorspaces_get_name(prof->type, prof->filename);
-        dt_control_log(_("profile `%s' not usable as histogram profile."
-                         " it has been replaced by sRGB!"), name);
-        dt_print(DT_DEBUG_ALWAYS,
-                "[colorspaces] profile `%s' not usable as histogram profile."
-                 " it has been replaced by sRGB!",
-                name);
-        res->histogram_type = DT_COLORSPACE_SRGB;
-        res->histogram_filename[0] = '\0';
-      }
-    }
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
@@ -2092,9 +2006,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   // remember softproof/gama checking from conf
   dt_conf_set_int("ui_last/color/softproof_source", self->softproof_source);
   dt_conf_set_int("ui_last/color/softproof_type", self->softproof.type);
-  dt_conf_set_int("ui_last/color/histogram_type", self->histogram_type);
   dt_conf_set_string("ui_last/color/softproof_filename", self->softproof.filename);
-  dt_conf_set_string("ui_last/color/histogram_filename", self->histogram_filename);
   dt_conf_set_int("ui_last/color/softproof_intent", self->softproof.intent);
   dt_conf_set_bool("ui_last/color/softproof_bpc", self->softproof.bpc);
   dt_conf_set_int("ui_last/color/softproof_pq_peak_nits",
@@ -2164,12 +2076,6 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("alternate color matrix");
      case DT_COLORSPACE_BRG:
        return _("BRG (experimental)");
-     case DT_COLORSPACE_EXPORT:
-       return _("export profile");
-     case DT_COLORSPACE_SOFTPROOF:
-       return _("softproof profile");
-     case DT_COLORSPACE_WORK:
-       return _("work profile");
      case DT_COLORSPACE_DISPLAY2:
        return _("system display profile (second window)");
      case DT_COLORSPACE_REC709:
@@ -3031,9 +2937,6 @@ gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile
     case DT_COLORSPACE_VENDOR_MATRIX:
     case DT_COLORSPACE_ALTERNATE_MATRIX:
     case DT_COLORSPACE_BRG:
-    case DT_COLORSPACE_EXPORT:
-    case DT_COLORSPACE_SOFTPROOF:
-    case DT_COLORSPACE_WORK:
     case DT_COLORSPACE_LAST:
       return FALSE;
   }

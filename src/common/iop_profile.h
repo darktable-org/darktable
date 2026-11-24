@@ -151,20 +151,13 @@ dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
                                       const char *filename,
                                       const int intent);
 
-/** the profile the scopes, color pickers and readouts show values in: in
- * proof mode what the preview pipe rendered, rendered (the encoding a pipe
- * recorded for its run), otherwise, or without one, the histogram setting.
- * must not be cleanup() */
+/** the profile the scopes, color pickers and readouts show values in:
+ * rendered (the encoding a pipe recorded for its run), the preview's when
+ * proofing or not, or linear Rec2020 where its profile has no matrices.
+ * values convert to it from rendered. must not be cleanup() */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_scope_profile_info(struct dt_develop_t *dev,
                                 const dt_color_encoding_t *rendered);
-
-/** dt_ioppr_get_scope_profile_info() with the encoding of the preview pipe's
- * last frame, for readers outside the preview's run
- * histogram profile must not be cleanup()
- */
-dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
 /** returns the active work/input/output profile on the pipe */
 dt_iop_order_iccprofile_info_t *
@@ -213,9 +206,6 @@ void dt_ioppr_get_input_profile_type(struct dt_develop_t *dev,
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
                                       dt_colorspaces_color_profile_type_t *profile_type,
                                       const char **profile_filename);
-/** returns the current setting of the histogram profile */
-void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
-                                         const char **profile_filename);
 
 /* Returns the tooltip with the location of the profile for for_name
    which can be softproof, input, output...

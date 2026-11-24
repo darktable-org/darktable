@@ -112,6 +112,23 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
+// the upper threshold is a fraction of the target's peak, whatever the
+// screen: of its signal for the channels, of its light for the luminance,
+// in profile
+static void _upper_thresholds(const dt_dev_pixelpipe_t *const pipe,
+                              const dt_iop_order_iccprofile_info_t *const profile,
+                              const float upper,
+                              float *const signal,
+                              float *const luminance)
+{
+  const float peak = pipe->output_headroom;
+  const dt_aligned_pixel_t light = { peak, peak, peak, 1.0f };
+  dt_aligned_pixel_t encoded;
+  dt_ioppr_encode_rgb(light, encoded, profile);
+  *signal = upper * encoded[1];
+  *luminance = upper * peak;
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -142,12 +159,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
-  const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  // what the pixels are, as the scopes read them: the matrix stand-in of a
+  // LUT profile would misread them
+  const dt_color_encoding_t *const encoding = &piece->pipe->output_encoding;
+  const dt_iop_order_iccprofile_info_t *const current_profile =
+    dt_ioppr_add_profile_info_for_content(dev, encoding->type, encoding->filename,
+                                          encoding->profile, DT_INTENT_RELATIVE_COLORIMETRIC);
   // the preview may still hold a frame from before this run's proof change
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_scope_profile_info(dev, &piece->pipe->output_encoding);
 
-  // display mask using histogram profile as output
+  // the values in the encoding the scopes show
   // FIXME: the histogram already does this work -- use that data instead?
   if(current_profile && work_profile)
     dt_ioppr_transform_image_colorspace_rgb(in, img_tmp, roi_out->width, roi_out->height, current_profile,
@@ -159,6 +181,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     dt_control_log(_("module overexposed failed in color conversion"));
     goto process_finish;
   }
+  float upper_signal, upper_luminance;
+  _upper_thresholds(piece->pipe, work_profile, upper, &upper_signal, &upper_luminance);
+
   // flush denormals to zero to avoid performance penalty if there are a lot of near-zero values
   const unsigned int oldMode = dt_mm_enable_flush_zero();
 
@@ -168,7 +193,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
-      if(img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
+      if(img_tmp[k + 0] >= upper_signal || img_tmp[k + 1] >= upper_signal || img_tmp[k + 2] >= upper_signal)
       {
         copy_pixel(out + k, upper_color);
       }
@@ -192,7 +217,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       const float luminance = dt_ioppr_rgb_luminance(img_tmp + k, work_profile);
 
       // luminance is out of bounds
-      if(luminance >= upper)
+      if(luminance >= upper_luminance)
       {
         copy_pixel(out + k, upper_color);
       }
@@ -213,7 +238,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
         // we got over-saturation, relatively to luminance or absolutely over RGB
         if(saturation[0] > upper || saturation[1] > upper || saturation[2] > upper ||
-          img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
+          img_tmp[k + 0] >= upper_signal || img_tmp[k + 1] >= upper_signal || img_tmp[k + 2] >= upper_signal)
         {
           copy_pixel(out + k, upper_color);
         }
@@ -241,7 +266,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       const float luminance = dt_ioppr_rgb_luminance(img_tmp + k, work_profile);
 
-      if(luminance >= upper)
+      if(luminance >= upper_luminance)
       {
         copy_pixel(out + k, upper_color);
       }
@@ -264,7 +289,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_rgb_luminance(img_tmp + k, work_profile);
-      if(luminance < upper && luminance > lower)
+      if(luminance < upper_luminance && luminance > lower)
       {
         dt_aligned_pixel_t saturation = { 0.f };
 
@@ -276,7 +301,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
         // we got over-saturation, relatively to luminance or absolutely over RGB
         if(saturation[0] > upper || saturation[1] > upper || saturation[2] > upper ||
-           img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
+           img_tmp[k + 0] >= upper_signal || img_tmp[k + 1] >= upper_signal || img_tmp[k + 2] >= upper_signal)
         {
           copy_pixel(out + k, upper_color);
         }
@@ -326,11 +351,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  // what the pixels are, as the scopes read them: the matrix stand-in of a
+  // LUT profile would misread them
+  const dt_color_encoding_t *const encoding = &piece->pipe->output_encoding;
+  const dt_iop_order_iccprofile_info_t *const current_profile =
+    dt_ioppr_add_profile_info_for_content(dev, encoding->type, encoding->filename,
+                                          encoding->profile, DT_INTENT_RELATIVE_COLORIMETRIC);
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_scope_profile_info(dev, &piece->pipe->output_encoding);
 
-  // display mask using histogram profile as output
+  // the values in the encoding the scopes show
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * ch);
   if(dev_tmp == NULL)
   {
@@ -361,6 +391,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   const float lower = exp2f(fminf(dev->overexposed.lower, -4.f));   // in EV
   const float upper = dev->overexposed.upper / 100.0f;              // in %
+  float upper_signal, upper_luminance;
+  _upper_thresholds(piece->pipe, work_profile, upper, &upper_signal, &upper_luminance);
   dt_aligned_pixel_t colors[2];
   _indicator_colors(self, piece->pipe, colors);
   const float *upper_color = colors[0];
@@ -369,6 +401,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_overexposed, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(lower), CLARG(upper),
+    CLARG(upper_signal), CLARG(upper_luminance),
     CLARRAY(4, lower_color), CLARRAY(4, upper_color),
     CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile), CLARG(mode));
 
