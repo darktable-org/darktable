@@ -1283,6 +1283,12 @@ changes (where available).
   module has slots. Once all slots are in use, `take_snapshot()` now
   takes none and says so, as the take snapshot button already refused.
 
+- Fixed darktable growing sluggish when moving quickly between images
+  in the darkroom with a script that handles `darkroom-image-loaded`.
+  The event no longer fires with `clean` set to false over and over
+  while the previous image is still processing, only once the new
+  image has loaded.
+
 ### New Scripts
 
 - N/A
