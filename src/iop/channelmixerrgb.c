@@ -2634,7 +2634,7 @@ error:
 
 void init_global(dt_iop_module_so_t *self)
 {
-  const int program = 32; // extended.cl in programs.conf
+  const int program = 32; // channelmixer.cl in programs.conf
   dt_iop_channelmixer_rgb_global_data_t *gd = malloc(sizeof(dt_iop_channelmixer_rgb_global_data_t));
 
   self->data = gd;

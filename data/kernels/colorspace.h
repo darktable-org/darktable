@@ -713,7 +713,7 @@ static inline float4 dt_xyY_to_XYZ(const float4 xyY)
 
 static inline float4 convert_XYZ_to_bradford_LMS(const float4 XYZ)
 {
-  // Warning : needs XYZ normalized with Y - you need to downscale before
+  // Warning : needs XYZ normalized with Y - you need to downscale before
   const float4 XYZ_to_Bradford_LMS[3] = { {  0.8951f,  0.2664f, -0.1614f, 0.f },
                                           { -0.7502f,  1.7135f,  0.0367f, 0.f },
                                           {  0.0389f, -0.0685f,  1.0296f, 0.f } };
@@ -723,7 +723,7 @@ static inline float4 convert_XYZ_to_bradford_LMS(const float4 XYZ)
 
 static inline float4 convert_bradford_LMS_to_XYZ(const float4 LMS)
 {
-  // Warning : output XYZ normalized with Y - you need to upscale later
+  // Warning : output XYZ normalized with Y - you need to upscale later
   const float4 Bradford_LMS_to_XYZ[3] = { {  0.9870f, -0.1471f,  0.1600f, 0.f },
                                           {  0.4323f,  0.5184f,  0.0493f, 0.f },
                                           { -0.0085f,  0.0400f,  0.9685f, 0.f } };
@@ -733,7 +733,7 @@ static inline float4 convert_bradford_LMS_to_XYZ(const float4 LMS)
 
 static inline float4 convert_XYZ_to_CAT16_LMS(const float4 XYZ)
 {
-  // Warning : needs XYZ normalized with Y - you need to downscale before
+  // Warning : needs XYZ normalized with Y - you need to downscale before
   const float4 XYZ_to_CAT16_LMS[3] = { {  0.401288f, 0.650173f, -0.051461f, 0.f },
                                        { -0.250268f, 1.204414f,  0.045854f, 0.f },
                                        { -0.002079f, 0.048952f,  0.953127f, 0.f } };
@@ -743,7 +743,7 @@ static inline float4 convert_XYZ_to_CAT16_LMS(const float4 XYZ)
 
 static inline float4 convert_CAT16_LMS_to_XYZ(const float4 LMS)
 {
-  // Warning : output XYZ normalized with Y - you need to upscale later
+  // Warning : output XYZ normalized with Y - you need to upscale later
   const float4 CAT16_LMS_to_XYZ[3] = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
                                        {  0.38752f ,  0.621447f, -0.008974f, 0.f },
                                        { -0.015841f, -0.034123f,  1.049964f, 0.f } };
