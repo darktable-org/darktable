@@ -968,19 +968,20 @@ box_blur_5x5(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 acc = 0.f;
+  // like dt_box_mean() on the CPU, average only the pixels inside the image
+  // instead of repeating the edge ones
+  const int row_min = max(y - 2, 0);
+  const int row_max = min(y + 2, height - 1);
+  const int col_min = max(x - 2, 0);
+  const int col_max = min(x + 2, width - 1);
 
-  for(int ii = -2; ii < 3; ++ii)
-  {
-    for(int jj = -2; jj < 3; ++jj)
-    {
-      const int row = clamp(y + ii, 0, height - 1);
-      const int col = clamp(x + jj, 0, width - 1);
+  float4 acc = 0.f;
+  for(int row = row_min; row <= row_max; ++row)
+    for(int col = col_min; col <= col_max; ++col)
       acc += fmax(0.0f, Areadpixel(in, col, row));
-    }
-  }
-  acc *= 0.04f;
-  write_imagef(out, (int2)(x, y), acc);
+
+  const int hits = (row_max - row_min + 1) * (col_max - col_min + 1);
+  write_imagef(out, (int2)(x, y), fp32_div_4(acc, (float4)hits));
 }
 
 
