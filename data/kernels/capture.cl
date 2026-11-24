@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT OFF
 
 #define CAPTURE_KERNEL_ALIGN 32
 #define CAPTURE_YMIN 0.001f

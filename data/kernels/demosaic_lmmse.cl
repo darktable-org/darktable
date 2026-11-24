@@ -30,7 +30,7 @@
 // they read the neighboring image data.
 
 #include "common.h"
-#pragma OPENCL FP_CONTRACT ON
+#pragma OPENCL FP_CONTRACT OFF
 
 bool _area(int col, int row, int m, int pw, int ph)
 {

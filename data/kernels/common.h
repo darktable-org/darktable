@@ -59,6 +59,13 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #define BLUE 2
 #define ALPHA 3
 
+/** By default we ensure FP_CONTRACT OFF and only enable it
+    if there is a good reasons to do so because of the algorithm
+    inside the kernel source.
+    For minimal OpenCL vs CPU diffs we might want to match both.
+*/
+#pragma OPENCL FP_CONTRACT OFF
+
 #if defined(DT_OPENCL_FAST) && DT_OPENCL_FAST == 1
   #define dtcl_sin(A) native_sin(A)
   #define dtcl_cos(A) native_cos(A)
@@ -97,10 +104,6 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   {
     return sqrt(x * x + y * y);
   }
-
-  // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
-  // on compatible platforms
-  #pragma OPENCL FP_CONTRACT ON
 #else
   #define dtcl_sin(A) sin(A)
   #define dtcl_cos(A) cos(A)
@@ -235,8 +238,6 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   {
     return hypot(x, y);
   }
-
-  #pragma OPENCL FP_CONTRACT OFF
 #endif
 
 // Kahan summation algorithm
