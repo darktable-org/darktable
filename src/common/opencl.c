@@ -1305,6 +1305,9 @@ void dt_opencl_init(dt_opencl_t *cl,
   char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_key = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
+  // bail out before the driver is loaded. Disabling OpenCL in the preferences
+  // still loads it below; tools/run-integration-tests.sh relies on
+  // --disable-opencl keeping the driver out of the process
   if(exclude_opencl)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
