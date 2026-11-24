@@ -373,7 +373,7 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb,
                              thumb->zoomx * darktable.gui->ppd / extra_scale,
                              thumb->zoomy * darktable.gui->ppd / extra_scale);
     // avoid blending a 1:1 surface at fractional offsets
-    if(extra_scale == 1.0f)
+    if(feqf(extra_scale, 1.0f, 1e-5f))
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
 
     // get the transparency value
