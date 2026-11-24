@@ -17,9 +17,9 @@
 */
 /*
  * cmocka unit tests for develop/frame.c: a frame lives as long as its
- * references, its rendition in its own format and profile is its pixels,
- * whichever window's type names the profile, an RGB24 frame packs what
- * dt_display_to_8bit() gives, a rendition is made
+ * references, its float rendition in its own profile is its pixels,
+ * whichever window's type names the profile, its RGB24 rendition packs
+ * what dt_display_to_8bit() gives, a rendition is made
  * from the frame's pixels, whatever was asked for before, and profile
  * infos are made once per key, a failed one included. frame.c is included
  * for its static helpers
@@ -107,17 +107,16 @@ static int _teardown(void **state)
   return 0;
 }
 
-static dt_frame_t *_frame(const _fixture_t *f,
-                          const dt_frame_format_t format)
+static dt_frame_t *_frame(const _fixture_t *f)
 {
   const dt_frame_geometry_t geometry = { .width = W, .height = H, .scale = 1.0f };
-  return dt_frame_new(f->pixels, &geometry, format, &f->srgb_encoding, 5);
+  return dt_frame_new(f->pixels, &geometry, &f->srgb_encoding, 5);
 }
 
 static void test_refcount(void **state)
 {
   const _fixture_t *f = *state;
-  dt_frame_t *frame = _frame(f, DT_FRAME_RGB24);
+  dt_frame_t *frame = _frame(f);
   assert_non_null(frame);
   assert_int_equal(dt_frame_made_for(frame), 5);
 
@@ -132,8 +131,8 @@ static void test_refcount(void **state)
   cairo_surface_destroy(surface);
 
   // ids are never reused
-  dt_frame_t *a = _frame(f, DT_FRAME_FLOAT);
-  dt_frame_t *b = _frame(f, DT_FRAME_FLOAT);
+  dt_frame_t *a = _frame(f);
+  dt_frame_t *b = _frame(f);
   assert_int_not_equal(dt_frame_id(a), dt_frame_id(b));
   dt_frame_unref(a);
   dt_frame_unref(b);
@@ -150,16 +149,15 @@ static void test_identity_is_own_pixels(void **state)
   other.headroom = 4.0f;
   other.intent = DT_INTENT_RELATIVE_COLORIMETRIC;
 
-  dt_frame_t *rgb24 = _frame(f, DT_FRAME_RGB24);
-  cairo_surface_t *surface = dt_frame_surface(rgb24, NULL);
-  assert_ptr_equal(cairo_image_surface_get_data(surface), dt_frame_pixels(rgb24));
-  assert_ptr_equal(dt_frame_surface(rgb24, &other), surface);
-  dt_frame_unref(rgb24);
-
-  dt_frame_t *flt = _frame(f, DT_FRAME_FLOAT);
+  dt_frame_t *flt = _frame(f);
   assert_ptr_equal(dt_frame_float(flt, NULL), dt_frame_pixels(flt));
   assert_ptr_equal(dt_frame_float(flt, &other), dt_frame_pixels(flt));
   assert_memory_equal(dt_frame_pixels(flt), f->pixels, sizeof(f->pixels));
+  // one packed rendition for both
+  cairo_surface_t *surface = dt_frame_surface(flt, NULL);
+  assert_non_null(surface);
+  assert_ptr_equal(dt_frame_surface(flt, &other), surface);
+  assert_int_equal(g_list_length(flt->renditions), 1);
   dt_frame_unref(flt);
 }
 
@@ -172,48 +170,37 @@ static void test_windows_share_profile_content(void **state)
   const dt_color_encoding_t second = _encoding(DT_COLORSPACE_DISPLAY2, f->srgb);
   const dt_frame_geometry_t geometry = { .width = W, .height = H, .scale = 1.0f };
 
-  dt_frame_t *rgb24 = dt_frame_new(f->pixels, &geometry, DT_FRAME_RGB24, &first, 1);
-  assert_ptr_equal(dt_frame_surface(rgb24, &second), dt_frame_surface(rgb24, NULL));
-  assert_null(rgb24->renditions);
-
-  // a float frame packed for the other window: the values are not converted
-  dt_frame_t *flt = dt_frame_new(f->pixels, &geometry, DT_FRAME_FLOAT, &first, 1);
+  dt_frame_t *flt = dt_frame_new(f->pixels, &geometry, &first, 1);
+  // the other window's float rendition is the frame's pixels, its packed
+  // one the frame's own
   assert_ptr_equal(dt_frame_float(flt, &second), dt_frame_pixels(flt));
-  assert_memory_equal(cairo_image_surface_get_data(dt_frame_surface(flt, &second)),
-                      dt_frame_pixels(rgb24), (size_t)4 * W * H);
-  dt_frame_unref(flt);
+  assert_ptr_equal(dt_frame_surface(flt, &second), dt_frame_surface(flt, NULL));
+  assert_int_equal(g_list_length(flt->renditions), 1);
 
   // the same profile with PQ's transfer function is other content
   const dt_color_encoding_t pq = _encoding(DT_COLORSPACE_PQ_REC2020, f->srgb);
-  assert_ptr_not_equal(dt_frame_surface(rgb24, &pq), dt_frame_surface(rgb24, NULL));
-  assert_non_null(rgb24->renditions);
-  dt_frame_unref(rgb24);
+  assert_ptr_not_equal(dt_frame_surface(flt, &pq), dt_frame_surface(flt, NULL));
+  assert_int_equal(g_list_length(flt->renditions), 2);
+  dt_frame_unref(flt);
 }
 
 static void test_rgb24_packs_as_display_to_8bit(void **state)
 {
   const _fixture_t *f = *state;
-  dt_frame_t *frames[2] = { _frame(f, DT_FRAME_RGB24), _frame(f, DT_FRAME_FLOAT) };
-  // the RGB24 frame's pixels, and the RGB24 rendition of a float frame
-  const uint8_t *packed[2] = {
-    dt_frame_pixels(frames[0]),
-    cairo_image_surface_get_data(dt_frame_surface(frames[1], NULL)) };
-  for(int n = 0; n < 2; n++)
+  dt_frame_t *frame = _frame(f);
+  const uint8_t *packed = cairo_image_surface_get_data(dt_frame_surface(frame, NULL));
+  assert_non_null(packed);
+  for(int k = 0; k < W * H; k++)
   {
-    assert_non_null(packed[n]);
-    for(int k = 0; k < W * H; k++)
-    {
-      const float *in = f->pixels + 4 * k;
-      const uint8_t *out = packed[n] + 4 * k;
-      assert_int_equal(out[0], dt_display_to_8bit(in[2]));
-      assert_int_equal(out[1], dt_display_to_8bit(in[1]));
-      assert_int_equal(out[2], dt_display_to_8bit(in[0]));
-      assert_int_equal(out[3], 0xff);
-    }
+    const float *in = f->pixels + 4 * k;
+    const uint8_t *out = packed + 4 * k;
+    assert_int_equal(out[0], dt_display_to_8bit(in[2]));
+    assert_int_equal(out[1], dt_display_to_8bit(in[1]));
+    assert_int_equal(out[2], dt_display_to_8bit(in[0]));
+    assert_int_equal(out[3], 0xff);
   }
-  assert_int_equal(packed[0][2], 128);
-  dt_frame_unref(frames[0]);
-  dt_frame_unref(frames[1]);
+  assert_int_equal(packed[2], 128);
+  dt_frame_unref(frame);
 }
 
 // sRGB to linear Rec.2020 by lcms, unbounded
@@ -237,7 +224,7 @@ static void test_rendition_from_frame_pixels(void **state)
   _reference(f, pixels, expected);
 
   const dt_frame_geometry_t geometry = { .width = W, .height = H, .scale = 1.0f };
-  dt_frame_t *frame = dt_frame_new(pixels, &geometry, DT_FRAME_FLOAT, &f->srgb_encoding, 1);
+  dt_frame_t *frame = dt_frame_new(pixels, &geometry, &f->srgb_encoding, 1);
 
   // an 8-bit rendition first: the float one must not come from it
   cairo_surface_t *surface = dt_frame_surface(frame, &f->rec2020_encoding);
@@ -274,7 +261,7 @@ static void test_rendition_keeps_what_8_bits_cannot(void **state)
   for(int k = 0; k < 4 * W * H; k++) pixels[k] = (k % 4 == 3) ? 1.0f : 2.0f;
   const dt_frame_geometry_t geometry = { .width = W, .height = H, .scale = 1.0f };
   dt_frame_t *frame =
-    dt_frame_new(pixels, &geometry, DT_FRAME_FLOAT, &f->rec2020_encoding, 1);
+    dt_frame_new(pixels, &geometry, &f->rec2020_encoding, 1);
 
   const float *flt = dt_frame_float(frame, &f->srgb_encoding);
   const uint8_t *data =
@@ -287,19 +274,6 @@ static void test_rendition_keeps_what_8_bits_cannot(void **state)
       assert_int_equal(data[4 * k + c], 255);
     }
   dt_frame_unref(frame);
-
-  // an RGB24 frame as floats: its bytes
-  dt_frame_t *rgb24 = _frame(f, DT_FRAME_RGB24);
-  const uint8_t *bytes = dt_frame_pixels(rgb24);
-  const float *unpacked = dt_frame_float(rgb24, NULL);
-  for(int k = 0; k < W * H; k++)
-  {
-    assert_float_equal(unpacked[4 * k + 0], bytes[4 * k + 2] / 255.0f, 0.0f);
-    assert_float_equal(unpacked[4 * k + 1], bytes[4 * k + 1] / 255.0f, 0.0f);
-    assert_float_equal(unpacked[4 * k + 2], bytes[4 * k + 0] / 255.0f, 0.0f);
-    assert_float_equal(unpacked[4 * k + 3], 1.0f, 0.0f);
-  }
-  dt_frame_unref(rgb24);
 }
 
 static void test_pq_rendition_above_white(void **state)
@@ -311,7 +285,7 @@ static void test_pq_rendition_above_white(void **state)
   for(int k = 0; k < 4 * W * H; k++) pixels[k] = (k % 4 == 3) ? 1.0f : 2.0f;
   const dt_frame_geometry_t geometry = { .width = W, .height = H, .scale = 1.0f };
   dt_frame_t *frame =
-    dt_frame_new(pixels, &geometry, DT_FRAME_FLOAT, &f->rec2020_encoding, 1);
+    dt_frame_new(pixels, &geometry, &f->rec2020_encoding, 1);
   const dt_color_encoding_t pq = _encoding(DT_COLORSPACE_PQ_REC2020, f->rec2020);
   const int transfer = dt_colorspaces_hdr_transfer(DT_COLORSPACE_PQ_REC2020);
   dt_aligned_pixel_t two = { 2.0f, 2.0f, 2.0f, 1.0f }, one = { 1.0f, 1.0f, 1.0f, 1.0f };

@@ -3941,12 +3941,16 @@ restart:
   {
     dt_frame_geometry_t geometry = { .width = width, .height = height, .scale = scale };
     for(int i = 0; i < 6; i++) geometry.zoom_pos[i] = pts[i] * pipe->iscale;
-    frame = dt_frame_new(buf, &geometry, pipe->output.format, &pipe->output_encoding,
-                         pipe->output.serial);
-    // what GTK will draw it as, made here rather than in a GUI thread draw:
-    // the preview in navigation and the filmstrip, the canvas under focus
-    // peaking. on a cairo window it is the frame itself and costs nothing,
-    // unless the frame is an RGB proof's, tagged with the proof profile
+    frame = dt_frame_new(buf, &geometry, &pipe->output_encoding, pipe->output.serial);
+    // the renditions the GUI draws, made here rather than in its draw: the
+    // output's, and GTK's for navigation, the filmstrip and focus peaking
+    if(frame)
+    {
+      if(pipe->output.format == DT_FRAME_RGB24)
+        dt_frame_surface(frame, &pipe->output.image);
+      else
+        dt_frame_float(frame, &pipe->output.image);
+    }
     if(frame && !dt_pipe_is_image(pipe)
        && (dt_pipe_is_preview(pipe)
            || (darktable.gui && g_atomic_int_get(&darktable.gui->show_focus_peaking))))

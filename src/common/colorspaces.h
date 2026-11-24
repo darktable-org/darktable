@@ -261,8 +261,9 @@ typedef enum dt_frame_format_t
  * RGB, 1.0 at reference white and up to image.headroom above it. device is
  * what untagged 8-bit values mean in the window, everything GTK draws
  * there. both are resolved: profile names the registry's profile, NULL if
- * there is none. format is what its frames are made in: RGB24 where cairo
- * paints them, float where a native backend composes them */
+ * there is none. format is the rendition of a frame it shows: RGB24 where
+ * cairo paints it, float where a native backend composes it. frames
+ * themselves are float */
 typedef struct dt_display_output_t
 {
   dt_color_encoding_t image;

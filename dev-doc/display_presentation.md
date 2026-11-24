@@ -18,8 +18,8 @@ See also:
   The pipe copies the description from its window when a run starts.
   Workers read `pipe->output` and never the preferences or GUI state.
 - [A screen pipe publishes frames](#frames). A frame is an immutable,
-  refcounted copy of the pipe's output, in the format its window asks for.
-  Each other format or encoding of a frame is a rendition of it.
+  refcounted float copy of the pipe's output. Each other format or
+  encoding of a frame is a rendition of it.
 - [A presenting widget submits its frames with
   `dt_presenter_image()`](#presenter-api). It draws everything else with
   cairo.
@@ -57,7 +57,7 @@ wants.
 |---|---|
 | `image` | the image encoding: display-referred RGB in a profile, with 1.0 at reference white and values up to `headroom` above it |
 | `device` | the device encoding |
-| `format` | the format of the frames: RGB24 where cairo paints them, float where a native backend composes them |
+| `format` | the rendition of a frame the window shows: RGB24 where cairo paints it, float where a native backend composes it |
 | `serial` | a counter that changes when one of the other fields changes |
 
 An encoding (`dt_color_encoding_t`) has a profile type, a file name, the
@@ -342,18 +342,17 @@ frame, `pipe->frame`, written under `backbuf_mutex`. Take a reference with
 A frame is a copy, because the cache line it comes from is not pinned. It
 never changes after it is made. It holds:
 
-- the pixels, in the format of the pipe's output: float RGBA, or RGB24
-  packed on the worker with `dt_display_to_8bit()` into cairo's BGRX;
+- the pixels, float RGBA;
 - its encoding, the `output_encoding` of the pipe: what colorout produced,
   not what the pipe was asked for (`dt_frame_encoding()`);
 - the serial of the output it was made for (`dt_frame_made_for()`), and an
   id, a 32-bit count of the frames made;
 - its geometry (`dt_frame_geometry()`): size, scale and zoom position.
 
-The format belongs to the frame, not to the pipe cache. gamma and every
-cache line stay float, no hash includes the format, and only the publish
-step packs. A new format is a new image (`dt_display_output_diff()`), so
-the producers of the window render again.
+Frames are float whatever the window, as gamma and every cache line are.
+A window that paints 8 bits shows the RGB24 rendition in its own encoding,
+so the pixels are quantized once, after the conversion to the window,
+and never packed in the profile of a proof first.
 
 Exports, thumbnails, AI restore and pixel masks do not run screen pipes.
 Their pipes keep `pipe->backbuf`, the output of the last module.
@@ -365,8 +364,9 @@ Their pipes keep `pipe->backbuf`, the output of the last module.
 - A rendition is made from the frame's own pixels when it is first asked
   for, never from another rendition. It is kept with the frame.
 - Any thread can ask.
-- In the frame's own format and profile, the rendition is the frame's
-  pixels, whatever the headroom.
+- In the frame's own profile, the float rendition is the frame's pixels,
+  and the RGB24 rendition packs them unconverted, whatever the headroom
+  and intent.
 - A conversion is built from the profiles that the two encodings name.
   Those profiles live for the session, so a frame can outlive the develop
   that made it.
@@ -379,14 +379,16 @@ GTK-side drawing takes a reference on the frame and draws
 the window. Its users are navigation, the filmstrip thumbnail of the edited
 image, the correction cursor and focus peaking.
 
-The worker makes the device rendition when it publishes a frame, so that
-the GUI thread does not convert:
+The worker makes renditions when it publishes a frame, so that the GUI
+thread does not convert:
 
-- always for the preview pipe;
-- for every darkroom screen pipe while focus peaking is on.
+- the one the output shows (`format`, in the image encoding), always;
+- the device rendition for the preview pipe;
+- the device rendition for every darkroom screen pipe while focus peaking
+  is on.
 
-On a cairo window the device rendition is the frame's own pixels, unless
-the frame is in another profile, such as an RGB proof.
+On a cairo window, whose image and device encodings are the same, the
+first two are one.
 
 A draw converts on the GUI thread where the worker did not. Examples are
 snapshot frames under focus peaking, and frames whose window changed its
@@ -509,10 +511,10 @@ prepares for a new headroom target with `target()`.
 ### cairo
 
 `gui/presenter_cairo.c`. The widget draws on GTK's own context, and the
-backend paints the RGB24 pixels of each frame there. Frames for a cairo
-window are made in RGB24. A frame in the encoding of the window is
-therefore not converted and not copied on the GUI thread. A frame made for
-an earlier output is converted there once.
+backend paints the RGB24 rendition of each frame there in the window's
+encoding, which the worker made when it published the frame: the GUI
+thread neither converts nor packs it. A frame made for an earlier output
+is converted there once.
 
 The kept presentation is what GTK's target holds at the end of the retained
 draw. On X11 the backend holds a reference on that target. On the other
