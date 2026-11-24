@@ -263,14 +263,22 @@ typedef struct dt_dev_pixelpipe_t
   /** the window the pipe renders for, DT_COLORSPACE_DISPLAY or DISPLAY2,
       recorded where the pipe is created; DT_COLORSPACE_NONE if none **/
   dt_colorspaces_color_profile_type_t window;
-  /** what a presented pipe renders to, its window's output taken at the
-      start of each run; image type DT_COLORSPACE_NONE for pipes nobody
-      presents **/
+  /** the output of the window a presented pipe is shown in, taken at the
+      start of each run, whose device encoding the UI tones are authored
+      in; image type DT_COLORSPACE_NONE for pipes nobody presents **/
   dt_display_output_t output;
   /** what the transform colorout built produces, recorded by its
       commit_params(); type DT_COLORSPACE_NONE when no profile describes
       what it writes **/
   dt_color_encoding_t colorout_encoding;
+  /** what colorout was asked to render to, hashed by its commit_params():
+      the resolved target, a soft proof's included, which the params of a
+      presented pipe do not hold **/
+  dt_hash_t colorout_request;
+  /** the output clips to [0, 1] where an integer export clips: when the
+      file is written, after every module. colorout sets it for a
+      presented RGB target, gamma applies it at the end of the pipe **/
+  gboolean output_clip;
   /** what the pipe's output values mean, resolved when a run starts:
       colorout_encoding, or the final working profile when colorout does
       not run. output_profile_info is its stand-in for matrix-only code **/
@@ -470,6 +478,12 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
 /** a reference to the last frame a screen pipe published, or NULL: release
  * it with dt_frame_unref() */
 struct dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe);
+
+/** the RGB of npixels clipped to [0, 1] into out, which may be in, as an
+    integer export clips its file: what an output_clip pipe's output holds */
+void dt_dev_pixelpipe_clip_output(float *const out,
+                                  const float *const in,
+                                  const size_t npixels);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,

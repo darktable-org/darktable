@@ -802,8 +802,11 @@ restart:
     dt_colorspaces_get_display_output(pipe->window, &output);
     if(output.serial != pipe->output.serial)
     {
+      // of the window's output only the device encoding, in the UI tones,
+      // reaches the pixels; otherwise the cached output gets a new rendition
+      if(dt_display_output_diff(&output, &pipe->output) & DT_DISPLAY_OUTPUT_DEVICE)
+        pipe->changed |= DT_DEV_PIPE_SYNCH;
       pipe->output = output;
-      pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
   }
 

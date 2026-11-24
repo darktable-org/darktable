@@ -2176,7 +2176,7 @@ dt_view_context_t dt_view_get_context_hash(void)
                             (uint32_t)(zoom_x * flt_prec),
                             (uint32_t)(zoom_y * flt_prec),
                             (uint32_t)(dev->late_scaling.enabled),
-                            // the output snapshots and the duplicate preview render for
+                            // the window snapshots and the duplicate preview are shown in
                             dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY),
                             // and the soft proof they render with
                             (uint32_t)cp->mode,

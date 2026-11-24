@@ -515,8 +515,8 @@ void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev, const int32_t iop_order);
 void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order);
-// the full and the preview pipe from colorout on, which proofs both: the
-// pipe cache's key does not say what a proof was made with
+// the full and the preview pipe from colorout on, which proofs both:
+// colorout resolves the proof's settings when it commits again
 void dt_dev_reprocess_proof(dt_develop_t *dev);
 
 gboolean dt_dev_get_preview_size(const dt_develop_t *dev,

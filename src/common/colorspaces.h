@@ -140,8 +140,8 @@ typedef enum dt_colorspaces_color_mode_t
 
 /* what a pipe is asked to render to: a profile, the intent and black point
  * compensation of the conversion into it, and the headroom above reference
- * white its output is rendered for. colorout's params, an export, the soft
- * proof and a window's output each choose one. as an override
+ * white its output is rendered for. colorout's params, an export and the
+ * soft proof each choose one. as an override
  * (dt_color_target_override()), type DT_COLORSPACE_NONE keeps the profile
  * and headroom of the target it applies to, intent DT_INTENT_LAST its
  * intent and black point compensation */

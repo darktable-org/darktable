@@ -2484,8 +2484,8 @@ static void _softproof_intent_callback(GtkWidget *combo,
   const dt_iop_color_intent_t intent = dt_bauhaus_combobox_get(combo);
   if(intent == darktable.color_profiles->softproof.intent) return;
   darktable.color_profiles->softproof.intent = intent;
-  // as for the soft proof toggle: nothing in the cache key says what the
-  // proof was made with
+  // as for the soft proof toggle: colorout resolves the proof's settings
+  // when it commits again
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
     dt_dev_reprocess_proof(d);

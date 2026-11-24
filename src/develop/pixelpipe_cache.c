@@ -122,10 +122,8 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
   hash = dt_hash(hash, &pipe->work_profile_info, sizeof(pipe->work_profile_info));
   hash = dt_hash(hash, &pipe->output_profile_info, sizeof(pipe->output_profile_info));
   hash = dt_hash(hash, &pipe->export_profile_info, sizeof(pipe->export_profile_info));
-  // a target's profile does not fix its headroom: a PQ peak and a window's are their own
+  // a target's profile does not fix its headroom: a PQ peak is its own
   hash = dt_hash(hash, &pipe->output_headroom, sizeof(pipe->output_headroom));
-  // colorout renders a window's output with the output's intent, which the profile info leaves out
-  hash = dt_hash(hash, &pipe->output.image.intent, sizeof(pipe->output.image.intent));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
@@ -153,11 +151,19 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
         }
       }
     }
-    // what colorout's output is, for colorout and the stages after it: the
-    // output profile info is a matrix stand-in, the same sRGB for every LUT
-    // profile, so two LUT proofs share it
+    // for colorout and the stages after it: its output, as the profile
+    // info's matrix stand-in is the same sRGB for every LUT profile, what
+    // it resolved, soft proof included, and the device encoding of the UI
+    // tones after it
     if(dt_iop_module_is(piece->module, "colorout"))
+    {
       hash = dt_hash(hash, &pipe->colorout_encoding, sizeof(pipe->colorout_encoding));
+      hash = dt_hash(hash, &pipe->colorout_request, sizeof(pipe->colorout_request));
+      const dt_color_encoding_t *const device = &pipe->output.device;
+      hash = dt_hash(hash, &device->type, sizeof(device->type));
+      hash = dt_hash(hash, &device->profile, sizeof(device->profile));
+      hash = dt_hash(hash, &device->intent, sizeof(device->intent));
+    }
     pieces = g_list_next(pieces);
   }
   return hash;

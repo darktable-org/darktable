@@ -3546,7 +3546,6 @@ colorout (read_only image2d_t in,
           read_only image2d_t lutg,
           read_only image2d_t lutb,
           global const float (*const a)[3], const int hdr_transfer,
-          const int clip,
           const int gamutcheck,
           const float4 gamut_scale,
           const float gamut_tolerance,
@@ -3575,13 +3574,6 @@ colorout (read_only image2d_t in,
   pixel.x = lerp_lookup_unbounded0(lutr, rgb[0], a[0]);
   pixel.y = lerp_lookup_unbounded0(lutg, rgb[1], a[1]);
   pixel.z = lerp_lookup_unbounded0(lutb, rgb[2], a[2]);
-  // a soft proof clips as its integer export does
-  if(clip)
-  {
-    pixel.x = clipf(pixel.x);
-    pixel.y = clipf(pixel.y);
-    pixel.z = clipf(pixel.z);
-  }
   if(marked)
   {
     pixel.x = gamut_mark.x;
@@ -3601,8 +3593,7 @@ colorout_clut(read_only image2d_t in,
               const int height,
               global const float *clut,
               const int level,
-              const int hdr_transfer,
-              const int clip)
+              const int hdr_transfer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3616,9 +3607,9 @@ colorout_clut(read_only image2d_t in,
 
   float rgb[3] = { pixel.x, pixel.y, pixel.z };
   dt_hdr_encode(rgb, hdr_transfer);
-  pixel.x = clip ? clipf(rgb[0]) : rgb[0];
-  pixel.y = clip ? clipf(rgb[1]) : rgb[1];
-  pixel.z = clip ? clipf(rgb[2]) : rgb[2];
+  pixel.x = rgb[0];
+  pixel.y = rgb[1];
+  pixel.z = rgb[2];
   write_imagef(out, (int2)(x, y), pixel);
 }
 

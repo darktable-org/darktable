@@ -143,7 +143,7 @@ the presenter and for a new system display profile.
 | Change | Effect |
 |---|---|
 | any field | the serial moves, and a redraw of the window is queued |
-| image encoding or format only | nothing more: the producers of the window render again |
+| image encoding or format only | nothing more: the producers of the window deliver again, the darkroom pipes from their cache |
 | device encoding (profile, intent or headroom) | the registry entry follows; the thumbnail transforms are rebuilt (main window); `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with `DISPLAY` or `DISPLAY2` |
 | device profile | also `DT_SIGNAL_CONTROL_PROFILE_CHANGED` |
 | new system display profile on a native window | none: the output and the entry do not change |
@@ -172,14 +172,18 @@ for an earlier serial.
   and preview pipes have the main window. The second window's pipe and
   every pipe of the pinned image have the second window.
 - At the start of every run, `dt_dev_process_image_job()` copies the output
-  of the window to `pipe->output`. A new serial also synchronizes the pipe
-  again.
-- colorout renders to `pipe->output.image`. It uses the profile the
-  encoding names and does not look the type up again.
-- `pipe->output_headroom` is the peak that sigmoid and agx tone map to. It
-  follows `output.image.headroom`. With "follow output peak" on, the
-  darkroom on a native window therefore depends on the headroom of the
-  screen and not on the PQ peak of an export.
+  of the window to `pipe->output`. A new device encoding also synchronizes
+  the pipe again, for its UI tones ([GTK-side colors](#gtk-side-colors)).
+  Otherwise nothing in the pipe depends on the window: the run finds its
+  output in the cache and publishes it again, with the rendition for the
+  new output.
+- colorout renders a presented pipe as an export to the image's target, or
+  to a soft proof's ([Soft Proof](#soft-proof)). The image encoding of the
+  window reaches only the presenter, which converts each frame to it.
+- `pipe->output_headroom` is the peak that sigmoid and agx tone map to:
+  the headroom of the target, and 1 without colorout. With "follow output
+  peak" on, the darkroom therefore renders as an export to the image's
+  target, whatever the screen shows.
 - `pipe->output_encoding` says what the output values of the pipe are. See
   below.
 - `dt_dev_image()` takes the output of its sink and returns the frame its
@@ -218,8 +222,8 @@ Everything GTK draws converts to the device encoding:
   device encoding of its window.
 
 On a cairo window, image and device are the same encoding, so these
-conversions are the identity. The exception is a frame tagged with an RGB
-proof profile.
+conversions are the identity. A frame is the exception: it is in the
+encoding of its target.
 
 The mask and channel views, the clipping indicators and the gamut check
 mark are UI tones. They are authored as device values and converted to the
@@ -229,9 +233,14 @@ same way as a pixel. A proof narrower than the device therefore clips it.
 
 ## Soft Proof
 
-A soft proof is an export. In proof mode colorout renders the full and the
-preview pipe as an export to the proof's target. It does not change the
-second window, the thumbnail pipe or exports.
+The darkroom renders as an export. colorout renders every presented pipe,
+the snapshots and the slideshow included, as an export to the image's
+target, whatever the screen. A soft proof renders the full pipes, which
+are the darkroom's and those `dt_dev_image()` makes for the snapshots, the
+duplicate preview and the slideshow, and the preview pipe as an export to
+another target, the proof's. It does not change the second window, the
+thumbnail pipe or exports. Blender's viewport likewise
+renders for the scene's display, which the screen only emulates.
 
 - A target (`dt_color_target_t`) is a profile, the intent and black point
   compensation of the conversion into it, and the headroom its output
@@ -245,43 +254,51 @@ second window, the thumbnail pipe or exports.
   `dt_colorspaces_get_export_override()` as an export, so the proof is what
   an export with those settings renders. A custom proof applies its own
   target (`cp->softproof`), set in the darkroom.
-- The output encoding is the proof's profile, and the frame is tagged with
-  it. The presenter converts the frame in the same way as each other frame
-  and clips what the screen cannot show.
-- `output_headroom` is the headroom of the proof's target, as in an export
-  to it. It can be above or below the headroom of the screen.
-- The proof clips where an integer export clips. A float export does not
-  clip. The gamut check marks what that clip changes.
+- The output encoding is the target's profile, and the frame is tagged with
+  it. The presenter converts the frame and clips what the screen cannot
+  show.
+- `output_headroom` is the headroom of the target, as in an export to it.
+  It can be above or below the headroom of the screen.
+- A presented pipe's output clips where an integer export clips: when the
+  file is written, after every module. colorout sets `output_clip` on the
+  pipe and gamma, the last module, applies it, so borders, watermark and
+  dither see the values they see in an export. A float export does not
+  clip. The gamut check marks what the clip changes.
 - The proof of the preview pipe has no gamut marks, because the scopes, the
   color pickers, navigation and the filmstrip thumbnail read it.
 - In proof mode the scopes and pickers show values in the output encoding
   of the preview, whatever the histogram setting
   (`dt_ioppr_get_scope_profile_info()`).
 
-A proof equals a darktable export with the same settings where the export
-honors them. An export differs in two points:
+A presented pipe, proofed or not, equals a darktable export with the same
+target to an integer format, such as JPEG, PNG or 16-bit TIFF, where the
+export honors it; a float format keeps what the clip removes. A proof of the export's settings
+converts as that export does. A custom proof promises its own intent and
+compensation, so an export differs from it in two points:
 
 - An export asks for no compensation. littlecms still applies compensation
   for the perceptual and saturation intents into a v4 profile.
 - The matrix path of an export ignores the intent, unless "always use
-  LittleCMS 2" is on. The matrix path cannot serve a proof with the
+  LittleCMS 2" is on. The matrix path cannot serve a custom proof with the
   absolute colorimetric intent, or with compensation and a black that is
   not zero. Such a proof matches the export made with that preference on.
 
 An ink proof converts in two steps, on the CPU. First colorout converts to
 ink values with the intent and compensation of the proof, and clips them.
-Then it converts the ink values to the output of the window, relative
-colorimetric. A frame holds RGB, so the output encoding has the profile of
-the window. The scopes then show the values in that profile.
+Then it converts the ink values to linear Rec2020, relative colorimetric,
+which holds the gamut of any print. A frame holds RGB, so the output
+encoding is linear Rec2020, whatever the window, and the scopes show the
+values in it.
 
 ## Headroom Target
 
 The image headroom of a native window follows a target that the presenter
 core settles. It does not follow the raw value from the platform. Each
-published change of the image headroom reruns the pipes of the window from
-the start, because `output_headroom` is in the hash of every cache line.
-Platforms send many values during one brightness change: KWin sends one
-description per frame of its animation.
+published change of the image headroom makes the producers of the window
+deliver again: the darkroom pipes publish their frames from the cache, with
+a rendition for the new headroom, and the snapshots and the slideshow
+render again. Platforms send many values during one brightness change:
+KWin sends one description per frame of its animation.
 
 The platform reports with `dt_presenter_window_report_headroom()`
 (`dt_presenter_headroom_t` in `gui/presenter_target.h`):
@@ -303,7 +320,7 @@ clock that the caller passes in (`gui/presenter_target.c`, tested by
 |---|---|
 | level | log2 of the value, clipped to the ceiling, rounded down to 1/8 EV, at least 0 EV |
 | a higher level counts | when the value is half a step above it |
-| a lower level counts | always, because the screen then shows less than the pipes render for |
+| a lower level counts | always, because the screen then shows less than the renditions ask of it |
 | quiet time | 1 s since the reported value last changed |
 | maximum latency | 3 s after the first report outside the band of the target |
 
@@ -320,9 +337,9 @@ show frames rendered for the new target. Then it publishes the output of
 the window with the headroom it can show, through
 `dt_presenter_window_set_output()`. On Wayland, see [Wayland](#wayland).
 
-- Until the producers of the window deliver, its frames keep the tone
-  mapping they were rendered with. The transport clips them to the range
-  of the image description in use.
+- Until the producers of the window deliver, its frames keep the rendition
+  made for the earlier target. The transport clips them to the range of the
+  image description in use.
 - A cairo window has headroom 1 and publishes no target. The target
   continues to settle from the reports, so a window that becomes native
   again starts at the headroom of the screen.
@@ -338,8 +355,9 @@ The noise of a screen that nobody touches gives the hysteresis.
 ## Frames
 
 `src/develop/frame.h`. gamma is the last module of every pipe and writes
-float RGBA: the pixel as colorout encoded it, with alpha 1, or the mask and
-channel views as display values. A screen pipe publishes that buffer as a
+float RGBA: the pixel as colorout encoded it and clipped where an integer
+export clips, with alpha 1, or the mask and channel views as display
+values. A screen pipe publishes that buffer as a
 frame, `pipe->frame`, written under `backbuf_mutex`. Take a reference with
 `dt_dev_pixelpipe_frame()`.
 

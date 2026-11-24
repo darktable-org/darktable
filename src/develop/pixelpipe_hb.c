@@ -327,6 +327,8 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->window = DT_COLORSPACE_NONE;
   memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
   pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
+  pipe->colorout_request = DT_INITHASH;
+  pipe->output_clip = FALSE;
   memset(&pipe->output_encoding, 0, sizeof(pipe->output_encoding));
   pipe->output_encoding.type = DT_COLORSPACE_NONE;
   pipe->runs = 0;
@@ -3601,11 +3603,18 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       && dt_iop_module_is_gamma(module)
       && input) // gamma provides meaningful host bound RGB data as not having OpenCL code
   {
+    // the values the output holds: gamma clips its input where an integer
+    // export clips its file
+    const size_t npixels = (size_t)roi_in.width * roi_in.height;
+    float *clipped = pipe->output_clip ? dt_alloc_align_float(4 * npixels) : NULL;
+    if(clipped) dt_dev_pixelpipe_clip_output(clipped, input, npixels);
+    const float *const pixels = clipped ? clipped : input;
+
     // Pick RGB/Lab for the primary colorpicker and live samples
     if(darktable.lib->proxy.colorpicker.picker_proxy
        || darktable.lib->proxy.colorpicker.live_samples)
     {
-      _pixelpipe_pick_samples(dev, pipe, module, *out_format, input, &roi_in);
+      _pixelpipe_pick_samples(dev, pipe, module, *out_format, pixels, &roi_in);
     }
 
     const dt_iop_order_iccprofile_info_t *const display_profile
@@ -3618,10 +3627,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     // in the pixelpipe and has a "process" call, why not treat it
     // as an iop? Granted, other views such as tether may also
     // benefit via a histogram.
-    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
+    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, pixels,
                                            roi_in.width, roi_in.height,
                                            display_profile,
                                            dt_ioppr_get_scope_profile_info(dev, &pipe->output_encoding));
+    dt_free_align(clipped);
   }
   return FALSE;
 }
@@ -3755,7 +3765,9 @@ static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
     // for the modules after colorout
     dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
                                           work->profile, work->intent);
-    pipe->output_headroom = pipe->output.image.headroom;
+    // no target: nothing above reference white, nothing to clip
+    pipe->output_headroom = 1.0f;
+    pipe->output_clip = FALSE;
     memset(encoding, 0, sizeof(*encoding));
     encoding->type = work->type;
     g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));
@@ -3983,6 +3995,15 @@ restart:
   dt_print_mem_usage("after pixelpipe process");
 
   return FALSE;
+}
+
+void dt_dev_pixelpipe_clip_output(float *const out,
+                                  const float *const in,
+                                  const size_t npixels)
+{
+  DT_OMP_FOR()
+  for(size_t k = 0; k < 4 * npixels; k++)
+    out[k] = (k & 3) == 3 ? in[k] : CLIP(in[k]);
 }
 
 dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe)

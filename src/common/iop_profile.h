@@ -188,6 +188,14 @@ void dt_ioppr_device_to_output(struct dt_develop_t *dev,
                                const int width,
                                const int height);
 
+/** the inverse: converts the pipe's output values in place to device values
+ * of its window, for UI tones made from the image */
+void dt_ioppr_output_to_device(struct dt_develop_t *dev,
+                               const struct dt_dev_pixelpipe_t *pipe,
+                               float *const rgb,
+                               const int width,
+                               const int height);
+
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_current_profile_info(const struct dt_iop_module_t *module,

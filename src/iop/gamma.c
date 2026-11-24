@@ -312,19 +312,36 @@ void process(dt_iop_module_t *self,
   }
   else if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
-    _mask_display((const float *const restrict)i, (float *const restrict)o,
-                  buffsize, 1.0f);
+    // the gray under the mask is a UI tone made from the image: from its
+    // values in the window's encoding, whatever the output's transfer
+    float *const device = dt_alloc_align_float(buffsize);
+    if(device)
+    {
+      memcpy(device, i, buffsize * sizeof(float));
+      dt_ioppr_output_to_device(self->dev, piece->pipe, device,
+                                roi_out->width, roi_out->height);
+    }
+    _mask_display(device ? device : (const float *const restrict)i,
+                  (float *const restrict)o, buffsize, 1.0f);
+    dt_free_align(device);
   }
   else
   {
     _copy_output((const float *const restrict)i, (float *const restrict)o, buffsize);
   }
 
-  // the mask and channel views are UI tones, authored as device values of
-  // the window
-  if(channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
+  // the mask and channel views, and a module's own (passthru), are UI
+  // tones, authored as device values of the window
+  if(channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+     || mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
     dt_ioppr_device_to_output(self->dev, piece->pipe, (float *const)o,
                               roi_out->width, roi_out->height);
+
+  // an integer export clips when it writes its file, after every module
+  // that follows colorout: a presented pipe here, at its end
+  if(piece->pipe->output_clip)
+    dt_dev_pixelpipe_clip_output((float *const)o, (float *const)o,
+                                 (size_t)roi_out->width * roi_out->height);
 
   if(mask_display)
     dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
