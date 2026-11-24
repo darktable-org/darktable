@@ -684,6 +684,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed lighttable previews appearing soft at 100% when an image was
+  positioned at a fractional offset.
+
 - Fixed bands of slightly wrong colors in images demosaiced with AMaZE
   whose height or width is 1 to 15 pixels more than a multiple of 128.
 
