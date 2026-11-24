@@ -885,9 +885,6 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   err = dt_interpolate_bilinear_image_cl(devid, ds_interpolated, ds_width, ds_height,
                                          interpolated, width, height);
   if(err != CL_SUCCESS) goto error;
-  err = dt_interpolate_bilinear_image_cl(devid, ds_clipping_mask, ds_width, ds_height,
-                                         clipping_mask, width, height);
-  if(err != CL_SUCCESS) goto error;
 
   // Remosaic
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_remosaic_and_replace, width, height,
