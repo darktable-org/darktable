@@ -1013,7 +1013,7 @@ static inline float lookup_gamut(global const float *gamut_lut, const float x)
 
   // Linearly interpolate the value of the gamut LUT at the hue angle in radians.
   // convert in LUT coordinate
-  const float x_test = (float)LUT_ELEM * (x + M_PI_F) / DT_2PI_F;
+  const float x_test = fp32_div((float)LUT_ELEM * (x + M_PI_F), DT_2PI_F);
 
   // find the 2 closest integer coordinates (next/previous)
   const float x_prev = floor(x_test);

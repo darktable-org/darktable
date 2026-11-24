@@ -788,7 +788,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   // we clip pipeline RGB while reading; this also ensures a proper alpha
-  float4 pix_in = fmax(0.0f, readpixel(in, x, y));
+  float4 pix_in = fmax(0.0f, Areadpixel(in, x, y));
 
   float4 XYZ_D65 = 0.f;
   float4 LMS = 0.f;
