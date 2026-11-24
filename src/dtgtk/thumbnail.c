@@ -372,6 +372,9 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb,
     cairo_set_source_surface(cr, thumb->img_surf,
                              thumb->zoomx * darktable.gui->ppd / extra_scale,
                              thumb->zoomy * darktable.gui->ppd / extra_scale);
+    // avoid blending a 1:1 surface at fractional offsets
+    if(extra_scale == 1.0f)
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
 
     // get the transparency value
     GdkRGBA im_color;
