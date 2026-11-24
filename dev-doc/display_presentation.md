@@ -301,6 +301,10 @@ would re-express a render made for another target, whose tone mapping and
 headroom belong to that target; to inspect values for a target, proof
 against it.
 
+For a PQ or HLG output the histogram, waveform and parade take a grid
+in nits or percent of signal from the transfer function of the values
+they show.
+
 The clipping indicator's upper threshold is a fraction of the target's
 peak, of the peak's signal for the channels and of its light for the
 luminance: where an SDR or HLG export clips, and past the light a PQ

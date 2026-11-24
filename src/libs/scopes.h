@@ -141,6 +141,7 @@ typedef struct dt_scopes_t
   int update_counter;                           // most recent pixelpipe vs mode data
   dt_scopes_highlight_t highlight;              // depends on mouse position
   scopes_channels_t channels;                   // display state chosen by RGB buttons
+  int hdr_active;                               // HDR transfer of the data shown, DT_HDR_*
   gboolean dragging;                            // to block motion handling during drag
   gdouble last_offset_x, last_offset_y;         // for drag handling
   // UI elements
@@ -171,6 +172,13 @@ extern void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
                                     const int height);
 // FIXME: is there any reason this needs to be called with an argument?
 extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
+// grid for a PQ or HLG signal (DT_HDR_*), with values running up the y
+// axis or along the x axis
+extern void lib_histogram_draw_hdr_grid(cairo_t *cr,
+                                        const int width,
+                                        const int height,
+                                        const gboolean values_on_y,
+                                        const int transfer);
 
 #define dt_scopes_func_exists(mode, func) ((mode)->functions->func != NULL)
 
