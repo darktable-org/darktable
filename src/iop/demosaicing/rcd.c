@@ -44,27 +44,6 @@
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
 */
 
-/* We don't want to use the -Ofast option in dt as it effects are not well specified and there have been issues
-   leading to crashes.
-   But we can use the 'fast-math' option in code sections if input data and algorithms are well defined.
-
-   We have defined input data and make sure there are no divide-by-zero or overflows by chosen eps
-   Reordering of instructions might lead to a slight loss of presision whigh is not significant here.
-   Not necessary in this code section
-     threadsafe handling of errno
-     signed zero handling
-     handling of math interrupts
-     handling of rounding
-     handling of overflows
-
-   The 'fp-contract=fast' option enables fused multiply&add if available
-*/
-
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
-#endif
-
 #define RCD_BORDER 10         // avoid tile-overlap errors
 #define RCD_MARGIN 9          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (DT_RCD_TILESIZE - 2 * RCD_BORDER)
@@ -415,11 +394,6 @@ static void rcd_demosaic(float *const restrict out,
     dt_free_align(Q_CDiff_Hpf);
   }
 }
-
-// revert rcd specific aggressive optimizing
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
 
 #ifdef HAVE_OPENCL
 static cl_int process_rcd_cl(dt_iop_module_t *self,

@@ -210,6 +210,14 @@ FILE(GLOB SOURCE_FILES
   "views/view.c"
   )
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  set_property(SOURCE common/box_filters.cc APPEND PROPERTY COMPILE_OPTIONS
+    -fno-fast-math
+    -fno-math-errno
+    -ffp-contract=fast
+  )
+endif()
+
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 if(APPLE)

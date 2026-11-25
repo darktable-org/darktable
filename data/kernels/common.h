@@ -59,6 +59,13 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #define BLUE 2
 #define ALPHA 3
 
+/** By default we ensure FP_CONTRACT OFF and only enable it
+    if there is a good reasons to do so because of the algorithm
+    inside the kernel source.
+    For minimal OpenCL vs CPU diffs we might want to match both.
+*/
+#pragma OPENCL FP_CONTRACT OFF
+
 #if defined(DT_OPENCL_FAST) && DT_OPENCL_FAST == 1
   #define dtcl_sin(A) native_sin(A)
   #define dtcl_cos(A) native_cos(A)
@@ -97,10 +104,6 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   {
     return sqrt(x * x + y * y);
   }
-
-  // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
-  // on compatible platforms
-  #pragma OPENCL FP_CONTRACT ON
 #else
   #define dtcl_sin(A) sin(A)
   #define dtcl_cos(A) cos(A)
@@ -143,12 +146,11 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
     float y = native_recip(b);
     const float e = fma(-b, y, 1.0f);
-    if(!(fabs(e) <= 0x1p-10f))  // 0.0009765625f
-      return a / b;
-
     y = fma(y, e, y);
     const float q = a * y;
-    if(!(fabs(q) >= lo && fabs(q) <= hi))
+
+    if(!(fabs(e) <= 0x1p-10f
+       && fabs(q) >= lo && fabs(q) <= hi))
       return a / b;
 
     const float r = fma(-b, q, a);
@@ -157,6 +159,23 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
   static inline float4 fp32_div_4(const float4 a, const float4 b)
   {
+    const float lo = 0x1p-64f, hi = 0x1p64f;
+    const float4 aa = fabs(a), ab = fabs(b);
+
+    if(all((aa >= lo) & (aa <= hi) & (ab >= lo) & (ab <= hi)))
+    {
+      float4 y = native_recip(b);
+      const float4 e = fma(-b, y, (float4)(1.0f));
+      y = fma(y, e, y);
+      const float4 q = a * y;
+      const float4 aq = fabs(q);
+
+      if(all((fabs(e) <= 0x1p-10f) & (aq >= lo) & (aq <= hi)))
+      {
+        const float4 r = fma(-b, q, a);
+        return fma(r, y, q);
+      }
+    }
     return (float4)(fp32_div(a.x, b.x), fp32_div(a.y, b.y), fp32_div(a.z, b.z), fp32_div(a.w, b.w));
   }
 
@@ -177,7 +196,18 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
   static inline float4 cbrt_refined_4(const float4 x)
   {
-    return (float4) (cbrt_refined(x.x), cbrt_refined(x.y), cbrt_refined(x.z), cbrt_refined(x.w));
+    const float4 y = cbrt(x);
+
+    if(all((y != 0.0f) & isfinite(y)))
+    {
+      const float4 y2 = y * y;
+      const float4 y2_err = fma(y, y, -y2);
+      const float4 residual = fma(-y, y2_err, fma(-y, y2, x));
+      return y + residual / (3.0f * y2);
+    }
+
+    return (float4)(cbrt_refined(x.x), cbrt_refined(x.y),
+                    cbrt_refined(x.z), cbrt_refined(x.w));
   }
 
   static inline float _radius_hypotf(const float x, const float y)
@@ -208,8 +238,6 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   {
     return hypot(x, y);
   }
-
-  #pragma OPENCL FP_CONTRACT OFF
 #endif
 
 // Kahan summation algorithm

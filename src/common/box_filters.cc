@@ -16,10 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef __GNUC__
-#pragma GCC optimize ("finite-math-only", "no-math-errno", "fp-contract=fast", "fast-math")
-#endif
-
 #include <math.h>
 #include <stdlib.h>
 

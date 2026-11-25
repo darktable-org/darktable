@@ -1379,7 +1379,7 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * readpixel(in, x, y);
+  float4 pixel = corval * Areadpixel(in, x, y);
   const float alpha = pixel.w;
 
   float cam[3], XYZ[3];
@@ -1466,7 +1466,7 @@ colorin_clut(read_only image2d_t in, write_only image2d_t out, const int width, 
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  const float4 raw = readpixel(in, x, y);
+  const float4 raw = Areadpixel(in, x, y);
   float4 pixel = dt_lut3d_tetrahedral(clip4(corval * raw), clut, level);
   pixel.w = raw.w;
   write_imagef(out, (int2)(x, y), pixel);
@@ -1486,7 +1486,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * readpixel(in, x, y);
+  float4 pixel = corval * Areadpixel(in, x, y);
   const float alpha = pixel.w;
 
   float cam[3], RGB[3], XYZ[3];
@@ -1589,7 +1589,7 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  const float4 input = readpixel(in, x, y);
+  const float4 input = Areadpixel(in, x, y);
   float4 pixel = corval * input;
   const float alpha = input.w;
 
@@ -1778,7 +1778,7 @@ colorcorrection (read_only image2d_t in, write_only image2d_t out, const int wid
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   pixel.y = saturation*(pixel.y + pixel.x * a_scale + a_base);
   pixel.z = saturation*(pixel.z + pixel.x * b_scale + b_base);
   write_imagef (out, (int2)(x, y), pixel);
@@ -3609,7 +3609,7 @@ colorout_clut(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  const float4 Lab = readpixel(in, x, y);
+  const float4 Lab = Areadpixel(in, x, y);
   const float4 coord = clip4((float4)(fp32_div(Lab.x, 100.0f), fp32_div(Lab.y + 128.0f, 255.0f), fp32_div(Lab.z + 128.0f, 255.0f), 0.0f));
   float4 pixel = dt_lut3d_tetrahedral(coord, clut, level);
   pixel.w = Lab.w;

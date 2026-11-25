@@ -17,7 +17,7 @@
 */
 
 #include "common.h"
-#pragma OPENCL FP_CONTRACT ON
+#pragma OPENCL FP_CONTRACT OFF
 
 /** Correct index into "half-width" cl_mem buffers if the buffer has an odd width
     is not a simple idx-full / 2!
