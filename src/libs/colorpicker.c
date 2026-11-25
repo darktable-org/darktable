@@ -211,10 +211,12 @@ static void _update_sample_label(dt_lib_module_t *self,
                sample->label_rgb[0], sample->label_rgb[1], sample->label_rgb[2]);
       break;
     case DT_LIB_COLORPICKER_MODEL_RGB_PERCENT:
+      // RGB reads the export's codes, as the scopes plot them; RGB% their
+      // light, relative to reference white and unbounded, as HDRView does
       snprintf(text, sizeof(text), "%6.1f%% %6.1f%% %6.1f%%",
-            (sample->scope[statistic][0] * 100.f),
-            (sample->scope[statistic][1] * 100.f),
-            (sample->scope[statistic][2] * 100.f));
+               sample->light[statistic][0] * 100.f,
+               sample->light[statistic][1] * 100.f,
+               sample->light[statistic][2] * 100.f);
       break;
     case DT_LIB_COLORPICKER_MODEL_LAB:
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f",
@@ -890,6 +892,7 @@ void gui_reset(dt_lib_module_t *self)
     {
       data->primary_sample.display[s][i] = 0.f;
       data->primary_sample.scope[s][i] = 0.f;
+      data->primary_sample.light[s][i] = 0.f;
       data->primary_sample.lab[s][i] = 0.f;
     }
     data->primary_sample.label_rgb[i] = 0;

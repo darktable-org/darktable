@@ -303,7 +303,11 @@ against it.
 
 For a PQ or HLG output the histogram, waveform and parade take a grid
 in nits or percent of signal from the transfer function of the values
-they show.
+they show. The color picker's RGB and Hex read the values the export
+holds, as the scopes plot them; RGB% reads their light, relative to
+reference white and unbounded, for every output, as HDRView reads an
+image's pixels. Neither switches units at white, as Lightroom's readout
+does, so a highlight compares with a midtone.
 
 The clipping indicator's upper threshold is a fraction of the target's
 peak, of the peak's signal for the channels and of its light for the

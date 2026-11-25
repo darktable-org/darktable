@@ -1383,6 +1383,42 @@ error:
 }
 #endif
 
+// RGB%'s light, picked from the light of the pixels: the mean light is
+// not the light of the mean code. only the box is decoded, with the 2
+// pixels around it that denoise's B-spline reads (bspline.h)
+static gboolean _pick_light(const dt_iop_buffer_dsc_t *dsc,
+                            const float *const input,
+                            const dt_iop_roi_t *roi_in,
+                            const int *const box,
+                            const gboolean denoise,
+                            lib_colorpicker_stats light,
+                            const dt_iop_order_iccprofile_info_t *const display_profile,
+                            const dt_iop_order_iccprofile_info_t *const histogram_profile)
+{
+  const int reach = denoise ? 2 : 0;
+  const int x0 = MAX(box[0] - reach, 0), y0 = MAX(box[1] - reach, 0);
+  const int x1 = MIN(box[2] + reach, roi_in->width), y1 = MIN(box[3] + reach, roi_in->height);
+  const dt_iop_roi_t roi = { .width = x1 - x0, .height = y1 - y0, .scale = roi_in->scale };
+  const int crop[4] = { box[0] - x0, box[1] - y0, box[2] - x0, box[3] - y0 };
+  const size_t npixels = (size_t)roi.width * roi.height;
+
+  float *const pixels = dt_alloc_align_float(4 * npixels);
+  if(!pixels) return FALSE;
+  for(int y = 0; y < roi.height; y++)
+    memcpy(pixels + (size_t)4 * y * roi.width,
+           input + (size_t)4 * ((size_t)(y0 + y) * roi_in->width + x0),
+           sizeof(float) * 4 * roi.width);
+  dt_ioppr_transform_image_colorspace_rgb(pixels, pixels, roi.width, roi.height,
+                                          display_profile, histogram_profile, "picker light");
+  DT_OMP_FOR()
+  for(size_t k = 0; k < 4 * npixels; k += 4)
+    dt_ioppr_decode_rgb(pixels + k, pixels + k, histogram_profile);
+  dt_color_picker_helper(dsc, pixels, &roi, crop, denoise, light,
+                         IOP_CS_RGB, IOP_CS_RGB, histogram_profile);
+  dt_free_align(pixels);
+  return TRUE;
+}
+
 static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                     dt_dev_pixelpipe_t *pipe,
                                     dt_iop_module_t *module,
@@ -1450,6 +1486,10 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                                 display_profile, histogram_profile,
                                                 "primary picker");
         sample->scope_profile = histogram_profile;
+        if(!_pick_light(dsc, input, roi_in, box, sample->denoise, sample->light,
+                        display_profile, histogram_profile))
+          for(int s = 0; s < DT_PICK_N; s++)
+            dt_ioppr_decode_rgb(sample->scope[s], sample->light[s], histogram_profile);
       }
       if(display_profile && gtk_profile && gtk_profile != display_profile)
       {

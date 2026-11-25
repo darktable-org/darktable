@@ -60,6 +60,8 @@ typedef struct dt_colorpicker_sample_t
   lib_colorpicker_stats scope;
   // that profile when it was picked, which a locked sample keeps
   const struct dt_iop_order_iccprofile_info_t *scope_profile;
+  // the light of scope, relative to reference white
+  lib_colorpicker_stats light;
   // picked color converted display profile -> Lab
   lib_colorpicker_stats lab;
   // in scope profile with current statistic
