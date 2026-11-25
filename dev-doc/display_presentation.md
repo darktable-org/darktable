@@ -263,7 +263,16 @@ renders for the scene's display, which the screen only emulates.
   file is written, after every module. colorout sets `output_clip` on the
   pipe and gamma, the last module, applies it, so borders, watermark and
   dither see the values they see in an export. A float export does not
-  clip. The gamut check marks what the clip changes.
+  clip.
+- The gamut check is the proof's: it marks what the proof's target clips
+  instead of letting it clip, so turning it on turns on the proof, and
+  turning the proof off ends it. It marks what an integer export loses of
+  colorout's values: an RGB target's clip, in its encoding (PQ, HLG) or at
+  the end of the pipe, and an ink proof's round trip. colorout makes the
+  marks, so the modules after it (borders, watermark) draw over them as
+  over the image. A Lab or XYZ output clips nothing and gets no marks.
+  With the proof of the export's settings, at their defaults, it marks
+  what an integer export of the image clips.
 - The proof of the preview pipe has no gamut marks, because the scopes, the
   color pickers, navigation and the filmstrip thumbnail read it.
 

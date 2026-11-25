@@ -1261,12 +1261,12 @@ void expose(dt_view_t *self,
 
   cairo_restore(cri);
 
-  // indicate if we are in gamut check or softproof mode
+  // indicate the soft proof, and the gamut check on it on a line of its own
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
     gchar *label = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK
-      ? _("gamut check")
-      : _("soft proof");
+      ? g_strdup_printf("%s\n%s", _("soft proof"), _("gamut check"))
+      : g_strdup(_("soft proof"));
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose profile",
@@ -1292,6 +1292,7 @@ void expose(dt_view_t *self,
     cairo_stroke(cri);
     pango_font_description_free(desc);
     g_object_unref(layout);
+    g_free(label);
   }
 
   // hint shown while an external file drag hovers the darkroom
@@ -2393,10 +2394,10 @@ static void _softproof_quickbutton_clicked(GtkWidget *w,
                                            gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  if(darktable.color_profiles->mode == DT_PROFILE_SOFTPROOF)
-    darktable.color_profiles->mode = DT_PROFILE_NORMAL;
-  else
-    darktable.color_profiles->mode = DT_PROFILE_SOFTPROOF;
+  // the gamut check marks the proof, and ends with it
+  darktable.color_profiles->mode = darktable.color_profiles->mode == DT_PROFILE_NORMAL
+    ? DT_PROFILE_SOFTPROOF
+    : DT_PROFILE_NORMAL;
 
   _update_softproof_gamut_checking(d);
   dt_dev_reprocess_proof(d);
@@ -2407,10 +2408,11 @@ static void _gamut_quickbutton_clicked(GtkWidget *w,
                                        gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  if(darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK)
-    darktable.color_profiles->mode = DT_PROFILE_NORMAL;
-  else
-    darktable.color_profiles->mode = DT_PROFILE_GAMUTCHECK;
+  // the gamut check marks what the proof clips: it turns the proof on, and
+  // leaves it on when it ends
+  darktable.color_profiles->mode = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK
+    ? DT_PROFILE_SOFTPROOF
+    : DT_PROFILE_GAMUTCHECK;
 
   _update_softproof_gamut_checking(d);
   dt_dev_reprocess_proof(d);
@@ -2425,7 +2427,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d)
                                   _gamut_quickbutton_clicked, d);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->profile.softproof_button),
-                               darktable.color_profiles->mode == DT_PROFILE_SOFTPROOF);
+                               darktable.color_profiles->mode != DT_PROFILE_NORMAL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->profile.gamut_button),
                                darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK);
 
