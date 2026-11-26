@@ -197,7 +197,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     .sharpness = sharpness,
     .patch_radius = P,
     .search_radius = K,
-    .decimate = 0,
+    .decimate = dt_pipe_is_preview(piece->pipe) || dt_pipe_is_thumb(piece->pipe),
     .norm = norm2,
     .pipetype = piece->pipe->type,
     .kernel_dist = gd->kernel_nlmeans_dist,
@@ -307,7 +307,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_nlmeans_accu, width, height,
         CLARG(dev_in), CLARG(dev_U2), CLARG(dev_U4_tt),
-        CLARG(width), CLARG(height), CLARG(q), CLARG(border));
+        CLARG(width), CLARG(height), CLARG(q), CLARG(border), CLARGINT(1));
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);

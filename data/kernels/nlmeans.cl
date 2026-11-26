@@ -181,7 +181,8 @@ kernel void nlmeans_accu(read_only image2d_t in,
                          const int width,
                          const int height,
                          const int2 q,
-                         const int border)
+                         const int border,
+                         const int symmetric)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -199,7 +200,7 @@ kernel void nlmeans_accu(read_only image2d_t in,
   float  u4    = U4[mad24(y + border, pwidth, x + border)];
   float  u4_mq = U4[mad24(y + border - q.y, pwidth, x + border - q.x)];
 
-  float u4_mq_dd = u4_mq * ddirac(q);
+  float u4_mq_dd = u4_mq_dd = symmetric ? u4_mq * ddirac(q) : 0.0f;
 
   float4 accu = (u4 * u1_pq) + (u4_mq_dd * u1_mq);
   accu.w = u4 + u4_mq_dd;

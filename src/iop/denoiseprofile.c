@@ -2156,7 +2156,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_accu, width, height,
                           CLARG(dev_tmp), CLARG(dev_U2), CLARG(dev_U4_tt),
-                          CLARG(width), CLARG(height), CLARG(q), CLARG(border));
+                          CLARG(width), CLARG(height), CLARG(q), CLARG(border), CLARGINT(1));
       if(err != CL_SUCCESS) goto error;
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
