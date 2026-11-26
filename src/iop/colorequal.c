@@ -3846,10 +3846,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_set_homogeneous(g->stack, FALSE);
 
   dt_iop_module_t *sect = NULL;
-#define GROUP_SLIDERS(num, page, tooltip)                      \
-  dt_ui_notebook_page(g->notebook, page, tooltip);             \
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
-  gtk_stack_add_named(g->stack, sect->widget, num);
+  // the tabs stay empty and their sliders go into the stack beside them
+#define GROUP_SLIDERS(num, page, tooltip)                                     \
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox());               \
+  gtk_stack_add_named(g->stack, sect->widget, num);                          \
+  dt_iop_page_bind_widgets(dt_ui_notebook_page(g->notebook, page, tooltip), \
+                           sect->widget);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =

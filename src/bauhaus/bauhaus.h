@@ -265,6 +265,8 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  gpointer field,
                                  dt_introspection_type_t field_type);
 gpointer dt_bauhaus_widget_get_field(GtkWidget *widget);
+// byte size of the parameter a widget is bound to, 0 when it has none
+size_t dt_bauhaus_widget_get_field_size(GtkWidget *widget);
 // update one bauhaus widget or all widgets in a module from the provided (blend)params
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   GtkWidget *widget,
