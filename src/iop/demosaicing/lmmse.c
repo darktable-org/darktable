@@ -50,11 +50,6 @@
    The default is now 2 times slower than RCD and 2 times faster than AMaZE
 */
 
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
-#endif
-
 #define BORDER_AROUND 4
 #define LMMSE_TILE_INT (DT_LMMSE_TILESIZE - 2 * BORDER_AROUND)
 #define w1 (DT_LMMSE_TILESIZE)
@@ -571,11 +566,6 @@ static void lmmse_demosaic(float *const restrict out,
     dt_free_align(buffer);
   }
 }
-
-// revert specific aggressive optimizing
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
 
 #undef LMMSE_TILE_INT
 #undef BORDER_AROUND

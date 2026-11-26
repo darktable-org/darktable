@@ -194,8 +194,7 @@ static void _remosaic_and_replace(const float *const restrict input,
       const size_t idx = i * width + j;
       const size_t index = idx * 4;
       const float opacity = CLIP(clipping_mask[index + ALPHA]);
-      output[idx] = opacity * fmaxf(interpolated[index + c] * wb[c], 0.f)
-                    + (1.f - opacity) * input[idx];
+      output[idx] = mixf(input[idx], fmaxf(interpolated[index + c] * wb[c], 0.f), opacity);
     }
 }
 
@@ -885,9 +884,6 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   // Upsample
   err = dt_interpolate_bilinear_image_cl(devid, ds_interpolated, ds_width, ds_height,
                                          interpolated, width, height);
-  if(err != CL_SUCCESS) goto error;
-  err = dt_interpolate_bilinear_image_cl(devid, ds_clipping_mask, ds_width, ds_height,
-                                         clipping_mask, width, height);
   if(err != CL_SUCCESS) goto error;
 
   // Remosaic

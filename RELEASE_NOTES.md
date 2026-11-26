@@ -187,6 +187,10 @@ changes (where available).
 - Escape now cancels a mask shape that is being drawn, as a right-click
   does.
 
+- A mask shape that is ready to be placed is no longer drawn in the
+  middle of the image while the pointer is off the canvas. It shows up
+  again under the pointer as soon as the pointer comes back.
+
 - Mask nodes close or outside the image boundaries are now editable.
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
@@ -224,7 +228,7 @@ changes (where available).
 - Some safety checks when switching to the quick access panel were
   added.
 
-- On the color equalizer module a new collapside section with the
+- On the color equalizer module a new collapsible section with the
   color sliders has been added.
 
 - The list of color checker charts in the color calibration module now
@@ -258,8 +262,9 @@ changes (where available).
 - In tethering mode, the tethering info bar (located above the live
   camera view) now displays the camera model.
 
-- Pressing ESC or clicking on the dialog X icon (top-right) now exits
-  Darktable instead of launching the previous workspace.
+- On the workspace dialog, pressing ESC or clicking on the dialog X
+  icon (top-right) now exits Darktable instead of launching the
+  previous workspace.
 
 - The settings of the path mask "shrink or grow" (the step per scroll
   tick, the unit, the tracing resolution and the curve smoothing) are
@@ -300,6 +305,13 @@ changes (where available).
   moved into that section, and the headroom fields are grayed out while
   it is off or only one device is in use.
 
+- The temperature sliders of the white balance and color calibration
+  modules now change by 1 mired per scroll step or key press instead
+  of 1 K, so that a step makes a similar visible change at any
+  temperature: about 4 K at 2000 K, 25 K at 5000 K and 100 K at
+  10000 K. As with other sliders, the steps get finer when the slider
+  is zoomed in.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
@@ -330,9 +342,6 @@ changes (where available).
 - Add a OpenCL code path to tone equalizer which gives around 6-20x
   faster processing times in comparison to CPU code path, depending on
   CPU & GPU.
-
-- Contrast & texture now runs on OpenCL, so it no longer moves the
-  image back to the CPU in the middle of an otherwise GPU pipeline.
 
 - Highlight reconstruction's inpaint opposed method now runs on OpenCL
   for linear raws, such as sRAW and linear DNG files.
@@ -375,6 +384,9 @@ changes (where available).
 - The theme has been refreshed: It is more colorful, has better handling of wide screens, a table of contents in the right panel and more tweaks.
 - If you find room for improvement on the manual, you are welcome to open an [issue](https://github.com/darktable-org/dtdocs/issues), post to [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
 - Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/). Lots of work has been done, among others Ukranian and French translations have now hit 100%.
+
+
+## Other Changes
 
 - The raw denoise module can now run on the OpenCL device for Bayer
   sensors.
@@ -437,8 +449,6 @@ changes (where available).
   only platform still allowed to run OpenCL on the CPU. Other CPU
   OpenCL devices, like the one macOS provides, are no longer used:
   macOS' one produced wrong exports.
-
-## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
@@ -589,6 +599,9 @@ changes (where available).
       List of modules that will not process it's OpenCL code.
   OpenCL fast/default kernels are cached at different locations.
 
+- The OpenCL code base has been tuned for precision at many places leading to
+  smaller differences between CPU and GPU processing.
+
 - The aspect ratio chosen on the camera is now applied as a crop when
   the raw was left uncropped, so a frame shot at 1:1 or 16:9 opens
   framed as intended while the full sensor area stays available to
@@ -670,6 +683,9 @@ changes (where available).
   that way.
 
 ## Bug Fixes
+
+- Fixed lighttable previews appearing soft at 100% when an image was
+  positioned at a fractional offset.
 
 - Fixed bands of slightly wrong colors in images demosaiced with AMaZE
   whose height or width is 1 to 15 pixels more than a multiple of 128.
@@ -1109,6 +1125,9 @@ changes (where available).
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
 
+- Fixed tether live view reallocating preview every frame and
+  refreshing the histogram and full camera config on every update.
+
 - Fixed workspace discovery truncating names at the first '.' in the
   database filename (for example library-client.v2.db was shown as
   "client"), which could open or delete the wrong database. Workspace
@@ -1245,6 +1264,10 @@ changes (where available).
   after a large feather was given to a sharp corner where the path
   turns inward, such as the middle nodes of a sunglasses-shaped path.
 
+- Fixed an issue where darktable internal tags removed from the metadata
+  editor (Xmp.darktable.version_name, Xmp.xmpMM.PreservedFileName) could
+  not be restored.
+
 ## Lua
 
 ### API Version
@@ -1269,6 +1292,12 @@ changes (where available).
 - Fixed a crash when a script took more snapshots than the snapshots
   module has slots. Once all slots are in use, `take_snapshot()` now
   takes none and says so, as the take snapshot button already refused.
+
+- Fixed darktable growing sluggish when moving quickly between images
+  in the darkroom with a script that handles `darkroom-image-loaded`.
+  The event no longer fires with `clean` set to false over and over
+  while the previous image is still processing, only once the new
+  image has loaded.
 
 ### New Scripts
 

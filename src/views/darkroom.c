@@ -1537,39 +1537,17 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   //
   // worst case, it'll drop some change image events. sorry.
   if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe->mutex))
-  {
-
-#ifdef USE_LUA
-
-  _fire_darkroom_image_loaded_event(FALSE, imgid);
-
-#endif
-  return G_SOURCE_CONTINUE;
-  }
+    return G_SOURCE_CONTINUE;
   if(dt_pthread_mutex_BAD_trylock(&dev->full.pipe->mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe->mutex);
-
- #ifdef USE_LUA
-
-  _fire_darkroom_image_loaded_event(FALSE, imgid);
-
-#endif
-
-   return G_SOURCE_CONTINUE;
+    return G_SOURCE_CONTINUE;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2.pipe->mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->full.pipe->mutex);
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe->mutex);
-
- #ifdef USE_LUA
-
-  _fire_darkroom_image_loaded_event(FALSE, imgid);
-
-#endif
-
-   return G_SOURCE_CONTINUE;
+    return G_SOURCE_CONTINUE;
   }
 
   const dt_imgid_t old_imgid = dev->image_storage.id;

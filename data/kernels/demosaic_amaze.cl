@@ -577,7 +577,7 @@ kernel void amaze_green(
   const int i = px.i;
   const float w = hvwt[i]; // after amaze_vote
 
-  const float d = hcd[i] + w * (vcd[i] - hcd[i]); // evaluate color differences
+  const float d = dt_mix(hcd[i], vcd[i], w);      // evaluate color differences
   const float g = cfa[i] + d;                     // evaluate G (finally!)
   dgrb[i] = d;
   green[i] = g;

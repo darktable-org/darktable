@@ -141,7 +141,9 @@ static inline float mixf(const float x,
                          const float y,
                          const float a)
 {
-  return DT_FMA(y - x, a, x);
+  if(a == 0.0f) return x;
+  if(a == 1.0f) return y;
+  return fmaf(y - x, a, x);
 }
 
 // Kahan summation algorithm
@@ -424,11 +426,17 @@ static inline float dt_fast_hypotf(const float x, const float y)
 
 static inline float scharr_gradient(const float *p, const int w)
 {
-  const float gx = 47.0f / 255.0f * (p[-w-1] - p[-w+1] + p[w-1]  - p[w+1])
-                + 162.0f / 255.0f * (p[-1] - p[1]);
-  const float gy = 47.0f / 255.0f * (p[-w-1] - p[w-1]  + p[-w+1] - p[w+1])
-                + 162.0f / 255.0f * (p[-w] - p[w]);
-  return dt_fast_hypotf(gx, gy);
+  /** Use these as the compiler folding precision depends on math compiler flags
+      and might not be exact.
+      c47 = 47.0f / 255.0f, c162 = 162.0f / 255.0f
+  */
+  const float c47  = 0x1.79797ap-3f;
+  const float c162 = 0x1.454546p-1f;
+  const float gx = c47 * (p[-w-1] - p[-w+1] + p[w-1]  - p[w+1])
+                + c162 * (p[-1] - p[1]);
+  const float gy = c47 * (p[-w-1] - p[w-1]  + p[-w+1] - p[w+1])
+                + c162 * (p[-w] - p[w]);
+  return hypotf(gx, gy);
 }
 
 // fast approximation of expf()

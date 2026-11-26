@@ -2720,13 +2720,9 @@ gboolean dt_masks_events_mouse_leave(dt_iop_module_t *module)
   if(dev->form_gui)
   {
     dt_masks_form_gui_t *gui = dev->form_gui;
-    float zoom_x, zoom_y;
-    dt_dev_get_viewport_params(&dev->full, NULL, NULL, &zoom_x, &zoom_y);
 
-    float wd, ht;
-    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
-    gui->posx = (.5f + zoom_x) * wd;
-    gui->posy = (.5f + zoom_y) * ht;
+    // an armed shape is hidden off the canvas (dt_masks_events_post_expose)
+    if(gui->creation) dt_control_queue_redraw_center();
 
     // off the canvas nothing is hovered: the panel shows its selection again
     // (dt_iop_gui_blend_masks_hover_form), rather than the last shape the cursor
@@ -3105,11 +3101,6 @@ void dt_masks_events_post_expose(const dt_iop_module_t *module,
   if(!gui) return;
   if(!form) return;
 
-  cairo_save(cr);
-  cairo_set_source_rgb(cr, .3, .3, .3);
-
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-
   // we update the form if needed
   // add preview when creating a circle, ellipse and gradient
   if(!(((form->type & DT_MASKS_CIRCLE)
@@ -3117,6 +3108,21 @@ void dt_masks_events_post_expose(const dt_iop_module_t *module,
         || (form->type & DT_MASKS_GRADIENT))
        && gui->creation))
     dt_masks_gui_form_test_create(form, gui, module);
+
+  // before the first click these shapes are only a preview drawn at the
+  // pointer, so with the pointer off the canvas there is nothing to show. Not
+  // before the update above: an armed brush ignores the pointer until its
+  // gui points exist
+  if(gui->creation && gui->guipoints_count == 0 && !gui->form_dragging
+     && (form->type & (DT_MASKS_CIRCLE | DT_MASKS_ELLIPSE
+                       | DT_MASKS_GRADIENT | DT_MASKS_BRUSH))
+     && !dt_ui_pointer_on_canvas(darktable.gui->ui))
+    return;
+
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, .3, .3, .3);
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   // draw form
   if(form->type & DT_MASKS_GROUP)
@@ -3231,6 +3237,29 @@ gboolean dt_masks_cancel_creation(void)
     dt_masks_change_form_gui(NULL);
   dt_control_queue_redraw_center();
   return TRUE;
+}
+
+// the canvas state keeps the module a shape is being drawn for, and the one a
+// ctrl+click keeps re-arming. Left behind when the module goes (history
+// replaced by a dropped xmp, image change), the first would be dereferenced
+// by the next dt_masks_change_form_gui, and the second would also keep the
+// panel halo hidden, as a shape creation never ending
+void dt_masks_forget_module(dt_iop_module_t *module)
+{
+  dt_masks_form_gui_t *gui = module->dev ? module->dev->form_gui : NULL;
+  if(!gui) return;
+
+  if(gui->creation_continuous_module == module)
+  {
+    gui->creation_continuous = FALSE;
+    gui->creation_continuous_module = NULL;
+  }
+  if(gui->creation_module == module)
+  {
+    gui->creation_module = NULL;
+    // nothing is left to finish the shape being drawn
+    if(module->dev == darktable.develop) dt_masks_change_form_gui(NULL);
+  }
 }
 
 void dt_masks_reset_form_gui(void)

@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT OFF
 
 kernel void
 vng_lin_interpolate(read_only image2d_t in,

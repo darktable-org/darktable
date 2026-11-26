@@ -681,11 +681,14 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
 
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
+
+    return;
   }
 
   // if autoscale is on: do not modify g and b curves
   if((p->curve_autoscale != DT_S_SCALE_MANUAL_RGB)
      && g->channel != DT_IOP_RGBCURVE_R)
+    return;
 
   if(g->selected < 0) return;
 

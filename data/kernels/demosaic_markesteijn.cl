@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT OFF
 
 #define HOMOGENITY_EPS 1e-10f
 

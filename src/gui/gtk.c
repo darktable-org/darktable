@@ -3209,6 +3209,26 @@ GtkWidget *dt_ui_snapshot(const dt_ui_t *ui)
 {
   return ui->snapshot;
 }
+
+// asks GDK rather than trusting enter and leave: under a GTK grab (a popup, a
+// modal popover) the center view's leave goes to the grab widget instead, and
+// the ungrab does not replay it once the pointer is elsewhere
+gboolean dt_ui_pointer_on_canvas(const dt_ui_t *ui)
+{
+  if(!ui->center || !gtk_widget_get_realized(ui->center)) return FALSE;
+
+  GdkDevice *pointer =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(ui->center)));
+  GdkWindow *under = pointer ? gdk_device_get_window_at_position(pointer, NULL, NULL) : NULL;
+  if(!under) return FALSE;
+
+  GtkWidget *canvas[] = { ui->center, ui->snapshot, ui->flexi_halo[0], ui->flexi_halo[1] };
+  for(int i = 0; i < G_N_ELEMENTS(canvas); i++)
+    if(canvas[i] && gtk_widget_get_visible(canvas[i])
+       && under == gtk_widget_get_window(canvas[i]))
+      return TRUE;
+  return FALSE;
+}
 dt_thumbtable_t *dt_ui_thumbtable(const struct dt_ui_t *ui)
 {
   return ui->thumbtable;
@@ -4707,6 +4727,25 @@ static void _flexi_halo_motion(GtkEventControllerMotion *controller,
   }
 }
 
+// the halo passes its motion on to the canvas, so for the canvas the pointer
+// is still on it: entering the halo undoes the canvas leave that comes just
+// before, and leaving it, possibly straight off the window edge, is a canvas
+// leave. Otherwise an armed shape stays drawn where the halo saw it last
+static void _flexi_halo_enter(GtkEventControllerMotion *controller,
+                              gdouble x,
+                              gdouble y,
+                              GtkWidget *w)
+{
+  dt_control_mouse_enter();
+  _flexi_sliver_enter(controller, x, y, w);
+}
+
+static void _flexi_halo_leave(GtkEventControllerMotion *controller, GtkWidget *w)
+{
+  _flexi_sliver_leave(controller, w);
+  dt_control_mouse_leave();
+}
+
 // the wide band the hairline grows into on approach. An overlay child of the
 // canvas, not a column: a column would push the image sideways every time the
 // pointer wandered near an edge. Carries the same handlers as the hairline, so
@@ -4728,8 +4767,8 @@ static GtkWidget *_flexi_build_halo(dt_ui_t *ui, const gboolean right)
   gtk_widget_set_events(h, GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK
                            | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(h), "draw", G_CALLBACK(_flexi_sliver_draw), NULL);
-  dt_gui_connect_motion(h, (GCallback)_flexi_halo_motion, _flexi_sliver_enter,
-                        _flexi_sliver_leave, h);
+  dt_gui_connect_motion(h, (GCallback)_flexi_halo_motion, _flexi_halo_enter,
+                        _flexi_halo_leave, h);
   dt_gui_connect_click(h, _flexi_sliver_pressed, NULL, h);
   gtk_widget_set_no_show_all(h, TRUE);
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(ui)), h);
@@ -8324,6 +8363,17 @@ PangoFontDescription *dt_gui_get_font(void)
   return pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 }
 
+// a GMenuModel attribute holds only a GVariant, so the painter is stored as
+// an integer and read back by _popover_menu_apply_item_icon
+#define DT_POPOVER_PAINT_ICON_ATTRIBUTE "dt-paint-icon"
+
+void dt_gui_menu_item_set_paint_icon(GMenuItem *item, DTGTKCairoPaintIconFunc paint)
+{
+  if(!item || !paint) return;
+  g_menu_item_set_attribute(item, DT_POPOVER_PAINT_ICON_ATTRIBUTE, "t",
+                            (guint64)(guintptr)paint);
+}
+
 #if !GTK_CHECK_VERSION(4, 0, 0)
 typedef struct dt_popover_tooltip_context_t
 {
@@ -8491,11 +8541,58 @@ static gboolean _popover_menu_query_tooltip(GtkWidget *widget,
   return FALSE;
 }
 
-static void _popover_menu_apply_item_tooltip(GtkWidget *button,
-                                             GMenuModel *model,
-                                             const int i,
-                                             dt_popover_tooltip_context_t *ctx)
+// draw the icon dt_gui_menu_item_set_paint_icon() gave item `i` of `model`
+// into its button. A pixbuf GIcon on the model instead would be PNG-encoded and
+// decoded again, and a glycin-backed gdk-pixbuf does both in sandboxed helper
+// processes: the first menu opened waits for them to start, up to a second
+static void _popover_menu_apply_item_icon(GtkWidget *button,
+                                          GMenuModel *model,
+                                          const int i)
 {
+  guint64 paint_ptr = 0;
+  if(!g_menu_model_get_item_attribute(model, i, DT_POPOVER_PAINT_ICON_ATTRIBUTE,
+                                      "t", &paint_ptr)
+     || !paint_ptr)
+    return;
+  const DTGTKCairoPaintIconFunc paint = (DTGTKCairoPaintIconFunc)(guintptr)paint_ptr;
+
+  // the image is the first child of the GtkModelButton's box (gtkmodelbutton.c)
+  GtkWidget *image = NULL;
+  GList *bc = gtk_container_get_children(GTK_CONTAINER(button));
+  if(bc && GTK_IS_BOX(bc->data))
+  {
+    GList *boxc = gtk_container_get_children(GTK_CONTAINER(bc->data));
+    if(boxc && GTK_IS_IMAGE(boxc->data)) image = GTK_WIDGET(boxc->data);
+    g_list_free(boxc);
+  }
+  g_list_free(bc);
+  if(!image) return;
+
+  // render in device pixels, so the icon stays sharp on a HiDPI screen
+  const int size = DT_PIXEL_APPLY_DPI(16);
+  const double ppd = darktable.gui->ppd;
+  cairo_surface_t *cst =
+    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (int)(size * ppd), (int)(size * ppd));
+  cairo_surface_set_device_scale(cst, ppd, ppd);
+  cairo_t *cr = cairo_create(cst);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BUTTON_FG, 1.0);
+  paint(cr, 0, 0, size, size, 0, NULL);
+  cairo_destroy(cr);
+  gtk_image_set_from_surface(GTK_IMAGE(image), cst);
+  cairo_surface_destroy(cst);
+  // GtkModelButton hides its image in a labeled menu item, as in
+  // _popover_menu_reveal_icons
+  gtk_widget_set_visible(image, TRUE);
+}
+
+static void _popover_menu_apply_item_attributes(GtkWidget *button,
+                                                GMenuModel *model,
+                                                const int i,
+                                                dt_popover_tooltip_context_t *ctx)
+{
+  _popover_menu_apply_item_icon(button, model, i);
+
   char *tooltip_id = NULL;
   char *tip = NULL;
 
@@ -8536,7 +8633,7 @@ static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
                                                  GtkStack *stack,
                                                  dt_popover_tooltip_context_t *ctx);
 
-// apply the "tooltip" attributes of `model` to the buttons of a submenu page,
+// apply the tooltip and icon attributes of `model` to the buttons of a submenu page,
 // matched by label: GTK3 packs a back button first on such a page, which
 // throws off matching by position, and binds each button's text to its
 // item's label (gtkmenusectionbox.c). Callers only set the attribute on the
@@ -8572,7 +8669,7 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model,
         gchar *text = NULL;
         g_object_get(b->data, "text", &text, NULL);
         if(!g_strcmp0(text, label) || !g_strcmp0(text, plain_label))
-          _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
+          _popover_menu_apply_item_attributes(GTK_WIDGET(b->data), model, i, ctx);
         g_free(text);
       }
       g_free(plain_label);
@@ -8600,7 +8697,7 @@ static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
   g_list_free(buttons);
 }
 
-// walk GMenuModel and apply "tooltip" attributes to corresponding GtkModelButton widgets
+// walk GMenuModel and apply tooltip and icon attributes to its GtkModelButton widgets
 static void _popover_menu_apply_tooltips(GMenuModel *model,
                                          GtkWidget *box,
                                          GtkStack *stack,
@@ -8644,7 +8741,7 @@ static void _popover_menu_apply_tooltips(GMenuModel *model,
         child_iter = child_iter->next;
       if(child_iter)
       {
-        _popover_menu_apply_item_tooltip(GTK_WIDGET(child_iter->data), model, i, ctx);
+        _popover_menu_apply_item_attributes(GTK_WIDGET(child_iter->data), model, i, ctx);
         child_iter = child_iter->next;
       }
       _popover_menu_apply_submenu_tooltips(model, i, submenu, stack, ctx);
@@ -8657,7 +8754,7 @@ static void _popover_menu_apply_tooltips(GMenuModel *model,
       if(child_iter)
       {
         GtkWidget *item_widget = GTK_WIDGET(child_iter->data);
-        _popover_menu_apply_item_tooltip(item_widget, model, i, ctx);
+        _popover_menu_apply_item_attributes(item_widget, model, i, ctx);
         child_iter = child_iter->next;
       }
     }

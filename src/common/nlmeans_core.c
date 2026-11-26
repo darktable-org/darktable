@@ -688,7 +688,7 @@ static inline cl_int nlmeans_cl_accu(
 {
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q),
-    CLARG(border));
+    CLARG(border), CLARGINT(0));
 }
 
 int nlmeans_denoise_cl(

@@ -150,6 +150,22 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent,
     }
   }
 
+  // enhance the list by darktable tags which are not provided by exiv2
+  const char* darktable_tags[] =
+  {
+    "Xmp.darktable.version_name",
+    "Xmp.xmpMM.PreservedFileName"
+  };
+
+  for(size_t i = 0; i < G_N_ELEMENTS(darktable_tags); i++)
+  {
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
+                       DT_METADATA_TAGS_COL_XMP, darktable_tags[i],
+                       DT_METADATA_TAGS_COL_TYPE, "XmpText",
+                       DT_METADATA_TAGS_COL_VISIBLE, TRUE,
+                       -1);
+  }
+
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_METADATA_TAGS_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(sel_view, model);
   g_object_unref(model);

@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT OFF
 
 #define CAPTURE_KERNEL_ALIGN 32
 #define CAPTURE_YMIN 0.001f
@@ -323,7 +324,7 @@ __kernel void capture_result( __read_only image2d_t in,
   if(blendmask[k] > 0.0f)
   {
     const float mixer = clipf(blendmask[k]);
-    const float luminance_new = mix(luminance[k], tmp[k], mixer);
+    const float luminance_new = dt_mix(luminance[k], tmp[k], mixer);
     const float lumcorr = fp32_div(luminance_new, fmax(luminance[k], CAPTURE_YMIN));
     pix *= (float4)lumcorr;
   }

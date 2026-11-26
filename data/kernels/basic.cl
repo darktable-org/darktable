@@ -954,7 +954,7 @@ remosaic_and_replace(read_only image2d_t input,
 
   const float corrections[4] = { center.x * wb[0], center.y * wb[1], center.z * wb[2], 0.0f};
   const float correction = fmax(corrections[c], 0.0f);
-  write_imagef(output, (int2)(j, i), (float4)(mix(pix_in, correction, opacity), 0.0f, 0.0f, 0.0f));
+  write_imagef(output, (int2)(j, i), (float4)(dt_mix(pix_in, correction, opacity), 0.0f, 0.0f, 0.0f));
 }
 
 kernel void
@@ -968,19 +968,20 @@ box_blur_5x5(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 acc = 0.f;
+  // like dt_box_mean() on the CPU, average only the pixels inside the image
+  // instead of repeating the edge ones
+  const int row_min = max(y - 2, 0);
+  const int row_max = min(y + 2, height - 1);
+  const int col_min = max(x - 2, 0);
+  const int col_max = min(x + 2, width - 1);
 
-  for(int ii = -2; ii < 3; ++ii)
-  {
-    for(int jj = -2; jj < 3; ++jj)
-    {
-      const int row = clamp(y + ii, 0, height - 1);
-      const int col = clamp(x + jj, 0, width - 1);
+  float4 acc = 0.f;
+  for(int row = row_min; row <= row_max; ++row)
+    for(int col = col_min; col <= col_max; ++col)
       acc += fmax(0.0f, Areadpixel(in, col, row));
-    }
-  }
-  acc *= 0.04f;
-  write_imagef(out, (int2)(x, y), acc);
+
+  const int hits = (row_max - row_min + 1) * (col_max - col_min + 1);
+  write_imagef(out, (int2)(x, y), fp32_div_4(acc, (float4)hits));
 }
 
 
@@ -1378,7 +1379,7 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * readpixel(in, x, y);
+  float4 pixel = corval * Areadpixel(in, x, y);
   const float alpha = pixel.w;
 
   float cam[3], XYZ[3];
@@ -1465,7 +1466,7 @@ colorin_clut(read_only image2d_t in, write_only image2d_t out, const int width, 
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  const float4 raw = readpixel(in, x, y);
+  const float4 raw = Areadpixel(in, x, y);
   float4 pixel = dt_lut3d_tetrahedral(clip4(corval * raw), clut, level);
   pixel.w = raw.w;
   write_imagef(out, (int2)(x, y), pixel);
@@ -1485,7 +1486,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * readpixel(in, x, y);
+  float4 pixel = corval * Areadpixel(in, x, y);
   const float alpha = pixel.w;
 
   float cam[3], RGB[3], XYZ[3];
@@ -1588,7 +1589,7 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  const float4 input = readpixel(in, x, y);
+  const float4 input = Areadpixel(in, x, y);
   float4 pixel = corval * input;
   const float alpha = input.w;
 
@@ -1777,7 +1778,7 @@ colorcorrection (read_only image2d_t in, write_only image2d_t out, const int wid
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   pixel.y = saturation*(pixel.y + pixel.x * a_scale + a_base);
   pixel.z = saturation*(pixel.z + pixel.x * b_scale + b_base);
   write_imagef (out, (int2)(x, y), pixel);
@@ -3503,7 +3504,7 @@ monochrome(read_only image2d_t in,
   float filter  = dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   float tt = envelope(pixel.x);
   float t  = tt + (1.0f-tt)*(1.0f-highlights);
-  pixel.x = mix(pixel.x, pixel.x*basep.x/100.0f, t);
+  pixel.x = dt_mix(pixel.x, pixel.x*basep.x/100.0f, t);
   pixel.y = pixel.z = 0.0f;
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -3520,7 +3521,7 @@ colorout_out_of_gamut(const float rgb[3],
   float scale[3] = { gamut_scale.x, gamut_scale.y, gamut_scale.z };
   if(hdr_transfer == DT_HDR_PQ)
   {
-    for(int c = 0; c < 3; c++) scale[c] = DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_PQ_PEAK_NITS;
+    for(int c = 0; c < 3; c++) scale[c] = DT_HDR_PQ_WHITE_SCALE;
   }
   else if(hdr_transfer != DT_HDR_NONE)
   {
@@ -3608,7 +3609,7 @@ colorout_clut(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  const float4 Lab = readpixel(in, x, y);
+  const float4 Lab = Areadpixel(in, x, y);
   const float4 coord = clip4((float4)(fp32_div(Lab.x, 100.0f), fp32_div(Lab.y + 128.0f, 255.0f), fp32_div(Lab.z + 128.0f, 255.0f), 0.0f));
   float4 pixel = dt_lut3d_tetrahedral(coord, clut, level);
   pixel.w = Lab.w;

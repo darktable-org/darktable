@@ -43,6 +43,7 @@ typedef struct dt_bauhaus_slider_data_t
 {
   float pos;      // normalized slider value
   float step;     // step width (not normalized)
+  float step_reciprocal; // if not 0, step width in 1/value, replacing step
   float defpos;   // default value (not normalized)
   float min, max; // min and max range
   float soft_min, soft_max;
@@ -1700,6 +1701,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,
   d->min = d->soft_min = d->hard_min = min;
   d->max = d->soft_max = d->hard_max = max;
   d->step = step;
+  d->step_reciprocal = 0.0f;
   // normalize default:
   d->defpos = defval;
   d->pos = (defval - min) / (max - min);
@@ -3488,6 +3490,28 @@ void dt_bauhaus_widget_set_popup_position(GtkWidget *widget,
   g_object_set_data_full(G_OBJECT(widget), "dt-bauhaus-popup-position", copy, g_free);
 }
 
+// computed in double: zoomed-in fine steps can be smaller than the float
+// resolution of 1/value, and the min_visible rule in _slider_add_step()
+// would turn the rounding error into a full step in the wrong direction
+static float _slider_reciprocal_delta(const dt_bauhaus_slider_data_t *d,
+                                      const float value,
+                                      const float steps)
+{
+  // finer steps when zoomed in, as dt_bauhaus_slider_get_step() gives;
+  // the spans are measured in 1/value, so that a narrow range at a high
+  // value counts as narrow
+  const double soft_span = 1.0 / d->soft_min - 1.0 / d->soft_max;
+  const double zoom = soft_span > 0.0 && dt_conf_get_bool("bauhaus/zoom_step")
+    ? MIN(1.0, (1.0 / d->min - 1.0 / d->max) / soft_span)
+    : 1.0;
+  const double inverse = 1.0 / value - steps * d->step_reciprocal * zoom;
+  // a large upward step (End in the popup, shift near the top) goes past
+  // 1/value = 0; saturate, so the clamping in _slider_add_step() still
+  // lands on the maximum
+  const double target = inverse > 1.0 / d->hard_max ? 1.0 / inverse : d->hard_max;
+  return target - value;
+}
+
 static void _slider_add_step(GtkWidget *widget,
                              float delta,
                              const guint state,
@@ -3503,6 +3527,9 @@ static void _slider_add_step(GtkWidget *widget,
   if(d->curve == _curve_log10)
     delta = value
       * (powf(0.97f, - delta * dt_accel_get_speed_multiplier(widget, state)) - 1.0f);
+  else if(d->step_reciprocal)
+    delta = _slider_reciprocal_delta
+      (d, value, delta * dt_accel_get_speed_multiplier(widget, state));
   else
     delta *= dt_bauhaus_slider_get_step(widget)
       * dt_accel_get_speed_multiplier(widget, state);
@@ -3724,6 +3751,16 @@ void dt_bauhaus_slider_set_step(GtkWidget *widget,
   if(w->type != DT_BAUHAUS_SLIDER) return;
 
   w->slider.step = val;
+}
+
+void dt_bauhaus_slider_set_step_reciprocal(GtkWidget *widget,
+                                           const float val)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+
+  w->slider.step_reciprocal = val;
 }
 
 float dt_bauhaus_slider_get_step(GtkWidget *widget)

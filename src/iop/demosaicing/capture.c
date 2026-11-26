@@ -34,11 +34,6 @@
       - Internal CPU code tiling for performance? tile size would be the same as for rcd
 */
 
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
-#endif
-
 #define CAPTURE_KERNEL_ALIGN 32
 #define CAPTURE_GAUSS_FRACTION 0.01f
 #define CAPTURE_SAME_RADIUS 0.04f
@@ -955,11 +950,6 @@ static void _capture_sharpen(dt_iop_module_t *self,
   dt_free_align(luminance);
   dt_free_align(blendmask);
 }
-
-// revert aggressive optimizing
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
 
 #if HAVE_OPENCL
 
