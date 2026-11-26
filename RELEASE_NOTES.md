@@ -755,6 +755,12 @@ changes (where available).
   histogram of the previously viewed image after switching images in the
   darkroom.
 
+- Color harmonizer no longer tears hue gradients apart where they cross
+  the boundary between two harmony nodes. Colors there now blend smoothly
+  between the two pulls, and CPU and OpenCL processing agree on them.
+  Edits made with earlier versions change slightly near these
+  boundaries.
+
 - Entering the darkroom no longer expands one instance of a module
   while a different instance of it holds the focus. The instance that
   gets the focus is now the one that is expanded.
