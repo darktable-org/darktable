@@ -1409,6 +1409,42 @@ static GList *_scan_profiles(const char *packdir)
    target_print is optional in the pack, the entry list is sorted by display
    name, and so the last-resort first printing entry bears no relation to the
    film: for a black-and-white negative it is a color paper */
+/* The film a param renders with when film_hash names no stock in the pack: a
+   fresh param (film_hash 0, which the defaults and the scene-referred workflow
+   preset both carry) or a stock the pack no longer ships. Kodak Gold 200 when
+   the pack has it, as before.
+
+   Otherwise a film of the kind scan_film expects, colour first as Gold is: a
+   negative while the param prints, a positive while it scans. scan_film is not re-derived on load
+   (gui_update() keeps it as an intentional override), so the fallback has to
+   agree with it. Taking the first film in name order instead put a positive
+   through the print stage on any pack without Gold 200 whose first film is a
+   slide -- an Agfachrome printed on paper as a negative -- until another stock
+   was picked and _film_changed() set scan_film to match.
+
+   Shared by the pipeline and the GUI so the combobox names the film that
+   renders. */
+static const sf_prof_entry_t *_fallback_film(GList *entries,
+                                             const gboolean scan_film)
+{
+  const sf_prof_entry_t *gold = NULL, *colour = NULL, *kind = NULL, *any = NULL;
+  for(GList *l = entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(e->printing) continue;
+    if(!any) any = e;
+    if(!!e->positive == !!scan_film)
+    {
+      if(!kind) kind = e;
+      if(!colour && !e->bw) colour = e;
+    }
+    if(!gold && !strcmp(e->stock, "kodak_gold_200")) gold = e;
+  }
+  if(gold && !!gold->positive == !!scan_film) return gold;
+  if(colour) return colour;
+  return kind ? kind : (gold ? gold : any);
+}
+
 static gboolean _resolve_stock(GList *entries,
                                uint32_t hash,
                                gboolean want_printing,
@@ -1812,8 +1848,27 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", -1, film_stock,
-                     sizeof film_stock))
+  gboolean have_film = FALSE;
+  if(p->film_hash)
+    for(GList *l = entries; l && !have_film; l = l->next)
+    {
+      const sf_prof_entry_t *e = l->data;
+      if(!e->printing && e->hash == p->film_hash)
+      {
+        g_strlcpy(film_stock, e->stock, sizeof film_stock);
+        have_film = TRUE;
+      }
+    }
+  if(!have_film)
+  {
+    const sf_prof_entry_t *fb = _fallback_film(entries, p->scan_film);
+    if(fb)
+    {
+      g_strlcpy(film_stock, fb->stock, sizeof film_stock);
+      have_film = TRUE;
+    }
+  }
+  if(!have_film)
   {
     g_strlcpy(d->sim_error,
               _("the installed data pack contains no film stocks\n"
@@ -4274,14 +4329,7 @@ static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_d
 {
   const sf_prof_entry_t *hit = _entry_by_hash(g, p->film_hash, FALSE);
   if(p->film_hash && hit) return hit;
-  const sf_prof_entry_t *fallback = NULL;
-  for(const GList *l = g->entries; l; l = l->next)
-  {
-    const sf_prof_entry_t *e = l->data;
-    if(e->printing) continue;
-    if(!fallback || !strcmp(e->stock, "kodak_gold_200")) fallback = e;
-  }
-  return fallback;
+  return _fallback_film(g->entries, p->scan_film);
 }
 
 /* The paper the pipeline actually prints on while "auto" is selected: the film's
@@ -5749,21 +5797,20 @@ void gui_update(dt_iop_module_t *self)
      or a stock that vanished from the pack -- mirror _resolve_stock's fallback
      so the combobox agrees with what the pipeline actually renders, instead of
      landing on whatever sorts first while the pipe renders the real default. */
-  int fpos = -1, fallback = -1, pos = 0;
+  int fpos = -1, pos = 0;
   const sf_prof_entry_t *fe = NULL;
   for(const GList *l = g->entries; l; l = l->next, pos++)
   {
     const sf_prof_entry_t *e = l->data;
     if(e->printing) continue;
-    if(fallback < 0 || !strcmp(e->stock, "kodak_gold_200")) fallback = pos;
     if(p->film_hash && e->hash == p->film_hash) { fpos = pos; fe = e; }
   }
-  if(fpos < 0) fpos = fallback;
-  if(fpos >= 0)
+  if(fpos < 0)
   {
-    if(!fe) fe = _entry_at(g, fpos);
-    dt_bauhaus_combobox_set_from_value(g->film, fpos);
+    fe = _fallback_film(g->entries, p->scan_film);
+    fpos = fe ? g_list_index(g->entries, fe) : -1;
   }
+  if(fpos >= 0) dt_bauhaus_combobox_set_from_value(g->film, fpos);
 
   /* p->scan_film is deliberately not re-derived from the film here: the loaded
      value may be an intentional override of the stock's natural mode and has to
