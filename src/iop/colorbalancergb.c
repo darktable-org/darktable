@@ -1279,9 +1279,7 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_a
   dt_aligned_pixel_t XYZ_D50 = { 0.f };
   dt_aligned_pixel_t XYZ_D65 = { 0.f };
 
-  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, work_profile->matrix_in_transposed, work_profile->lut_in,
-                             work_profile->unbounded_coeffs_in, work_profile->lutsize,
-                             work_profile->nonlinearlut);
+  dt_ioppr_rgb_to_xyz(RGB, XYZ_D50, work_profile);
   XYZ_D50_to_D65(XYZ_D50, XYZ_D65);
   XYZ_to_Ych(XYZ_D65, Ych);
 }

@@ -88,9 +88,7 @@ static inline void _blendif_gray(const float *const restrict pixels,
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    const float value = dt_ioppr_get_rgb_matrix_luminance(pixels + j, profile->matrix_in, profile->lut_in,
-                                                          profile->unbounded_coeffs_in, profile->lutsize,
-                                                          profile->nonlinearlut);
+    const float value = dt_ioppr_rgb_luminance(pixels + j, profile);
     mask[x] *= _blendif_compute_factor(value, invert_mask, parameters);
   }
 }
@@ -150,8 +148,9 @@ static inline void _blendif_jzczhz(const float *const restrict pixels,
 
     // use the matrix_out of the hacked profile for blending to use the
     // conversion from RGB to XYZ D65 (instead of XYZ D50)
-    dt_ioppr_rgb_matrix_to_xyz(pixels + j, XYZ_D65, profile->matrix_out_transposed, profile->lut_in,
-                               profile->unbounded_coeffs_in, profile->lutsize, profile->nonlinearlut);
+    dt_aligned_pixel_t RGB;
+    dt_ioppr_decode_rgb(pixels + j, RGB, profile);
+    dt_apply_transposed_color_matrix(RGB, profile->matrix_out_transposed, XYZ_D65);
 
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
     dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
@@ -769,9 +768,7 @@ static inline float _rgb_luminance(const float *const restrict rgb,
 {
   float value = 0.0f;
   if(profile)
-    value = dt_ioppr_get_rgb_matrix_luminance(rgb, profile->matrix_in, profile->lut_in,
-                                              profile->unbounded_coeffs_in, profile->lutsize,
-                                              profile->nonlinearlut);
+    value = dt_ioppr_rgb_luminance(rgb, profile);
   else
     value = 0.3f * rgb[0] + 0.59f * rgb[1] + 0.11f * rgb[2];
   return value;
@@ -789,8 +786,9 @@ static inline void _rgb_to_JzCzhz(const dt_aligned_pixel_t rgb,
     dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f };
     // use the matrix_out of the hacked profile for blending to use the
     // conversion from RGB to XYZ D65 (instead of XYZ D50)
-    dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D65, profile->matrix_out_transposed, profile->lut_in, profile->unbounded_coeffs_in,
-                               profile->lutsize, profile->nonlinearlut);
+    dt_aligned_pixel_t linear;
+    dt_ioppr_decode_rgb(rgb, linear, profile);
+    dt_apply_transposed_color_matrix(linear, profile->matrix_out_transposed, XYZ_D65);
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
   }
   else

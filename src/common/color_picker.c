@@ -73,8 +73,7 @@ static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb,
   if(profile)
   {
     dt_aligned_pixel_t XYZ_D50 = { 0.0f, 0.0f, 0.0f };
-    dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, profile->matrix_in_transposed, profile->lut_in, profile->unbounded_coeffs_in,
-                               profile->lutsize, profile->nonlinearlut);
+    dt_ioppr_rgb_to_xyz(rgb, XYZ_D50, profile);
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
   }
   else

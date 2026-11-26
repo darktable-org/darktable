@@ -420,12 +420,7 @@ static void _blendif_scale(const float *blendif_boost_factors,
       if(work_profile == NULL)
         out[CHANNEL_INDEX_g] = 0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2];
       else
-        out[CHANNEL_INDEX_g] = dt_ioppr_get_rgb_matrix_luminance
-          (in, work_profile->matrix_in,
-           work_profile->lut_in,
-           work_profile->unbounded_coeffs_in,
-           work_profile->lutsize,
-           work_profile->nonlinearlut);
+        out[CHANNEL_INDEX_g] = dt_ioppr_rgb_luminance(in, work_profile);
       out[CHANNEL_INDEX_g] = out[CHANNEL_INDEX_g] / BOOST(0);
       out[CHANNEL_INDEX_R] = in[0] / BOOST(1);
       out[CHANNEL_INDEX_G] = in[1] / BOOST(2);

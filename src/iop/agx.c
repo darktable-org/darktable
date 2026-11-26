@@ -532,11 +532,7 @@ static inline float _luminance_from_matrix(const dt_aligned_pixel_t pixel,
 static inline float _luminance_from_profile(dt_aligned_pixel_t pixel,
                                             const dt_iop_order_iccprofile_info_t *const profile)
 {
-  return dt_ioppr_get_rgb_matrix_luminance(pixel, profile->matrix_in,
-                                           profile->lut_in,
-                                           profile->unbounded_coeffs_in,
-                                           profile->lutsize,
-                                           profile->nonlinearlut);
+  return dt_ioppr_rgb_luminance(pixel, profile);
 }
 
 

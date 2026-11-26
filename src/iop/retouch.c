@@ -3115,9 +3115,7 @@ static void rt_process_stats(dt_iop_module_t *self,
 
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_lab(img_src + i, Lab, work_profile->matrix_in_transposed,
-                                  work_profile->lut_in, work_profile->unbounded_coeffs_in,
-                                  work_profile->lutsize, work_profile->nonlinearlut);
+      dt_ioppr_rgb_to_lab(img_src + i, Lab, work_profile);
     }
     else
     {
@@ -3166,12 +3164,7 @@ static void rt_adjust_levels(dt_iop_module_t *self,
   {
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_lab(img_src + i, img_src + i,
-                                 work_profile->matrix_in_transposed,
-                                 work_profile->lut_in,
-                                 work_profile->unbounded_coeffs_in,
-                                 work_profile->lutsize,
-                                 work_profile->nonlinearlut);
+      dt_ioppr_rgb_to_lab(img_src + i, img_src + i, work_profile);
     }
     else
     {
@@ -3198,12 +3191,7 @@ static void rt_adjust_levels(dt_iop_module_t *self,
 
     if(work_profile)
     {
-      dt_ioppr_lab_to_rgb_matrix(img_src + i, img_src + i,
-                                 work_profile->matrix_out_transposed,
-                                 work_profile->lut_out,
-                                 work_profile->unbounded_coeffs_out,
-                                 work_profile->lutsize,
-                                 work_profile->nonlinearlut);;
+      dt_ioppr_lab_to_rgb(img_src + i, img_src + i, work_profile);;
     }
     else
     {
