@@ -4049,26 +4049,46 @@ static void _stamp_lut_hash(dt_iop_module_t *self)
      several parses of pack.json on the GUI thread. */
   if(p->lut_hash) return;
   /* _pack is whichever pack a pipe loaded last, which can belong to another
-     image entirely. Only stamp it when it is the pack this edit resolves to */
+     image entirely. Only stamp the pack this edit resolves to */
   char want_dir[SF_PATH_LEN];
   if(_edit_pack_dir(p, want_dir, sizeof want_dir, NULL) != SF_EDIT_PACK_OK) return;
+
+  /* the identity of the pack this edit resolves to: from _pack when a pipe has
+     loaded exactly that one, else peeked from its directory. Without the peek,
+     the first change on an image opened after one that used another pack
+     stamped nothing -- no pipe had run the module for it yet, so _pack still
+     held the previous image's pack -- and an edit whose only change that was
+     stayed unbound. The peek reads pack.json and the table headers, and runs
+     at most until the edit is stamped */
+  uint32_t cur = 0, curp = 0;
   dt_pthread_mutex_lock(&_pack_lock);
-  if(_pack && strcmp(_pack_path, want_dir) == 0)
+  const gboolean loaded = _pack && strcmp(_pack_path, want_dir) == 0;
+  if(loaded)
   {
-    /* only an edit that names neither a table nor a pack is still unbound. One
-       that names a table but no pack was rendered on a pack without an
-       identity, and one reaching an identified pack now is on a substitute
-       whatever its table says: stamping there would make the substitution
-       permanent, surviving the moment its own pack comes back */
-    const gboolean unbound = !p->lut_hash && !p->pack_hash;
-    const uint32_t cur = sf_pack_lut_hash(_pack);
-    if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
-    /* the pack is recorded only onto an unbound edit, and never overwritten:
-       that would erase the very mismatch the field exists to report */
-    const uint32_t curp = sf_pack_hash(_pack);
-    if(curp && unbound) p->pack_hash = curp;
+    cur = sf_pack_lut_hash(_pack);
+    curp = sf_pack_hash(_pack);
   }
   dt_pthread_mutex_unlock(&_pack_lock);
+  if(!loaded)
+  {
+    sf_table_info_t info[SF_MAX_TABLES];
+    /* default first, as sf_pack_lut_hash() reports it */
+    if(sf_pack_peek_tables(want_dir, info, SF_MAX_TABLES) <= 0) return;
+    cur = info[0].lut_hash;
+    curp = sf_fetch_peek_pack_hash(want_dir);
+  }
+  if(!cur) return;
+
+  /* only an edit that names neither a table nor a pack is still unbound. One
+     that names a table but no pack was rendered on a pack without an
+     identity, and one reaching an identified pack now is on a substitute
+     whatever its table says: stamping there would make the substitution
+     permanent, surviving the moment its own pack comes back */
+  const gboolean unbound = !p->lut_hash && !p->pack_hash;
+  if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
+  /* the pack is recorded only onto an unbound edit, and never overwritten:
+     that would erase the very mismatch the field exists to report */
+  if(curp && unbound) p->pack_hash = curp;
 }
 
 /* both halves of the hanatos sensitivity adaptation belong to the irradiance
