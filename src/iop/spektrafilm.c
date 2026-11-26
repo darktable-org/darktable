@@ -657,10 +657,13 @@ static sf_pack_t *_pack = NULL;
 /* Directory _pack was loaded from. Which directory that is depends on the edit:
    an image developed against an older spectral table resolves to a different
    pack than one developed against the current one. Keeping the path lets
-   _ensure_sim() notice the resolved directory has changed and reload, and lets
-   _scan_profiles() read profiles out of the SAME pack, not always out of
-   the pack directory -- profiles and spectral table have to come from one
-   place or the film list will not match the data behind it. */
+   _ensure_sim() notice the resolved directory has changed and reload.
+
+   It says which pack the last pipe used, not which pack the image in the GUI
+   needs: switching images leaves it on the previous image's pack until a pipe
+   runs the module for the new one. The GUI resolves the edit's own pack with
+   _edit_pack_dir() instead, which is the lookup _ensure_sim() loads from, so
+   the film list and the data behind it still come from one place. */
 static char _pack_path[SF_PATH_LEN] = { 0 };
 /* Value of sf_fetch_generation() when _pack / _pack_error were last decided.
    A download can install a pack into a directory this module already probed
@@ -1324,15 +1327,7 @@ static GList *_scan_profiles(const char *packdir)
   if(packdir && *packdir)
     g_strlcpy(dir, packdir, sizeof dir);
   else
-  {
-    dt_pthread_mutex_lock(&_pack_lock);
-    /* _pack_path also records directories that failed to load, so it only
-       answers "which pack is in use" when one is actually held. */
-    const gboolean have = _pack && _pack_path[0] != 0;
-    if(have) g_strlcpy(dir, _pack_path, sizeof dir);
-    dt_pthread_mutex_unlock(&_pack_lock);
-    if(!have) _resolve_pack_dir(0, dir, sizeof dir);
-  }
+    _resolve_pack_dir(0, dir, sizeof dir);
   char profdir[SF_PATH_LEN + 16];
   snprintf(profdir, sizeof profdir, "%s/profiles", dir);
 
@@ -3982,8 +3977,17 @@ cleanup:
 static void _rescan(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  const dt_iop_spektrafilm_params_t *p = (const dt_iop_spektrafilm_params_t *)self->params;
+  /* the profiles of the pack THIS edit resolves to, the same lookup
+     _ensure_sim() renders with. Not the loaded _pack: that is whichever pack a
+     pipe loaded last, which belongs to the previous image whenever this one
+     has not been processed with the module on yet. A fresh edit after an edit
+     made on another pack would otherwise list that pack's stocks instead of
+     the default pack's until darktable restarts */
+  char dir[SF_PATH_LEN];
+  _edit_pack_dir(p, dir, sizeof dir, NULL);
   g_list_free_full(g->entries, g_free);
-  g->entries = _scan_profiles(NULL);
+  g->entries = _scan_profiles(dir);
   /* the tables come from the same pack as the profiles, so they are rescanned
      together: a reload that changes one changes the other */
   g_list_free_full(g->tables, g_free);
