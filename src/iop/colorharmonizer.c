@@ -168,47 +168,62 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 //   Default zone (1):  Gaussian tapers to ~14 % at the midpoint between nodes.
 //   Wide zone   (> 1): Gaussian stays high across the full hue circle → broad,
 //                       global correction; all hues are pulled noticeably.
-static inline float get_weighted_hue_shift(const float px_hue,
-                                           const float *nodes,
-                                           const int num_nodes,
-                                           const float pull_width_factor,
-                                           int *out_winning_idx,
-                                           float *out_max_weight)
+//
+// Where two nodes are equally near (and opposite a lone node, where the two
+// ways around the circle are), the nearest node changes and the shift jumps
+// sign, tearing hue gradients apart. Every candidate within
+// COLORHARMONIZER_BOUNDARY_BAND of the nearest one is blended in, with a
+// weight falling linearly to zero at the band's edge, so the shift ramps
+// across the boundary instead. A hard switch also let the last-bit difference
+// between the CPU and OpenCL hues pick opposite nodes for the same pixel.
+// The constant must match data/kernels/colorharmonizer.cl.
+#define COLORHARMONIZER_BOUNDARY_BAND 0.01f
+
+static inline void get_weighted_hue_shift(const float px_hue,
+                                          const float *nodes,
+                                          const float *node_saturation,
+                                          const int num_nodes,
+                                          const float pull_width_factor,
+                                          float *out_hue_shift,
+                                          float *out_sat_delta)
 {
-  if(num_nodes <= 0)
-  {
-    if(out_winning_idx) *out_winning_idx = 0;
-    if(out_max_weight) *out_max_weight = 0.0f;
-    return 0.0f;
-  }
+  *out_hue_shift = 0.0f;
+  *out_sat_delta = 0.0f;
+  if(num_nodes <= 0) return;
+
   const float sigma = pull_width_factor * 0.5f / (float)num_nodes;
   const float inv_2sigma2 = 1.0f / (2.0f * sigma * sigma);
 
-  float max_w       = 0.0f;
-  int   winning_idx = 0;
-  float diff_winning = 0.0f;
-
+  // each node is a candidate both ways around the hue circle: the short way,
+  // at distance d <= 0.5, and the long way, at 1 - d
+  float diff[2 * COLORHARMONIZER_MAX_NODES];
+  int n = 0;
+  float d_min = 1.0f;
   for(int i = 0; i < num_nodes; i++)
   {
-    float d = fabsf(px_hue - nodes[i]);
-    if(d > 0.5f) d = 1.0f - d;
-
-    const float w = expf(-d * d * inv_2sigma2);
-    float diff = nodes[i] - px_hue;
-    if(diff > 0.5f)       diff -= 1.0f;
-    else if(diff < -0.5f) diff += 1.0f;
-
-    if(w > max_w)
-    {
-      max_w       = w;
-      winning_idx = i;
-      diff_winning = diff;
-    }
+    float s = nodes[i] - px_hue;
+    if(s > 0.5f)       s -= 1.0f;
+    else if(s < -0.5f) s += 1.0f;
+    diff[n++] = s;
+    diff[n++] = s - copysignf(1.0f, s);
+    d_min = fminf(d_min, fabsf(s));
   }
 
-  if(out_winning_idx) *out_winning_idx = winning_idx;
-  if(out_max_weight)  *out_max_weight  = max_w;
-  return diff_winning * max_w;
+  float sum_a = 0.0f, shift = 0.0f, sat = 0.0f;
+  for(int k = 0; k < n; k++)
+  {
+    const float d = fabsf(diff[k]);
+    const float a = 1.0f - (d - d_min) / COLORHARMONIZER_BOUNDARY_BAND;
+    if(a <= 0.0f) continue;
+    const float w = expf(-d * d * inv_2sigma2);
+    sum_a += a;
+    shift += a * diff[k] * w;
+    sat   += a * (node_saturation[k / 2] - 1.0f) * w;
+  }
+
+  // the nearest candidate always has a = 1, so sum_a >= 1
+  *out_hue_shift = shift / sum_a;
+  *out_sat_delta = sat / sum_a;
 }
 
 static inline float wrap_hue(float h)
@@ -358,11 +373,9 @@ void process(dt_iop_module_t *self,
         const float hue    = (px_JCH[2] + M_PI_F) / DT_2PI_F;
         const float chroma = px_JCH[1];
 
-        int   winning_idx = 0;
-        float max_weight  = 0.0f;
-        const float hue_shift = get_weighted_hue_shift(hue, nodes, num_nodes, pull_width,
-                                                       &winning_idx, &max_weight);
-        const float sat_delta = (p->node_saturation[winning_idx] - 1.0f) * max_weight;
+        float hue_shift, sat_delta;
+        get_weighted_hue_shift(hue, nodes, p->node_saturation, num_nodes, pull_width,
+                               &hue_shift, &sat_delta);
 
         // Smooth hyperbolic ramp: approaches 0 for neutral colors, ~1 for saturated colors.
         const float chroma_weight = chroma / (chroma + cutoff + 1e-5f);
@@ -417,12 +430,8 @@ void process(dt_iop_module_t *self,
         jch_cache[k * 3 + 1] = px_JCH[1];  // chroma
         jch_cache[k * 3 + 2] = hue;        // normalized hue [0,1)
 
-        int   winning_idx = 0;
-        float max_weight  = 0.0f;
-        const float hue_shift = get_weighted_hue_shift(hue, nodes, num_nodes, pull_width,
-                                                       &winning_idx, &max_weight);
-        corrections[k * 2]     = hue_shift;
-        corrections[k * 2 + 1] = (p->node_saturation[winning_idx] - 1.0f) * max_weight;
+        get_weighted_hue_shift(hue, nodes, p->node_saturation, num_nodes, pull_width,
+                               &corrections[k * 2], &corrections[k * 2 + 1]);
       }
     }
 

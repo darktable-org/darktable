@@ -26,53 +26,53 @@ static inline float wrap_hue(float h)
   return h;
 }
 
-// Pull the pixel hue toward the nearest harmony node, scaled by Gaussian proximity.
-// Also returns the winning node index and its max Gaussian weight via output pointers.
+// Pull the pixel hue toward the nearest harmony node, scaled by Gaussian proximity,
+// and return the matching saturation delta. Mirrors get_weighted_hue_shift() in
+// src/iop/colorharmonizer.c, which explains the boundary band.
 //
 // The shift equals (nearest_node - px_hue) * max_w, so:
 //   - A pixel already at a node produces zero shift.
 //   - A pixel far from all nodes gets near-zero shift (max_w ≈ 0).
-static inline float get_weighted_hue_shift(const float px_hue,
-                                           constant const float *const nodes,
-                                           const int num_nodes,
-                                           const float zone_width_factor,
-                                           int *out_winning_idx,
-                                           float *out_max_weight)
+#define COLORHARMONIZER_MAX_NODES 4
+#define COLORHARMONIZER_BOUNDARY_BAND 0.01f
+
+static inline float2 get_weighted_hue_shift(const float px_hue,
+                                            constant const float *const nodes,
+                                            constant const float *const node_saturation,
+                                            const int num_nodes,
+                                            const float zone_width_factor)
 {
-  if(num_nodes <= 0)
-  {
-    *out_winning_idx = 0;
-    *out_max_weight = 0.0f;
-    return 0.0f;
-  }
+  if(num_nodes <= 0) return (float2)(0.0f, 0.0f);
+
   const float sigma = zone_width_factor * 0.5f / (float)num_nodes;
   const float inv_2sigma2 = 1.0f / (2.0f * sigma * sigma);
 
-  float max_w        = 0.0f;
-  int   winning_idx  = 0;
-  float diff_winning = 0.0f;
-
+  float diff[2 * COLORHARMONIZER_MAX_NODES];
+  int n = 0;
+  float d_min = 1.0f;
   for(int i = 0; i < num_nodes; i++)
   {
-    float d = fabs(px_hue - nodes[i]);
-    if(d > 0.5f) d = 1.0f - d;
-
-    const float w = exp(-d * d * inv_2sigma2);
-    float diff = nodes[i] - px_hue;
-    if(diff > 0.5f)       diff -= 1.0f;
-    else if(diff < -0.5f) diff += 1.0f;
-
-    if(w > max_w)
-    {
-      max_w        = w;
-      winning_idx  = i;
-      diff_winning = diff;
-    }
+    float s = nodes[i] - px_hue;
+    if(s > 0.5f)       s -= 1.0f;
+    else if(s < -0.5f) s += 1.0f;
+    diff[n++] = s;
+    diff[n++] = s - copysign(1.0f, s);
+    d_min = fmin(d_min, fabs(s));
   }
 
-  *out_winning_idx = winning_idx;
-  *out_max_weight  = max_w;
-  return diff_winning * max_w;
+  float sum_a = 0.0f, shift = 0.0f, sat = 0.0f;
+  for(int k = 0; k < n; k++)
+  {
+    const float d = fabs(diff[k]);
+    const float a = 1.0f - (d - d_min) / COLORHARMONIZER_BOUNDARY_BAND;
+    if(a <= 0.0f) continue;
+    const float w = exp(-d * d * inv_2sigma2);
+    sum_a += a;
+    shift += a * diff[k] * w;
+    sat   += a * (node_saturation[k / 2] - 1.0f) * w;
+  }
+
+  return (float2)(shift / sum_a, sat / sum_a);
 }
 
 // Kernel 1: compute per-pixel correction maps (hue_delta, sat_delta) and
@@ -104,14 +104,7 @@ kernel void colorharmonizer_map(read_only  image2d_t  in,
   const int idx = y * width + x;
   jch_out[idx] = (float4)(JCH.x, JCH.y, hue, pix_in.w);
 
-  int   winning_idx = 0;
-  float max_weight  = 0.0f;
-  const float hue_shift = get_weighted_hue_shift(hue, nodes, num_nodes, zone_width,
-                                                 &winning_idx, &max_weight);
-
-  const float sd = (node_saturation[winning_idx] - 1.0f) * max_weight;
-
-  p_out[idx] = (float2)(hue_shift, sd);
+  p_out[idx] = get_weighted_hue_shift(hue, nodes, node_saturation, num_nodes, zone_width);
 }
 
 // Kernel 2: apply Gaussian-smoothed corrections using cached JCH to produce output.
