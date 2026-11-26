@@ -171,6 +171,8 @@ typedef enum dt_dev_pixelpipe_display_mask_t
 } dt_dev_pixelpipe_display_mask_t;
 
 
+#pragma OPENCL FP_CONTRACT ON
+
 float
 blendif_factor_Lab(const float4 input, const float4 output,
                    const unsigned int blendif, global const float *parameters,
