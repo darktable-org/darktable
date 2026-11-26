@@ -47,13 +47,13 @@ dng_gain_map(read_only image2d_t in,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float rel_y = (y0 + ((float)y + 0.5f) * step) / raw_h;
+  const float rel_y = fp32_div(y0 + ((float)y + 0.5f) * step, raw_h);
   const float y_map = clamp((rel_y - map_origin_v) * rel_to_map_y, 0.0f, (float)(map_h - 1));
   const int y_i0 = min((int)y_map, map_h - 1);
   const int y_i1 = min(y_i0 + 1, map_h - 1);
   const float y_frac = y_map - y_i0;
 
-  const float rel_x = (x0 + ((float)x + 0.5f) * step) / raw_w;
+  const float rel_x = fp32_div(x0 + ((float)x + 0.5f) * step, raw_w);
   const float x_map = clamp((rel_x - map_origin_h) * rel_to_map_x, 0.0f, (float)(map_w - 1));
   const int x_i0 = min((int)x_map, map_w - 1);
   const int x_i1 = min(x_i0 + 1, map_w - 1);
