@@ -73,6 +73,7 @@
 #include "common/iop_profile.h"
 #include "common/spektra_fetch.h"
 #include "common/opencl.h"
+#include "common/presets.h"
 #include "common/gaussian.h"
 #include "gui/accelerators.h"
 #include "dtgtk/button.h"
@@ -657,11 +658,18 @@ static sf_pack_t *_pack = NULL;
 /* Directory _pack was loaded from. Which directory that is depends on the edit:
    an image developed against an older spectral table resolves to a different
    pack than one developed against the current one. Keeping the path lets
-   _ensure_sim() notice the resolved directory has changed and reload, and lets
-   _scan_profiles() read profiles out of the SAME pack, not always out of
-   the pack directory -- profiles and spectral table have to come from one
-   place or the film list will not match the data behind it. */
+   _ensure_sim() notice the resolved directory has changed and reload.
+
+   It says which pack the last pipe used, not which pack the image in the GUI
+   needs: switching images leaves it on the previous image's pack until a pipe
+   runs the module for the new one. The GUI resolves the edit's own pack with
+   _edit_pack_dir() instead, which is the lookup _ensure_sim() loads from, so
+   the film list and the data behind it still come from one place. */
 static char _pack_path[SF_PATH_LEN] = { 0 };
+/* sf_fetch_generation() when init_presets() last decided whether the shipped
+   looks are registered, so _update_data_row() can rebuild them once an install
+   or a manifest read changes that answer */
+static guint _presets_gen = 0;
 /* Value of sf_fetch_generation() when _pack / _pack_error were last decided.
    A download can install a pack into a directory this module already probed
    and rejected, which leaves the resolved path unchanged -- so a path
@@ -1324,15 +1332,7 @@ static GList *_scan_profiles(const char *packdir)
   if(packdir && *packdir)
     g_strlcpy(dir, packdir, sizeof dir);
   else
-  {
-    dt_pthread_mutex_lock(&_pack_lock);
-    /* _pack_path also records directories that failed to load, so it only
-       answers "which pack is in use" when one is actually held. */
-    const gboolean have = _pack && _pack_path[0] != 0;
-    if(have) g_strlcpy(dir, _pack_path, sizeof dir);
-    dt_pthread_mutex_unlock(&_pack_lock);
-    if(!have) _resolve_pack_dir(0, dir, sizeof dir);
-  }
+    _resolve_pack_dir(0, dir, sizeof dir);
   char profdir[SF_PATH_LEN + 16];
   snprintf(profdir, sizeof profdir, "%s/profiles", dir);
 
@@ -1414,6 +1414,42 @@ static GList *_scan_profiles(const char *packdir)
    target_print is optional in the pack, the entry list is sorted by display
    name, and so the last-resort first printing entry bears no relation to the
    film: for a black-and-white negative it is a color paper */
+/* The film a param renders with when film_hash names no stock in the pack: a
+   fresh param (film_hash 0, which the defaults and the scene-referred workflow
+   preset both carry) or a stock the pack no longer ships. Kodak Gold 200 when
+   the pack has it, as before.
+
+   Otherwise a film of the kind scan_film expects, colour first as Gold is: a
+   negative while the param prints, a positive while it scans. scan_film is not re-derived on load
+   (gui_update() keeps it as an intentional override), so the fallback has to
+   agree with it. Taking the first film in name order instead put a positive
+   through the print stage on any pack without Gold 200 whose first film is a
+   slide -- an Agfachrome printed on paper as a negative -- until another stock
+   was picked and _film_changed() set scan_film to match.
+
+   Shared by the pipeline and the GUI so the combobox names the film that
+   renders. */
+static const sf_prof_entry_t *_fallback_film(GList *entries,
+                                             const gboolean scan_film)
+{
+  const sf_prof_entry_t *gold = NULL, *colour = NULL, *kind = NULL, *any = NULL;
+  for(GList *l = entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(e->printing) continue;
+    if(!any) any = e;
+    if(!!e->positive == !!scan_film)
+    {
+      if(!kind) kind = e;
+      if(!colour && !e->bw) colour = e;
+    }
+    if(!gold && !strcmp(e->stock, "kodak_gold_200")) gold = e;
+  }
+  if(gold && !!gold->positive == !!scan_film) return gold;
+  if(colour) return colour;
+  return kind ? kind : (gold ? gold : any);
+}
+
 static gboolean _resolve_stock(GList *entries,
                                uint32_t hash,
                                gboolean want_printing,
@@ -1817,8 +1853,27 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", -1, film_stock,
-                     sizeof film_stock))
+  gboolean have_film = FALSE;
+  if(p->film_hash)
+    for(GList *l = entries; l && !have_film; l = l->next)
+    {
+      const sf_prof_entry_t *e = l->data;
+      if(!e->printing && e->hash == p->film_hash)
+      {
+        g_strlcpy(film_stock, e->stock, sizeof film_stock);
+        have_film = TRUE;
+      }
+    }
+  if(!have_film)
+  {
+    const sf_prof_entry_t *fb = _fallback_film(entries, p->scan_film);
+    if(fb)
+    {
+      g_strlcpy(film_stock, fb->stock, sizeof film_stock);
+      have_film = TRUE;
+    }
+  }
+  if(!have_film)
   {
     g_strlcpy(d->sim_error,
               _("the installed data pack contains no film stocks\n"
@@ -3982,8 +4037,17 @@ cleanup:
 static void _rescan(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  const dt_iop_spektrafilm_params_t *p = (const dt_iop_spektrafilm_params_t *)self->params;
+  /* the profiles of the pack THIS edit resolves to, the same lookup
+     _ensure_sim() renders with. Not the loaded _pack: that is whichever pack a
+     pipe loaded last, which belongs to the previous image whenever this one
+     has not been processed with the module on yet. A fresh edit after an edit
+     made on another pack would otherwise list that pack's stocks instead of
+     the default pack's until darktable restarts */
+  char dir[SF_PATH_LEN];
+  _edit_pack_dir(p, dir, sizeof dir, NULL);
   g_list_free_full(g->entries, g_free);
-  g->entries = _scan_profiles(NULL);
+  g->entries = _scan_profiles(dir);
   /* the tables come from the same pack as the profiles, so they are rescanned
      together: a reload that changes one changes the other */
   g_list_free_full(g->tables, g_free);
@@ -4045,26 +4109,46 @@ static void _stamp_lut_hash(dt_iop_module_t *self)
      several parses of pack.json on the GUI thread. */
   if(p->lut_hash) return;
   /* _pack is whichever pack a pipe loaded last, which can belong to another
-     image entirely. Only stamp it when it is the pack this edit resolves to */
+     image entirely. Only stamp the pack this edit resolves to */
   char want_dir[SF_PATH_LEN];
   if(_edit_pack_dir(p, want_dir, sizeof want_dir, NULL) != SF_EDIT_PACK_OK) return;
+
+  /* the identity of the pack this edit resolves to: from _pack when a pipe has
+     loaded exactly that one, else peeked from its directory. Without the peek,
+     the first change on an image opened after one that used another pack
+     stamped nothing -- no pipe had run the module for it yet, so _pack still
+     held the previous image's pack -- and an edit whose only change that was
+     stayed unbound. The peek reads pack.json and the table headers, and runs
+     at most until the edit is stamped */
+  uint32_t cur = 0, curp = 0;
   dt_pthread_mutex_lock(&_pack_lock);
-  if(_pack && strcmp(_pack_path, want_dir) == 0)
+  const gboolean loaded = _pack && strcmp(_pack_path, want_dir) == 0;
+  if(loaded)
   {
-    /* only an edit that names neither a table nor a pack is still unbound. One
-       that names a table but no pack was rendered on a pack without an
-       identity, and one reaching an identified pack now is on a substitute
-       whatever its table says: stamping there would make the substitution
-       permanent, surviving the moment its own pack comes back */
-    const gboolean unbound = !p->lut_hash && !p->pack_hash;
-    const uint32_t cur = sf_pack_lut_hash(_pack);
-    if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
-    /* the pack is recorded only onto an unbound edit, and never overwritten:
-       that would erase the very mismatch the field exists to report */
-    const uint32_t curp = sf_pack_hash(_pack);
-    if(curp && unbound) p->pack_hash = curp;
+    cur = sf_pack_lut_hash(_pack);
+    curp = sf_pack_hash(_pack);
   }
   dt_pthread_mutex_unlock(&_pack_lock);
+  if(!loaded)
+  {
+    sf_table_info_t info[SF_MAX_TABLES];
+    /* default first, as sf_pack_lut_hash() reports it */
+    if(sf_pack_peek_tables(want_dir, info, SF_MAX_TABLES) <= 0) return;
+    cur = info[0].lut_hash;
+    curp = sf_fetch_peek_pack_hash(want_dir);
+  }
+  if(!cur) return;
+
+  /* only an edit that names neither a table nor a pack is still unbound. One
+     that names a table but no pack was rendered on a pack without an
+     identity, and one reaching an identified pack now is on a substitute
+     whatever its table says: stamping there would make the substitution
+     permanent, surviving the moment its own pack comes back */
+  const gboolean unbound = !p->lut_hash && !p->pack_hash;
+  if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
+  /* the pack is recorded only onto an unbound edit, and never overwritten:
+     that would erase the very mismatch the field exists to report */
+  if(curp && unbound) p->pack_hash = curp;
 }
 
 /* both halves of the hanatos sensitivity adaptation belong to the irradiance
@@ -4250,14 +4334,7 @@ static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_d
 {
   const sf_prof_entry_t *hit = _entry_by_hash(g, p->film_hash, FALSE);
   if(p->film_hash && hit) return hit;
-  const sf_prof_entry_t *fallback = NULL;
-  for(const GList *l = g->entries; l; l = l->next)
-  {
-    const sf_prof_entry_t *e = l->data;
-    if(e->printing) continue;
-    if(!fallback || !strcmp(e->stock, "kodak_gold_200")) fallback = e;
-  }
-  return fallback;
+  return _fallback_film(g->entries, p->scan_film);
 }
 
 /* The paper the pipeline actually prints on while "auto" is selected: the film's
@@ -4768,6 +4845,16 @@ static void _update_data_row(dt_iop_module_t *self)
     g->data_gen = sf_fetch_generation();
     dt_iop_gui_update(self);
 
+    /* the built-in presets were registered against the packs installed and
+       published at startup. An install or a manifest read can change whether
+       the shipped looks may be offered, so rebuild them the way
+       _iop_preferences_changed() does after a workflow change */
+    if(_presets_gen != g->data_gen)
+    {
+      dt_presets_delete_builtin(self->op);
+      if(self->so->init_presets) self->so->init_presets(self->so);
+    }
+
     /* Drop the cached pipeline output from this module onwards before asking
        for a reprocess.
 
@@ -5095,6 +5182,20 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   p->gamut_compress = TRUE;
 }
 
+/* Whether the shipped looks may be offered. They name stocks of the packs
+   darktable publishes and were tuned on them, and a preset names no pack: it
+   renders on the one a fresh edit resolves to. So they are offered only while
+   that pack is a published one. A pack copied in by hand and selected with
+   default_pack, or any pack before a manifest has been read, carries stocks
+   and data darktable does not control, and the looks would silently render on
+   substitutes there. */
+static gboolean _presets_published(void)
+{
+  char dir[SF_PATH_LEN];
+  _resolve_pack_dir(0, dir, sizeof dir);
+  return sf_fetch_pack_is_published(dir);
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   /* The scene-referred preset below exists only under one workflow, so the
@@ -5142,6 +5243,12 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
+
+  /* everything below is a look built on stocks of the published packs. The
+     scene-referred default above is not: it names no stock and starts any
+     pack, and the workflow that auto-applies it must keep working */
+  _presets_gen = sf_fetch_generation();
+  if(!_presets_published()) return;
 
   /* look|crisp black and white -- by Bazdesh, shared as "BW_Crispy TriX"
 
@@ -5725,21 +5832,20 @@ void gui_update(dt_iop_module_t *self)
      or a stock that vanished from the pack -- mirror _resolve_stock's fallback
      so the combobox agrees with what the pipeline actually renders, instead of
      landing on whatever sorts first while the pipe renders the real default. */
-  int fpos = -1, fallback = -1, pos = 0;
+  int fpos = -1, pos = 0;
   const sf_prof_entry_t *fe = NULL;
   for(const GList *l = g->entries; l; l = l->next, pos++)
   {
     const sf_prof_entry_t *e = l->data;
     if(e->printing) continue;
-    if(fallback < 0 || !strcmp(e->stock, "kodak_gold_200")) fallback = pos;
     if(p->film_hash && e->hash == p->film_hash) { fpos = pos; fe = e; }
   }
-  if(fpos < 0) fpos = fallback;
-  if(fpos >= 0)
+  if(fpos < 0)
   {
-    if(!fe) fe = _entry_at(g, fpos);
-    dt_bauhaus_combobox_set_from_value(g->film, fpos);
+    fe = _fallback_film(g->entries, p->scan_film);
+    fpos = fe ? g_list_index(g->entries, fe) : -1;
   }
+  if(fpos >= 0) dt_bauhaus_combobox_set_from_value(g->film, fpos);
 
   /* p->scan_film is deliberately not re-derived from the film here: the loaded
      value may be an intentional override of the stock's natural mode and has to

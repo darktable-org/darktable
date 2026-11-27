@@ -44,6 +44,11 @@
 #define CONF_REPOSITORY "plugins/darkroom/spektrafilm/repository"
 #define CONF_REF "plugins/darkroom/spektrafilm/ref"
 #define CONF_DEFAULT_PACK "plugins/darkroom/spektrafilm/default_pack"
+/* every pack the configured repositories' manifests have listed, as
+   space-separated %08x hashes: the pack_hash, or the table hash of a pack that
+   declares none. Written each time a manifest is read, never cleared. It is
+   what tells a downloaded pack from a directory copied into packs/ by hand */
+#define CONF_PUBLISHED_PACKS "plugins/darkroom/spektrafilm/published_packs"
 
 /* Owner/repo holding the exported packs, and the git ref to read them at.
    Both are overridable so a packager can point at a mirror and a developer can
@@ -410,10 +415,129 @@ static gboolean _dir_name_matches(const char *ent,
   return named == header_hash || sf_fetch_peek_pack_hash(dir) == named;
 }
 
+/* an 8-hex-digit hash from a config value, 0 when the key is empty or the value
+   is anything else */
+static uint32_t _conf_hash(const char *key)
+{
+  if(!dt_conf_key_not_empty(key)) return 0;
+  const char *s = dt_conf_get_string_const(key);
+  return (strlen(s) == 8 && strspn(s, "0123456789abcdefABCDEF") == 8)
+           ? (uint32_t)g_ascii_strtoull(s, NULL, 16)
+           : 0;
+}
+
+static gboolean _hash_listed(const char *list,
+                             const uint32_t h)
+{
+  if(!list || !h) return FALSE;
+  char want[9];
+  g_snprintf(want, sizeof(want), "%08x", h);
+  for(const char *p = list; *p;)
+  {
+    while(*p == ' ') p++;
+    const size_t n = strcspn(p, " ");
+    if(n == 8 && g_ascii_strncasecmp(p, want, 8) == 0) return TRUE;
+    p += n;
+  }
+  return FALSE;
+}
+
+/* whether a directory under packs/ may be used. A pack a manifest published
+   always may; any other one only while default_pack names it, by the directory
+   name, its pack_hash or its default table. Until this darktable has read a
+   manifest there is no list to check against, and every directory is used as
+   before.
+
+   named is the directory name as a hash, lut_hash the hash of its default
+   table */
+static gboolean _downloaded_pack_available(const char *dir,
+                                           const uint32_t named,
+                                           const uint32_t lut_hash)
+{
+  if(!dt_conf_key_exists(CONF_PUBLISHED_PACKS)) return TRUE;
+
+  const uint32_t pack_hash = sf_fetch_peek_pack_hash(dir);
+  const uint32_t def = _conf_hash(CONF_DEFAULT_PACK);
+  if(def && (def == named || def == pack_hash || def == lut_hash)) return TRUE;
+
+  /* a copy: the fetch thread replaces the value, which frees the old string */
+  gchar *list = dt_conf_get_string(CONF_PUBLISHED_PACKS);
+  const gboolean listed = _hash_listed(list, pack_hash ? pack_hash : named);
+  g_free(list);
+  return listed;
+}
+
+/* adds every pack the manifest lists to CONF_PUBLISHED_PACKS, whatever its
+   format: the list only decides which installed directories count as
+   published, and a pack this build cannot load is never installed */
+static void _remember_published(const char *manifest)
+{
+  JsonParser *mp = json_parser_new();
+  if(!json_parser_load_from_data(mp, manifest, -1, NULL))
+  {
+    g_object_unref(mp);
+    return;
+  }
+  JsonNode *rn = json_parser_get_root(mp);
+  JsonObject *ro = (rn && JSON_NODE_HOLDS_OBJECT(rn)) ? json_node_get_object(rn) : NULL;
+  JsonArray *arr = (ro && json_object_has_member(ro, "packs"))
+                       ? json_object_get_array_member(ro, "packs") : NULL;
+
+  gchar *had = dt_conf_key_exists(CONF_PUBLISHED_PACKS)
+                 ? dt_conf_get_string(CONF_PUBLISHED_PACKS) : g_strdup("");
+  GString *list = g_string_new(had);
+  const gsize had_len = list->len;
+  g_free(had);
+  for(guint i = 0; arr && i < json_array_get_length(arr) && i < SF_MAX_FILES; i++)
+  {
+    JsonObject *po = json_array_get_object_element(arr, i);
+    if(!po) continue;
+    const char *key = json_object_has_member(po, "pack_hash") ? "pack_hash" : "lut_hash";
+    const char *hs = json_object_has_member(po, key) ? json_object_get_string_member(po, key)
+                                                     : NULL;
+    const uint32_t h = hs ? (uint32_t)g_ascii_strtoull(hs, NULL, 16) : 0u;
+    if(!h || _hash_listed(list->str, h)) continue;
+    g_string_append_printf(list, "%s%08x", list->len ? " " : "", h);
+  }
+  if(list->len != had_len || !dt_conf_key_exists(CONF_PUBLISHED_PACKS))
+  {
+    dt_conf_set_string(CONF_PUBLISHED_PACKS, list->str);
+    /* the set of usable packs may have changed, as it does with an install */
+    g_mutex_lock(&_sf.lock);
+    _sf.generation++;
+    g_mutex_unlock(&_sf.lock);
+  }
+  g_string_free(list, TRUE);
+  g_object_unref(mp);
+}
+
+gboolean sf_fetch_pack_is_published(const char *packdir)
+{
+  if(!packdir || !packdir[0] || !dt_conf_key_exists(CONF_PUBLISHED_PACKS)) return FALSE;
+  /* the identity _remember_published() records: the pack_hash, or the table
+     hash of a pack that declares none */
+  uint32_t h = sf_fetch_peek_pack_hash(packdir);
+  if(!h && !_peek_lut_hash(packdir, &h)) return FALSE;
+  /* a copy: the fetch thread replaces the value, which frees the old string */
+  gchar *list = dt_conf_get_string(CONF_PUBLISHED_PACKS);
+  const gboolean listed = _hash_listed(list, h);
+  g_free(list);
+  return listed;
+}
+
 /* the directory holding exactly this pack, or FALSE. Checked before the table
    hash is consulted at all: when an edit names the pack it was developed
    against, nothing else will do, and two installed packs can carry the same
-   table while rendering differently */
+   table while rendering differently.
+
+   Not limited to published packs, unlike every other lookup under packs/.
+   Hiding an unpublished pack keeps it from being picked for an edit that did
+   not ask for it; here the edit asked for exactly this one, by its pack_hash,
+   and _downloaded_pack_available() would leave an edit made with a pack built
+   elsewhere rendering on a substitute as soon as default_pack names another,
+   with a fetch button for a pack no repository has. The other callers ask
+   for a published pack or for the one default_pack names, which that filter
+   lets through anyway */
 gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
                                          char *dst,
                                          const size_t dstsz)
@@ -532,7 +656,8 @@ GPtrArray *sf_fetch_list_packs(void)
     if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
 
     char *cand = g_build_filename(packs, ent, NULL);
-    if(_peek_lut(cand, &h, id, sizeof(id)) && _dir_name_matches(ent, cand, h))
+    if(_peek_lut(cand, &h, id, sizeof(id)) && _dir_name_matches(ent, cand, h)
+       && _downloaded_pack_available(cand, (uint32_t)g_ascii_strtoull(ent, NULL, 16), h))
     {
       sf_fetch_pack_t *e = g_malloc0(sizeof(*e));
       e->dir = g_strdup(cand);
@@ -583,9 +708,7 @@ static gboolean _default_pack_override(const gboolean hand_ok,
   /* the resolver runs for every pipe, so say what is wrong once per value */
   static gint warned = 0;
   const char *s = dt_conf_get_string_const(CONF_DEFAULT_PACK);
-  const uint32_t h = (strlen(s) == 8 && strspn(s, "0123456789abcdefABCDEF") == 8)
-                       ? (uint32_t)g_ascii_strtoull(s, NULL, 16)
-                       : 0;
+  const uint32_t h = _conf_hash(CONF_DEFAULT_PACK);
 
   if(h && sf_fetch_pack_dir_for_pack_hash(h, dst, dstsz)) return TRUE;
   if(h && hand_ok && hand_hash == h)
@@ -622,7 +745,8 @@ gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
      whatever is installed by hand. This is the common path -- a fresh edit on
      a machine with a pack in place must not consult the network. default_pack
      is for testing packs copied in by hand, which no manifest lists, so it
-     never reaches the fetch code. */
+     never reaches the fetch code. Without it, such a pack under packs/ is not
+     used at all: _downloaded_pack_available() leaves only published ones. */
   if(!wanted_lut_hash)
   {
     if(_default_pack_override(hand_ok, hand_hash, handdir, dst, dstsz))
@@ -666,9 +790,10 @@ gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
     return TRUE;
   }
 
-  /* Last resort: any downloaded pack, newest first. Reached when the user has
-     never installed one by hand and is opening an edit whose table was never
-     downloaded, but some other table was. */
+  /* Last resort: any published downloaded pack, newest first. Reached when the
+     user has never installed one by hand and is opening an edit whose table was
+     never downloaded, but some other table was, and for every fresh edit when
+     no pack is installed by hand and default_pack names none. */
   char packs[PATH_MAX] = { 0 };
   _packs_dir(packs, sizeof(packs));
   GDir *d = g_dir_open(packs, 0, NULL);
@@ -696,7 +821,8 @@ gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
 
       char *cand = g_build_filename(packs, ent, NULL);
       uint32_t h = 0;
-      if(_peek_lut_hash(cand, &h) && _dir_name_matches(ent, cand, h))
+      if(_peek_lut_hash(cand, &h) && _dir_name_matches(ent, cand, h)
+         && _downloaded_pack_available(cand, (uint32_t)g_ascii_strtoull(ent, NULL, 16), h))
       {
         GStatBuf st;
         const gint64 mt = (g_stat(cand, &st) == 0) ? (gint64)st.st_mtime : 0;
@@ -1350,6 +1476,11 @@ static gpointer _fetch_worker(gpointer data)
     _set_status(SF_FETCH_FAILED, -1.0, _("cancelled"));
     goto out;
   }
+
+  /* before anything looks a pack up: the check below asks whether each listed
+     pack is installed, and a pack installed by an earlier darktable is only
+     found once its hash is on the list */
+  _remember_published(manifest);
 
   uint32_t got_hash = 0;
   guint64 total = 0;

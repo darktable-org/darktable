@@ -2825,7 +2825,7 @@
     <type>string</type>
     <default></default>
     <shortdescription>spektrafilm default data pack</shortdescription>
-    <longdescription>pack hash or table hash, as 8 hex digits, of an installed spektrafilm data pack that new edits use instead of the usual default. only installed packs are used; nothing is downloaded for it. edits that already record a pack are not affected. leave empty for the usual default.</longdescription>
+    <longdescription>pack hash or table hash, as 8 hex digits, of an installed spektrafilm data pack that new edits use instead of the usual default. only installed packs are used; nothing is downloaded for it. edits that already record a pack are not affected. a pack under spektrafilm/packs that the data repository's manifest does not list is only used while this names it. leave empty for the usual default.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/denoiseprofile/show_compute_variance_mode</name>
