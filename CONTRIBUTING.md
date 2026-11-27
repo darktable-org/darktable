@@ -36,7 +36,10 @@ on our GitHub wiki.
 
 If you work with an AI coding agent, [AGENTS.md](AGENTS.md) in the repository root carries
 the project's conventions for it: how to build and test, the coding style, and what we expect
-of commits and pull requests. Most agents read it without being asked.
+of commits and pull requests. Most agents read it without being asked. 
 
 Your own instructions go in `AGENTS.local.md` beside it. That file is untracked, and amends
 `AGENTS.md` rather than replacing it.
+
+You must be able to explain in your own words every changed line of code in a patch you created
+with the help of an LLM.
