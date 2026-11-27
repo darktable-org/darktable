@@ -1497,9 +1497,12 @@ static void _pop_menu_attached(GtkWidget *treeview,
   GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
   GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), DT_LIB_TAGGING_COL_ID);
   gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeview), path, column, &rect);
+  gtk_tree_path_free(path);
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(treeview, menu);
+  if(section != menu)
+    g_object_unref(section);
   g_object_unref(menu);
   gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
@@ -2640,14 +2643,19 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
 
     if(d->tree_flag && !tagid)
     {
+      if(section != menu)
+        g_object_unref(section);
+
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
-
       g_menu_append(section, _("set as tag"), "tags_dictionary.setastag");
     }
 
     if(!d->suggestion_flag)
     {
+      if(section != menu)
+        g_object_unref(section);
+
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
     }
@@ -2667,6 +2675,9 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     }
     if(count || d->collection[0])
     {
+      if(section != menu)
+        g_object_unref(section);
+
       section = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
 
@@ -2681,9 +2692,12 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
     GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), DT_LIB_TAGGING_COL_ID);
     gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeview), path, column, &rect);
+    gtk_tree_path_free(path);
 
     // popup the menu
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(treeview, menu);
+    if(section != menu)
+      g_object_unref(section);
     g_object_unref(menu);
     gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
     gtk_popover_popup(GTK_POPOVER(popover_menu));
