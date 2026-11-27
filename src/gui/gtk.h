@@ -131,6 +131,7 @@ typedef struct dt_gui_gtk_t
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t hide_tooltips;
+  int32_t show_thumbs_tips;
   GtkCssProvider *tooltip_css_provider;
 
   gboolean grouping;
@@ -1053,6 +1054,7 @@ GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
 // again. GTK3 only: the GTK4 branch shows no such icon yet
 void dt_gui_menu_item_set_paint_icon(GMenuItem *item, DTGTKCairoPaintIconFunc paint);
 
+void dt_gui_init_tooltip();
 
 #if !defined(__cplusplus)
 #undef G_CALLBACK
