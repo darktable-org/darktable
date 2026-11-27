@@ -1637,6 +1637,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   {                                                \
     g_free(tx);                                    \
     tx = g_strdup_printf("1|0ꬹ1||");               \
+    /* tonemapper: depends on the selected scene-referred workflow */ \
     if(is_scene_referred)                          \
     {                                              \
       if(wf_filmic)                                \
@@ -1652,50 +1653,52 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       }                                            \
       else if(wf_agx)                              \
       {                                            \
-        /*AM("agx/white relative exposure");*/     \
-        /*AM("agx/black relative exposure");*/     \
         AM("agx/auto tune levels");                \
         AM("agx/curve/contrast");                  \
         AM("agx/curve/shoulder power");            \
         AM("agx/curve/toe power");                 \
-        AM("agx/look/saturation");                 \
         AM("agx/look/preserve hue");               \
       }                                            \
-      AM("channelmixerrgb/temperature");           \
-      AM("channelmixerrgb/chroma");                \
-      AM("channelmixerrgb/hue");                   \
-      AM("channelmixerrgb/illuminant");            \
-      AM("channelmixerrgb/F source");              \
-      AM("channelmixerrgb/LED source");            \
+      else if(wf_spektrafilm)                      \
+      {                                            \
+        AM("spektrafilm/film stock");              \
+        AM("spektrafilm/print paper");             \
+        AM("spektrafilm/film/film exposure");      \
+        AM("spektrafilm/film/push/pull");          \
+      }                                            \
     }                                              \
-    else                                           \
-    {                                              \
-      AM("temperature/temperature");               \
-      AM("temperature/tint");                      \
-    }                                              \
+    /* color balance rgb */                        \
+    if(!is_scene_referred)                         \
+      /* scene-referred gets contrast from the tonemapper above */ \
+      AM("colorbalancergb/contrast");              \
+    AM("colorbalancergb/global vibrance");         \
+    AM("colorbalancergb/global saturation");       \
+    /* color equalizer */                          \
     AM("colorequal/page");                         \
     AM("colorequal/graph");                        \
     AM("colorequal/node placement");               \
-    AM("exposure/exposure");                       \
-    if(!is_scene_referred)                         \
-    {                                              \
-      /* contrast is already in filmic/sigmoid */  \
-      AM("colorbalancergb/contrast");              \
-    }                                              \
-    AM("colorbalancergb/global chroma");           \
-    AM("colorbalancergb/global vibrance");         \
-    AM("colorbalancergb/global saturation");       \
-    AM("colorbalancergb/global brilliance");       \
-    AM("ashift/rotation");                         \
-    AM("denoiseprofile/strength");                 \
-    AM("toneequal/graph");                         \
-    AM("toneequal/mask exposure compensation");    \
-    AM("toneequal/mask contrast compensation");    \
-    AM("lens");                                    \
+    /* contrast & texture */                       \
     if(is_scene_referred)                          \
+    {                                              \
+      AM("contrastntexture/coarse details");       \
+      AM("contrastntexture/medium details");       \
       AM("contrastntexture/fine details");         \
+      AM("contrastntexture/shadows");              \
+      AM("contrastntexture/highlights");           \
+    }                                              \
     else                                           \
       AM("bilat/detail");                          \
+    /* exposure */                                 \
+    AM("exposure/exposure");                       \
+    /* rotate and perspective */                   \
+    AM("ashift/rotation");                         \
+    /* lens correction */                          \
+    AM("lens");                                    \
+    /* denoise (profiled) */                       \
+    AM("denoiseprofile/strength");                 \
+    /* white balance (temperature, now the default) */ \
+    AM("temperature/temperature");                 \
+    AM("temperature/tint");                        \
   }
 
 // start module group
