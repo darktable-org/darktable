@@ -24,6 +24,7 @@
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/chromatic_adaptation.h"
+#include "common/darktable_ucs_22_helpers.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "gui/color_picker_proxy.h"
@@ -87,6 +88,8 @@ typedef struct dt_iop_colorharmonizer_data_t
   dt_iop_colorharmonizer_params_t params;
   float nodes[COLORHARMONIZER_MAX_NODES]; // UCS hue [0,1) of each harmony node
   int   num_nodes;
+  float gamut_LUT[LUT_ELEM];              // working gamut boundary, M² by UCS hue
+  const dt_iop_order_iccprofile_info_t *gamut_profile; // profile gamut_LUT was built for
 } dt_iop_colorharmonizer_data_t;
 
 typedef struct dt_iop_colorharmonizer_gui_data_t
@@ -226,6 +229,28 @@ static inline void get_weighted_hue_shift(const float px_hue,
   *out_sat_delta = sat / sum_a;
 }
 
+// Cap the shifted chroma at the working gamut boundary for the new hue. The
+// hue shift and saturation boost can push a saturated color out of the gamut,
+// and a dark one far enough that its xy lies at y ~ 0: dt_xyY_to_XYZ() divides
+// by y, so the output explodes and CPU and OpenCL disagree by the amplified
+// rounding error. A pixel already beyond the boundary keeps its relative
+// excess, so a pixel the module does not move is never changed. Hues are in
+// radians.
+static inline float _gamut_limit_chroma(const float gamut_LUT[LUT_ELEM],
+                                        const float J,
+                                        const float chroma_in,
+                                        const float hue_in,
+                                        const float chroma_out,
+                                        const float hue_out,
+                                        const float L_white)
+{
+  // boundary chroma at J for hue h is k(J) * g(h), see gamut_map_HSB()
+  const float k = 15.932993652962535f * powf(J * L_white, 0.6523997524738018f) / L_white;
+  const float g_in  = powf(fmaxf(lookup_gamut(gamut_LUT, hue_in), FLT_MIN), 0.6007557017508491f);
+  const float g_out = powf(fmaxf(lookup_gamut(gamut_LUT, hue_out), FLT_MIN), 0.6007557017508491f);
+  return fminf(chroma_out, g_out * fmaxf(k, chroma_in / g_in));
+}
+
 static inline float wrap_hue(float h)
 {
   h = fmodf(h, 1.0f);
@@ -272,6 +297,18 @@ void commit_params(dt_iop_module_t *self,
   d->params = *p;
   get_harmony_nodes(p->rule, p->anchor_hue, p->custom_hue, p->num_custom_nodes,
                     d->nodes, &d->num_nodes);
+}
+
+// built here rather than in commit_params(), which does not run again when
+// only the working profile changes
+static void _update_gamut_LUT(dt_iop_colorharmonizer_data_t *d,
+                              const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  if(d->gamut_profile == work_profile) return;
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+  dt_UCS_22_build_gamut_LUT(input_matrix, d->gamut_LUT);
+  d->gamut_profile = work_profile;
 }
 
 static void _update_histogram(dt_iop_module_t *self,
@@ -330,7 +367,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorharmonizer_data_t   *d = piece->data;
+  dt_iop_colorharmonizer_data_t   *d = piece->data;
   const dt_iop_colorharmonizer_params_t *p = &d->params;
   const size_t ch = piece->colors;
 
@@ -342,6 +379,7 @@ void process(dt_iop_module_t *self,
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   if(!work_profile) return;
+  _update_gamut_LUT(d, work_profile);
 
   const float L_white = Y_to_dt_UCS_L_star(1.0f);
 
@@ -381,7 +419,9 @@ void process(dt_iop_module_t *self,
         const float chroma_weight = chroma / (chroma + cutoff + 1e-5f);
 
         px_JCH[2] = wrap_hue(hue + hue_shift * pull_strength * chroma_weight) * DT_2PI_F - M_PI_F;
-        px_JCH[1] = fmaxf(chroma * (1.0f + sat_delta * chroma_weight), 0.0f);
+        px_JCH[1] = _gamut_limit_chroma(d->gamut_LUT, px_JCH[0], chroma, hue * DT_2PI_F - M_PI_F,
+                                        fmaxf(chroma * (1.0f + sat_delta * chroma_weight), 0.0f),
+                                        px_JCH[2], L_white);
 
         dt_aligned_pixel_t px_xyY, px_xyz_d65, px_xyz;
         dt_UCS_JCH_to_xyY(px_JCH, L_white, px_xyY);
@@ -460,11 +500,13 @@ void process(dt_iop_module_t *self,
 
         const float chroma_weight = chroma / (chroma + cutoff + 1e-5f);
 
-        const float new_hue = wrap_hue(hue + corrections[k * 2] * pull_strength * chroma_weight);
-        dt_aligned_pixel_t px_JCH = { J,
-                                      fmaxf(chroma * (1.0f + corrections[k * 2 + 1] * chroma_weight), 0.0f),
-                                      new_hue * DT_2PI_F - M_PI_F,
-                                      0.0f };
+        const float new_hue = wrap_hue(hue + corrections[k * 2] * pull_strength * chroma_weight)
+                              * DT_2PI_F - M_PI_F;
+        const float new_chroma =
+          _gamut_limit_chroma(d->gamut_LUT, J, chroma, hue * DT_2PI_F - M_PI_F,
+                              fmaxf(chroma * (1.0f + corrections[k * 2 + 1] * chroma_weight), 0.0f),
+                              new_hue, L_white);
+        dt_aligned_pixel_t px_JCH = { J, new_chroma, new_hue, 0.0f };
 
         dt_aligned_pixel_t px_xyY, px_xyz_d65, px_xyz;
         dt_UCS_JCH_to_xyY(px_JCH, L_white, px_xyY);
@@ -599,7 +641,7 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorharmonizer_data_t   *const d  = piece->data;
+  dt_iop_colorharmonizer_data_t   *const d  = piece->data;
   const dt_iop_colorharmonizer_params_t *const p  = &d->params;
   const dt_iop_colorharmonizer_global_data_t *const gd = self->global_data;
 
@@ -614,6 +656,7 @@ int process_cl(dt_iop_module_t *self,
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   if(!work_profile) return err;
+  _update_gamut_LUT(d, work_profile);
 
   dt_colormatrix_t input_matrix, output_matrix;
   dt_colormatrix_mul(input_matrix,  XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
@@ -631,6 +674,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem output_matrix_cl   = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
   cl_mem nodes_cl           = dt_opencl_copy_host_to_device_constant(devid, COLORHARMONIZER_MAX_NODES * sizeof(float), nodes);
   cl_mem node_saturation_cl = dt_opencl_copy_host_to_device_constant(devid, COLORHARMONIZER_MAX_NODES * sizeof(float), node_saturation);
+  cl_mem gamut_LUT_cl       = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
 
   // Correction map buffer (float2 per pixel: hue_delta, sat_delta).
   const size_t f2sz = (size_t)width * height * 2 * sizeof(float);
@@ -642,7 +686,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem jch_cl = dt_opencl_alloc_device_buffer(devid, jchsz);
 
   if(!input_matrix_cl || !output_matrix_cl || !nodes_cl || !node_saturation_cl
-     || !corrections_cl || !jch_cl)
+     || !gamut_LUT_cl || !corrections_cl || !jch_cl)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
@@ -677,6 +721,7 @@ int process_cl(dt_iop_module_t *self,
     CLARG(jch_cl),
     CLARG(corrections_cl),
     CLARG(p->pull_strength), CLARG(p->neutral_protection),
+    CLARG(gamut_LUT_cl),
     CLARG(L_white));
 
   if(err == CL_SUCCESS && self->gui_data && dt_pipe_is_preview(piece->pipe))
@@ -697,6 +742,7 @@ error:
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(nodes_cl);
   dt_opencl_release_mem_object(node_saturation_cl);
+  dt_opencl_release_mem_object(gamut_LUT_cl);
   dt_opencl_release_mem_object(corrections_cl);
   dt_opencl_release_mem_object(jch_cl);
   return err;

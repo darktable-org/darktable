@@ -75,6 +75,21 @@ static inline float2 get_weighted_hue_shift(const float px_hue,
   return (float2)(shift / sum_a, sat / sum_a);
 }
 
+// Mirrors _gamut_limit_chroma() in src/iop/colorharmonizer.c.
+static inline float gamut_limit_chroma(global const float *gamut_LUT,
+                                       const float J,
+                                       const float chroma_in,
+                                       const float hue_in,
+                                       const float chroma_out,
+                                       const float hue_out,
+                                       const float L_white)
+{
+  const float k = 15.932993652962535f * pow(J * L_white, 0.6523997524738018f) / L_white;
+  const float g_in  = pow(fmax(lookup_gamut(gamut_LUT, hue_in), FLT_MIN), 0.6007557017508491f);
+  const float g_out = pow(fmax(lookup_gamut(gamut_LUT, hue_out), FLT_MIN), 0.6007557017508491f);
+  return fmin(chroma_out, g_out * fmax(k, chroma_in / g_in));
+}
+
 // Kernel 1: compute per-pixel correction maps (hue_delta, sat_delta) and
 // cache the forward JCH conversion so the apply kernel can skip it.
 // jch_out stores (J, chroma, normalized_hue, alpha) per pixel.
@@ -118,6 +133,7 @@ kernel void colorharmonizer_apply(write_only image2d_t  out,
                                   global const float2 *corrections,
                                   const float effect_strength,
                                   const float protect_neutral,
+                                  global const float *gamut_LUT,
                                   const float L_white)
 {
   const int x = get_global_id(0);
@@ -138,8 +154,10 @@ kernel void colorharmonizer_apply(write_only image2d_t  out,
 
   float4 JCH;
   JCH.x = J;
-  JCH.y = fmax(chroma * (1.0f + corr.y * chroma_weight), 0.0f);
   JCH.z = wrap_hue(hue + corr.x * effect_strength * chroma_weight) * DT_2PI_F - M_PI_F;
+  JCH.y = gamut_limit_chroma(gamut_LUT, J, chroma, hue * DT_2PI_F - M_PI_F,
+                             fmax(chroma * (1.0f + corr.y * chroma_weight), 0.0f),
+                             JCH.z, L_white);
 
   float4 xyY = dt_UCS_JCH_to_xyY(JCH, L_white);
   float4 XYZ_D65 = dt_xyY_to_XYZ(xyY);
