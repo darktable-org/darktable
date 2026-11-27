@@ -528,7 +528,16 @@ gboolean sf_fetch_pack_is_published(const char *packdir)
 /* the directory holding exactly this pack, or FALSE. Checked before the table
    hash is consulted at all: when an edit names the pack it was developed
    against, nothing else will do, and two installed packs can carry the same
-   table while rendering differently */
+   table while rendering differently.
+
+   Not limited to published packs, unlike every other lookup under packs/.
+   Hiding an unpublished pack keeps it from being picked for an edit that did
+   not ask for it; here the edit asked for exactly this one, by its pack_hash,
+   and _downloaded_pack_available() would leave an edit made with a pack built
+   elsewhere rendering on a substitute as soon as default_pack names another,
+   with a fetch button for a pack no repository has. The other callers ask
+   for a published pack or for the one default_pack names, which that filter
+   lets through anyway */
 gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
                                          char *dst,
                                          const size_t dstsz)
@@ -559,9 +568,7 @@ gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
     if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
     char *cand = g_build_filename(packs, ent, NULL);
     if(sf_fetch_peek_pack_hash(cand) == wanted_pack_hash
-       && _peek_lut_hash(cand, &lut_hash) && _dir_name_matches(ent, cand, lut_hash)
-       && _downloaded_pack_available(cand, (uint32_t)g_ascii_strtoull(ent, NULL, 16),
-                                     lut_hash))
+       && _peek_lut_hash(cand, &lut_hash) && _dir_name_matches(ent, cand, lut_hash))
     {
       g_strlcpy(dst, cand, dstsz);
       found = TRUE;
