@@ -552,8 +552,20 @@ static gboolean _pipe_outdated(dt_dev_pixelpipe_t *pipe)
   return outdated;
 }
 
+static guint _load_requested_image_source = 0;
+
+static void _load_requested_image_cancel(void)
+{
+  if(_load_requested_image_source)
+  {
+    g_source_remove(_load_requested_image_source);
+    _load_requested_image_source = 0;
+  }
+}
+
 static inline gboolean _full_request(dt_develop_t *dev)
 {
+  if(_load_requested_image_source) return FALSE;
   return
         dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->full.pipe->status == DT_DEV_PIXELPIPE_INVALID
@@ -563,6 +575,7 @@ static inline gboolean _full_request(dt_develop_t *dev)
 
 static inline gboolean _preview_request(dt_develop_t *dev)
 {
+  if(_load_requested_image_source) return FALSE;
   return
         dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->preview_pipe->status == DT_DEV_PIXELPIPE_INVALID
@@ -572,6 +585,7 @@ static inline gboolean _preview_request(dt_develop_t *dev)
 
 static inline gboolean _preview2_request(dt_develop_t *dev)
 {
+  if(_load_requested_image_source) return FALSE;
   return
      (dev->preview2.pipe->status == DT_DEV_PIXELPIPE_DIRTY
        || dev->preview2.pipe->status == DT_DEV_PIXELPIPE_INVALID
@@ -1411,6 +1425,23 @@ static void _fire_darkroom_image_loaded_event(const bool clean,
 
 static gboolean _dev_load_requested_image(gpointer user_data);
 
+static void _dev_stop_pipes(dt_develop_t *dev)
+{
+  dt_dev_pixelpipe_set_shutdown(dev->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+}
+
+static gboolean _dev_load_requested_image_retry(dt_develop_t *dev)
+{
+  // re-assert shutdown in case a queued job for the old image started
+  // processing after _dev_change_image() ran
+  _dev_stop_pipes(dev);
+  // poll on a short timer instead of busy-spinning the GTK main loop
+  _load_requested_image_source = g_timeout_add(10, _dev_load_requested_image, dev);
+  return G_SOURCE_REMOVE;
+}
+
 static void _dev_change_image(dt_develop_t *dev,
                               const dt_imgid_t imgid)
 {
@@ -1419,15 +1450,20 @@ static void _dev_change_image(dt_develop_t *dev,
     dt_control_log(_("can't change image in GIMP plugin mode"));
     return;
   }
+  const gboolean pending = (_load_requested_image_source != 0);
+
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
 
-  // Remember where we are looking, as a fraction of the image, while the
-  // current pipe can still be asked. The next image gets the same framing
-  // once its own dimensions are known (see restore_zoom handling in
-  // dt_dev_process_image_job).
-  dt_dev_snapshot_zoom_pos(&dev->full);
-  dt_dev_snapshot_zoom_pos(&dev->preview2);
+  if(!pending)
+  {
+    // Remember where we are looking, as a fraction of the image, while the
+    // current pipe can still be asked. The next image gets the same framing
+    // once its own dimensions are known (see restore_zoom handling in
+    // dt_dev_process_image_job).
+    dt_dev_snapshot_zoom_pos(&dev->full);
+    dt_dev_snapshot_zoom_pos(&dev->preview2);
+  }
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
@@ -1463,48 +1499,48 @@ static void _dev_change_image(dt_develop_t *dev,
     }
   }
 
-  // disable color picker when changing image
-  if(darktable.lib->proxy.colorpicker.picker_proxy)
-    dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
-
-  // update aspect ratio
-  if(dev->preview_pipe->frame
-     && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
+  if(!pending)
   {
-    const float aspect_ratio =
-      (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
+    // disable color picker when changing image
+    if(darktable.lib->proxy.colorpicker.picker_proxy)
+      dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
+
+    // update aspect ratio
+    if(dev->preview_pipe->frame
+       && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
+    {
+      const float aspect_ratio =
+        (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
+      dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
+    }
+    else
+    {
+      dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
+    }
+
+    // prevent accels_window to refresh
+    darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
+    // get current plugin in focus before defocus
+    const dt_iop_module_t *gui_module = dt_dev_gui_module();
+    if(gui_module)
+    {
+      dt_conf_set_string("plugins/darkroom/active",
+                         gui_module->op);
+    }
+
+    // store last active group
+    dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
+
+    // commit any pending changes in focused module
+    dt_iop_request_focus(NULL);
+
+    g_assert(dev->gui_attached);
+
+    dt_dev_clear_chroma_troubles(dev);
   }
-  else
-  {
-    dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
-  }
-
-  // prevent accels_window to refresh
-  darktable.view_manager->accels_window.prevent_refresh = TRUE;
-
-  // get current plugin in focus before defocus
-  const dt_iop_module_t *gui_module = dt_dev_gui_module();
-  if(gui_module)
-  {
-    dt_conf_set_string("plugins/darkroom/active",
-                       gui_module->op);
-  }
-
-  // store last active group
-  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
-
-  // commit any pending changes in focused module
-  dt_iop_request_focus(NULL);
-
-  g_assert(dev->gui_attached);
-
-  // commit image ops to db
-  dt_dev_write_history(dev);
-  dt_dtdata_sweep(dev->image_storage.id);
 
   dev->requested_id = imgid;
-  dt_dev_clear_chroma_troubles(dev);
 
   // remember the rowid of the new image so jump-image can still locate the
   // next/previous image if the current one stops matching the collection
@@ -1517,7 +1553,10 @@ static void _dev_change_image(dt_develop_t *dev,
   darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
   darktable.develop->autosave_time = dt_get_wtime() + 10.0;
 
-  g_idle_add(_dev_load_requested_image, dev);
+  _dev_stop_pipes(dev);
+
+  if(!_load_requested_image_source)
+    _load_requested_image_source = g_idle_add(_dev_load_requested_image, dev);
 }
 
 static gboolean _dev_load_requested_image(gpointer user_data)
@@ -1526,7 +1565,11 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   const dt_imgid_t imgid = dev->requested_id;
 
   if(dev->image_storage.id == NO_IMGID
-     && dev->image_storage.id == imgid) return G_SOURCE_REMOVE;
+     && dev->image_storage.id == imgid)
+  {
+    _load_requested_image_source = 0;
+    return G_SOURCE_REMOVE;
+  }
 
   // make sure we can destroy and re-setup the pixel pipes.
   // we acquire the pipe locks, which will block the processing threads
@@ -1537,20 +1580,30 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   //
   // worst case, it'll drop some change image events. sorry.
   if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe->mutex))
-    return G_SOURCE_CONTINUE;
+    return _dev_load_requested_image_retry(dev);
   if(dt_pthread_mutex_BAD_trylock(&dev->full.pipe->mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe->mutex);
-    return G_SOURCE_CONTINUE;
+    return _dev_load_requested_image_retry(dev);
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2.pipe->mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->full.pipe->mutex);
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe->mutex);
-    return G_SOURCE_CONTINUE;
+    return _dev_load_requested_image_retry(dev);
   }
 
+  _load_requested_image_source = 0;
+
   const dt_imgid_t old_imgid = dev->image_storage.id;
+
+  if(dt_is_valid_imgid(old_imgid))
+  {
+    // commit image ops to db here so edits made while a switch was pending
+    // are not lost
+    dt_dev_write_history(dev);
+    dt_dtdata_sweep(old_imgid);
+  }
 
   dt_overlay_add_from_history(old_imgid);
 
@@ -4152,17 +4205,13 @@ static inline void _clear_pipecache(dt_dev_pixelpipe_t *pipe)
 void leave(dt_view_t *self)
 {
   _empty_mask_hint_stop();
+  _load_requested_image_cancel();
   // ask a running pipe (a full-resolution reprocess can take seconds on a
   // mask-heavy image) to abort at its next checkpoint. First of all:
   // dt_image_update_final_size, via dt_dev_pixelpipe_get_dimensions, waits
   // on full.pipe->busy_mutex, which the running worker holds, before the
   // full.pipe->mutex locks below. As in _darkroom_ui_second_window_cleanup
-  {
-    dt_develop_t *dev0 = self->data;
-    dt_dev_pixelpipe_set_shutdown(dev0->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
-    dt_dev_pixelpipe_set_shutdown(dev0->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
-    dt_dev_pixelpipe_set_shutdown(dev0->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
-  }
+  _dev_stop_pipes(self->data);
 
   // flexi masks panel (the canvas position) is darkroom-only window chrome,
   // not per-view lib content -- hide it and its edge strips explicitly, since
