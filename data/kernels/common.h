@@ -51,6 +51,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #endif
 
 #define DT_2PI_F 6.28318530717958647693f
+#define INVERSE_SQRT_3 0.5773502691896258f
 
 #define LUT_ELEM 512 // gamut LUT number of elements:
 

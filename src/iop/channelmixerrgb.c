@@ -73,7 +73,6 @@
 DT_MODULE_INTROSPECTION(4, dt_iop_channelmixer_rgb_params_t)
 
 #define CHANNEL_SIZE 4
-#define INVERSE_SQRT_3 0.5773502691896258f
 #define COLOR_MIN -2.0
 #define COLOR_MAX 2.0
 #define ILLUM_X_MAX 360.0

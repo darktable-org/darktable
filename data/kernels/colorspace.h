@@ -398,7 +398,7 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
     // ... through x^n. x^k - y^k = y^k * expm1(k * log1p((x-y)/y)), which is
     // accurate because log1p and expm1 are accurate near zero. The y^k factors
     // are t_m and t_s, already computed
-    const float t_l = dtcl_pow(l, n), t_m = dtcl_pow(m, n), t_s = dtcl_pow(s, n);
+    const float t_l = pow(l, n), t_m = pow(m, n), t_s = pow(s, n);
     const float dt_lm = t_m * expm1(n * log1p(d_lm / m));
     const float dt_sm = t_m * expm1(n * log1p(d_sm / m));
     const float dt_ls = t_s * expm1(n * log1p(d_ls / s));
@@ -422,7 +422,7 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
     const float d_LS = Sp * expm1(p * log1p(dy_ls / y_s));
 
     // Iz is a sum, not a difference
-    out.x = 0.5f * dtcl_pow(y_l, p) + 0.5f * Mp;
+    out.x = 0.5f * pow(y_l, p) + 0.5f * Mp;
     out.y = 3.524000f * d_LM + 0.542708f * d_SM;
     out.z = 0.199076f * d_LS - 1.096799f * d_SM;
     out.w = 0.f;
@@ -648,8 +648,8 @@ static inline float4 dt_xyY_to_uvY(const float4 xyY)
   // Use it for "hue preserving" (as much as possible) gamut mapping in scene-referred space
   const float denominator = -2.f * xyY.x + 12.f * xyY.y + 3.f;
   float4 uvY;
-  uvY.x = 4.f * xyY.x / denominator; // u'
-  uvY.y = 9.f * xyY.y / denominator; // v'
+  uvY.x = fp32_div(4.f * xyY.x, denominator); // u'
+  uvY.y = fp32_div(9.f * xyY.y, denominator); // v'
   uvY.z = xyY.z;                     // Y
   uvY.w = xyY.w;
   return uvY;
@@ -666,8 +666,8 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
   // Use it for "hue preserving" (as much as possible) gamut mapping in scene-referred space
   const float denominator = 6.0f * uvY.x - 16.f * uvY.y + 12.0f;
   float4 xyY;
-  xyY.x = 9.f * uvY.x / denominator; // x
-  xyY.y = 4.f * uvY.y / denominator; // y
+  xyY.x = fp32_div(9.f * uvY.x, denominator); // x
+  xyY.y = fp32_div(4.f * uvY.y, denominator); // y
   xyY.z = uvY.z;                     // Y
   xyY.w = uvY.w;
   return xyY;
@@ -701,9 +701,9 @@ static inline float4 dt_xyY_to_XYZ(const float4 xyY)
   float4 XYZ = 0.0f;
   if(xyY.y != 0.0f)
   {
-    XYZ.x = xyY.z * xyY.x / xyY.y;
+    XYZ.x = fp32_div(xyY.z * xyY.x, xyY.y);
     XYZ.y = xyY.z;
-    XYZ.z = xyY.z * (1.f - xyY.x - xyY.y) / xyY.y;
+    XYZ.z = fp32_div(xyY.z * (1.f - xyY.x - xyY.y), xyY.y);
   }
   XYZ.w = xyY.w;
   return XYZ;

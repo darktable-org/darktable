@@ -58,7 +58,6 @@
 #include <string.h>
 #include <time.h>
 
-#define INVERSE_SQRT_3 0.5773502691896258f
 #define SAFETY_MARGIN 0.01f
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)

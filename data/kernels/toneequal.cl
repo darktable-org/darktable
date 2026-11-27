@@ -100,7 +100,7 @@ kernel void toneequal_luminance_mask(read_only image2d_t in,
       const float4 RGB_cubic = RGB_square * value;
       const float numerator = RGB_cubic.x + RGB_cubic.y + RGB_cubic.z;
       const float denominator = RGB_square.x + RGB_square.y + RGB_square.z;
-      lum = exposure_boost * numerator / denominator;
+      lum = denominator != 0.0f ? exposure_boost * numerator / denominator : 0.0f;
       break;
     }
 
@@ -108,7 +108,7 @@ kernel void toneequal_luminance_mask(read_only image2d_t in,
     {
       // geometric_mean(RGB)
       const float product = fabs(pixel.x) * fabs(pixel.y) * fabs(pixel.z);
-      lum = exposure_boost * dtcl_pow(product, 1.0f / 3.0f);
+      lum = exposure_boost * cbrt(product);
       break;
     }
 
