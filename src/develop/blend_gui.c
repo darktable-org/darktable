@@ -13543,15 +13543,8 @@ static GtkWidget *_make_pending_shape_row(dt_iop_module_t *module, dt_masks_form
   }
   else if(kind == DT_MASKS_GRADIENT)
   {
-    dt_gui_box_add(controls_box,
-                   _forward_target(
-                     _pending_conf_slider_new(
-                       module, DT_MASKS_CONF(form->type, gradient, compression), NULL,
-                       _blend_masks_properties[DT_MASKS_PROPERTY_COMPRESSION].name, 0.001f,
-                       1.0f, 2, "%",
-                       _("compression of the next gradient, before it is placed --\n"
-                         "same as shift+scrolling on canvas")),
-                     DT_MASKS_PROPERTY_COMPRESSION, INVALID_MASKID));
+    // curvature before compression: the committed row lays its sliders out in
+    // dt_masks_property_t order, and they must not swap places on commit
     dt_gui_box_add(controls_box,
                    _forward_target(
                      _pending_conf_slider_new(
@@ -13561,6 +13554,15 @@ static GtkWidget *_make_pending_shape_row(dt_iop_module_t *module, dt_masks_form
                        _("curvature of the next gradient, before it is placed --\n"
                          "same as scrolling on canvas")),
                      DT_MASKS_PROPERTY_CURVATURE, INVALID_MASKID));
+    dt_gui_box_add(controls_box,
+                   _forward_target(
+                     _pending_conf_slider_new(
+                       module, DT_MASKS_CONF(form->type, gradient, compression), NULL,
+                       _blend_masks_properties[DT_MASKS_PROPERTY_COMPRESSION].name, 0.001f,
+                       1.0f, 2, "%",
+                       _("compression of the next gradient, before it is placed --\n"
+                         "same as shift+scrolling on canvas")),
+                     DT_MASKS_PROPERTY_COMPRESSION, INVALID_MASKID));
   }
   else if(kind == DT_MASKS_BRUSH)
   {
