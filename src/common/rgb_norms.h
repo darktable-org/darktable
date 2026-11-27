@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2019-2023 darktable developers.
+ *    Copyright (C) 2019-2026 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -65,7 +65,8 @@ static inline float dt_rgb_norm(const float *in, const int norm, const dt_iop_or
     R = in[0] * in[0];
     G = in[1] * in[1];
     B = in[2] * in[2];
-    return (in[0] * R + in[1] * G + in[2] * B) / (R + G + B);
+    const float sum = R + G + B;
+    return sum != 0.0f ? (in[0] * R + in[1] * G + in[2] * B) / sum : 0.0f;
   }
   else return (in[0] + in[1] + in[2]) / 3.0f;
 }

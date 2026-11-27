@@ -23,8 +23,6 @@
 #include "color_conversion.h"
 #include "noise_generator.h"
 
-#define INVERSE_SQRT_3 0.5773502691896258f
-
 // In case the OpenCL driver doesn't have a dot method
 static inline float vdot(const float4 vec1, const float4 vec2)
 {

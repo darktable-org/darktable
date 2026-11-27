@@ -1045,7 +1045,7 @@ float fastlog2(float x)
 
 float fastlog(float x)
 {
-  return 0.69314718f * fastlog2(x);
+  return M_LN2f * fastlog2(x);
 }
 
 float thinplate(const float4 x, const float4 y)

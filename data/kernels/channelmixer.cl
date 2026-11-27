@@ -38,7 +38,6 @@ typedef enum dt_adaptation_t
 } dt_adaptation_t;
 
 
-#define INVERSE_SQRT_3 0.5773502691896258f
 #define TRUE 1
 #define FALSE 0
 
@@ -59,8 +58,8 @@ static inline float4 gamut_mapping(const float4 input, const float compression, 
   const float Y = input.y;
 
   float4 output;
-  float4 xyY = {  sum > 0.0f ? input.x / sum : (float)0.34567,
-                  sum > 0.0f ? input.y / sum : (float)0.35850,
+  float4 xyY = {  sum > 0.0f ? fp32_div(input.x, sum) : (float)0.34567,
+                  sum > 0.0f ? fp32_div(input.y, sum) : (float)0.35850,
                   Y,
                   0.0f };
 
@@ -94,8 +93,9 @@ static inline float4 gamut_mapping(const float4 input, const float compression, 
   // Check sanity of x and y :
   // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
   const float scale = xyY.x + xyY.y;
-  const int sanitize = (scale >= 1.f);
-  xyY.xy = (sanitize) ? xyY.xy / scale : xyY.xy;
+  const int sanitize = scale >= 1.f;
+  xyY.x = sanitize ? fp32_div(xyY.x, scale) : xyY.x;
+  xyY.y = sanitize ? fp32_div(xyY.y, scale) : xyY.y;
 
   // Convert back to XYZ
   output = dt_xyY_to_XYZ(xyY);

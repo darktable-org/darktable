@@ -18,8 +18,6 @@
 
 #include "common.h"
 
-#define INVERSE_SQRT_3 0.5773502691896258f
-
 // see compute_luminance(): the log luminance, input of the first level
 kernel void contrastntexture_luminance(read_only image2d_t in,
                                        global float *const log_luminance,

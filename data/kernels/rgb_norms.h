@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2019-2025 darktable developers.
+ *    Copyright (C) 2019-2026 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -57,7 +57,8 @@ dt_rgb_norm(const float4 in, const int norm, const int work_profile,
     R = in.x * in.x;
     G = in.y * in.y;
     B = in.z * in.z;
-    return (in.x * R + in.y * G + in.z * B) / (R + G + B);
+    const float sum = R + G + B;
+    return sum != 0.0f ? (in.x * R + in.y * G + in.z * B) / sum : 0.0f;
   }
   else return (in.x + in.y + in.z) / 3.0f;
 }

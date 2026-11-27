@@ -67,6 +67,8 @@
 #define M_PI_4f 0.78539816339744830962f
 #endif
 
+#define INVERSE_SQRT_3 0.5773502691896258f
+
 // clip channel value to be between 0 and 1
 // NaN-safe: NaN compares false and will result in 0.0
 // also does not force promotion of floats to doubles, but will use the type of its argument

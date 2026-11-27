@@ -35,8 +35,7 @@
  **/
 
 
-#define MIN_FLOAT exp2f(-16.0f)
-
+#define MIN_FLOAT 0x1p-16f     // exp2f(-16.0f)
 
 typedef enum dt_iop_guided_filter_blending_t
 {

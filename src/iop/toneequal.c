@@ -133,7 +133,6 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
 
 #define UI_SAMPLES 256 // 128 is a bit small for 4K resolution
 #define CONTRAST_FULCRUM exp2f(-4.0f)
-#define MIN_FLOAT exp2f(-16.0f)
 
 /**
  * Build the exposures octaves :

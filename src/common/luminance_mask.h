@@ -33,9 +33,6 @@
  **/
 
 
-#define MIN_FLOAT exp2f(-16.0f)
-
-
 typedef enum dt_iop_luminance_mask_method_t
 {
   DT_TONEEQ_MEAN = 0,   // $DESCRIPTION: "RGB average"
@@ -187,8 +184,9 @@ static void pixel_rgb_norm_power(const float *const restrict image,
     numerator += RGB_cubic;
     denominator += RGB_square;
   }
+  const float lum = denominator != 0.0f ? exposure_boost * numerator / denominator : 0.0f;
 
-  luminance[k / 4] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
+  luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
@@ -209,7 +207,7 @@ static void pixel_rgb_geomean(const float *const restrict image,
     lum *= fabsf(image[k + c]);
   }
 
-  luminance[k / 4] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
+  luminance[k / 4] = linear_contrast(exposure_boost * cbrtf(lum), fulcrum, contrast_boost);
 }
 
 
