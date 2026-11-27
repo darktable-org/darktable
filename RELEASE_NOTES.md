@@ -761,6 +761,12 @@ changes (where available).
   Edits made with earlier versions change slightly near these
   boundaries.
 
+- Color harmonizer no longer pushes saturated colors out of the working
+  gamut. Dark, saturated colors moved to a new hue could turn into
+  isolated bright specks, which CPU and OpenCL processing also rendered
+  differently. Edits made with earlier versions lose a little saturation
+  where colors were pushed past the gamut boundary.
+
 - Entering the darkroom no longer expands one instance of a module
   while a different instance of it holds the focus. The instance that
   gets the focus is now the one that is expanded.
