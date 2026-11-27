@@ -1877,7 +1877,9 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
-/* the marks of a row fill their box, which is too big for a row */
+/* the marks of a row fill their box, which is too big for a row; each mark
+   also has the class of its kind: dt_history_mark_always_on,
+   dt_history_mark_deprecated or dt_history_mark_off */
 .dt_history_power_mark
 {
   font-size: 0.75em;

@@ -321,12 +321,15 @@ static void _lib_history_compare_changed(gpointer user_data)
 
 static void _lib_history_add_mark(GtkWidget *hbox,
                                   DTGTKCairoPaintIconFunc paint,
+                                  const char *css_class,
                                   const char *tooltip)
 {
   GtkWidget *mark = dtgtk_button_new_full(paint, CPF_NONE, NULL,
       &(dtgtk_button_config_t){ .tooltip = tooltip });
   // these icons fill their box, see darktable.css
   dt_gui_add_class(mark, "dt_history_power_mark");
+  // every mark is insensitive, so themes need the kind to tell them apart
+  dt_gui_add_class(mark, css_class);
   gtk_widget_set_sensitive(mark, FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), mark, FALSE, FALSE, 0);
 }
@@ -392,11 +395,14 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   // marks of the module, only indicators: the row's own button takes the click
   if(required)
-    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch_on, _("always-on module"));
+    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch_on,
+                          "dt_history_mark_always_on", _("always-on module"));
   if(deprecated)
-    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch_deprecated, _("deprecated module"));
+    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch_deprecated,
+                          "dt_history_mark_deprecated", _("deprecated module"));
   if(!enabled)
-    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch, _("module turned off"));
+    _lib_history_add_mark(hbox, dtgtk_cairo_paint_switch,
+                          "dt_history_mark_off", _("module turned off"));
 
   return hbox;
 }
