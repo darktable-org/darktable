@@ -138,6 +138,15 @@ changes (where available).
   data. Existing edits are left unchanged; new edits get it by
   default.
 
+- New module halation, which spreads light out of the highlights the way
+  film does when a bright subject passes through the emulsion and reflects
+  back off the base. Halos are warm by default, since red both travels
+  furthest and is re-exposed most, and the strength, threshold, size and
+  chromatic spread are all adjustable. With "preserve energy" on, which is
+  the default, the scattered light is taken out of the highlights it came
+  from so that overall exposure does not drift; turn it off to add the halo
+  on top instead.
+
 ## UI/UX Improvements
 
 - Added back and forward navigation in collections, with user-assignable
