@@ -164,6 +164,11 @@ void sf_fetch_available_version(char *dst, size_t dstsz);
  * packs an edit that also predates pack_hash could have been made with */
 uint32_t sf_fetch_peek_pack_hash(const char *packdir);
 
+/* whether the pack in packdir is one a manifest of the configured repository
+ * (darktable-org/darktable-spektrafilm unless overridden) has listed. FALSE
+ * while no manifest has been read yet, and for anything copied in by hand */
+gboolean sf_fetch_pack_is_published(const char *packdir);
+
 /* the installed directory holding exactly this pack, or FALSE */
 gboolean sf_fetch_pack_dir_for_pack_hash(uint32_t wanted_pack_hash,
                                          char *dst,

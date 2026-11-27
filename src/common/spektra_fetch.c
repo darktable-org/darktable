@@ -511,6 +511,20 @@ static void _remember_published(const char *manifest)
   g_object_unref(mp);
 }
 
+gboolean sf_fetch_pack_is_published(const char *packdir)
+{
+  if(!packdir || !packdir[0] || !dt_conf_key_exists(CONF_PUBLISHED_PACKS)) return FALSE;
+  /* the identity _remember_published() records: the pack_hash, or the table
+     hash of a pack that declares none */
+  uint32_t h = sf_fetch_peek_pack_hash(packdir);
+  if(!h && !_peek_lut_hash(packdir, &h)) return FALSE;
+  /* a copy: the fetch thread replaces the value, which frees the old string */
+  gchar *list = dt_conf_get_string(CONF_PUBLISHED_PACKS);
+  const gboolean listed = _hash_listed(list, h);
+  g_free(list);
+  return listed;
+}
+
 /* the directory holding exactly this pack, or FALSE. Checked before the table
    hash is consulted at all: when an edit names the pack it was developed
    against, nothing else will do, and two installed packs can carry the same

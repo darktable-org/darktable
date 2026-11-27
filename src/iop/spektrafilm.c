@@ -73,6 +73,7 @@
 #include "common/iop_profile.h"
 #include "common/spektra_fetch.h"
 #include "common/opencl.h"
+#include "common/presets.h"
 #include "common/gaussian.h"
 #include "gui/accelerators.h"
 #include "dtgtk/button.h"
@@ -665,6 +666,10 @@ static sf_pack_t *_pack = NULL;
    _edit_pack_dir() instead, which is the lookup _ensure_sim() loads from, so
    the film list and the data behind it still come from one place. */
 static char _pack_path[SF_PATH_LEN] = { 0 };
+/* sf_fetch_generation() when init_presets() last decided whether the shipped
+   looks are registered, so _update_data_row() can rebuild them once an install
+   or a manifest read changes that answer */
+static guint _presets_gen = 0;
 /* Value of sf_fetch_generation() when _pack / _pack_error were last decided.
    A download can install a pack into a directory this module already probed
    and rejected, which leaves the resolved path unchanged -- so a path
@@ -4840,6 +4845,16 @@ static void _update_data_row(dt_iop_module_t *self)
     g->data_gen = sf_fetch_generation();
     dt_iop_gui_update(self);
 
+    /* the built-in presets were registered against the packs installed and
+       published at startup. An install or a manifest read can change whether
+       the shipped looks may be offered, so rebuild them the way
+       _iop_preferences_changed() does after a workflow change */
+    if(_presets_gen != g->data_gen)
+    {
+      dt_presets_delete_builtin(self->op);
+      if(self->so->init_presets) self->so->init_presets(self->so);
+    }
+
     /* Drop the cached pipeline output from this module onwards before asking
        for a reprocess.
 
@@ -5167,6 +5182,20 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   p->gamut_compress = TRUE;
 }
 
+/* Whether the shipped looks may be offered. They name stocks of the packs
+   darktable publishes and were tuned on them, and a preset names no pack: it
+   renders on the one a fresh edit resolves to. So they are offered only while
+   that pack is a published one. A pack copied in by hand and selected with
+   default_pack, or any pack before a manifest has been read, carries stocks
+   and data darktable does not control, and the looks would silently render on
+   substitutes there. */
+static gboolean _presets_published(void)
+{
+  char dir[SF_PATH_LEN];
+  _resolve_pack_dir(0, dir, sizeof dir);
+  return sf_fetch_pack_is_published(dir);
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   /* The scene-referred preset below exists only under one workflow, so the
@@ -5214,6 +5243,12 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
+
+  /* everything below is a look built on stocks of the published packs. The
+     scene-referred default above is not: it names no stock and starts any
+     pack, and the workflow that auto-applies it must keep working */
+  _presets_gen = sf_fetch_generation();
+  if(!_presets_published()) return;
 
   /* look|crisp black and white -- by Bazdesh, shared as "BW_Crispy TriX"
 
