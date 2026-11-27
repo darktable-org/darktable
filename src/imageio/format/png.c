@@ -26,6 +26,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/hdr-transfer.h"
 #include "control/conf.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
@@ -135,21 +136,9 @@ cleanup:
 }
 #endif
 
-/* SMPTE ST 2084 EOTF, normalized PQ to absolute light level in cd/m^2. */
-static double _pq_to_nits(const double value)
-{
-  const double m1 = 2610.0 / 16384.0;
-  const double m2 = 2523.0 / 32.0;
-  const double c1 = 3424.0 / 4096.0;
-  const double c2 = 2413.0 / 128.0;
-  const double c3 = 2392.0 / 128.0;
-  const double peak_nits = 10000.0;
-  const double ep = pow(value, 1.0 / m2);
-  return peak_nits * pow(fmax(ep - c1, 0.0) / (c2 - c3 * ep), 1.0 / m1);
-}
-
 /* PNG stores cLLI in units of 0.0001 cd/m^2, unlike HDR10's whole nits.
  * Analyze quantized RGBA export pixels; alpha is not part of the light level.
+ * The code to nits table uses the same PQ EOTF as dt_imageio_pq_light_level().
  */
 static void _png_compute_clli(const void *const pixels, const size_t count,
                               const int bpp, png_uint_32 *const max_cll,
@@ -158,7 +147,8 @@ static void _png_compute_clli(const void *const pixels, const size_t count,
   const size_t levels = bpp == 8 ? (size_t)UINT8_MAX + 1 : (size_t)UINT16_MAX + 1;
   double *const nits = g_new(double, levels);
   for(size_t k = 0; k < levels; k++)
-    nits[k] = _pq_to_nits((double)k / (double)(levels - 1));
+    nits[k] = DT_HDR_REFERENCE_WHITE_NITS
+      * dt_hdr_pq_decode((float)k / (float)(levels - 1));
 
   double peak = 0.0;
   double sum = 0.0;
