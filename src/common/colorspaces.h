@@ -32,6 +32,12 @@ G_BEGIN_DECLS
   #define TYPE_XYZA_FLT (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
+// cmsChannelsOfColorSpace() was added in lcms2 2.14 and replaces the
+// deprecated cmsChannelsOf(). Provide a fallback for older versions.
+#if LCMS_VERSION < 2140
+  #define cmsChannelsOfColorSpace(cs) ((cmsInt32Number)cmsChannelsOf(cs))
+#endif
+
 // CIE 1931 2° as used in dt
 //D50 (ProPhoto RGB)
 static const cmsCIExyY D50xyY = {0.34567, 0.35850, 1.0};
