@@ -5994,6 +5994,82 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   if(v->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
 }
 
+// the UTC offset of an XMP or Exif date ("Z", "+HH:MM" or "-HH:MM" at the
+// end of the time), or "" if it has none.
+static std::string _datetime_utc_offset(const std::string &datetime)
+{
+  const size_t t = datetime.find_first_of("T ");
+  if(t == std::string::npos) return "";
+  const std::string time = datetime.substr(t + 1);
+  if(!time.empty() && time.back() == 'Z') return "Z";
+  const size_t len = time.size();
+  if(len >= 6 && (time[len - 6] == '+' || time[len - 6] == '-')
+     && g_ascii_isdigit(time[len - 5]) && g_ascii_isdigit(time[len - 4])
+     && time[len - 3] == ':'
+     && g_ascii_isdigit(time[len - 2]) && g_ascii_isdigit(time[len - 1]))
+    return time.substr(len - 6);
+  return "";
+}
+
+// Exif.Photo.OffsetTimeOriginal of the image file, or "". The caller holds
+// the Exiv2 lock.
+static std::string _exif_image_offset_time_original(const dt_imgid_t imgid)
+{
+  char path[PATH_MAX] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(imgid, path, sizeof(path), &from_cache);
+  if(!*path || !g_file_test(path, G_FILE_TEST_IS_REGULAR)) return "";
+  try
+  {
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    image->readMetadata();
+    Exiv2::ExifData &exifData = image->exifData();
+    Exiv2::ExifData::const_iterator pos =
+      exifData.findKey(Exiv2::ExifKey("Exif.Photo.OffsetTimeOriginal"));
+    if(pos == exifData.end()) return "";
+    // the offset alone, checked like the end of a date
+    const std::string offset = _datetime_utc_offset("T" + pos->toString());
+    return offset == "Z" ? "" : offset;
+  }
+  catch(const Exiv2::AnyError &e)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exif] can't read OffsetTimeOriginal of %s: %s", path, e.what());
+    return "";
+  }
+}
+
+static void _exif_xmp_set_datetime_original(Exiv2::XmpData &xmpData,
+                                            const dt_imgid_t imgid,
+                                            const GTimeSpan gts)
+{
+  // the database keeps the local time without a time zone. Keep the UTC
+  // offset the date already has (e.g. written by exiftool), or else the one
+  // the camera recorded in the image, also when the time was changed.
+  Exiv2::XmpData::iterator pos =
+    xmpData.findKey(Exiv2::XmpKey("Xmp.exif.DateTimeOriginal"));
+  const std::string old_value = pos != xmpData.end() ? pos->toString() : "";
+  const gboolean same_time =
+    !old_value.empty() && dt_datetime_exif_to_gtimespan(old_value.c_str()) == gts;
+
+  std::string offset = _datetime_utc_offset(old_value);
+  if(same_time && !offset.empty()) return;
+  if(offset.empty()) offset = _exif_image_offset_time_original(imgid);
+  if(same_time && offset.empty()) return;
+
+  gchar exif_datetime[DT_DATETIME_LENGTH];
+  dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
+  if(offset.empty() || strlen(exif_datetime) < 19)
+  {
+    xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+    return;
+  }
+  // with an offset, write an XMP date: 2026-10-16T08:56:59.306-06:00
+  exif_datetime[4] = exif_datetime[7] = '-';
+  exif_datetime[10] = 'T';
+  xmpData["Xmp.exif.DateTimeOriginal"] = std::string(exif_datetime) + offset;
+}
+
 // Helper to create an xmp data thing. Throws Exiv2 exceptions if
 // stuff goes wrong.
 static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
@@ -6048,9 +6124,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   // Store datetime_taken as DateTimeOriginal to take into account the
   // user's selected date/time.
-  gchar exif_datetime[DT_DATETIME_LENGTH];
-  dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
-  xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+  _exif_xmp_set_datetime_original(xmpData, imgid, gts);
 
   // We have to erase the old ratings first as Exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
@@ -6202,11 +6276,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData,
     // Store datetime_taken as DateTimeOriginal to take into account
     // the user's selected date/time.
     if(!(metadata->flags & DT_META_EXIF))
-    {
-      gchar exif_datetime[DT_DATETIME_LENGTH];
-      dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
-      xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
-    }
+      _exif_xmp_set_datetime_original(xmpData, imgid, gts);
     // We have to erase the old ratings first as Exiv2 seems to not change it otherwise.
     Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
     if(pos != xmpData.end()) xmpData.erase(pos);
