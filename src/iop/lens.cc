@@ -327,9 +327,15 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
+static int _md_corrections(const dt_image_t *img);
+
+// a file can carry correction metadata of which darktable decodes nothing:
+// a Panasonic 0x011b payload from a body whose coefficients have not been
+// measured, with no 0x0119 distortion. treating that as embedded metadata
+// would leave the image uncorrected where Lensfun may have a profile
 static gboolean _have_embedded_metadata(dt_iop_module_t *self)
 {
-  return self->dev->image_storage.exif_correction_type;
+  return _md_corrections(&self->dev->image_storage) != 0;
 }
 
 static lfLensType _lenstype_to_lensfun_lenstype(const int lt)
@@ -2492,6 +2498,135 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
   return scale;
 }
 
+// tables for the Panasonic 0x011b chromatic aberration branch of
+// _init_coeffs_md_v2 below. they were read off Adobe DNG Converter, which
+// consumes this payload, by editing one word at a time with the 0x0119
+// distortion disabled. each column is one word's measured response, so the
+// values are measured rather than fitted. the blue matrix read this way is
+// the red one with its columns in another order, so one table serves both
+// channels
+//
+// eps_c is a per-channel radial rescale relative to green, a cubic in
+// u = r^2 with r normalized to the half-diagonal. it lives in the raw frame:
+// evaluate it at the source radius and apply it ahead of the distortion
+// correction, the only frame in which Adobe's output does not depend on the
+// distortion state. red responds only to words 8, 12, 23 and 26 and blue only
+// to 10, 20, 27 and 29; no opposite-channel response was measured
+//
+// PANA_CA_STRENGTH is not part of the decode. the payload applied as Adobe
+// reads it overcorrects, reversing the residual towards the corners against
+// the camera's own JPEGs, and SILKYPIX, which Panasonic bundles with its
+// bodies and which reads this payload too, applies about two thirds of it.
+// the strength at which darktable's residual vanishes is about 0.5 on both
+// MFT and full-frame bodies. why the payload overstates it is not known
+#define PANA_CA_STRENGTH 0.5
+//
+// the matrices depend on the four zone radii, words 4, 11, 16 and 17, which
+// hold one tuple per body group. no scaling between tuples was found, so an
+// unknown tuple gets no chromatic aberration correction rather than an
+// extrapolation. a uniform multiple of a known tuple is the exception: the
+// payload is in pixels, so a sensor-shift high resolution frame carries every
+// active word scaled by its resolution factor while eps is unchanged
+//
+// the two lists are in table column order: each blue word shares its column
+// with the red word at the same position
+static const int _pana_ca_R_words[4] = { 8, 12, 23, 26 };
+static const int _pana_ca_B_words[4] = { 20, 27, 10, 29 };
+
+#define PANA_CA_NCTX 5
+
+// words 4, 11, 16, 17 of the payload, in that order
+static const int16_t _pana_ca_radii[PANA_CA_NCTX][4] = {
+  {  2730,  3276,  2184,  1092 },  // G9, GX8, GX9, G90, GH5
+  {  3072,  3584,  2048,  1024 },  // S1 II, S1 II E, S9, S5 II
+  {  2407,  2888,  1926,   963 },  // GX80, G80, GH4
+  {  1905,  2286,  1524,   762 },  // GH5S
+  {  4272,  4984,  2848,  1424 },  // S1R II
+};
+
+static const double _pana_ca_M[PANA_CA_NCTX][4][4] = {
+  { // 2730 3276 2184 1092
+    { -1.17812510950665582e-07, -1.26862683438844206e-06, +3.27946494444564246e-07, -2.82859762468223857e-09 },
+    { +1.74386746700605500e-06, +5.40787414737309330e-06, -4.75808522602605453e-06, -8.37907876096721807e-08 },
+    { -5.46442603982200127e-06, -7.37647608470837247e-06, +9.58063328824287893e-06, +6.25424869259205719e-07 },
+    { +3.84376919375739558e-06, +3.24056293601771036e-06, -5.16056494672234619e-06, -8.42952008991204618e-07 },
+  },
+  { // 3072 3584 2048 1024
+    { -9.68141115498255584e-09, -1.16931388200613986e-06, +1.00406862169499786e-07, +5.15205956719277900e-09 },
+    { +6.40260882712517776e-07, +5.87989461683857720e-06, -3.58653587230239880e-06, -1.69788330971698533e-07 },
+    { -3.35075030569953466e-06, -9.08813896193549839e-06, +8.08247440122578162e-06, +8.24670988494702310e-07 },
+    { +2.74063565237447900e-06, +4.39630868147311554e-06, -4.62070714409357189e-06, -9.46120077568224342e-07 },
+  },
+  { // 2407 2888 1926 963
+    { -1.15986229410447444e-07, -1.43751350011855905e-06, +3.63211923764206170e-07, -1.26727522429259663e-08 },
+    { +1.81708874630626126e-06, +6.20074155676331153e-06, -5.37522116951638669e-06, +4.82246289656984537e-09 },
+    { -5.89500745321025489e-06, -8.53948843605678522e-06, +1.09134476207426437e-05, +4.76690969142268273e-07 },
+    { +4.21711379356359814e-06, +3.78096889916612628e-06, -5.91556905760271015e-06, -8.26153604203128103e-07 },
+  },
+  { // 1905 2286 1524 762
+    { -3.22346029568709746e-08, -1.77917503412272630e-06, +3.78555262080082506e-07, -7.44369672046607554e-08 },
+    { +1.18452511024802467e-06, +7.89187816907599378e-06, -6.30820765337869459e-06, +6.39088924316411065e-07 },
+    { -5.16566585747391119e-06, -1.11229151002127941e-05, +1.32478029797216131e-05, -9.56695532741136440e-07 },
+    { +4.06030640466603625e-06, +5.01970630780412786e-06, -7.34667988454340529e-06, -5.83622764160907066e-08 },
+  },
+  { // 4272 4984 2848 1424
+    { -4.34926785919387258e-08, -8.62681524313679821e-07, +1.05533658668832687e-07, +2.28128719252929111e-08 },
+    { +8.27160646928781755e-07, +4.26410181202818733e-06, -2.81053466668534939e-06, -3.21289834127824756e-07 },
+    { -3.15057031464860410e-06, -6.51279060036458196e-06, +6.13851843630719443e-06, +1.05356133476952614e-06 },
+    { +2.35229856522423132e-06, +3.12369047716387623e-06, -3.44848863967861535e-06, -9.38173969565525558e-07 },
+  },
+};
+
+// index into the tables above for this payload's zone radii, or -1 when the
+// body has never been characterized. All four radii are compared: two
+// distinct ratio patterns exist across bodies, so no single word keys them
+static int _pana_ca_context(const int16_t *w, double *scale)
+{
+  if(scale) *scale = 1.0;
+
+  for(int ctx = 0; ctx < PANA_CA_NCTX; ctx++)
+  {
+    if(w[4] == _pana_ca_radii[ctx][0]
+       && w[11] == _pana_ca_radii[ctx][1]
+       && w[16] == _pana_ca_radii[ctx][2]
+       && w[17] == _pana_ca_radii[ctx][3])
+      return ctx;
+  }
+
+  // no exact tuple, so try twice a known one, which is what sensor-shift
+  // high resolution frames carry. other multiples are refused: contexts 0
+  // and 3, and 1 and 4, are exact multiples of each other, so an arbitrary
+  // scale could match another body's tuple and pick the wrong matrices,
+  // whereas no tuple is twice another. a pixel of slack absorbs rounding
+  for(int ctx = 0; ctx < PANA_CA_NCTX; ctx++)
+  {
+    const int16_t rad[4] = { w[4], w[11], w[16], w[17] };
+    gboolean doubled = TRUE;
+    for(int j = 0; j < 4; j++)
+      if(abs(rad[j] - 2 * _pana_ca_radii[ctx][j]) > 1)
+        doubled = FALSE;
+
+    if(doubled)
+    {
+      if(scale) *scale = 2.0;
+      return ctx;
+    }
+  }
+
+  return -1;
+}
+
+// true when 0x011b holds CA this build can decode, i.e. a parsed payload
+// whose body we have measured. _md_corrections_why() builds on it, so it
+// decides both whether TCA is applied and what the module reports
+static gboolean _pana_has_decodable_ca(const dt_image_t *img)
+{
+  const dt_image_correction_data_t *cd = &img->exif_correction_data;
+  return img->exif_correction_type == CORRECTION_TYPE_PANASONIC
+         && cd->panasonic.has_ca
+         && _pana_ca_context(cd->panasonic.ca_words, NULL) >= 0;
+}
+
 static int _init_coeffs_md_v2(const dt_image_t *img,
                               const dt_iop_lens_params_t *p,
                               float knots_dist[MAXKNOTS],
@@ -2500,6 +2635,12 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
                               float vig[MAXKNOTS])
 {
   const dt_image_correction_data_t *cd = &img->exif_correction_data;
+
+  // gate each correction on what _md_corrections() reports, the answer the
+  // GUI, the warning and the default method also use, so the pixels and the
+  // module cannot disagree about which corrections a file gets. the DNG warp
+  // is the exception, see there
+  const int want = p->modify_flags & _md_corrections(img);
 
   int nc = 0;
 
@@ -2511,7 +2652,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       knots_dist[i] = knots_vig[i] = (float) (i + 0.5) / (nc - 1);
 
       if(cor_rgb
-         && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+         && want & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
           (p->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1);
@@ -2521,13 +2662,13 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
       }
 
-      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      if(cor_rgb && want & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
         cor_rgb[0][i] *= p->cor_ca_r_ft * cd->sony.ca_r[i] * powf(2, -21) + 1;
         cor_rgb[2][i] *= p->cor_ca_b_ft * cd->sony.ca_b[i] * powf(2, -21) + 1;
       }
 
-      if(vig && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
+      if(vig && (want & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
         vig[i] = powf (2, 0.5f
                        - powf(2,
                               p->cor_vig_ft * cd->sony.vignetting[i] * powf(2, -13)  - 1));
@@ -2573,7 +2714,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       // vignetting correction is applied before distortion correction. So the
       // spline is related to the source image before distortion.
       knots_vig[j] = cd->fuji.cropf * cd->fuji.knots[i];
-      if(vig && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+      if(vig && want & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
       {
         vig[j] = 1 - p->cor_vig_ft * (1 - cd->fuji.vignetting[i] / 100);
       } else if(vig) {
@@ -2594,7 +2735,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float r = rin / m;
       knots_dist[i] = r;
 
-      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      if(cor_rgb && want & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         for(int c = 0; c < 3; c++)
         {
@@ -2606,7 +2747,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
       }
 
-      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      if(cor_rgb && want & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
         const float mcar = _interpolate_linear_spline(knots_in,
                                                       cor_ca_r_in, ncin, rin);
@@ -2631,6 +2772,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float pw2 = powf(r, 2.0f);
       const float pw4 = powf(r, 4.0f);
       const float pw6 = powf(r, 6.0f);
+      // the warp planes carry distortion and TCA together, so either
+      // selection applies them and this test stays on the selection
       if(cor_rgb
          && cd->dng.has_warp
          && p->modify_flags & (DT_IOP_LENS_MODIFY_FLAG_DISTORTION
@@ -2649,9 +2792,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
           cor_rgb[2][i] = cor_rgb[1][i] = cor_rgb[0][i];
       }
 
-      if(vig
-         && cd->dng.has_vignette
-         && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
+      if(vig && (want & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
       {
         const float dvig = cd->dng.cvig[0]*pw2 + cd->dng.cvig[1]*pw4 + cd->dng.cvig[2]*pw6
                          + cd->dng.cvig[3]*powf(r, 8.0f) + cd->dng.cvig[4]*powf(r, 10.0f);
@@ -2692,7 +2833,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float r = (float) i / (float) (nc - 1);
       knots_dist[i] = knots_vig[i] = r;
 
-      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      if(cor_rgb && want & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         // Convert the polynomial to a spline by evaluating it at each knot
         //
@@ -2711,7 +2852,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       else if(cor_rgb)
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
 
-      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      if(cor_rgb && want & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
         // Radius in the input (distorted) image of the current knot
         const float rd = cor_rgb[1][i] * r;
@@ -2745,6 +2886,36 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
     const float c  = cd->panasonic.c;
     const float sc = cd->panasonic.scale;
 
+    // per-file precompute for the Panasonic 0x011b CA path: eps_R and eps_B,
+    // each a cubic in the squared source radius, hoisted out of the knot loop
+    double ca_scale = 1.0;
+    const int ca_ctx = cd->panasonic.has_ca
+                       ? _pana_ca_context(cd->panasonic.ca_words, &ca_scale)
+                       : -1;
+    const gboolean apply_ca = cor_rgb
+                              && (want & DT_IOP_LENS_MODIFY_FLAG_TCA)
+                              && ca_ctx >= 0;  // indexes the tables
+    double eps_r_k[4] = { 0.0, 0.0, 0.0, 0.0 };
+    double eps_b_k[4] = { 0.0, 0.0, 0.0, 0.0 };
+    if(apply_ca)
+    {
+      const int16_t *w = cd->panasonic.ca_words;
+      for(int k = 0; k < 4; k++)
+      {
+        double sr = 0.0;
+        double sb = 0.0;
+        for(int j = 0; j < 4; j++)
+        {
+          sr += _pana_ca_M[ca_ctx][k][j] * (double)w[_pana_ca_R_words[j]];
+          sb += _pana_ca_M[ca_ctx][k][j] * (double)w[_pana_ca_B_words[j]];
+        }
+        // the words are in pixels, so a high resolution frame's are scaled
+        // by its linear factor while eps is not: divide it back out
+        eps_r_k[k] = sr / ca_scale;
+        eps_b_k[k] = sb / ca_scale;
+      }
+    }
+
     nc = MAXKNOTS;
 
     for(int i = 0; i < nc; i++)
@@ -2752,7 +2923,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float r = (float)i / (float)(nc - 1);
       knots_dist[i] = knots_vig[i] = r;
 
-      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      float fine = 1.0f;
+      if(cor_rgb && want & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         // invert Ru -> Rd via two fixed-point iterations
         float rd = r;
@@ -2765,11 +2937,31 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
           rd = (f > 1e-6f) ? r / f : r;
         }
         const float dr = (r > 0.0f) ? rd / r : 1.0f;
-        const float fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+        fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
       }
-      else if(cor_rgb)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
+
+      if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+
+      if(apply_ca)
+      {
+        // eps is defined in the raw frame, so evaluate it at the source
+        // radius rd = fine * r, not at the destination abscissa r, and apply
+        // it as a rescale of the green multiplier rather than an offset. this
+        // is what puts CA ahead of distortion in the composition, the same
+        // ordering as the Olympus branch above
+        const double rd = (double)fine * (double)r;
+        const double u = rd * rd;
+        const double eps_r = eps_r_k[0] + u * (eps_r_k[1]
+                             + u * (eps_r_k[2] + u * eps_r_k[3]));
+        const double eps_b = eps_b_k[0] + u * (eps_b_k[1]
+                             + u * (eps_b_k[2] + u * eps_b_k[3]));
+        cor_rgb[0][i] = (float)((double)fine
+                                * (1.0 + PANA_CA_STRENGTH * p->cor_ca_r_ft * eps_r));
+        cor_rgb[2][i] = (float)((double)fine
+                                * (1.0 + PANA_CA_STRENGTH * p->cor_ca_b_ft * eps_b));
+        // cor_rgb[1][i] stays at fine: G is the reference plane
+      }
 
       if(vig)
         vig[i] = 1.0f;
@@ -2889,7 +3081,17 @@ static void _commit_params_md(dt_iop_module_t *self,
   d->nc = 0;
 
   if(!_have_embedded_metadata(self))
+  {
+    // nothing is applied, so say so: otherwise the label keeps whatever an
+    // earlier commit found, e.g. Lensfun's before the method was switched
+    if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
+    {
+      dt_iop_gui_enter_critical_section(self);
+      g->corrections_done = 0;
+      dt_iop_gui_leave_critical_section(self);
+    }
     return;
+  }
 
   d->cor_dist_ft = p->cor_dist_ft;
   d->cor_vig_ft = p->cor_vig_ft;
@@ -4699,10 +4901,127 @@ static void _autoscale_pressed_lf(GtkWidget *button, dt_iop_module_t *self)
 
 /* -- Lensfun GUI end -- */
 
+// which corrections this file's embedded metadata can actually deliver, as
+// DT_IOP_LENS_MODIFY_FLAG_* bits. _init_coeffs_md_v2() gates the pixels on
+// this, so a new vendor or decodable body is added here once. this is a
+// per-file question, not a per-manufacturer one: older Olympus bodies write
+// no chromatic aberration data, a DNG may carry a single-plane warp with no
+// per-channel term, and the Panasonic 0x011b payload only decodes for bodies
+// whose coefficients have been characterized. vignetting is never available
+// for Panasonic or Olympus because neither payload is read
+//
+// undecodable and unread, when given, receive the corrections that are
+// missing for a reason other than the file not carrying them: present but
+// not decodable for this body, or of a kind darktable does not read from
+// this vendor's metadata
+static int _md_corrections_why(const dt_image_t *img,
+                               int *undecodable,
+                               int *unread)
+{
+  const dt_image_correction_data_t *cd = &img->exif_correction_data;
+  int avail = 0;
+  int und = 0;
+  int unr = 0;
+
+  switch(img->exif_correction_type)
+  {
+    case CORRECTION_TYPE_SONY:
+    case CORRECTION_TYPE_FUJI:
+      // both are gated in exif.cc on all three tags being present
+      avail = DT_IOP_LENS_MODFLAG_ALL;
+      break;
+
+    case CORRECTION_TYPE_DNG:
+      // one warp plane corrects geometry only; three carry the per-channel
+      // term, which is how a DNG expresses TCA
+      avail = (cd->dng.has_warp ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0)
+              | (cd->dng.has_warp && cd->dng.planes >= 3
+                 ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0)
+              | (cd->dng.has_vignette ? DT_IOP_LENS_MODIFY_FLAG_VIGNETTING : 0);
+      break;
+
+    case CORRECTION_TYPE_OLYMPUS:
+      avail = (cd->olympus.has_dist ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0)
+              | (cd->olympus.has_ca ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0);
+      unr = DT_IOP_LENS_MODIFY_FLAG_VIGNETTING;
+      break;
+
+    case CORRECTION_TYPE_PANASONIC:
+      avail = (cd->panasonic.has_dist ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0)
+              | (_pana_has_decodable_ca(img) ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0);
+      if(cd->panasonic.has_ca && !(avail & DT_IOP_LENS_MODIFY_FLAG_TCA))
+        und = DT_IOP_LENS_MODIFY_FLAG_TCA;
+      unr = DT_IOP_LENS_MODIFY_FLAG_VIGNETTING;
+      break;
+
+    default:
+      break;
+  }
+
+  if(undecodable) *undecodable = und;
+  if(unread) *unread = unr;
+  return avail;
+}
+
+static int _md_corrections(const dt_image_t *img)
+{
+  return _md_corrections_why(img, NULL, NULL);
+}
+
+static void _append_line(GString *s, const char *line)
+{
+  if(s->len) g_string_append_c(s, '\n');
+  g_string_append(s, line);
+}
+
+// one line per correction in flags that this file's metadata cannot
+// deliver, saying why, or NULL when there is none. the caller frees it
+static gchar *_md_missing_reasons(const dt_image_t *img, const int flags)
+{
+  int undecodable = 0;
+  int unread = 0;
+  const int missing = flags & DT_IOP_LENS_MODFLAG_ALL
+                      & ~_md_corrections_why(img, &undecodable, &unread);
+  if(!missing) return NULL;
+
+  // e.g. an embedded metadata history pasted onto a file of a kind with no
+  // correction metadata darktable reads: nothing to say per correction
+  if(img->exif_correction_type == CORRECTION_TYPE_NONE)
+    return g_strdup(_("darktable reads no lens correction metadata from this file"));
+
+  GString *s = g_string_new(NULL);
+  if(missing & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+    _append_line(s, _("this file carries no distortion correction data"));
+  if(missing & DT_IOP_LENS_MODIFY_FLAG_TCA)
+    _append_line(s, undecodable & DT_IOP_LENS_MODIFY_FLAG_TCA
+                    ? _("darktable cannot decode the chromatic aberration data\n"
+                        "of this camera body yet")
+                    : _("this file carries no chromatic aberration correction data"));
+  if(missing & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+    _append_line(s, unread & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING
+                    ? _("darktable does not read vignetting data\n"
+                        "from this camera's metadata")
+                    : _("this file carries no vignetting correction data"));
+  return g_string_free(s, FALSE);
+}
+
 static void _display_errors(dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+  const dt_image_t *img = &self->dev->image_storage;
+
+  // the selected corrections this file's metadata cannot deliver. the
+  // default selection is all three, which few files deliver in full, so
+  // there it is only reported when none of them applies; selected on
+  // purpose, anything missing is reported. what is missing and why is in
+  // the "corrections done" tooltip either way (_have_corrections_done)
+  int unread = 0;
+  const int avail = _md_corrections_why(img, NULL, &unread);
+  int missing = p->modify_flags & DT_IOP_LENS_MODFLAG_ALL & ~avail;
+  if(p->modify_flags == DT_IOP_LENS_MODFLAG_ALL
+     && (avail & DT_IOP_LENS_MODFLAG_ALL))
+    missing = 0;
 
   g->shading_warned = _shading_overcorrected(self);
 
@@ -4729,6 +5048,56 @@ static void _display_errors(dt_iop_module_t *self)
          "you might also want to check if your Lensfun database is up-to-date\n"
          "by running lensfun-update-data"),
        "");
+  }
+  else if(self->enabled
+          && p->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA
+          && missing)
+  {
+    // the corrections list offers all three regardless of what the file
+    // carries, so say which of them this file cannot deliver and why
+    const int applied = p->modify_flags & avail;
+    const char *title;
+    if(missing == DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      title = _("distortion unavailable");
+    else if(missing == DT_IOP_LENS_MODIFY_FLAG_TCA)
+      title = _("chromatic aberration unavailable");
+    else if(missing == DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+      title = _("vignetting unavailable");
+    else if(!applied)
+      title = _("no correction available");
+    else
+      title = _("some corrections unavailable");
+
+    // every part is a complete sentence of its own, joined here with
+    // newlines, so that no msgid starts or ends with one
+    gchar *reasons = _md_missing_reasons(img, missing);
+    GString *body = g_string_new(reasons);
+    g_free(reasons);
+
+    // one instance cannot mix methods, but instances stack, so the way to keep
+    // the metadata corrections and take a missing one from Lensfun is a second
+    // instance rather than switching this one over
+    _append_line(body, applied
+                 ? _("a second instance of this module with its method set\n"
+                     "to Lensfun can take a missing correction from its database")
+                 : _("set the method to Lensfun to correct from its database instead"));
+
+    // the Lensfun suggestion is qualified for vignetting: Panasonic and
+    // Olympus bodies apply part of the vignetting correction to the raw data
+    // themselves when their shading compensation setting is on, measured at
+    // about a third of a stop at the frame edge wide open, so a profile that
+    // describes the lens's full falloff overshoots on such a file. these are
+    // the files whose vignetting darktable does not read
+    if(missing & unread & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+      _append_line(body, _("some cameras already correct part of the vignetting\n"
+                           "in the raw data, in which case a Lensfun profile\n"
+                           "overcorrects it"));
+
+    // freeing right away is safe even though the trouble signal is dispatched
+    // asynchronously: its two text parameters are G_TYPE_STRING, which
+    // g_value_set_string copies (control/signal.c:54 and :354)
+    dt_iop_set_module_trouble_message(self, title, body->str, "");
+    g_string_free(body, TRUE);
   }
   else
   {
@@ -4773,21 +5142,18 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "metadata");
 
     const dt_image_t *img = &self->dev->image_storage;
-    const dt_image_correction_data_t *cd = &img->exif_correction_data;
 
-    const gboolean has_warp = (img->exif_correction_type == CORRECTION_TYPE_DNG)
-      ? cd->dng.has_warp
-      : TRUE;
-
-    const gboolean has_vign = (img->exif_correction_type == CORRECTION_TYPE_DNG)
-      ? cd->dng.has_vignette
-      : TRUE;
+    // offer fine-tuning only for what this file's metadata carries
+    const int avail = _md_corrections(img);
+    const gboolean has_warp = (avail & DT_IOP_LENS_MODIFY_FLAG_DISTORTION) != 0;
+    const gboolean has_vign = (avail & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING) != 0;
 
     // DNG cannot provide CA fine tuning since the CA correction is embedded in
     // the warp correction.
     const gboolean has_ca =
       img->exif_correction_type != CORRECTION_TYPE_DNG
-      && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+      && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2
+      && (avail & DT_IOP_LENS_MODIFY_FLAG_TCA);
 
     // guard: the callback re-enters gui_changed -> infinite recursion
     DT_ENTER_GUI_UPDATE();
@@ -4842,7 +5208,24 @@ static void _have_corrections_done(gpointer instance, dt_iop_module_t *self)
   const char *message = modifiers->name ? modifiers->description : "";
 
   gtk_label_set_text(g->message, Q_(message));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), Q_(message));
+
+  // name each selected correction that was not applied, and why. at the
+  // default selection the trouble message only appears when nothing applies
+  // (_display_errors), so this is where the user finds out about the rest
+  const dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+  gchar *reasons = p->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA
+                   ? _md_missing_reasons(&self->dev->image_storage, p->modify_flags)
+                   : NULL;
+  if(reasons && *message)
+  {
+    gchar *tip = g_strdup_printf("%s\n%s", Q_(message), reasons);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), tip);
+    g_free(tip);
+  }
+  else
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->message),
+                                reasons ? reasons : Q_(message));
+  g_free(reasons);
 
   // the shading compensation warning depends on what the preview applied.
   // only on a change: every trouble message is also printed to stderr
