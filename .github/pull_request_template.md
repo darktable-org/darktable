@@ -42,4 +42,7 @@ Only fill this in if the pull request was written with the help of an AI
 coding agent. Keep it short and direct, developers cannot afford reading pages
 of text for nothing. One or two lines: which agent was used, what it changed,
 and what you verified yourself.
+
+When using AI for coding we expect you to be able to explain every line of code
+in your own words.
 -->
