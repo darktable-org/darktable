@@ -44,8 +44,8 @@ static inline float2 get_weighted_hue_shift(const float px_hue,
 {
   if(num_nodes <= 0) return (float2)(0.0f, 0.0f);
 
-  const float sigma = zone_width_factor * 0.5f / (float)num_nodes;
-  const float inv_2sigma2 = 1.0f / (2.0f * sigma * sigma);
+  const float sigma = fp32_div(zone_width_factor * 0.5f, (float)num_nodes);
+  const float inv_2sigma2 = fp32_div(1.0f, 2.0f * sigma * sigma);
 
   float diff[2 * COLORHARMONIZER_MAX_NODES];
   int n = 0;
@@ -64,7 +64,7 @@ static inline float2 get_weighted_hue_shift(const float px_hue,
   for(int k = 0; k < n; k++)
   {
     const float d = fabs(diff[k]);
-    const float a = 1.0f - (d - d_min) / COLORHARMONIZER_BOUNDARY_BAND;
+    const float a = 1.0f - fp32_div(d - d_min, COLORHARMONIZER_BOUNDARY_BAND);
     if(a <= 0.0f) continue;
     const float w = exp(-d * d * inv_2sigma2);
     sum_a += a;
@@ -72,7 +72,7 @@ static inline float2 get_weighted_hue_shift(const float px_hue,
     sat   += a * (node_saturation[k / 2] - 1.0f) * w;
   }
 
-  return (float2)(shift / sum_a, sat / sum_a);
+  return (float2)(fp32_div(shift, sum_a), fp32_div(sat, sum_a));
 }
 
 // Mirrors _gamut_limit_chroma() in src/iop/colorharmonizer.c.
@@ -84,10 +84,10 @@ static inline float gamut_limit_chroma(global const float *gamut_LUT,
                                        const float hue_out,
                                        const float L_white)
 {
-  const float k = 15.932993652962535f * pow(J * L_white, 0.6523997524738018f) / L_white;
+  const float k = fp32_div(15.932993652962535f * pow(J * L_white, 0.6523997524738018f), L_white);
   const float g_in  = pow(fmax(lookup_gamut(gamut_LUT, hue_in), FLT_MIN), 0.6007557017508491f);
   const float g_out = pow(fmax(lookup_gamut(gamut_LUT, hue_out), FLT_MIN), 0.6007557017508491f);
-  return fmin(chroma_out, g_out * fmax(k, chroma_in / g_in));
+  return fmin(chroma_out, g_out * fmax(k, fp32_div(chroma_in, g_in)));
 }
 
 // Kernel 1: compute per-pixel correction maps (hue_delta, sat_delta) and
@@ -114,7 +114,7 @@ kernel void colorharmonizer_map(read_only  image2d_t  in,
   float4 xyY = dt_D65_XYZ_to_xyY(XYZ_D65);
   float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
 
-  const float hue = (JCH.z + M_PI_F) / DT_2PI_F;
+  const float hue = fp32_div(JCH.z + M_PI_F, DT_2PI_F);
 
   const int idx = y * width + x;
   jch_out[idx] = (float4)(JCH.x, JCH.y, hue, pix_in.w);
@@ -150,7 +150,7 @@ kernel void colorharmonizer_apply(write_only image2d_t  out,
 
   const float t             = protect_neutral;
   const float cutoff        = t * t * t * 0.03f;
-  const float chroma_weight = chroma / (chroma + cutoff + 1.0e-5f);
+  const float chroma_weight = fp32_div(chroma, chroma + cutoff + 1.0e-5f);
 
   float4 JCH;
   JCH.x = J;
