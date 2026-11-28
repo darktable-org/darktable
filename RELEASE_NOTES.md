@@ -682,6 +682,10 @@ changes (where available).
   each image's own as-shot multipliers, and need to be pasted again
   that way.
 
+- Copy & import can now also copy existing XMP sidecars, including
+  those of duplicates, so edits made elsewhere are kept. Enable it in
+  preferences > import.
+
 ## Bug Fixes
 
 - Fixed lighttable previews appearing soft at 100% when an image was
