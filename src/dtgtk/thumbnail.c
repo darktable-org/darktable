@@ -1320,6 +1320,28 @@ static void _event_image_leave_cb(GtkEventControllerMotion *controller,
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, FALSE);
 }
 
+static void _altered_scrolled(GtkEventControllerScroll *controller,
+                              gdouble dx,
+                              gdouble dy,
+                              dt_thumbnail_t *thumb)
+{
+  if(dy > 0.0)
+  {
+    thumb->is_altered = 1;
+    darktable.control->skip_first_altered++;
+    _thumb_update_altered_tooltip(thumb);
+    return;
+  }
+  if(dy < 0.0)
+  {
+    thumb->is_altered = 1;
+    darktable.control->skip_first_altered = darktable.control->skip_first_altered ?
+          darktable.control->skip_first_altered - 1 : 0;
+    _thumb_update_altered_tooltip(thumb);
+    return;
+  }
+}
+
 static void _event_btn_enter_cb(GtkEventControllerMotion *controller,
                                   gdouble x,
                                   gdouble y,
@@ -1607,6 +1629,9 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_altered, TRUE);
     dt_gui_connect_motion(thumb->w_altered, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
+    dt_gui_connect_scroll(thumb->w_altered, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                     | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _altered_scrolled, thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_altered);
 
     // the tags icon
