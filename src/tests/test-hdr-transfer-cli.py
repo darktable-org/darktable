@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import struct
 import subprocess
+import sys
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -20,8 +23,6 @@ REFERENCE_WHITE_NITS = 203.0
 PQ_PEAK_NITS = 10000.0
 HLG_PEAK_NITS = 1000.0
 HLG_GAMMA = 1.2
-IMPORT_TOLERANCE = 0.003
-EXPORT_TOLERANCE = 0.003
 CLIPPING_SIGNAL_GAIN = 4.0 / 3.0
 CLIPPING_HIGHLIGHT_MIN = 1.1
 CLIPPING_LOW_LEVEL_MAX = 0.01
@@ -46,7 +47,7 @@ GAMUT = {
                     [0.017083, 0.072397, 0.910520]]),
 }
 LUMA = {"rec2020": np.array([0.2627, 0.6780, 0.0593]),
-        "p3": np.array([0.2290, 0.6917, 0.0793])}
+        "p3": np.array([0.22897456, 0.69173852, 0.07928691])}
 
 
 def read_png(path: Path, magick: str) -> np.ndarray:
@@ -88,7 +89,7 @@ def hdr_decode(signal: np.ndarray, transfer: str, primaries: str) -> np.ndarray:
 
 
 def export(cli: Path, source: Path, output: Path, profile: str,
-           force_lcms: bool, xmp: Path | None = None,
+           force_lcms: bool, timeout: float, xmp: Path | None = None,
            opencl: bool = False) -> None:
     case = output.stem
     command = [str(cli), str(source)]
@@ -109,19 +110,28 @@ def export(cli: Path, source: Path, output: Path, profile: str,
                     "--conf", "opencl_device_priority=+*/+*/+*/+*/+*"]
     # Never reuse a previous image as evidence for a failed current invocation.
     output.unlink(missing_ok=True)
-    with output.with_suffix(".log").open("w") as log:
-        subprocess.run(command, stdout=log, stderr=log, check=True, timeout=120)
+    log_path = output.with_suffix(".log")
+    with log_path.open("w") as log:
+        try:
+            subprocess.run(command, stdout=log, stderr=log, check=True,
+                           timeout=timeout)
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(f"darktable-cli exited with {error.returncode}, "
+                               f"see {log_path}") from None
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(f"darktable-cli timed out after {timeout} s, "
+                               f"see {log_path}") from None
     if not output.is_file():
-        raise AssertionError(f"CLI produced no output for {case}")
+        raise RuntimeError(f"darktable-cli produced no output, see {log_path}")
     if opencl:
-        log_text = output.with_suffix(".log").read_text()
+        log_text = log_path.read_text()
         if not re.search(r"\bprocess\s+CL\d+\b[^\n]*\bcolorin\b", log_text):
-            raise AssertionError(f"{case}: colorin did not run on an OpenCL device")
+            raise RuntimeError(f"colorin did not run on an OpenCL device, see {log_path}")
         if re.search(r"\bprocess\s+CPU\b[^\n]*\bcolorin\b", log_text):
-            raise AssertionError(f"{case}: colorin fell back to CPU")
+            raise RuntimeError(f"colorin fell back to CPU, see {log_path}")
         events = re.findall(r"(\d+) out of (\d+) events were successful and (\d+) events lost", log_text)
         if not events or any(success != total or int(lost) != 0 for success, total, lost in events):
-            raise AssertionError(f"{case}: OpenCL events failed or were lost")
+            raise RuntimeError(f"OpenCL events failed or were lost, see {log_path}")
 
 
 def clipping_png(source: Path, output: Path, magick: str) -> None:
@@ -159,7 +169,7 @@ def fixture(root: Path, transfer: str, primaries: str, extension: str) -> Path:
     if not path.exists() and not suffix:
         path = root / f"test-{transfer}.{extension}"
     if not path.is_file():
-        raise FileNotFoundError(path)
+        raise RuntimeError(f"missing fixture {path}")
     return path
 
 
@@ -171,6 +181,12 @@ def main() -> int:
     parser.add_argument("--smoke", action="store_true", help="AVIF Rec2020 only")
     parser.add_argument("--clipping-opencl", action="store_true",
                         help="also check the four gamut-clipping cases with OpenCL")
+    parser.add_argument("--import-tolerance", type=float, default=0.003,
+                        help="max abs error of imported PNG samples (default: %(default)s)")
+    parser.add_argument("--export-tolerance", type=float, default=0.003,
+                        help="max abs error of exported linear values (default: %(default)s)")
+    parser.add_argument("--timeout", type=float, default=120.0,
+                        help="seconds per darktable-cli run (default: %(default)s)")
     args = parser.parse_args()
     if args.smoke and args.clipping_opencl:
         parser.error("--clipping-opencl requires the full PNG fixtures, without --smoke")
@@ -178,75 +194,117 @@ def main() -> int:
     if magick is None:
         parser.error("ImageMagick is required for unmodified 16-bit PNG sample decoding")
     cli = args.cli.resolve()
+    if not cli.is_file() or not os.access(cli, os.X_OK):
+        parser.error(f"darktable-cli not found or not executable: {cli}")
+    if not args.fixtures.is_dir():
+        parser.error(f"fixture directory not found: {args.fixtures}")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     (output / "results.json").unlink(missing_ok=True)
-    source = fixture(args.fixtures, "srgb", "rec2020", "avif")
-    baseline = output / "srgb-reference.png"
-    export(cli, source, baseline, "SRGB", False)
-    reference = read_png(baseline, magick)
+    try:
+        source = fixture(args.fixtures, "srgb", "rec2020", "avif")
+        baseline = output / "srgb-reference.png"
+        export(cli, source, baseline, "SRGB", False, args.timeout)
+        reference = read_png(baseline, magick)
+    except (RuntimeError, subprocess.CalledProcessError) as error:
+        sys.exit(f"error: sRGB baseline: {error}")
+
     cases: list[dict[str, str | float]] = []
+    failures: list[str] = []
+
+    def fail(name: str, error: Exception) -> None:
+        cases.append({"case": name, "failure": str(error)})
+        failures.append(f"{name}: {error}")
+
+    def measure(name: str, limit: float, compute: Callable[[], float]) -> None:
+        try:
+            error = compute()
+        except (RuntimeError, subprocess.CalledProcessError) as exc:
+            fail(name, exc)
+            return
+        cases.append({"case": name, "max_error": error})
+        if error > limit:
+            failures.append(f"{name}: max error {error:.6f}, limit {limit}")
+
+    def import_error(source: Path, path: Path) -> float:
+        export(cli, source, path, "SRGB", False, args.timeout)
+        return float(np.max(np.abs(read_png(path, magick) - reference)))
+
+    def export_error(path: Path, profile: str, force_lcms: bool,
+                     transfer: str, primaries: str) -> float:
+        export(cli, source, path, profile, force_lcms, args.timeout)
+        linear = hdr_decode(read_png(path, magick), transfer, primaries)
+        return float(np.max(np.abs(linear - srgb_decode(reference))))
+
+    def clipping_inputs(name: str, transfer: str,
+                        primaries: str) -> tuple[Path, Path, np.ndarray]:
+        input_path = output / (name + "-input.png")
+        clipping_png(fixture(args.fixtures, transfer, primaries, "png"), input_path, magick)
+        sidecar = output / (name + ".xmp")
+        clipping_xmp(sidecar, transfer, primaries)
+        linear = hdr_decode(read_png(input_path, magick), transfer, primaries)
+        if not np.any(linear > CLIPPING_HIGHLIGHT_MIN):
+            raise RuntimeError("fixture does not exercise highlight clipping")
+        if not np.any(np.max(linear, axis=-1) < CLIPPING_LOW_LEVEL_MAX):
+            raise RuntimeError("fixture does not exercise the low end")
+        return input_path, sidecar, srgb_encode(np.clip(linear, 0.0, 1.0))
+
+    def clipping_error(input_path: Path, path: Path, sidecar: Path,
+                       opencl: bool, expected: np.ndarray) -> float:
+        export(cli, input_path, path, "SRGB", False, args.timeout, sidecar, opencl)
+        return float(np.max(np.abs(read_png(path, magick) - expected)))
+
     formats = ("avif",) if args.smoke else ("avif", "png", "heif", "jxl")
     primaries_list = ("rec2020",) if args.smoke else ("rec2020", "p3")
     for extension in formats:
         for primaries in primaries_list:
             for transfer in ("pq", "hlg"):
                 name = f"import-{extension}-{primaries}-{transfer}"
-                path = output / (name + ".png")
-                export(cli, fixture(args.fixtures, transfer, primaries, extension),
-                       path, "SRGB", False)
-                error = float(np.max(np.abs(read_png(path, magick) - reference)))
-                cases.append({"case": name, "max_error": error})
-                if error > IMPORT_TOLERANCE:
-                    raise AssertionError(f"{name}: max error {error}, limit {IMPORT_TOLERANCE}")
+                measure(name, args.import_tolerance, lambda: import_error(
+                    fixture(args.fixtures, transfer, primaries, extension),
+                    output / (name + ".png")))
     for primaries in primaries_list:
         for transfer in ("pq", "hlg"):
             profile = transfer.upper() + "_" + primaries.upper()
             for force_lcms in (False, True):
                 name = f"export-{primaries}-{transfer}-lcms-{force_lcms}"
                 path = output / (name + ".png")
-                export(cli, source, path, profile, force_lcms)
-                linear = hdr_decode(read_png(path, magick), transfer, primaries)
-                error = float(np.max(np.abs(linear - srgb_decode(reference))))
-                cases.append({"case": name, "max_error": error})
-                if error > EXPORT_TOLERANCE:
-                    raise AssertionError(f"{name}: max error {error}, limit {EXPORT_TOLERANCE}")
-                if not force_lcms:
+                measure(name, args.export_tolerance, lambda: export_error(
+                    path, profile, force_lcms, transfer, primaries))
+                if not force_lcms and path.is_file():
                     # Our exported PNG also contains an ICC fallback. CICP
                     # must retain priority when that ICC has already been read.
-                    imported = output / (name + "-icc-reimport.png")
-                    export(cli, path, imported, "SRGB", False)
-                    error = float(np.max(np.abs(read_png(imported, magick) - reference)))
-                    cases.append({"case": name + "-icc-reimport", "max_error": error})
-                    if error > IMPORT_TOLERANCE:
-                        raise AssertionError(f"{name} ICC reimport: max error {error}")
+                    measure(name + "-icc-reimport", args.import_tolerance,
+                            lambda: import_error(
+                                path, output / (name + "-icc-reimport.png")))
     if not args.smoke:
+        backends = (False, True) if args.clipping_opencl else (False,)
         for primaries in primaries_list:
             for transfer in ("pq", "hlg"):
                 name = f"import-png-{primaries}-{transfer}-clip-srgb"
-                input_path = output / (name + "-input.png")
-                clipping_png(fixture(args.fixtures, transfer, primaries, "png"), input_path, magick)
-                sidecar = output / (name + ".xmp")
-                clipping_xmp(sidecar, transfer, primaries)
-                linear = hdr_decode(read_png(input_path, magick), transfer, primaries)
-                if not np.any(linear > CLIPPING_HIGHLIGHT_MIN):
-                    raise AssertionError(f"{name}: fixture does not exercise highlight clipping")
-                if not np.any(np.max(linear, axis=-1) < CLIPPING_LOW_LEVEL_MAX):
-                    raise AssertionError(f"{name}: fixture does not exercise the low end")
-                expected = srgb_encode(np.clip(linear, 0.0, 1.0))
-                backends = (False, True) if args.clipping_opencl else (False,)
+                try:
+                    input_path, sidecar, expected = clipping_inputs(name, transfer, primaries)
+                except (RuntimeError, subprocess.CalledProcessError) as error:
+                    fail(name, error)
+                    continue
                 for opencl in backends:
                     case = name + ("-opencl" if opencl else "")
-                    path = output / (case + ".png")
-                    export(cli, input_path, path, "SRGB", False, sidecar, opencl)
-                    error = float(np.max(np.abs(read_png(path, magick) - expected)))
-                    cases.append({"case": case, "max_error": error})
-                    if error > IMPORT_TOLERANCE:
-                        raise AssertionError(f"{case}: max error {error}, limit {IMPORT_TOLERANCE}")
-    report = {"status": "passed", "cases": cases,
-              "gpu_runtime": "four clipping cases verified on OpenCL with no lost events" if args.clipping_opencl
-                             else "not tested by this CPU regression harness"}
+                    measure(case, args.import_tolerance, lambda: clipping_error(
+                        input_path, output / (case + ".png"), sidecar, opencl, expected))
+    if not args.clipping_opencl:
+        gpu_runtime = "not tested by this CPU regression harness"
+    elif failures:
+        gpu_runtime = "four clipping cases run on OpenCL, see failures"
+    else:
+        gpu_runtime = "four clipping cases verified on OpenCL with no lost events"
+    report = {"status": "failed" if failures else "passed", "cases": cases,
+              "failures": failures, "gpu_runtime": gpu_runtime}
     (output / "results.json").write_text(json.dumps(report, indent=2) + "\n")
+    if failures:
+        print(f"{len(failures)} of {len(cases)} cases failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"  {failure}", file=sys.stderr)
+        return 1
     print(json.dumps(report))
     return 0
 
