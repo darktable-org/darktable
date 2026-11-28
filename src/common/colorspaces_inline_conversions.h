@@ -53,6 +53,8 @@ static inline __m128 dt_Lab_to_XYZ_sse2(const __m128 Lab)
   return d50 * lab_f_inv_m(f + _mm_shuffle_ps(f, f, _MM_SHUFFLE(1, 1, 3, 1)) + offset);
 }
 
+/** Kept for reference purpose.
+    The approximation is not bad but differs too much from non-SSE platform.
 static inline __m128 lab_f_m_sse2(const __m128 x)
 {
   const __m128 epsilon = _mm_set1_ps(216.0f / 24389.0f);
@@ -73,6 +75,23 @@ static inline __m128 lab_f_m_sse2(const __m128 x)
   const __m128 mask = _mm_cmpgt_ps(x, epsilon);
   return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
 }
+*/
+
+// As SSE2 does not have a packed cube-root instruction we go the hard and possibly slightly slower way.
+static inline __m128 lab_f_m_sse2(const __m128 x)
+{
+  const float epsilon = 216.0f / 24389.0f;
+  const float kappa = 24389.0f / 27.0f;
+  float lanes[4];
+
+  _mm_storeu_ps(lanes, x);
+  for(int i = 0; i < 4; i++)
+    lanes[i] = lanes[i] > epsilon
+                 ? cbrtf(lanes[i])
+                 : (kappa * lanes[i] + 16.0f) / 116.0f;
+  return _mm_loadu_ps(lanes);
+}
+
 
 /** uses D50 white point. */
 static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
