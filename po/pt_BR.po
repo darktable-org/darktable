@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-25 22:48-0300\n"
-"PO-Revision-Date: 2026-11-25 22:57-0300\n"
+"PO-Revision-Date: 2026-11-28 09:10-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2651,19 +2651,18 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4900
 msgid "convert to the display profile in darktable"
-msgstr ""
+msgstr "converter para o perfil do monitor no darktable"
 
 #: ../build/bin/preferences_gen.h:4908
 msgid ""
 "convert images to the display profile in darktable, and do not give them to "
 "the color management of the system. use this setting only as a workaround "
 "for compositor or driver bugs"
-msgstr ""
+msgstr "converter imagens para o perfil de monitor no darktanle, e não dar a elas o gerenciamento de cores do sistema. use esta configuração como solução alternativa para bugs de compositor ou driver"
 
 #: ../build/bin/preferences_gen.h:4917
-#, fuzzy
 msgid "display profile file"
-msgstr "perfil do monitor"
+msgstr "arquivo do perfil do monitor"
 
 #: ../build/bin/preferences_gen.h:4930
 msgid ""
@@ -4703,9 +4702,8 @@ msgstr "detalhes finos"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:93
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:172
-#, fuzzy
 msgid "base detail level"
-msgstr "nível de detalhes"
+msgstr "nível base para detalhes"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:99
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:176
@@ -25158,7 +25156,7 @@ msgstr "método de gradação para mapeamento de cor"
 
 #: ../src/iop/colorbalance.c:1861
 msgid "color control sliders"
-msgstr "controles de cor"
+msgstr "deslizadores de controle"
 
 #: ../src/iop/colorbalance.c:1862 ../src/libs/colorpicker.c:53
 msgid "HSL"
@@ -25835,7 +25833,6 @@ msgid "teal & orange"
 msgstr "verde-azulado e laranja"
 
 #: ../src/iop/colorequal.c:3807
-#, fuzzy
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle the control sliders\n"
@@ -25858,9 +25855,8 @@ msgstr ""
 "ctrl+clique para selecionar uma área"
 
 #: ../src/iop/colorequal.c:3839
-#, fuzzy
 msgid "control sliders"
-msgstr "controles de cor"
+msgstr "deslizadores de controles"
 
 #: ../src/iop/colorequal.c:3854
 msgid "change hue hue-wise"
@@ -28612,12 +28608,9 @@ msgid "this module is deprecated. please use the filmic rgb module instead."
 msgstr "este módulo está obsoleto. use o módulo rgb fílmico em seu lugar."
 
 #: ../src/iop/globaltonemap.c:304 ../src/iop/monochrome.c:231
-#, fuzzy
 msgid ""
 "error: bilateral filter failed to allocate memory, check your RAM usage!"
-msgstr ""
-"o filtro fast guided não conseguiu alocar memória, verifique sua "
-"configuração de RAM"
+msgstr "erro: o filtro bilateral não conseguiu alocar memória, verifique sua configuração de RAM"
 
 #: ../src/iop/globaltonemap.c:640 ../src/libs/filters/colors.c:313
 msgid "operator"
@@ -30349,15 +30342,16 @@ msgstr ""
 "o arquivo selecionado não está dentro da pasta raiz das máscaras de pixels"
 
 #: ../src/iop/rasterfile.c:510
-#, fuzzy
 msgid "cannot write the raster mask sidecar for this image"
-msgstr "não foi possível ler o arquivo de máscara de pixels"
+msgstr "não foi possível gravar o arquivo de máscara de pixels para esta imagem"
 
 #: ../src/iop/rasterfile.c:534
 msgid ""
 "import a PNG or PFM file as a raster mask\n"
 "it is stored in the image's .dtdata sidecar and travels with the image"
 msgstr ""
+"importar um arquivo PNG ou PFM como máscara de pixels\n"
+"será guardado no arquivo auxiliar .dtdata da imagem e viaja com a imagem"
 
 #: ../src/iop/rasterfile.c:536
 msgid ""
@@ -30365,12 +30359,13 @@ msgid ""
 "sidecar files are disabled in preferences, so the mask is referenced by its "
 "path"
 msgstr ""
+"selecionar um arquivo PNG ou PFM do diretório raíz de máscaras de pixels\n"
+"os arquivos auxiliares estão desabilitados nas preferências, então a máscara é referenciada por seu caminho"
 
 #: ../src/iop/rasterfile.c:898
-#, fuzzy
 msgid ""
 "select the RGB channels taken into account when a color file is imported"
-msgstr "selecionar os canais RGB levados em conta ao gerar a máscara de pixels"
+msgstr "selecionar os canais RGB levados em conta quando um arquivo de cores é importado"
 
 #: ../src/iop/rasterfile.c:911
 msgid ""
@@ -30947,9 +30942,8 @@ msgid "px"
 msgstr "px"
 
 #: ../src/iop/satcurvergb.c:2200
-#, fuzzy
 msgid "size of the neighborhood used to guide the filter"
-msgstr "inclinação da seção linear ao redor do pivô"
+msgstr "tamanho da vizinhança usado para guiar o filtro"
 
 #: ../src/iop/satcurvergb.c:2205
 msgid ""
@@ -30961,22 +30955,21 @@ msgstr ""
 
 #: ../src/iop/satcurvergb.c:2210
 msgid "protect near-neutrals"
-msgstr ""
+msgstr "proteger quase-neutros"
 
 #: ../src/iop/satcurvergb.c:2215
-#, fuzzy
 msgid "center of the saturation range protected from the guided filter"
-msgstr "definir o raio de parâmetros aplicados para o filtro guiado"
+msgstr "centro da faixa de saturação protegida do filtro guiado"
 
 #: ../src/iop/satcurvergb.c:2222
 msgid "protection transition width"
-msgstr ""
+msgstr "largura da transição da proteção"
 
 #: ../src/iop/satcurvergb.c:2226
 msgid ""
 "width of the smooth transition around the protected center; wider values "
 "give a gentler, less abrupt protection falloff"
-msgstr ""
+msgstr "largura da transição suave ao redor do centro protegido; valores mais amplos dão um decaimento de proteção mais gentil e menos abrupto"
 
 #: ../src/iop/satcurvergb.c:2236
 msgid "limit curve changes in noisy or uncertain regions"
@@ -31208,6 +31201,10 @@ msgid ""
 "(1000 nits for HLG, the PQ peak set in export), up to 1600%\n"
 "(3248 nits). SDR output does not change"
 msgstr ""
+"esta edição é de antes da saída HDR e mantém o branco alvo como definido.\n"
+"ligue para mudar a escala do branco alvo para o pico da saída HDR\n"
+"(1000 nits para HLG, o pico PQ definido em exportação), até 1600%\n"
+"(3248 nits). Saída SDR não muda"
 
 #: ../src/iop/soften.c:75
 msgid "soften"
@@ -31261,6 +31258,8 @@ msgid ""
 "simulates the physical process of developing and printing analog film,\n"
 "using spectral emulsion and paper data from the spektrafilm project"
 msgstr ""
+"simula o processo físico de revelação e impressão de filme analógico,\n"
+"usando emulsão espectral e dados de papel do projeto spektrafilm"
 
 #: ../src/iop/spektrafilm.c:1766
 msgid ""
@@ -31271,13 +31270,12 @@ msgstr ""
 "atualize o darktable para usá-lo"
 
 #: ../src/iop/spektrafilm.c:1769
-#, fuzzy
 msgid ""
 "this data pack is too old for this version of darktable\n"
 "use the download button to fetch a current one"
 msgstr ""
-"%u modelo é muito antigo para esta versão do darktable e precisa ser "
-"atualizado"
+"este modelo de dados é muito antigo para esta versão do darktable\n"
+"use o botão de download para buscar um atual"
 
 #: ../src/iop/spektrafilm.c:1771
 msgid ""
@@ -31308,6 +31306,8 @@ msgid ""
 "the installed data pack contains no print papers\n"
 "it may have downloaded incompletely -- try fetching it again"
 msgstr ""
+"o pacote de dados não contém papéis de impressão\n"
+"ele pode ter sido baixado de maneira incompleta -- tente baixá-lo novamente"
 
 #: ../src/iop/spektrafilm.c:1892
 msgid "this film or paper could not be loaded"
@@ -31561,7 +31561,7 @@ msgstr "(nenhum perfil encontrado)"
 #. control. Both data values stay clear of the list positions used below.
 #: ../src/iop/spektrafilm.c:5664
 msgid "none (scan the film)"
-msgstr ""
+msgstr "nenhum (varrer o filme)"
 
 #: ../src/iop/spektrafilm.c:5669
 msgid "auto (follow film stock)"
@@ -31577,7 +31577,7 @@ msgstr "redefinir somente esta seção"
 
 #: ../src/iop/spektrafilm.c:6148
 msgid "film emulsion (spektrafilm filming profile)"
-msgstr ""
+msgstr "emulsão de filme (perfil de filme spektrafilm)"
 
 #: ../src/iop/spektrafilm.c:6155
 msgid ""
@@ -31586,9 +31586,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:6157
-#, fuzzy
 msgid "print paper"
-msgstr "impressora"
+msgstr "papel de impressão"
 
 #: ../src/iop/spektrafilm.c:6168
 msgid ""
@@ -31690,6 +31689,8 @@ msgid ""
 "how strongly each layer inhibits the other two. this is what\n"
 "produces the saturation couplers are known for."
 msgstr ""
+"quão fortemente cada camada inibe as outras duas. isto é o que\n"
+"produz a saturação pela qual os acopladores são conhecidos"
 
 #: ../src/iop/spektrafilm.c:6275 ../src/iop/spektrafilm.c:6283
 msgid " µm"
@@ -31736,13 +31737,15 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:6328
 msgid "radius of the diffusion halo. the amount of light is unchanged."
-msgstr ""
+msgstr "raio de difusão do halo. a quantidade de luz não é modificada"
 
 #: ../src/iop/spektrafilm.c:6332
 msgid ""
 "diffusion halo warmth: >0 warm outer halo, <0 cool (added on top of\n"
 "the selected filter's own warmth bias)."
 msgstr ""
+"calor de difusão do halo: >0 halo externo quente, <0 frio (adicionado\n"
+"sobre viés de calor do halo do filtro selecionado)."
 
 #. The knobs to reach for last: the adaptation switches change how faithful
 #. the model is, not what the look is.
