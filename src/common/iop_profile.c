@@ -857,6 +857,19 @@ float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type)
   }
 }
 
+float dt_ioppr_pipe_output_headroom(const struct dt_dev_pixelpipe_t *pipe,
+                                    const dt_colorspaces_color_profile_type_t type)
+{
+  // a screen's headroom is no target for the edit: it grows as the
+  // brightness goes down, to 16 on a dimmed XDR display, and GNOME reports
+  // PQ's nominal 10000 nits. the darkroom renders for no more than the
+  // image's output profile has, so it stays SDR for an SDR output (#23230)
+  const dt_iop_order_iccprofile_info_t *const image = pipe->export_profile_info;
+  const float screen = fminf(pipe->output.image.headroom,
+                             image ? dt_ioppr_profile_headroom(image->type) : 1.0f);
+  return fmaxf(screen, dt_ioppr_profile_headroom(type));
+}
+
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,

@@ -146,6 +146,13 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
    1 unless its transfer function is HDR (PQ, HLG) */
 float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type);
 
+/** the headroom the tone mappers of pipe render for, with its output in
+   this profile type: the window's image headroom, at most the headroom of
+   the image's output profile (colorout's), or the headroom of type if
+   that is more */
+float dt_ioppr_pipe_output_headroom(const struct dt_dev_pixelpipe_t *pipe,
+                                    const dt_colorspaces_color_profile_type_t type);
+
 /** set the PQ peak, in nits, for the pipes processed by the calling thread,
    or 0 to read it from the export module's setting again */
 void dt_ioppr_set_thread_pq_peak_nits(const int nits);

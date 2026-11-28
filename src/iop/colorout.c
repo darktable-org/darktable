@@ -967,7 +967,7 @@ static void _gamut_mark(dt_iop_colorout_data_t *d,
 static float _output_headroom(const dt_dev_pixelpipe_t *const pipe,
                               const dt_iop_order_iccprofile_info_t *const info)
 {
-  return fmaxf(pipe->output.image.headroom, dt_ioppr_profile_headroom(info->type));
+  return dt_ioppr_pipe_output_headroom(pipe, info->type);
 }
 
 // colorout filtered out: the pixels stay in the working RGB, which the run
