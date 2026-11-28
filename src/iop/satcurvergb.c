@@ -2115,6 +2115,7 @@ void gui_init(dt_iop_module_t *self)
   g->picked_s = g->picked_s_min = g->picked_s_max = 0.f;
 
   self->widget = dt_gui_vbox();
+  GtkWidget *curve_box = dt_gui_vbox();
 
   static dt_action_def_t notebook_def = {};
 
@@ -2135,7 +2136,7 @@ void gui_init(dt_iop_module_t *self)
 
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
-  dt_gui_box_add(self->widget, GTK_WIDGET(g->notebook));
+  dt_gui_box_add(curve_box, GTK_WIDGET(g->notebook));
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/satcurve/graph_height"));
   gtk_widget_set_size_request(GTK_WIDGET(g->area), -1, DT_PIXEL_APPLY_DPI(180));
@@ -2144,7 +2145,9 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_connect_motion(GTK_WIDGET(g->area), area_motion_notify, NULL, NULL, self);
   dt_gui_connect_scroll(GTK_WIDGET(g->area), GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
                         area_scroll_notify, self);
-  dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
+  dt_gui_box_add(curve_box, GTK_WIDGET(g->area));
+  dt_action_define_iop(self, NULL, N_("curve"), curve_box, NULL);
+  dt_gui_box_add(self->widget, curve_box);
 
   GtkWidget *main_vbox = self->widget;
 
