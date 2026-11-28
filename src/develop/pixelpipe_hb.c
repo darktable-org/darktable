@@ -307,9 +307,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   dt_pthread_mutex_init(&pipe->mutex);
   dt_pthread_mutex_init(&pipe->backbuf_mutex);
   dt_pthread_mutex_init(&pipe->busy_mutex);
-  pipe->icc_type = DT_COLORSPACE_NONE;
-  pipe->icc_filename = NULL;
-  pipe->icc_intent = DT_INTENT_LAST;
+  memset(&pipe->icc, 0, sizeof(pipe->icc));
+  pipe->icc.type = DT_COLORSPACE_NONE;
+  pipe->icc.intent = DT_INTENT_LAST;
   pipe->iop = NULL;
   pipe->iop_order_list = NULL;
   pipe->forms = NULL;
@@ -321,10 +321,14 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_headroom = 1.0f;
   memset(&pipe->output, 0, sizeof(pipe->output));
   pipe->output.image.type = DT_COLORSPACE_NONE;
+  pipe->output.image.headroom = 1.0f;
   pipe->output.device.type = DT_COLORSPACE_NONE;
+  pipe->output.device.headroom = 1.0f;
   pipe->window = DT_COLORSPACE_NONE;
   memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
   pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
+  pipe->colorout_request = DT_INITHASH;
+  pipe->output_clip = FALSE;
   memset(&pipe->output_encoding, 0, sizeof(pipe->output_encoding));
   pipe->output_encoding.type = DT_COLORSPACE_NONE;
   pipe->runs = 0;
@@ -406,14 +410,9 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe,
 }
 
 void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
-                              const dt_colorspaces_color_profile_type_t icc_type,
-                              const gchar *icc_filename,
-                              const dt_iop_color_intent_t icc_intent)
+                              const dt_color_target_t *override)
 {
-  pipe->icc_type = icc_type;
-  g_free(pipe->icc_filename);
-  pipe->icc_filename = g_strdup(icc_filename ? icc_filename : "");
-  pipe->icc_intent = icc_intent;
+  pipe->icc = *override;
 }
 
 void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe,
@@ -444,10 +443,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   dt_free_align(pipe->bcache_data);
   pipe->bcache_size = 0;
   _free_distort_bufs(pipe);
-
-  pipe->icc_type = DT_COLORSPACE_NONE;
-  g_free(pipe->icc_filename);
-  pipe->icc_filename = NULL;
 
   dt_frame_unref(pipe->frame);
   pipe->frame = NULL;
@@ -1388,6 +1383,42 @@ error:
 }
 #endif
 
+// RGB%'s light, picked from the light of the pixels: the mean light is
+// not the light of the mean code. only the box is decoded, with the 2
+// pixels around it that denoise's B-spline reads (bspline.h)
+static gboolean _pick_light(const dt_iop_buffer_dsc_t *dsc,
+                            const float *const input,
+                            const dt_iop_roi_t *roi_in,
+                            const int *const box,
+                            const gboolean denoise,
+                            lib_colorpicker_stats light,
+                            const dt_iop_order_iccprofile_info_t *const display_profile,
+                            const dt_iop_order_iccprofile_info_t *const histogram_profile)
+{
+  const int reach = denoise ? 2 : 0;
+  const int x0 = MAX(box[0] - reach, 0), y0 = MAX(box[1] - reach, 0);
+  const int x1 = MIN(box[2] + reach, roi_in->width), y1 = MIN(box[3] + reach, roi_in->height);
+  const dt_iop_roi_t roi = { .width = x1 - x0, .height = y1 - y0, .scale = roi_in->scale };
+  const int crop[4] = { box[0] - x0, box[1] - y0, box[2] - x0, box[3] - y0 };
+  const size_t npixels = (size_t)roi.width * roi.height;
+
+  float *const pixels = dt_alloc_align_float(4 * npixels);
+  if(!pixels) return FALSE;
+  for(int y = 0; y < roi.height; y++)
+    memcpy(pixels + (size_t)4 * y * roi.width,
+           input + (size_t)4 * ((size_t)(y0 + y) * roi_in->width + x0),
+           sizeof(float) * 4 * roi.width);
+  dt_ioppr_transform_image_colorspace_rgb(pixels, pixels, roi.width, roi.height,
+                                          display_profile, histogram_profile, "picker light");
+  DT_OMP_FOR()
+  for(size_t k = 0; k < 4 * npixels; k += 4)
+    dt_ioppr_decode_rgb(pixels + k, pixels + k, histogram_profile);
+  dt_color_picker_helper(dsc, pixels, &roi, crop, denoise, light,
+                         IOP_CS_RGB, IOP_CS_RGB, histogram_profile);
+  dt_free_align(pixels);
+  return TRUE;
+}
+
 static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                     dt_dev_pixelpipe_t *pipe,
                                     dt_iop_module_t *module,
@@ -1450,9 +1481,16 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                           IOP_CS_RGB, IOP_CS_LAB, &converted_cst,
                                           display_profile);
       if(display_profile && histogram_profile)
+      {
         dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 3, 1,
                                                 display_profile, histogram_profile,
                                                 "primary picker");
+        sample->scope_profile = histogram_profile;
+        if(!_pick_light(dsc, input, roi_in, box, sample->denoise, sample->light,
+                        display_profile, histogram_profile))
+          for(int s = 0; s < DT_PICK_N; s++)
+            dt_ioppr_decode_rgb(sample->scope[s], sample->light[s], histogram_profile);
+      }
       if(display_profile && gtk_profile && gtk_profile != display_profile)
       {
         lib_colorpicker_stats picked;
@@ -3608,11 +3646,18 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       && dt_iop_module_is_gamma(module)
       && input) // gamma provides meaningful host bound RGB data as not having OpenCL code
   {
+    // the values the output holds: gamma clips its input where an integer
+    // export clips its file
+    const size_t npixels = (size_t)roi_in.width * roi_in.height;
+    float *clipped = pipe->output_clip ? dt_alloc_align_float(4 * npixels) : NULL;
+    if(clipped) dt_dev_pixelpipe_clip_output(clipped, input, npixels);
+    const float *const pixels = clipped ? clipped : input;
+
     // Pick RGB/Lab for the primary colorpicker and live samples
     if(darktable.lib->proxy.colorpicker.picker_proxy
        || darktable.lib->proxy.colorpicker.live_samples)
     {
-      _pixelpipe_pick_samples(dev, pipe, module, *out_format, input, &roi_in);
+      _pixelpipe_pick_samples(dev, pipe, module, *out_format, pixels, &roi_in);
     }
 
     const dt_iop_order_iccprofile_info_t *const display_profile
@@ -3625,10 +3670,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     // in the pixelpipe and has a "process" call, why not treat it
     // as an iop? Granted, other views such as tether may also
     // benefit via a histogram.
-    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
+    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, pixels,
                                            roi_in.width, roi_in.height,
                                            display_profile,
                                            dt_ioppr_get_scope_profile_info(dev, &pipe->output_encoding));
+    dt_free_align(clipped);
   }
   return FALSE;
 }
@@ -3760,11 +3806,11 @@ static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
   else if(work)
   {
     // for the modules after colorout
-    const dt_iop_order_iccprofile_info_t *const info =
-      dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
-                                            work->profile, work->intent);
-    pipe->output_headroom = fmaxf(pipe->output.image.headroom,
-                                  dt_ioppr_profile_headroom(info->type));
+    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename,
+                                          work->profile, work->intent);
+    // no target: nothing above reference white, nothing to clip
+    pipe->output_headroom = 1.0f;
+    pipe->output_clip = FALSE;
     memset(encoding, 0, sizeof(*encoding));
     encoding->type = work->type;
     g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));
@@ -3950,12 +3996,16 @@ restart:
   {
     dt_frame_geometry_t geometry = { .width = width, .height = height, .scale = scale };
     for(int i = 0; i < 6; i++) geometry.zoom_pos[i] = pts[i] * pipe->iscale;
-    frame = dt_frame_new(buf, &geometry, pipe->output.format, &pipe->output_encoding,
-                         pipe->output.serial);
-    // what GTK will draw it as, made here rather than in a GUI thread draw:
-    // the preview in navigation and the filmstrip, the canvas under focus
-    // peaking. on a cairo window it is the frame itself and costs nothing,
-    // unless the frame is an RGB proof's, tagged with the proof profile
+    frame = dt_frame_new(buf, &geometry, &pipe->output_encoding, pipe->output.serial);
+    // the renditions the GUI draws, made here rather than in its draw: the
+    // output's, and GTK's for navigation, the filmstrip and focus peaking
+    if(frame)
+    {
+      if(pipe->output.format == DT_FRAME_RGB24)
+        dt_frame_surface(frame, &pipe->output.image);
+      else
+        dt_frame_float(frame, &pipe->output.image);
+    }
     if(frame && !dt_pipe_is_image(pipe)
        && (dt_pipe_is_preview(pipe)
            || (darktable.gui && g_atomic_int_get(&darktable.gui->show_focus_peaking))))
@@ -3988,6 +4038,15 @@ restart:
   dt_print_mem_usage("after pixelpipe process");
 
   return FALSE;
+}
+
+void dt_dev_pixelpipe_clip_output(float *const out,
+                                  const float *const in,
+                                  const size_t npixels)
+{
+  DT_OMP_FOR()
+  for(size_t k = 0; k < 4 * npixels; k++)
+    out[k] = (k & 3) == 3 ? in[k] : CLIP(in[k]);
 }
 
 dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe)

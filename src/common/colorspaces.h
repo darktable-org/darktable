@@ -78,7 +78,6 @@ typedef enum dt_colorspaces_profile_type_t
   DT_COLORSPACES_PROFILE_TYPE_EXPORT = 3,
   DT_COLORSPACES_PROFILE_TYPE_DISPLAY = 4,
   DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF = 5,
-  DT_COLORSPACES_PROFILE_TYPE_HISTOGRAM = 6,
   DT_COLORSPACES_PROFILE_TYPE_DISPLAY2 = 7
 } dt_colorspaces_profile_type_t;
 
@@ -101,9 +100,6 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_VENDOR_MATRIX = 13,
   DT_COLORSPACE_ALTERNATE_MATRIX = 14,
   DT_COLORSPACE_BRG = 15,
-  DT_COLORSPACE_EXPORT = 16, // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
-  DT_COLORSPACE_SOFTPROOF = 17,
-  DT_COLORSPACE_WORK = 18,
   DT_COLORSPACE_DISPLAY2 = 19,
   DT_COLORSPACE_REC709 = 20,
   DT_COLORSPACE_PROPHOTO_RGB = 21,
@@ -143,6 +139,34 @@ typedef enum dt_colorspaces_color_mode_t
   DT_PROFILE_SOFTPROOF,
   DT_PROFILE_GAMUTCHECK
 } dt_colorspaces_color_mode_t;
+
+/* what a pipe is asked to render to: a profile, the intent and black point
+ * compensation of the conversion into it, and the headroom above reference
+ * white its output is rendered for. colorout's params, an export and the
+ * soft proof each choose one. as an override
+ * (dt_color_target_override()), type DT_COLORSPACE_NONE keeps the profile
+ * and headroom of the target it applies to, intent DT_INTENT_LAST its
+ * intent and black point compensation */
+typedef struct dt_color_target_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  gboolean bpc;
+  float headroom;
+} dt_color_target_t;
+
+/* the override that keeps the target it applies to */
+#define DT_COLOR_TARGET_KEEP \
+  ((dt_color_target_t){ .type = DT_COLORSPACE_NONE, .intent = DT_INTENT_LAST })
+
+/* what a soft proof applies over the image's target: the export's
+ * override, which makes the proof what an export renders, or its own */
+typedef enum dt_colorspaces_proof_source_t
+{
+  DT_PROOF_SOURCE_EXPORT = 0,
+  DT_PROOF_SOURCE_CUSTOM = 1
+} dt_colorspaces_proof_source_t;
 
 typedef enum dt_colorspaces_profile_direction_t
 {
@@ -247,8 +271,9 @@ typedef enum dt_frame_format_t
  * RGB, 1.0 at reference white and up to image.headroom above it. device is
  * what untagged 8-bit values mean in the window, everything GTK draws
  * there. both are resolved: profile names the registry's profile, NULL if
- * there is none. format is what its frames are made in: RGB24 where cairo
- * paints them, float where a native backend composes them */
+ * there is none. format is the rendition of a frame it shows: RGB24 where
+ * cairo paints it, float where a native backend composes it. frames
+ * themselves are float */
 typedef struct dt_display_output_t
 {
   dt_color_encoding_t image;
@@ -330,15 +355,10 @@ typedef struct dt_colorspaces_t
   // whether the log has said that a window got no profile, once a session
   gboolean system_display_hinted[2];
 
-  // the current set of selected profiles
-  dt_colorspaces_color_profile_type_t softproof_type;
-  dt_colorspaces_color_profile_type_t histogram_type;
-  char softproof_filename[512];
-  char histogram_filename[512];
-  // from the image to the soft proof profile, where the proof goes on to
-  // the display relative colorimetric
-  dt_iop_color_intent_t softproof_intent;
-  gboolean softproof_bpc;
+  // the soft proof's source, and its own target for
+  // DT_PROOF_SOURCE_CUSTOM
+  dt_colorspaces_proof_source_t softproof_source;
+  dt_color_target_t softproof;
 
   dt_colorspaces_color_mode_t mode;
 
@@ -374,7 +394,6 @@ typedef struct dt_colorspaces_color_profile_t
   int out_pos;                              // position in output combo box, -1 if not applicable
   gboolean display;                         // found by DT_PROFILE_DIRECTION_DISPLAY lookups
   gboolean display2;                        // found by DT_PROFILE_DIRECTION_DISPLAY2 lookups
-  int category_pos;                         // position in category combo box, -1 if not applicable
   int work_pos;                             // position in working combo box, -1 if not applicable
 } dt_colorspaces_color_profile_t;
 
@@ -390,6 +409,24 @@ dt_colorspaces_t *dt_colorspaces_init();
 
 /** cleanup on shutdown */
 void dt_colorspaces_cleanup(dt_colorspaces_t *self);
+
+/** the headroom an output in this profile type renders for, given the one
+ * asked for: PQ's within its range, or its default peak where none is
+ * asked for (0, as a zeroed target has), HLG's nominal 1000 nit display,
+ * reference white for every other profile */
+float dt_colorspaces_target_headroom(const dt_colorspaces_color_profile_type_t type,
+                                     const float headroom);
+
+/** apply override over target t (see dt_color_target_t), and give t the
+ * headroom its profile carries */
+void dt_color_target_override(dt_color_target_t *t, const dt_color_target_t *override);
+
+/** the export module's override, as an export started now applies it */
+void dt_colorspaces_get_export_override(dt_color_target_t *override);
+
+/** what the soft proof applies over the image's target: the export
+ * module's override or the custom proof target */
+void dt_colorspaces_get_proof_override(dt_color_target_t *override);
 
 /** create a profile from a xyz->camera matrix. */
 cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);

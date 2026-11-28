@@ -802,8 +802,11 @@ restart:
     dt_colorspaces_get_display_output(pipe->window, &output);
     if(output.serial != pipe->output.serial)
     {
+      // of the window's output only the device encoding, in the UI tones,
+      // reaches the pixels; otherwise the cached output gets a new rendition
+      if(dt_display_output_diff(&output, &pipe->output) & DT_DISPLAY_OUTPUT_DEVICE)
+        pipe->changed |= DT_DEV_PIPE_SYNCH;
       pipe->output = output;
-      pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
   }
 
@@ -2973,6 +2976,13 @@ void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order)
 
   dt_dev_invalidate_preview(dev);
   dt_control_queue_redraw_center();
+}
+
+void dt_dev_reprocess_proof(dt_develop_t *dev)
+{
+  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+  dt_dev_reprocess_center(dev, cout->iop_order);
+  dt_dev_reprocess_preview(dev, cout->iop_order);
 }
 
 gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,

@@ -340,10 +340,10 @@ static void _setup_overlay(dt_iop_module_t *self,
 
     // colorout is filtered out by _get_disabled_modules(), and the sink has
     // no display encoding, so the overlay arrives in the pipe's working
-    // RGB: as float for HQ, packed for LEGACY into the 8-bit buffer the
+    // RGB: as float for HQ, packed for LEGACY into the 8-bit rendition the
     // Cairo compositing path expects
     const dt_display_output_t sink =
-      { .image = { .type = DT_COLORSPACE_NONE },
+      { .image = { .type = DT_COLORSPACE_NONE, .headroom = 1.0f },
         .device = { .type = DT_COLORSPACE_NONE },
         .format = legacy ? DT_FRAME_RGB24 : DT_FRAME_FLOAT };
 
@@ -374,9 +374,13 @@ static void _setup_overlay(dt_iop_module_t *self,
     {
       bw = dt_frame_geometry(frame)->width;
       bh = dt_frame_geometry(frame)->height;
+      // cairo's RGB24 rows hold 4 bytes a pixel, unpadded
+      cairo_surface_t *packed = legacy ? dt_frame_surface(frame, NULL) : NULL;
+      const void *pixels = legacy ? (packed ? cairo_image_surface_get_data(packed) : NULL)
+                                  : (const void *)dt_frame_pixels(frame);
       const size_t size = 4 * bw * bh * (legacy ? sizeof(uint8_t) : sizeof(float));
-      if((new_buf = dt_alloc_aligned(size)))
-        memcpy(new_buf, dt_frame_pixels(frame), size);
+      if(pixels && (new_buf = dt_alloc_aligned(size)))
+        memcpy(new_buf, pixels, size);
       dt_frame_unref(frame);
     }
 

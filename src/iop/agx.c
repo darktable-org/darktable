@@ -2164,7 +2164,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
     (g->target_white_from_output,
      _("this edit predates HDR output and keeps its white at the 203 nit\n"
        "reference white. turn on to extend the highlights to the peak of\n"
-       "an HDR output (1000 nits for HLG, the PQ peak set in export),\n"
+       "an HDR output (1000 nits for HLG, the PQ peak of the output),\n"
        "as in Blender's AgX HDR. SDR output does not change"));
 
   g->hdr_purity = dt_bauhaus_slider_from_params(section, "hdr_purity");

@@ -767,7 +767,6 @@ static gboolean _area_draw_callback(GtkWidget *widget,
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
   dt_iop_rgbcurve_params_t *p = self->params;
-  dt_develop_t *dev = darktable.develop;
 
   const int ch = g->channel;
   const int nodes = p->curve_num_nodes[ch];
@@ -943,9 +942,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
       if(samples)
       {
-        const dt_iop_order_iccprofile_info_t *const histogram_profile =
-          dt_ioppr_get_histogram_profile_info(dev);
-        if(work_profile && histogram_profile)
+        if(work_profile)
         {
           for(; samples; samples = g_slist_next(samples))
           {
@@ -961,13 +958,13 @@ static gboolean _area_draw_callback(GtkWidget *widget,
             picker_mean[3] = picker_min[3] = picker_max[3] = 1.f;
 
             dt_ioppr_transform_image_colorspace_rgb(picker_mean, picker_mean,
-                                                    1, 1, histogram_profile,
+                                                    1, 1, sample->scope_profile,
                                                     work_profile, "rgb curve");
             dt_ioppr_transform_image_colorspace_rgb(picker_min, picker_min,
-                                                    1, 1, histogram_profile, work_profile,
+                                                    1, 1, sample->scope_profile, work_profile,
                                                     "rgb curve");
             dt_ioppr_transform_image_colorspace_rgb(picker_max, picker_max,
-                                                    1, 1, histogram_profile, work_profile,
+                                                    1, 1, sample->scope_profile, work_profile,
                                                     "rgb curve");
 
             picker_scale(picker_mean, picker_mean, p, work_profile);

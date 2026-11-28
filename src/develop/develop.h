@@ -408,6 +408,8 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
+    // the custom proof target's widgets, and its PQ peak among them
+    GtkWidget *proof_custom, *proof_pq_peak;
   } profile;
 
   GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
@@ -513,6 +515,9 @@ void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev, const int32_t iop_order);
 void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order);
+// the full and the preview pipe from colorout on, which proofs both:
+// colorout resolves the proof's settings when it commits again
+void dt_dev_reprocess_proof(dt_develop_t *dev);
 
 gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,

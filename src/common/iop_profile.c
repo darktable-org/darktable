@@ -27,7 +27,6 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/develop.h"
-#include "develop/frame.h"
 #include "develop/pixelpipe.h"
 
 #include <stdio.h>
@@ -101,6 +100,19 @@ static void _transform_hdr_lcms(cmsHTRANSFORM xform,
   dt_free_align(scratchlines);
 }
 
+// a Lab or XYZ output (allow_lab_output) holds littlecms' float encoding
+// of it, as colorout writes it
+static cmsUInt32Number _float_format(const cmsColorSpaceSignature space)
+{
+  switch(space)
+  {
+    case cmsSigRgbData: return TYPE_RGBA_FLT;
+    case cmsSigLabData: return TYPE_LabA_FLT;
+    case cmsSigXYZData: return TYPE_XYZA_FLT;
+    default: return 0;
+  }
+}
+
 static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
                                              float *const image_out,
                                              const int width,
@@ -123,7 +135,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
   if(rgb_profile)
   {
     cmsColorSpaceSignature rgb_color_space = cmsGetColorSpace(rgb_profile);
-    if(rgb_color_space != cmsSigRgbData)
+    if(!_float_format(rgb_color_space))
     {
       dt_print(DT_DEBUG_ALWAYS,
                "working profile color space `%c%c%c%c' not supported",
@@ -152,22 +164,21 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
 
   cmsHPROFILE input_profile = NULL;
   cmsHPROFILE output_profile = NULL;
-  cmsUInt32Number input_format = TYPE_RGBA_FLT;
+  const cmsUInt32Number rgb_format = _float_format(cmsGetColorSpace(rgb_profile));
+  cmsUInt32Number input_format = rgb_format;
   cmsUInt32Number output_format = TYPE_LabA_FLT;
 
   if(direction == 1) // rgb --> lab
   {
     input_profile = rgb_profile;
-    input_format = TYPE_RGBA_FLT;
     output_profile = lab_profile;
-    output_format = TYPE_LabA_FLT;
   }
   else // lab -->rgb
   {
     input_profile = lab_profile;
     input_format = TYPE_LabA_FLT;
     output_profile = rgb_profile;
-    output_format = TYPE_RGBA_FLT;
+    output_format = rgb_format;
   }
 
   xform = cmsCreateTransform(input_profile, input_format, output_profile, output_format, intent, cmsFLAGS_COPY_ALPHA);
@@ -218,11 +229,11 @@ static void _transform_rgb_to_rgb_lcms2
 
   const cmsColorSpaceSignature rgb_to_color_space = to_rgb_profile ? cmsGetColorSpace(to_rgb_profile) : 0;
   const cmsColorSpaceSignature rgb_from_color_space = from_rgb_profile ? cmsGetColorSpace(from_rgb_profile) : 0;
-  const gboolean to_is_rgb  = rgb_to_color_space == cmsSigRgbData;
   const gboolean to_is_cmyk = rgb_to_color_space == cmsSigCmykData;
-  const gboolean from_is_rgb  = rgb_from_color_space == cmsSigRgbData;
+  const cmsUInt32Number from_format = _float_format(rgb_from_color_space);
+  const cmsUInt32Number to_format = _float_format(rgb_to_color_space);
 
-  if(!from_is_rgb)
+  if(!from_format)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[_transform_rgb_to_rgb_lcms2] *from profile* color space `%c%c%c%c' not supported",
@@ -233,7 +244,7 @@ static void _transform_rgb_to_rgb_lcms2
     from_rgb_profile = NULL;
   }
 
-  if(!to_is_rgb && !to_is_cmyk)
+  if(!to_format && !to_is_cmyk)
   {
     dt_print(DT_DEBUG_ALWAYS,
       "[_transform_rgb_to_rgb_lcms2] *to profile* color space `%c%c%c%c' not supported",
@@ -257,14 +268,14 @@ static void _transform_rgb_to_rgb_lcms2
 
     uint32_t transformFlags = cmsFLAGS_SOFTPROOFING | cmsFLAGS_BLACKPOINTCOMPENSATION | cmsFLAGS_COPY_ALPHA;
     xform = cmsCreateProofingTransform(
-        from_rgb_profile, TYPE_RGBA_FLT,
+        from_rgb_profile, from_format,
         tmp_rgb_profile, TYPE_RGBA_FLT,
         to_rgb_profile,
         intent, intent, transformFlags);
   }
   else if(from_rgb_profile && to_rgb_profile)
   {
-    xform = cmsCreateTransform(from_rgb_profile, TYPE_RGBA_FLT, to_rgb_profile, TYPE_RGBA_FLT, intent, cmsFLAGS_COPY_ALPHA);
+    xform = cmsCreateTransform(from_rgb_profile, from_format, to_rgb_profile, to_format, intent, cmsFLAGS_COPY_ALPHA);
   }
 
   if(xform)
@@ -828,35 +839,6 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
   return profile_info;
 }
 
-// per thread, so that an export job keeps the peak it was started with
-// without writing the setting shared with the export module and the darkroom
-static __thread int _thread_pq_peak_nits = 0;
-
-void dt_ioppr_set_thread_pq_peak_nits(const int nits)
-{
-  _thread_pq_peak_nits = nits;
-}
-
-float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type)
-{
-  switch(dt_colorspaces_hdr_transfer(type))
-  {
-    case DT_HDR_PQ:
-    {
-      const int nits = _thread_pq_peak_nits > 0
-        ? _thread_pq_peak_nits
-        : dt_conf_get_int("plugins/lighttable/export/pq_peak_nits");
-      return fmaxf(1.0f, nits / DT_HDR_REFERENCE_WHITE_NITS);
-    }
-    case DT_HDR_HLG_REC2020:
-    case DT_HDR_HLG_P3:
-      // colorout's OOTF clips HLG at the nominal 1000 nit display
-      return DT_HDR_HLG_PEAK_NITS / DT_HDR_REFERENCE_WHITE_NITS;
-    default:
-      return 1.0f;
-  }
-}
-
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,
@@ -906,35 +888,19 @@ dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_scope_profile_info(struct dt_develop_t *dev,
                                                                 const dt_color_encoding_t *rendered)
 {
-  // in proof mode the scopes show what the preview pipe rendered: the
-  // proof profile, sRGB where colorout replaced a missing or unusable one,
-  // and the window's output for an ink proof, which is proofed already
-  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL
-     && rendered && rendered->type != DT_COLORSPACE_NONE)
-    return dt_ioppr_add_profile_info_for_content(dev, rendered->type, rendered->filename,
-                                                 rendered->profile,
-                                                 DT_INTENT_RELATIVE_COLORIMETRIC);
-
-  dt_colorspaces_color_profile_type_t histogram_profile_type;
-  const char *histogram_profile_filename;
-  dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
-  return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
+  // the vectorscope and the luminance modes of the clipping indicator need
+  // matrices, which a lookup table profile, as a system display profile
+  // may be, does not have: its values are shown in linear Rec2020 instead
+  dt_iop_order_iccprofile_info_t *profile =
+    dt_ioppr_add_profile_info_for_content(dev, rendered->type, rendered->filename,
+                                          rendered->profile,
+                                          DT_INTENT_RELATIVE_COLORIMETRIC);
+  if(profile
+     && dt_is_valid_colormatrix(profile->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile->matrix_out[0][0]))
+    return profile;
+  return dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "",
                                            DT_INTENT_RELATIVE_COLORIMETRIC);
-}
-
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
-{
-  // the encoding of the preview's last frame, which the pickers' samples
-  // and the scopes were made from; none before the preview has run
-  dt_color_encoding_t rendered = { .type = DT_COLORSPACE_NONE };
-  dt_dev_pixelpipe_t *const preview = dev ? dev->preview_pipe : NULL;
-  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL && preview)
-  {
-    dt_frame_t *frame = dt_dev_pixelpipe_frame(preview);
-    if(frame) rendered = *dt_frame_encoding(frame);
-    dt_frame_unref(frame);
-  }
-  return dt_ioppr_get_scope_profile_info(dev, &rendered);
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(const struct dt_dev_pixelpipe_t *pipe)
@@ -1034,9 +1000,9 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
     if(_type && _filename)
     {
       // stored params need not terminate the file name, and callers read it as
-      // a C string. Terminate it rather than returning NULL: the histogram
-      // profile path hands the name to strcmp() in
-      // dt_ioppr_get_profile_info_from_list() without a NULL check
+      // a C string. Terminate it rather than returning NULL:
+      // dt_ioppr_get_profile_info_from_list() hands the name to strcmp()
+      // without a NULL check
       const size_t size = colorin_so->get_f("filename_work")->header.size;
       if(!memchr(_filename, '\0', size)) _filename[size - 1] = '\0';
       *profile_type = *_type;
@@ -1105,29 +1071,6 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
   else
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_ioppr_get_export_profile_type] can't find colorout iop");
-}
-
-void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
-                                         const char **profile_filename)
-{
-  if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
-  {
-    *profile_type = darktable.color_profiles->softproof_type;
-    *profile_filename = darktable.color_profiles->softproof_filename;
-  }
-  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
-  {
-    dt_ioppr_get_work_profile_type(darktable.develop, profile_type, profile_filename);
-  }
-  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-  {
-    dt_ioppr_get_export_profile_type(darktable.develop, profile_type, profile_filename);
-  }
-  else
-  {
-    *profile_type = darktable.color_profiles->histogram_type;
-    *profile_filename = darktable.color_profiles->histogram_filename;
-  }
 }
 
 gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name)
@@ -1300,11 +1243,12 @@ void dt_ioppr_transform_image_colorspace_rgb
              message ? message : "");
 }
 
-void dt_ioppr_device_to_output(struct dt_develop_t *dev,
+static void _device_and_output(struct dt_develop_t *dev,
                                const struct dt_dev_pixelpipe_t *pipe,
                                float *const rgb,
                                const int width,
-                               const int height)
+                               const int height,
+                               const gboolean to_output)
 {
   const dt_color_encoding_t *device = &pipe->output.device;
   const dt_color_encoding_t *image = &pipe->output_encoding;
@@ -1312,15 +1256,35 @@ void dt_ioppr_device_to_output(struct dt_develop_t *dev,
      || dt_color_encoding_same_content(device, image))
     return;
 
-  const dt_iop_order_iccprofile_info_t *from =
+  const dt_iop_order_iccprofile_info_t *dev_info =
     dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename,
                                           device->profile, image->intent);
-  const dt_iop_order_iccprofile_info_t *to =
+  const dt_iop_order_iccprofile_info_t *out_info =
     dt_ioppr_add_profile_info_for_content(dev, image->type, image->filename,
                                           image->profile, image->intent);
-  if(from && to)
-    dt_ioppr_transform_image_colorspace_rgb(rgb, rgb, width, height, from, to,
+  if(dev_info && out_info)
+    dt_ioppr_transform_image_colorspace_rgb(rgb, rgb, width, height,
+                                            to_output ? dev_info : out_info,
+                                            to_output ? out_info : dev_info,
                                             "device values");
+}
+
+void dt_ioppr_device_to_output(struct dt_develop_t *dev,
+                               const struct dt_dev_pixelpipe_t *pipe,
+                               float *const rgb,
+                               const int width,
+                               const int height)
+{
+  _device_and_output(dev, pipe, rgb, width, height, TRUE);
+}
+
+void dt_ioppr_output_to_device(struct dt_develop_t *dev,
+                               const struct dt_dev_pixelpipe_t *pipe,
+                               float *const rgb,
+                               const int width,
+                               const int height)
+{
+  _device_and_output(dev, pipe, rgb, width, height, FALSE);
 }
 
 #ifdef HAVE_OPENCL

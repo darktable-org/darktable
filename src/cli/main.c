@@ -34,7 +34,6 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/iop_profile.h"
 #include "common/mipmap_cache.h"
 #include "common/points.h"
 #include "control/conf.h"
@@ -104,8 +103,8 @@ fprintf(stderr, "darktable %s\n"
                 "   --icc-file <file> specify icc filename, default to NONE\n"
                 "   --icc-intent <intent> specify icc intent, default to LAST\n"
                 "                     use --help icc-intent for list of supported intents\n"
-                "   --pq-peak <nits>  peak luminance of PQ output, 203 to 10000,\n"
-                "                     default from the export module's setting\n"
+                "   --pq-peak <nits>  peak luminance of a PQ --icc-type, 203 to 10000,\n"
+                "                     default 1000\n"
                 "   --print-paths     print the resolved configdir, cachedir, tmpdir,\n"
                 "                     datadir, moduledir, localedir and library paths\n"
                 "                     for this install, then exit\n"
@@ -141,9 +140,6 @@ static void icc_types()
   fprintf(stderr, " VENDOR_MATRIX\n");
   fprintf(stderr, " ALTERNATE_MATRIX\n");
   fprintf(stderr, " BRG\n");
-  fprintf(stderr, " EXPORT\n"); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
-  fprintf(stderr, " SOFTPROOF\n");
-  fprintf(stderr, " WORK\n");
   fprintf(stderr, " DISPLAY2\n");
   fprintf(stderr, " REC709\n");
   fprintf(stderr, " PROPHOTO_RGB\n");
@@ -174,9 +170,6 @@ static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
   ICC_FROM_STR(VENDOR_MATRIX);
   ICC_FROM_STR(ALTERNATE_MATRIX);
   ICC_FROM_STR(BRG);
-  ICC_FROM_STR(EXPORT); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
-  ICC_FROM_STR(SOFTPROOF);
-  ICC_FROM_STR(WORK);
   ICC_FROM_STR(DISPLAY2);
   ICC_FROM_STR(REC709);
   ICC_FROM_STR(PROPHOTO_RGB);
@@ -897,8 +890,15 @@ int main(int argc, char *arg[])
 
   // TODO: add a callback to set the bpp without going through the config
 
-  // the exports below run in this thread
-  dt_ioppr_set_thread_pq_peak_nits(pq_peak_nits);
+  // the peak belongs to a PQ profile, which the override must name
+  if(pq_peak_nits && dt_colorspaces_hdr_transfer(icc_type) != DT_HDR_PQ)
+    fprintf(stderr, _("notice: --pq-peak applies to a PQ --icc-type only, ignoring\n"));
+  dt_color_target_t icc = { .type = icc_type, .intent = icc_intent };
+  g_strlcpy(icc.filename, icc_filename ? icc_filename : "", sizeof(icc.filename));
+  icc.headroom = (pq_peak_nits
+                  ? pq_peak_nits
+                  : dt_confgen_get_int("plugins/lighttable/export/pq_peak_nits", DT_DEFAULT))
+                 / DT_HDR_REFERENCE_WHITE_NITS;
 
   int num = 1, res = 0;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
@@ -920,7 +920,7 @@ int main(int argc, char *arg[])
     }
     if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality,
                       upscale, FALSE, 1.0, export_masks,
-                      icc_type, icc_filename, icc_intent, &metadata) != 0)
+                      &icc, &metadata) != 0)
       res = 1;
 
     // a batch never comes back to an image, so its decoded raw would only

@@ -142,14 +142,6 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       cmsHPROFILE profile,
                                       const int intent);
 
-/** the headroom above reference white an output in this profile type has:
-   1 unless its transfer function is HDR (PQ, HLG) */
-float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type);
-
-/** set the PQ peak, in nits, for the pipes processed by the calling thread,
-   or 0 to read it from the export module's setting again */
-void dt_ioppr_set_thread_pq_peak_nits(const int nits);
-
 /** Record the export profile, used as a cache-identity tag. Returns the (possibly NULL)
    interned profile-info pointer, no fallback for sRGB in case of failure. */
 dt_iop_order_iccprofile_info_t *
@@ -159,20 +151,13 @@ dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
                                       const char *filename,
                                       const int intent);
 
-/** the profile the scopes, color pickers and readouts show values in: in
- * proof mode what the preview pipe rendered, rendered (the encoding a pipe
- * recorded for its run), otherwise, or without one, the histogram setting.
- * must not be cleanup() */
+/** the profile the scopes, color pickers and readouts show values in:
+ * rendered (the encoding a pipe recorded for its run), the preview's when
+ * proofing or not, or linear Rec2020 where its profile has no matrices.
+ * values convert to it from rendered. must not be cleanup() */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_scope_profile_info(struct dt_develop_t *dev,
                                 const dt_color_encoding_t *rendered);
-
-/** dt_ioppr_get_scope_profile_info() with the encoding of the preview pipe's
- * last frame, for readers outside the preview's run
- * histogram profile must not be cleanup()
- */
-dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
 /** returns the active work/input/output profile on the pipe */
 dt_iop_order_iccprofile_info_t *
@@ -196,6 +181,14 @@ void dt_ioppr_device_to_output(struct dt_develop_t *dev,
                                const int width,
                                const int height);
 
+/** the inverse: converts the pipe's output values in place to device values
+ * of its window, for UI tones made from the image */
+void dt_ioppr_output_to_device(struct dt_develop_t *dev,
+                               const struct dt_dev_pixelpipe_t *pipe,
+                               float *const rgb,
+                               const int width,
+                               const int height);
+
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_current_profile_info(const struct dt_iop_module_t *module,
@@ -213,9 +206,6 @@ void dt_ioppr_get_input_profile_type(struct dt_develop_t *dev,
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
                                       dt_colorspaces_color_profile_type_t *profile_type,
                                       const char **profile_filename);
-/** returns the current setting of the histogram profile */
-void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
-                                         const char **profile_filename);
 
 /* Returns the tooltip with the location of the profile for for_name
    which can be softproof, input, output...

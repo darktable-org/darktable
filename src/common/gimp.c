@@ -62,9 +62,9 @@ gboolean dt_export_gimp_file(const dt_imgid_t imgid)
                  FALSE,
                  1.0,
                  thumb ? FALSE : TRUE, // export_masks
-                 thumb ? DT_COLORSPACE_SRGB : DT_COLORSPACE_LIN_REC709,
-                 NULL,  // icc_filename
-                 DT_INTENT_PERCEPTUAL,
+                 &(dt_color_target_t){ .type = thumb ? DT_COLORSPACE_SRGB
+                                                     : DT_COLORSPACE_LIN_REC709,
+                                       .intent = DT_INTENT_PERCEPTUAL },
                  NULL);  // &metadata
   printf("<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
   if(thumb)

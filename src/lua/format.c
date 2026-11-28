@@ -162,8 +162,10 @@ static int write_image(lua_State *L)
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   gboolean export_masks = dt_conf_get_bool("plugins/lighttable/export/export_masks");
   // TODO: expose icc overwrites to the user!
-  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  const char *icc_filename = dt_conf_get_string_const("plugins/lighttable/export/iccprofile");
+  // the export module's profile and peak, with the image's intent
+  dt_color_target_t icc;
+  dt_colorspaces_get_export_override(&icc);
+  icc.intent = DT_INTENT_LAST;
 
   // scaling
   const gboolean is_scaling =
@@ -175,7 +177,7 @@ static int write_image(lua_State *L)
     
   gboolean result = dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, is_scaling, scale_factor,
                                       FALSE, export_masks,
-                                      icc_type, icc_filename, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
+                                      &icc, NULL, NULL, 1, 1, NULL);
   dt_lua_lock();
   // mitigate 17938 by returning sane values (true for success, false for failure)
   lua_pushboolean(L, !result);

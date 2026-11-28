@@ -89,18 +89,25 @@ changes (where available).
 
 - Wide gamut and HDR display on Wayland compositors that support color
   management, in the darkroom, with its snapshots and second window,
-  and in the slideshow. With "follow output peak" on, AgX and sigmoid
-  render for the brightness the screen offers. Thumbnails, culling and
-  full preview are not shown in wide gamut or HDR. Where the compositor
-  does not manage the colors of the window, darktable converts to the
-  display profile as before.
+  and in the slideshow. Thumbnails, culling and full preview are not
+  shown in wide gamut or HDR. Where the compositor does not manage the
+  colors of the window, darktable converts to the display profile as
+  before.
 
 - Wide gamut and HDR display on macOS, in the darkroom, with its
-  snapshots and second window, and in the slideshow. With "follow
-  output peak" on, AgX and sigmoid render for the EDR headroom of the
-  screen, as on the XDR displays of MacBook Pros. Screens without EDR
-  still get wide gamut. Thumbnails, culling and full preview are not
-  shown in wide gamut or HDR.
+  snapshots and second window, and in the slideshow, up to the EDR
+  headroom of the screen, as on the XDR displays of MacBook Pros.
+  Screens without EDR still get wide gamut. Thumbnails, culling and
+  full preview are not shown in wide gamut or HDR.
+
+- The darkroom, its snapshots and second window, and the slideshow
+  show each image as its output color profile exports it, whatever the
+  screen: the same tone mapping and gamut, and the clipping of an
+  integer format such as JPEG, PNG or 16-bit TIFF. An sRGB edit looks
+  the same on an HDR screen as on an SDR one; to edit for HDR, choose a
+  PQ or HLG profile in the output color profile module. The scopes, the
+  color pickers and the clipping indicator show the values the export
+  holds, with PQ and HLG scales for an HDR output.
 
 - New module saturation curve: remaps saturation and brilliance via
   two independent curves plotted against each pixel's own perceptually
@@ -452,14 +459,15 @@ changes (where available).
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
-  at the new "PQ peak" setting of the export module, 1000 nits by
-  default, which export presets store and darktable-cli sets with
-  `--pq-peak`. With AgX, shadows and midtones keep their SDR brightness
-  and highlights extend to the peak, following Blender's AgX HDR, with
-  a new "HDR purity" slider for the highlights' saturation. Sigmoid
-  scales its target white to the peak, up to 1600% (3248 nits). SDR
-  output is unchanged. Existing edits render as before, and a "follow
-  output peak" toggle in each module opts them in.
+  at the PQ peak of the output color profile module, 1000 nits by
+  default, which the export module and darktable-cli's `--pq-peak` can
+  override along with the profile. With AgX, shadows and
+  midtones keep their SDR brightness and highlights extend to the
+  peak, following Blender's AgX HDR, with a new "HDR purity" slider
+  for the highlights' saturation. Sigmoid scales its target white to
+  the peak, up to 1600% (3248 nits). SDR output is unchanged. Existing
+  edits render as before, and a "follow output peak" toggle in each
+  module opts them in.
 
 - PNG exports using a PQ output color profile now include content
   light level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
@@ -555,15 +563,32 @@ changes (where available).
   workaround for compositor or driver bugs. With it, darktable does not
   give its images to the color management of the system.
 
-- The histogram profile no longer offers the system display profile.
-  Previous selections of that profile now use sRGB.
+- The histogram profile setting has been removed. The scopes and
+  color pickers show the values of the output color profile, or of the
+  soft proof's profile while proofing. darktable-cli's `--icc-type` no
+  longer accepts its "work", "export" and "softproof" entries.
 
-- Soft proof now has its own rendering intent and a "black point
-  compensation" switch.
+- Soft proof follows the export module's color settings by default,
+  and shows what an export with them renders. "Custom" proofs against a
+  profile, rendering intent and "black point compensation" switch of
+  its own. A soft proof set up before, such as one of a printer
+  profile, starts on the export settings: choose "custom" to get it
+  back.
+
+- The gamut check now lights the soft proof's button too, since it
+  marks what the soft proof clips: turning it on turns the proof on,
+  and turning the proof off ends both. With the soft proof following
+  the export settings, it marks what an export to an integer format
+  clips.
+
+- The color picker's RGB% mode now reads light relative to reference
+  white, with no upper bound, instead of repeating the RGB values as a
+  percentage: reference white reads 100%, and a PQ highlight at 500
+  nits 246%. RGB and Hex still read the values the export holds, for
+  PQ and HLG their code values, as the scopes plot them.
 
 - The display rendering intent setting has been removed. The display
-  uses the relative colorimetric intent, and a stored setting becomes
-  the soft proof intent.
+  uses the relative colorimetric intent.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
@@ -900,9 +925,6 @@ changes (where available).
 - Soft proof now uses the proof profile's HDR headroom and clips
   colors and highlights as an integer export, such as JPEG or 16-bit
   TIFF, would.
-
-- With soft proof enabled, the scopes, the color picker and the
-  navigation thumbnail now show the proof.
 
 - Gamut check now correctly marks colors clipped by integer exports to
   profiles such as sRGB, Adobe RGB and Rec. 2020, independently of the

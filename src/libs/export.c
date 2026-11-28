@@ -418,21 +418,16 @@ static void _export_with_current_settings(dt_lib_module_t *self)
     }
   }
 
-  const dt_colorspaces_color_profile_type_t icc_type =
-    dt_conf_get_int(CONFIG_PREFIX "icctype");
-  gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
-  const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
-  const int pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
+  // as a soft proof of the export's target reads it
+  dt_color_target_t icc;
+  dt_colorspaces_get_export_override(&icc);
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index,
                     high_quality, upscale, scaledimension,
                     is_scaling, scale_factor,
                     export_masks, style, style_append,
-                    icc_type, icc_filename, icc_intent, pq_peak_nits,
-                    d->metadata_export);
-
-  g_free(icc_filename);
+                    &icc, d->metadata_export);
 
   _scale_optim();
   gtk_entry_set_text(GTK_ENTRY(d->scale),
@@ -982,15 +977,26 @@ static void _storage_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_gui_queue_update(self);
 }
 
-// the PQ peak only matters when the export may be PQ
-static gboolean _export_may_be_pq(const dt_colorspaces_color_profile_type_t icctype)
+// the peak belongs to a PQ profile that overrides the image's: under
+// "image settings" the image's own peak applies
+static gboolean _export_is_pq(const dt_colorspaces_color_profile_type_t icctype)
 {
-  return icctype == DT_COLORSPACE_NONE || dt_colorspaces_hdr_transfer(icctype) == DT_HDR_PQ;
+  return dt_colorspaces_hdr_transfer(icctype) == DT_HDR_PQ;
 }
 
 static void _update_pq_peak_visibility(dt_lib_export_t *d)
 {
-  gtk_widget_set_visible(d->pq_peak, _export_may_be_pq(dt_conf_get_int(CONFIG_PREFIX "icctype")));
+  gtk_widget_set_visible(d->pq_peak, _export_is_pq(dt_conf_get_int(CONFIG_PREFIX "icctype")));
+}
+
+// a soft proof of the export's target renders with these settings
+static void _export_target_changed(void)
+{
+  const dt_colorspaces_t *const cp = darktable.color_profiles;
+  if(dt_view_get_current() == DT_VIEW_DARKROOM
+     && cp->mode != DT_PROFILE_NORMAL
+     && cp->softproof_source == DT_PROOF_SOURCE_EXPORT)
+    dt_dev_reprocess_proof(darktable.develop);
 }
 
 static void _set_profile_conf(GtkWidget *widget)
@@ -1023,15 +1029,13 @@ static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   _set_profile_conf(widget);
   _update_pq_peak_visibility(d);
+  _export_target_changed();
 }
 
 static void _pq_peak_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   dt_conf_set_int(CONFIG_PREFIX "pq_peak_nits", (int)roundf(dt_bauhaus_slider_get(widget)));
-  // colorout reads the peak when it commits, and a soft proof to a PQ
-  // profile renders with it too
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    dt_dev_reprocess_all(darktable.develop);
+  _export_target_changed();
 }
 
 static void _dimensions_type_changed(GtkWidget *widget,
@@ -1182,6 +1186,7 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int(CONFIG_PREFIX "iccintent", pos - 1);
+  _export_target_changed();
 }
 
 static void _update_style_label(dt_lib_export_t *d, const char *name)
@@ -1632,9 +1637,15 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, 0);
 
-  char *tooltip = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
+  char *location = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
+  char *tooltip = g_markup_printf_escaped
+    ("%s\n\n",
+     _("with \"image settings\", each image's output color profile module"
+       " sets the profile and its PQ peak"));
+  dt_util_str_cat(&tooltip, "%s", location);
   gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
+  g_free(location);
 
   //  Add PQ peak slider
 
@@ -1647,8 +1658,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_slider_set(d->pq_peak, dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits"));
   gtk_widget_set_tooltip_text(d->pq_peak,
                               _("the brightest highlight of a PQ (HDR) export, in nits.\n"
-                                "tone mappers that follow the output map their white to it.\n"
-                                "HLG exports always peak at 1000 nits."));
+                                "tone mappers that follow the output map their white to it."));
 
   //  Add intent combo
 
@@ -2403,10 +2413,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0;
   const int32_t dimensions_type = dt_conf_get_int(CONFIG_PREFIX "dimensions_type");
   const int32_t print_dpi = dt_conf_get_int(CONFIG_PREFIX "print_dpi");
-  // 0 when the export cannot be PQ, so that applying the preset does not
+  // 0 when the export is not PQ, so that applying the preset does not
   // change a PQ peak that is hidden and unused for its profile
   const int32_t pq_peak_nits =
-    _export_may_be_pq(icctype) ? dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits") : 0;
+    _export_is_pq(icctype) ? dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits") : 0;
   gchar *scale = dt_conf_get_string(CONFIG_PREFIX "resizing_factor");
   const int32_t high_quality =
     dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0;

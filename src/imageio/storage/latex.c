@@ -231,7 +231,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean is_scaling,
           const double scale_factor, const gboolean export_masks,
-          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+          const dt_color_target_t *icc,
           dt_export_metadata_t *metadata)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
@@ -369,8 +369,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   /* export image to file */
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale,
                        is_scaling, scale_factor,
-                       TRUE, export_masks, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, metadata) != 0)
+                       TRUE, export_masks, icc, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_latex] could not export to latex book: '%s'!",

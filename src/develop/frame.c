@@ -35,11 +35,10 @@ struct dt_frame_t
   uint32_t id;
   uint32_t made_for;
   dt_frame_geometry_t geometry;
-  dt_frame_format_t format;
   dt_color_encoding_t encoding;
-  // the frame's own pixels: float RGBA, or the surface's for RGB24
+  // the frame's own pixels, float RGBA: an 8-bit window gets a rendition,
+  // so that its pixels are quantized once, in its own encoding
   float *pixels;
-  cairo_surface_t *surface;
   // renditions are made on demand, by any thread
   dt_pthread_mutex_t lock;
   GList *renditions;
@@ -90,7 +89,6 @@ static cairo_surface_t *_pack(const float *const pixels,
 
 dt_frame_t *dt_frame_new(const float *pixels,
                          const dt_frame_geometry_t *geometry,
-                         const dt_frame_format_t format,
                          const dt_color_encoding_t *encoding,
                          const uint32_t made_for)
 {
@@ -98,22 +96,18 @@ dt_frame_t *dt_frame_new(const float *pixels,
   if(!pixels || width <= 0 || height <= 0) return NULL;
 
   dt_frame_t *f = g_malloc0(sizeof(dt_frame_t));
-  if(format == DT_FRAME_RGB24)
-    f->surface = _pack(pixels, width, height);
-  else if((f->pixels = dt_alloc_align_float((size_t)4 * width * height)))
-    memcpy(f->pixels, pixels, sizeof(float) * 4 * width * height);
-  if(!f->surface && !f->pixels)
+  if(!(f->pixels = dt_alloc_align_float((size_t)4 * width * height)))
   {
     g_free(f);
     return NULL;
   }
+  memcpy(f->pixels, pixels, sizeof(float) * 4 * width * height);
 
   static dt_atomic_int id;
   f->id = (uint32_t)dt_atomic_add_int(&id, 1) + 1;
   dt_atomic_set_int(&f->refs, 1);
   f->made_for = made_for;
   f->geometry = *geometry;
-  f->format = format;
   f->encoding = *encoding;
   dt_pthread_mutex_init(&f->lock);
   return f;
@@ -137,7 +131,6 @@ void dt_frame_unref(dt_frame_t *frame)
     g_free(r);
   }
   g_list_free(frame->renditions);
-  if(frame->surface) cairo_surface_destroy(frame->surface);
   dt_free_align(frame->pixels);
   dt_pthread_mutex_destroy(&frame->lock);
   g_free(frame);
@@ -158,20 +151,14 @@ const dt_frame_geometry_t *dt_frame_geometry(const dt_frame_t *frame)
   return &frame->geometry;
 }
 
-dt_frame_format_t dt_frame_format(const dt_frame_t *frame)
-{
-  return frame->format;
-}
-
 const dt_color_encoding_t *dt_frame_encoding(const dt_frame_t *frame)
 {
   return &frame->encoding;
 }
 
-const void *dt_frame_pixels(const dt_frame_t *frame)
+const float *dt_frame_pixels(const dt_frame_t *frame)
 {
-  return frame->surface ? (const void *)cairo_image_surface_get_data(frame->surface)
-                        : (const void *)frame->pixels;
+  return frame->pixels;
 }
 
 // profile infos for conversions, built from the profile an encoding names.
@@ -235,37 +222,6 @@ void dt_frame_cleanup(void)
   g_mutex_unlock(&_infos_lock);
 }
 
-// the frame's pixels as float RGBA: its own, or unpacked into *unpacked,
-// which the caller frees
-static const float *_float_pixels(const dt_frame_t *f,
-                                  float **unpacked)
-{
-  *unpacked = NULL;
-  if(f->pixels) return f->pixels;
-
-  const int width = f->geometry.width, height = f->geometry.height;
-  float *out = dt_alloc_align_float((size_t)4 * width * height);
-  if(!out) return NULL;
-  const uint8_t *const data = cairo_image_surface_get_data(f->surface);
-  const size_t stride = cairo_image_surface_get_stride(f->surface);
-  DT_OMP_FOR()
-  for(int y = 0; y < height; y++)
-  {
-    const uint8_t *in = data + stride * y;
-    float *px = out + (size_t)4 * width * y;
-    for(int x = 0; x < width; x++, in += 4, px += 4)
-    {
-      // cairo's RGB24 is BGRX in memory
-      px[0] = in[2] / 255.0f;
-      px[1] = in[1] / 255.0f;
-      px[2] = in[0] / 255.0f;
-      px[3] = 1.0f;
-    }
-  }
-  *unpacked = out;
-  return out;
-}
-
 // cairo's RGB24 is BGRX in memory
 static inline void _store(uint8_t *const out,
                           const float *const rgb)
@@ -324,9 +280,7 @@ static _rendition_t *_render(const dt_frame_t *f,
   const int width = f->geometry.width, height = f->geometry.height;
   const size_t npixels = (size_t)width * height;
 
-  float *unpacked;
-  const float *in = _float_pixels(f, &unpacked);
-  if(!in) return NULL;
+  const float *const in = f->pixels;
 
   const dt_iop_order_iccprofile_info_t *from = NULL, *to = NULL;
   if(!dt_color_encoding_same_content(&f->encoding, encoding))
@@ -359,13 +313,8 @@ static _rendition_t *_render(const dt_frame_t *f,
     // lcms converts a float copy. without a conversion, or with one lcms
     // refuses, the values stay as they are
     float *values = NULL;
-    if(!convert && unpacked && format == DT_FRAME_FLOAT)
-    {
-      values = unpacked;
-      unpacked = NULL;
-    }
-    else if((convert || format == DT_FRAME_FLOAT)
-            && (values = dt_alloc_align_float(4 * npixels)))
+    if((convert || format == DT_FRAME_FLOAT)
+       && (values = dt_alloc_align_float(4 * npixels)))
     {
       memcpy(values, in, sizeof(float) * 4 * npixels);
       if(convert)
@@ -382,7 +331,6 @@ static _rendition_t *_render(const dt_frame_t *f,
     }
   }
 
-  dt_free_align(unpacked);
   if(!r->surface && !r->pixels)
   {
     g_free(r);
@@ -415,23 +363,24 @@ static const _rendition_t *_rendition(dt_frame_t *f,
   return found;
 }
 
-// a rendition in the frame's own format and profile is its pixels: the
-// headroom says what a frame was rendered for, not what its values mean
-static gboolean _own(const dt_frame_t *f,
-                     const dt_frame_format_t format,
-                     const dt_color_encoding_t *encoding)
+// the encoding to render in: the frame's own where encoding has the same
+// content, or where no profile describes it and so asks for the values as
+// they are. the frame's own float rendition is its pixels. the headroom
+// says what a frame was rendered for, not what its values mean
+static const dt_color_encoding_t *_content(const dt_frame_t *f,
+                                           const dt_color_encoding_t *encoding)
 {
-  return format == f->format
-    && (!encoding || dt_color_encoding_same_content(encoding, &f->encoding));
+  return !encoding || encoding->type == DT_COLORSPACE_NONE
+         || dt_color_encoding_same_content(encoding, &f->encoding)
+    ? &f->encoding
+    : encoding;
 }
 
 cairo_surface_t *dt_frame_surface(dt_frame_t *frame,
                                   const dt_color_encoding_t *encoding)
 {
   if(!frame) return NULL;
-  if(_own(frame, DT_FRAME_RGB24, encoding)) return frame->surface;
-  const _rendition_t *r =
-    _rendition(frame, DT_FRAME_RGB24, encoding ? encoding : &frame->encoding);
+  const _rendition_t *r = _rendition(frame, DT_FRAME_RGB24, _content(frame, encoding));
   return r ? r->surface : NULL;
 }
 
@@ -439,9 +388,9 @@ const float *dt_frame_float(dt_frame_t *frame,
                             const dt_color_encoding_t *encoding)
 {
   if(!frame) return NULL;
-  if(_own(frame, DT_FRAME_FLOAT, encoding)) return frame->pixels;
-  const _rendition_t *r =
-    _rendition(frame, DT_FRAME_FLOAT, encoding ? encoding : &frame->encoding);
+  const dt_color_encoding_t *const content = _content(frame, encoding);
+  if(content == &frame->encoding) return frame->pixels;
+  const _rendition_t *r = _rendition(frame, DT_FRAME_FLOAT, content);
   return r ? r->pixels : NULL;
 }
 

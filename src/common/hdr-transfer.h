@@ -17,6 +17,8 @@
 #define DT_HDR_REFERENCE_WHITE_NITS 203.0f
 #define DT_HDR_PQ_PEAK_NITS 10000.0f
 #define DT_HDR_HLG_PEAK_NITS 1000.0f
+/* the PQ peak a target renders for when it names none */
+#define DT_HDR_PQ_DEFAULT_PEAK_NITS 1000.0f
 /* ST 2084, exact in binary32 */
 #define DT_HDR_PQ_M1 0.1593017578125f /* 2610 / 16384 */
 #define DT_HDR_PQ_M2 78.84375f /* 2523 / 32 */

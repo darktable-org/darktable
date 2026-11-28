@@ -212,7 +212,7 @@ typedef int32_t dt_mask_id_t;
 /* Helper for 4-float pixel vectors */
 #define DT_IS_ALIGNED_PIXEL(x) __builtin_assume_aligned(x, 16)
 
-#define DT_MODULE_VERSION 25 // version of dt's module interface
+#define DT_MODULE_VERSION 26 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later

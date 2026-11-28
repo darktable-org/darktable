@@ -175,6 +175,7 @@ typedef struct _tethering_format_t
 {
   dt_imageio_module_data_t head;
   float *buf;
+  dt_color_encoding_t encoding;
 } _tethering_format_t;
 
 static const char *_tethering_mime(dt_imageio_module_data_t *data)
@@ -206,6 +207,7 @@ static int _tethering_write_image(dt_imageio_module_data_t *data,
                                   const gboolean export_masks)
 {
   _tethering_format_t *d = (_tethering_format_t *)data;
+  d->encoding = pipe->output_encoding;
   d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
   if(d->buf)
   {
@@ -328,19 +330,10 @@ static void _expose_tethered_mode(dt_view_t *self,
               tmp_f[p + k] =
                 dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
           }
-          const dt_iop_order_iccprofile_info_t *profile_to = NULL;
+          // FIXME: if liveview image is tagged and we can read its colorspace, use that
           const dt_iop_order_iccprofile_info_t *const srgb_profile =
             dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
-          if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
-            profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
-          else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-            profile_to = srgb_profile;
-          else
-          {
-            profile_to = dt_ioppr_get_histogram_profile_info(dev);
-            if(!profile_to) profile_to = srgb_profile;
-          }
-          darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph, srgb_profile, profile_to);
+          darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph, srgb_profile, srgb_profile);
           dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
           dt_free_align(tmp_f);
         }
@@ -388,28 +381,8 @@ static void _expose_tethered_mode(dt_view_t *self,
     dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
     dat.head.style[0] = '\0';
 
-    dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_NONE;
-    const char *histogram_filename = NULL;
-    if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
-    {
-      const dt_colorspaces_color_profile_t *work_profile =
-        dt_colorspaces_get_work_profile(lib->image_id);
-      histogram_type = work_profile->type;
-      histogram_filename = work_profile->filename;
-    }
-    else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-    {
-      const dt_colorspaces_color_profile_t *export_profile =
-        dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, NULL);
-      histogram_type = export_profile->type;
-      histogram_filename = export_profile->filename;
-    }
-    else
-    {
-      // special cases above as this can't handle work/export profile
-      // when not in darkroom view
-      dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
-    }
+    // the image's own target, which the darkroom renders
+    dt_color_target_t icc = DT_COLOR_TARGET_KEEP;
 
     // this uses the export rather than thumbnail pipe -- slower, but
     // as we're not competing with the full pixelpipe, it's a
@@ -423,16 +396,15 @@ static void _expose_tethered_mode(dt_view_t *self,
     if(!dt_imageio_export_with_flags(lib->image_id, "unused",
                                      &format, (dt_imageio_module_data_t *)&dat, TRUE,
                                      FALSE, FALSE, FALSE, FALSE, 1.0, FALSE, NULL,
-                                     FALSE, FALSE, histogram_type, histogram_filename,
-                                     DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL, -1))
+                                     FALSE, FALSE, &icc, NULL, NULL, 1, 1, NULL, -1))
     {
-      const dt_iop_order_iccprofile_info_t *const histogram_profile =
-        dt_ioppr_add_profile_info_to_list(darktable.develop, histogram_type,
-                                          histogram_filename,
-                                          DT_INTENT_RELATIVE_COLORIMETRIC);
-      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                             dat.buf, dat.head.width, dat.head.height,
-                                             histogram_profile, histogram_profile);
+      darktable.lib->proxy.histogram.process
+        (darktable.lib->proxy.histogram.module,
+         dat.buf, dat.head.width, dat.head.height,
+         dt_ioppr_add_profile_info_for_content(darktable.develop, dat.encoding.type,
+                                               dat.encoding.filename, dat.encoding.profile,
+                                               DT_INTENT_RELATIVE_COLORIMETRIC),
+         dt_ioppr_get_scope_profile_info(darktable.develop, &dat.encoding));
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }

@@ -19,6 +19,7 @@
 
 #include "common/darktable.h"
 #include "common/color_picker.h"
+#include "common/hdr-transfer.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
 #include "scopes/vectorscope.h"
@@ -98,6 +99,7 @@ static void _scope_process
     // FIXME: is better to do this or just advance update_counter by one?
     for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
       dt_scopes_call_if_exists(&s->modes[i], clear);
+    s->hdr_active = DT_HDR_NONE;
     dt_pthread_mutex_unlock(&s->lock);
     return;
   }
@@ -158,21 +160,15 @@ static void _scope_process
     }
   }
 
-  // Convert pixelpipe output in display RGB to histogram profile. If
-  // in tether view, then the image is already converted by the
-  // caller.
+  // convert the pixels to the profile the scopes show them in
+  // (dt_ioppr_get_scope_profile_info()), which has matrices
 
   float *img_display = dt_alloc_align_float((size_t)4 * width * height);
   if(!img_display) return;
 
   // FIXME: we might get called with profile_info_to == NULL due to caller errors
   if(!profile_info_to)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-       "[histogram] no histogram profile, replaced with linear Rec2020");
-    dt_control_log(_("unsupported profile selected for histogram,"
-                     " it will be replaced with linear Rec2020"));
-  }
+    dt_print(DT_DEBUG_ALWAYS, "[histogram] no scope profile, replaced with linear Rec2020");
 
   const dt_iop_order_iccprofile_info_t *fallback =
     dt_ioppr_add_profile_info_to_list(darktable.develop,
@@ -184,12 +180,10 @@ static void _scope_process
                                             profile_info_from, profile_info_out,
                                             "final histogram");
   dt_pthread_mutex_lock(&s->lock);
+  s->hdr_active = dt_colorspaces_hdr_transfer(profile_info_out->type);
 
   s->update_counter++;
-  // if using a non-rgb profile_info_out as in cmyk softproofing we pass
-  // DT_COLORSPACE_LIN_REC2020 for calculating the vertex_rgb data.
-  dt_scopes_call(s->cur_mode, process, img_display, &roi,
-                 profile_info_out->type ? profile_info_out : fallback);
+  dt_scopes_call(s->cur_mode, process, img_display, &roi, profile_info_out);
 
   dt_pthread_mutex_unlock(&s->lock);
   dt_free_align(img_display);
@@ -198,6 +192,68 @@ static void _scope_process
                   dt_scopes_call(s->cur_mode, name));
 }
 
+
+void lib_histogram_draw_hdr_grid(cairo_t *cr,
+                                 const int width,
+                                 const int height,
+                                 const gboolean values_on_y,
+                                 const int transfer)
+{
+  // PQ is labeled in nits, as on HDR grading scopes. HLG is relative to
+  // the display peak, so it is labeled in percent of signal; BT.2408 puts
+  // reference white at 203 nits in PQ and at 75% signal in HLG
+  static const float pq_nits[] = { 1.f, 10.f, 100.f, DT_HDR_REFERENCE_WHITE_NITS,
+                                   1000.f, 4000.f };
+  static const float hlg_signal[] = { 0.25f, 0.5f, 0.75f };
+  const gboolean pq = transfer == DT_HDR_PQ;
+  const int num = pq ? sizeof(pq_nits) / sizeof(pq_nits[0])
+                     : sizeof(hlg_signal) / sizeof(hlg_signal[0]);
+  const double dashes = 4.0;
+
+  PangoFontDescription *desc = dt_gui_get_font();
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(9) * PANGO_SCALE);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+
+  cairo_save(cr);
+  const double wd = cairo_get_line_width(cr);
+  for(int k = 0; k < num; k++)
+  {
+    const float pos = pq ? dt_hdr_pq_encode(pq_nits[k] / DT_HDR_REFERENCE_WHITE_NITS)
+                         : hlg_signal[k];
+    const gboolean white = pq ? pq_nits[k] == DT_HDR_REFERENCE_WHITE_NITS
+                              : hlg_signal[k] == 0.75f;
+    cairo_set_dash(cr, &dashes, white, 0);
+    cairo_set_line_width(cr, white ? wd * 3 : wd);
+    if(values_on_y)
+      dt_draw_line(cr, 0, (1.f - pos) * height, width, (1.f - pos) * height);
+    else
+      dt_draw_line(cr, pos * width, 0, pos * width, height);
+    cairo_stroke(cr);
+
+    char text[16];
+    if(pq)
+      snprintf(text, sizeof(text), "%.0f", pq_nits[k]);
+    else
+      snprintf(text, sizeof(text), "%.0f%%", 100.f * hlg_signal[k]);
+    PangoRectangle ink;
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const int pad = DT_PIXEL_APPLY_DPI(2);
+    cairo_save(cr);
+    set_color(cr, darktable.bauhaus->graph_fg);
+    if(values_on_y)
+      cairo_move_to(cr, pad - ink.x, (1.f - pos) * height - ink.height - ink.y - pad);
+    else
+      cairo_move_to(cr, pos * width + pad - ink.x, pad - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_restore(cr);
+  }
+  cairo_restore(cr);
+
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+}
 
 // FIXME: make this default in _drawable_draw_callback() and only if there is a
 // draw_bkgd method do somethign else?
@@ -250,14 +306,15 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
   dt_scopes_call_if_exists(cur_mode, draw_highlight,
                            cr, s->highlight, width, height);
 
-  // draw grid
+  // FIXME: should set histogram buffer to black if have just entered
+  // tether view and nothing is displayed
+  dt_pthread_mutex_lock(&s->lock);
+
+  // draw grid, under the lock: an HDR grid belongs to the data drawn on it
   // FIXME: set this in individual draw code
   set_color(cr, darktable.bauhaus->graph_grid);
   dt_scopes_call_if_exists(cur_mode, draw_grid, cr, width, height);
 
-  // FIXME: should set histogram buffer to black if have just entered
-  // tether view and nothing is displayed
-  dt_pthread_mutex_lock(&s->lock);
   // darkroom view: draw scope so long as preview pipe is finished
   // tether view: draw whatever has come in from tether
   if((dt_view_get_current() == DT_VIEW_TETHERING

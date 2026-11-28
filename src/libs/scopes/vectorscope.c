@@ -213,8 +213,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_scopes_vec_t *d,
   // calculated for a profile.
 
   // To test if the hue ring represents RGB gamut of a histogram
-  // profile with a given colorspace, use a test image: Set histogram
-  // profile = input profile. The ideal test image is a hue/saturation
+  // profile with a given colorspace, use a test image: soft proof
+  // against profile = input profile. The ideal test image is a hue/saturation
   // two dimensional gradient. This could simply be 7x3 px, bottom row
   // white, middle row R,Y,G,C,B,M,R, top row black,
   // scaled up via linear interpolation.

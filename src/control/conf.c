@@ -36,12 +36,11 @@ typedef struct dt_conf_dreggn_t
   const char *match;
 } dt_conf_dreggn_t;
 
-/** return slot for this variable or newly allocated slot. */
-static inline char *_conf_get_var(const char *name)
+/** return slot for this variable or newly allocated slot. the caller
+    holds the mutex. */
+static char *_conf_get_var_locked(const char *name)
 {
   char *str;
-
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
 
   str = (char *)g_hash_table_lookup(darktable.conf->override_entries, name);
   if(str) goto fin;
@@ -65,6 +64,14 @@ static inline char *_conf_get_var(const char *name)
   g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
 
 fin:
+  return str;
+}
+
+// a copy made under the mutex outlives a set on another thread
+static gchar *_conf_dup_var(const char *name)
+{
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  gchar *str = g_strdup(_conf_get_var_locked(name));
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return str;
 }
@@ -148,8 +155,9 @@ static inline gboolean _conf_isnan(const double val)
 
 static int _conf_get_int_fast(const char *name)
 {
-  const char *str = _conf_get_var(name);
+  gchar *str = _conf_dup_var(name);
   double new_value = dt_calculator_solve(1, str);
+  g_free(str);
   if(_conf_isnan(new_value))
   {
     //we've got garbage, check default
@@ -191,8 +199,9 @@ int dt_conf_get_int(const char *name)
 
 static int64_t _conf_get_int64_fast(const char *name)
 {
-  const char *str = _conf_get_var(name);
+  gchar *str = _conf_dup_var(name);
   double new_value = dt_calculator_solve(1, str);
+  g_free(str);
   if(_conf_isnan(new_value))
   {
     //we've got garbage, check default
@@ -234,8 +243,9 @@ int64_t dt_conf_get_int64(const char *name)
 
 float _conf_get_float_fast(const char *name)
 {
-  const char *str = _conf_get_var(name);
+  gchar *str = _conf_dup_var(name);
   double new_value = dt_calculator_solve(1, str);
+  g_free(str);
   if(_conf_isnan(new_value))
   {
     //we've got garbage, check default
@@ -307,8 +317,11 @@ float dt_conf_get_and_sanitize_float(const char *name,
 
 gboolean dt_conf_get_bool(const char *name)
 {
-  const char *str = _conf_get_var(name);
-  return (str[0] != 'F') && (str[0] != 'f') && (str[0] != '0') && (str[0] != '\0');
+  gchar *str = _conf_dup_var(name);
+  const gboolean val =
+    (str[0] != 'F') && (str[0] != 'f') && (str[0] != '0') && (str[0] != '\0');
+  g_free(str);
+  return val;
 }
 
 void dt_conf_set_path(const char *name, const char *val)
@@ -318,7 +331,7 @@ void dt_conf_set_path(const char *name, const char *val)
 
 gchar *dt_conf_get_path(const char *name)
 {
-  const char *path = _conf_get_var(name);
+  gchar *path = _conf_dup_var(name);
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
 
   if(path[0]
@@ -326,21 +339,25 @@ gchar *dt_conf_get_path(const char *name)
      && item->type == DT_PATH
      && !g_file_test(path, G_FILE_TEST_IS_DIR | G_FILE_TEST_IS_SYMLINK))
   {
-    path = dt_confgen_get(name, DT_DEFAULT);
+    g_free(path);
+    path = g_strdup(dt_confgen_get(name, DT_DEFAULT));
     dt_conf_set_path(name, path);
   }
-  return g_strdup(path);
+  return path;
 }
 
 gchar *dt_conf_get_string(const char *name)
 {
-  const char *str = _conf_get_var(name);
-  return g_strdup(str);
+  return _conf_dup_var(name);
 }
 
 const char *dt_conf_get_string_const(const char *name)
 {
-  return _conf_get_var(name);
+  // the slot is freed when the key is set, possibly by another thread
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  const char *str = _conf_get_var_locked(name);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  return str;
 }
 
 gboolean dt_conf_key_not_empty(const char *name)
@@ -362,8 +379,10 @@ gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *ch
 
 gboolean dt_conf_is_equal(const char *name, const char *value)
 {
-  const char *str = _conf_get_var(name);
-  return g_strcmp0(str, value) == 0;
+  gchar *str = _conf_dup_var(name);
+  const gboolean equal = g_strcmp0(str, value) == 0;
+  g_free(str);
+  return equal;
 }
 
 static char *_sanitize_confgen(const char *name, const char *value)
@@ -868,8 +887,10 @@ gboolean dt_conf_is_default(const char *name)
   default:
     {
       const char *def_val = dt_confgen_get(name, DT_DEFAULT);
-      const char *cur_val = _conf_get_var(name);
-      return g_strcmp0(def_val, cur_val) == 0;
+      gchar *cur_val = _conf_dup_var(name);
+      const gboolean is_default = g_strcmp0(def_val, cur_val) == 0;
+      g_free(cur_val);
+      return is_default;
       break;
     }
   }
