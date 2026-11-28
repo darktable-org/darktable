@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-18 22:34+0100\n"
-"PO-Revision-Date: 2026-11-20 15:04+0900\n"
+"PO-Revision-Date: 2026-11-28 16:17+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -272,7 +272,7 @@ msgid ""
 "'initial rating'"
 msgstr ""
 "EXIF上の評価を無視します。この設定を適用せず、EXIF上に評価が検出された場合、そ"
-"の評価値を「評価の初期設定値」に対して上書きします"
+"の評価値を【評価の初期設定値】に対して上書きします"
 
 #: ../build/bin/conf_gen.h:1707
 msgid "import job"
@@ -906,7 +906,7 @@ msgid ""
 "product (smooth intersection), combined by product (smooth\n"
 "intersection), as a classic drawn + parametric mask did"
 msgstr ""
-"\"描画\"グループ（最大／和集合）と\"パラメトリック\"グループ（乗算／滑らかな積"
+"「描画」グループ（最大／和集合）と「パラメトリック」グループ（乗算／滑らかな積"
 "集合）を、旧来の描画＋パラメトリックマスクのように乗算（滑らかな積集合）で合成"
 "します"
 
@@ -1094,14 +1094,13 @@ msgid ""
 "<b>darker:</b> good for dimly-lit rooms"
 msgstr ""
 "写真の周囲の背景色は、編集時に写真の色やトーンがどのように見えるかに影響しま"
-"す。おすすめはグレーです――――最もニュートラルで、視覚を特定の方向に偏らせませ"
-"ん。\n"
+"す。おすすめはグレーです。最もニュートラルで、視覚を特定の方向に偏らせません\n"
 "\n"
-"<b>グレー:</b> 正確な色調整に最適\n"
+"<b>グレー：</b> 正確な色調整に最適\n"
 "\n"
-"<b>ダーク:</b> 画像の周囲に気が散らず集中しやすい\n"
+"<b>ダーク：</b> 画像の周囲に気が散らず集中しやすい\n"
 "\n"
-"<b>さらにダーク:</b> 薄暗い部屋での作業に適している"
+"<b>さらにダーク：</b> 薄暗い部屋での作業に適している"
 
 #: ../build/bin/preferences_gen.h:2773 ../src/control/jobs/control_jobs.c:3317
 #: ../src/libs/import.c:185
@@ -1468,7 +1467,7 @@ msgid ""
 msgstr ""
 "有効にすると、ライトテーブルのスクロールを数ピクセル単位にします。タッチパッド"
 "で用いてください\n"
-"無効にすると、ライトテーブルのスクロールはサムネイルの列ごとになります。マウス"
+"無効にすると、ライトテーブルのスクロールはサムネイルの行ごとになります。マウス"
 "ホイールでの操作に有用です"
 
 #: ../build/bin/preferences_gen.h:3117
@@ -1508,8 +1507,8 @@ msgid ""
 "120-400px, more than 400px"
 msgstr ""
 "サイズカテゴリは、|で区切られたサムネイルのサイズに応じて、異なるオーバーレイ"
-"やCSS値を設定できるようにするために使用されます\n"
-"例えば、120 | 400は、サムネイルの3つのカテゴリ（120px未満, 120-400px, 400px"
+"やCSS値を設定出来るようにするために使用されます\n"
+"例えば、120 | 400は、サムネイルの3つのカテゴリ（120px未満, 120~400px, 400px"
 "超）を意味します"
 
 #: ../build/bin/preferences_gen.h:3174
@@ -1531,7 +1530,7 @@ msgstr "ダークルーム"
 
 #: ../build/bin/preferences_gen.h:3238
 msgid "middle mouse button zooms to 200%"
-msgstr "マウスのミドルクリックで200%にズームする"
+msgstr "マウスの中クリックで200%にズームする"
 
 #: ../build/bin/preferences_gen.h:3247
 #, no-c-format
@@ -1540,8 +1539,8 @@ msgid ""
 "on middle mouse clicks. if disabled, it will toggle between viewport size and "
 "100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"有効にすると、マウスのミドルクリックをしたときに、ズームレベルを100%、200％、"
-"表示領域にフィットの順に切り替えます\n"
+"有効にすると、マウスの中クリックをしたときに、ズームレベルを100%、200%、表示領"
+"域にフィットの順に切り替えます\n"
 "無効にすると、100%、表示領域にフィットの順に切り替え、Ctrlキーでズームレベルを"
 "調節することが出来ます"
 
@@ -1551,7 +1550,7 @@ msgstr "画像情報のひな型"
 
 #: ../build/bin/preferences_gen.h:3271
 msgid "see manual for a list of the tags you can use."
-msgstr "使用できるタグのリストは マニュアルを参照してください"
+msgstr "使用することが出来るタグのリストは マニュアルを参照してください"
 
 #: ../build/bin/preferences_gen.h:3280
 msgid "position of the image information line"
@@ -1728,8 +1727,9 @@ msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
-"回転、レンズ補正、液化、トリミング、および最終スケーリングのためのモジュールに"
-"使われるピクセル補間（バイリニア、バイキュービック、ランチョス2）"
+"回転、レンズ補正、歪み（リキファイ）、トリミング、および最終スケーリングのため"
+"のモジュールに使われるピクセル補間（バイリニア、バイキュービック、ランチョス"
+"2）"
 
 #: ../build/bin/preferences_gen.h:3588
 msgid "pixel interpolator (scaling)"
@@ -1961,7 +1961,7 @@ msgstr ""
 "無効になります\n"
 "有効にする（例: 2.0）と極端に露出不足のフレームでの特徴検出に役立ちますが、繰"
 "り返しのあるテクスチャ（外壁、手すり、葉など）では露出間で記述子のシグネチャが"
-"変化し、位置合わせのミスを招くことがあるため、既定では無効です。"
+"変化し、位置合わせのミスを招くことがあるため、デフォルトでは無効です"
 
 #: ../build/bin/preferences_gen.h:3856
 msgid "feature budget per frame (keypoints)"
@@ -1996,7 +1996,7 @@ msgstr ""
 "ト、全ての特徴合致〈緑 = インライア、赤 = アウトライア〉）を書き出します\n"
 "システムの一時ディレクトリ内のdarktable_hdr_align_debugフォルダ（または"
 "DT_HDR_DEBUG_IMAGE_DIR環境変数で指定したフォルダ）にNetpbm形式（.pgm／.ppm）で"
-"保存されます。位置合わせの問題を診断するためのものです。既定では無効です"
+"保存されます。位置合わせの問題を診断するためのものです。デフォルトでは無効です"
 
 #: ../build/bin/preferences_gen.h:3906
 msgid "CPU / memory"
@@ -2081,8 +2081,8 @@ msgid ""
 msgstr ""
 "OpenCL対応システムにおけるプレビューピクセルパイプのタスクおよびフルピクセルパ"
 "イプのタスクの割り当てを定めます\n"
-"- デフォルト：GPU はフルピクセルパイプを処理し、CPUはプレビューパイプを処理し"
-"ます （設定パラメータで修正可能）\n"
+"- デフォルト：GPUはフルピクセルパイプを処理し、CPUはプレビューパイプを処理しま"
+"す （設定パラメータで修正可能）\n"
 "- 複数のGPU：2つの異なるGPUで両方のピクセルパイプを並列処理します\n"
 "- 非常に高速なGPU：両方のピクセルパイプを同一のGPUで順次処理します"
 
@@ -2484,7 +2484,8 @@ msgid ""
 "defaults returning"
 msgstr ""
 "ユーザー設定より前にデフォルトのショートカットを読み込みます\n"
-"オフにすると、削除したデフォルト設定に戻ることを避けることが出来ます"
+"オフにすると、削除したデフォルトのショートカットが復活するのを防ぐことが出来ま"
+"す"
 
 #: ../build/bin/preferences_gen.h:4681
 msgid "scale slider step with min/max"
@@ -2582,7 +2583,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4784
 msgid "constrain darkroom zoom between screen fit and 100%"
-msgstr "darkroomのズーム倍率を画面にフィットから100%までの範囲に制限する"
+msgstr "ダークルームのズーム倍率を画面にフィットから100%までの範囲に制限する"
 
 #: ../build/bin/preferences_gen.h:4793
 #, no-c-format
@@ -2593,8 +2594,8 @@ msgid ""
 "zoom beyond 100%. <b>disabled:</b> zoom is never constrained and the "
 "additional <i>Ctrl</i> key press is not needed to zoom beyond 100%."
 msgstr ""
-"darkroom内でのスクロールホイールおよびピンチによるズーム範囲を画面にフィット"
-"（ズームアウト）から100%（ズームイン）までの間に制限します\n"
+"ダークルーム内でのスクロールホイールおよびピンチによるズーム範囲を画面にフィッ"
+"ト（ズームアウト）から100%（ズームイン）までの間に制限します\n"
 "有効: ズーム範囲が制限されます。ズーム中に<i>Ctrlキー</i>を長押しすると、一時"
 "的に制限が解除され、100%を超えてズーム出来るようになります\n"
 "無効: ズーム範囲は制限されません。100%を超えてズームする場合も<i>Ctrlキー</i>"
@@ -2669,8 +2670,8 @@ msgid ""
 "compositor or driver bugs"
 msgstr ""
 "画像をdarktable内でディスプレイプロファイルに変換し、システムのカラーマネジメ"
-"ントには渡しません。この設定は、コンポジターやドライバーの不具合の回避策として"
-"のみ使用してください"
+"ントには渡しません。この設定は、コンポジタやドライバの不具合の回避策としてのみ"
+"使用してください"
 
 #: ../build/bin/preferences_gen.h:4917
 msgid "display profile file"
@@ -2691,8 +2692,8 @@ msgstr ""
 "ルドが空の場合、またはファイルが読み取り可能なRGBプロファイルでない場合は、シ"
 "ステムのプロファイルを使用します\n"
 "この設定は、darktableがシステムのカラーマネジメントに渡しているウィンドウには"
-"効果がありません。macOSのようにシステムがすべてのアプリケーションの色を自ら変"
-"換する環境では、色が二重に変換されます"
+"効果がありません。macOSのようにシステムが全てのアプリケーションの色を自ら変換"
+"する環境では、色が二重に変換されます"
 
 #: ../build/bin/preferences_gen.h:4939
 msgid "order or exclude MIDI devices"
@@ -2980,7 +2981,7 @@ msgid ""
 "borderless on 8.5x11 paper"
 msgstr ""
 "4枚の画像と一つのキャプションから成る1枚の画像を構成し、\n"
-"8.5x11サイズの印刷上に余白無しで印刷することが出来ます"
+"8.5x11サイズの印刷上に縁なしで印刷することが出来ます"
 
 #: ../build/bin/styles_string.h:12
 msgid "contrast and sharpness"
@@ -3469,7 +3470,7 @@ msgstr "出力ピークに追従"
 #: ../build/lib/darktable/plugins/introspection_agx.c:478
 #: ../build/lib/darktable/plugins/introspection_agx.c:669
 msgid "HDR purity"
-msgstr "HDR 純度"
+msgstr "HDR純度"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:683
 #: ../src/common/colorspaces.c:1767 ../src/common/colorspaces.c:2100
@@ -4115,91 +4116,91 @@ msgstr "ホワイトバランスモジュールから"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:563
 msgid "F1 (Daylight 6430 K) – medium CRI"
-msgstr "F1（昼光色 6430 K）– 演色性 中"
+msgstr "F1（昼光色 6430K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:564
 msgid "F2 (Cool White 4230 K) – medium CRI"
-msgstr "F2（昼白色 4230 K）– 演色性 中"
+msgstr "F2（昼白色 4230K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:565
 msgid "F3 (White 3450 K) – medium CRI"
-msgstr "F3（白色 3450 K）– 演色性 中"
+msgstr "F3（白色 3450K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:566
 msgid "F4 (Warm White 2940 K) – medium CRI"
-msgstr "F4（温白色 2940 K）– 演色性 中"
+msgstr "F4（温白色 2940K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:567
 msgid "F5 (Daylight 6350 K) – medium CRI"
-msgstr "F5（昼光色 6350 K）– 演色性 中"
+msgstr "F5（昼光色 6350K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:568
 msgid "F6 (Lite White 4150 K) – medium CRI"
-msgstr "F6（ライトホワイト（一般的蛍光灯）4150 K）– 演色性 中"
+msgstr "F6（ライトホワイト（一般的蛍光灯）4150K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:569
 msgid "F7 (D65 simulator 6500 K) – high CRI"
-msgstr "F7（D65 シミュレータ 6500 K）– 演色性 高"
+msgstr "F7（D65 シミュレータ 6500K）– 演色性 高"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:570
 msgid "F8 (D50 simulator 5000 K) – high CRI"
-msgstr "F8（D50 シミュレータ 5000 K）– 演色性 高"
+msgstr "F8（D50 シミュレータ 5000K）– 演色性 高"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:571
 msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
-msgstr "F9（昼白色デラックス 4150 K）– 演色性 高"
+msgstr "F9（昼白色デラックス 4150K）– 演色性 高"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:572
 msgid "F10 (Tuned RGB 5000 K) – low CRI"
-msgstr "F10（RGB調整光 5000 K）– 演色性 低"
+msgstr "F10（RGB調整光 5000K）– 演色性 低"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:573
 msgid "F11 (Tuned RGB 4000 K) – low CRI"
-msgstr "F11（RGB調整光 4000 K）– 演色性 低"
+msgstr "F11（RGB調整光 4000K）– 演色性 低"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:574
 msgid "F12 (Tuned RGB 3000 K) – low CRI"
-msgstr "F12（RGB調整光 3000 K）– 演色性 低"
+msgstr "F12（RGB調整光 3000K）– 演色性 低"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:579
 msgid "B1 (Blue 2733 K)"
-msgstr "B1（青 2733 K）"
+msgstr "B1（青 2733K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:580
 msgid "B2 (Blue 2998 K)"
-msgstr "B2（青 2998 K）"
+msgstr "B2（青 2998K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:581
 msgid "B3 (Blue 4103 K)"
-msgstr "B3（青 4103 K）"
+msgstr "B3（青 4103K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:582
 msgid "B4 (Blue 5109 K)"
-msgstr "B4（青 5109 K）"
+msgstr "B4（青 5109K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:583
 msgid "B5 (Blue 6598 K)"
-msgstr "B5（青 6598 K）"
+msgstr "B5（青 6598K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:584
 msgid "BH1 (Blue-Red hybrid 2851 K)"
-msgstr "BH1（青赤ハイブリッド 2851 K）"
+msgstr "BH1（青赤ハイブリッド 2851K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:585
 msgid "RGB1 (RGB 2840 K)"
-msgstr "RGB1（RGB 2840 K）"
+msgstr "RGB1（RGB 2840K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:586
 msgid "V1 (Violet 2724 K)"
-msgstr "V1（バイオレット 2724 K）"
+msgstr "V1（バイオレット 2724K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:587
 msgid "V2 (Violet 4070 K)"
-msgstr "V2（バイオレット 4070 K）"
+msgstr "V2（バイオレット 4070K）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:592
 msgid "linear Bradford (ICC v4)"
-msgstr "リニアブラッドフォード（ICC バージョン4）"
+msgstr "リニアブラッドフォード（ICCバージョン4）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:593
 msgid "CAT16 (CIECAM16)"
@@ -4470,12 +4471,12 @@ msgstr "白レベル"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:242
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:463
 msgid "hue analysis radius"
-msgstr "色相の分析の範囲"
+msgstr "色相分析の半径"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:248
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:467
 msgid "effect radius"
-msgstr "効果の範囲"
+msgstr "効果の半径"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:254
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:471
@@ -4725,7 +4726,7 @@ msgstr "ノイズバイアス"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:47
 #: ../build/lib/darktable/plugins/introspection_defringe.c:102
 msgid "edge detection radius"
-msgstr "エッジ検出の範囲"
+msgstr "エッジ検出の半径"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:53
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
@@ -4940,7 +4941,7 @@ msgstr "パッチ サイズ"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:136
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:315
 msgid "search radius"
-msgstr "探索範囲"
+msgstr "探索半径"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:148
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:323
@@ -5725,7 +5726,7 @@ msgstr "歪曲"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:469
 #: ../src/iop/vignette.c:110
 msgid "vignetting"
-msgstr "ビネット"
+msgstr "周辺減光"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:310
 #: ../build/lib/darktable/plugins/introspection_lens.cc:481
@@ -6371,7 +6372,7 @@ msgstr "純度の復元"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:318
 msgid "per channel"
-msgstr "チャンネル毎"
+msgstr "チャンネルごと"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:319
 msgid "RGB ratio"
@@ -6455,7 +6456,7 @@ msgstr "プリフラッシュYフィルタシフト"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:568
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1013
 msgid "scan the film (skip print)"
-msgstr "フィルムをスキャン（印刷をスキップ）"
+msgstr "フィルムをスキャン（プリントをスキップ）"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:574
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1017
@@ -6650,7 +6651,7 @@ msgstr "スキャナーのシャープ化の半径"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:802
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1169
 msgid "scanner sharpen strength"
-msgstr "スキャナーシャープネスの強さ"
+msgstr "スキャナーのシャープ化の強さ"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:808
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1173
@@ -7119,19 +7120,19 @@ msgstr ""
 
 #: ../src/cli/main.c:309
 msgid "unknown option for --hq"
-msgstr "--hq の不明なオプション"
+msgstr "--hqの不明なオプション"
 
 #: ../src/cli/main.c:325
 msgid "unknown option for --export_masks"
-msgstr "--export_masks の不明なオプション"
+msgstr "--export_masksの不明なオプション"
 
 #: ../src/cli/main.c:341
 msgid "unknown option for --upscale"
-msgstr "--upscale の不明なオプション"
+msgstr "--upscaleの不明なオプション"
 
 #: ../src/cli/main.c:366
 msgid "unknown option for --apply-custom-presets"
-msgstr "--apply-custom-presets の不明なオプション"
+msgstr "--apply-custom-presetsの不明なオプション"
 
 #: ../src/cli/main.c:377
 msgid "too long ext for --out-ext"
@@ -7152,24 +7153,22 @@ msgstr ""
 #: ../src/cli/main.c:415
 #, c-format
 msgid "incorrect ICC type for --icc-type: '%s'\n"
-msgstr "--icc-type:'%s'に不適切なICC 形式です \n"
+msgstr "--icc-type:'%s'に不適切なICC形式です \n"
 
 #: ../src/cli/main.c:431
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
-msgstr "ICC ファイル'%s'は存在しません。スキップします\n"
+msgstr "ICCファイル'%s'は存在しません。スキップします\n"
 
 #: ../src/cli/main.c:440
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
-msgstr "--icc-intent:'%s'に不適切なICC インテントです\n"
+msgstr "--icc-intent:'%s'に不適切なICCインテントです\n"
 
 #: ../src/cli/main.c:452
 #, c-format
 msgid "incorrect PQ peak for --pq-peak: '%s'\n"
-msgstr ""
-"--pq-peak に対する不適切なPQピーク値です: '%s'\n"
-"\n"
+msgstr "--pq-peakに対する不適切なPQピーク値です: '%s'\n"
 
 #: ../src/cli/main.c:479
 #, c-format
@@ -7487,10 +7486,10 @@ msgid ""
 "\n"
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
-"カメラ%s'（ポート%s'）でエラー：%s\n"
+"カメラ`%s'（ポート`%s'）でエラー：%s\n"
 "\n"
-"カメラがアクセスを許可していること、非許可設定でマウントされていないことを確認"
-"してください"
+"カメラへのアクセスが許可されており、他の方法でマウントされていないことを確認し"
+"てください"
 
 #: ../src/common/camera_control.c:1056
 #, c-format
@@ -8175,11 +8174,11 @@ msgstr "HLG P3"
 
 #: ../src/common/colorspaces.c:2122
 msgid "DNG forward matrix"
-msgstr "DNG フォワードマトリクス"
+msgstr "DNGフォワードマトリクス"
 
 #: ../src/common/colorspaces.c:2124
 msgid "DNG embedded look"
-msgstr "DNG 埋め込みルック"
+msgstr "DNG埋め込みルック"
 
 #: ../src/common/colorspaces.c:2258
 #, c-format
@@ -8408,7 +8407,7 @@ msgid ""
 "performance have changed."
 msgstr ""
 "ユーザーインターフェースと、darktableのパフォーマンスを調整する内部システムが"
-"変更されています。"
+"変更されています"
 
 #: ../src/common/darktable.c:3166
 msgid ""
@@ -8458,16 +8457,15 @@ msgstr "'magic'の他は、従来どおりに調整することが出来ます"
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
-"OpenCLコンパイラーの設定は全てのデバイスについてデフォルト値にリセットされまし"
-"た"
+"OpenCLコンパイラの設定は全てのデバイスについてデフォルト値にリセットされました"
 
 #: ../src/common/darktable.c:3196
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
 msgstr ""
-"OpenCL全般設定のパラメータの「デバイス毎」のデータは名前を更新したうえで改めて"
-"作成されました"
+"OpenCL全般設定のパラメータの「デバイスごと」のデータは名前を更新したうえで改め"
+"て作成されました"
 
 #: ../src/common/darktable.c:3198 ../src/common/darktable.c:3213
 msgid ""
@@ -8489,15 +8487,15 @@ msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
 msgstr ""
-"「デバイス毎」のOpenCL設定データは「unified-fraction」によって自動的に拡張され"
-"ました"
+"「デバイスごと」のOpenCL設定データは「unified-fraction」によって自動的に拡張さ"
+"れました"
 
 #: ../src/common/darktable.c:3222
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
 msgstr ""
-"「デバイス毎」のOpenCLコンパイラ設定は更新されたかもしれません\n"
+"「デバイスごと」のOpenCLコンパイラ設定は更新されたかもしれません\n"
 "\n"
 
 #: ../src/common/darktable.c:3227
@@ -8511,15 +8509,15 @@ msgid ""
 "OpenCL 'per device' settings have changed.\n"
 "\n"
 msgstr ""
-"「デバイス毎」のOpenCL設定が変更されました\n"
+"「デバイスごと」のOpenCL設定が変更されました\n"
 "\n"
 
 #: ../src/common/darktable.c:3234
 msgid ""
 "you will find 'per device' data in 'cldevice_v6_canonical-name'. content is:"
 msgstr ""
-"'cldevice_v6_canonical-name'内に 'デバイス毎' のデータがあります。内容は次のと"
-"おりです："
+"'cldevice_v6_canonical-name'内に 'デバイスごと' のデータがあります。内容は次の"
+"とおりです："
 
 #: ../src/common/darktable.c:3236
 msgid ""
@@ -8607,37 +8605,37 @@ msgid ""
 "</i>\n"
 msgstr ""
 "\n"
-"申し訳ありません、darktableを起動することが出来ませんでした（データベースが"
+"  申し訳ありません、darktableを起動することが出来ませんでした（データベースが"
 "ロックされています）\n"
 "\n"
-"   この問題を解決する方法\n"
+"  この問題を解決する方法\n"
 "\n"
-"   1 - darktableの別のインスタンスがすでに開かれている場合、\n"
-"        【キャンセル】をクリックして、そのインスタンスを使用するか、終了してか"
-"らdarktableを再起動してみてください\n"
-"        （プロセスID<i><b>%d</b></i> がデータベースロックを作成しました）\n"
+"  1 - darktableの別のインスタンスがすでに開かれている場合、\n"
+"      【キャンセル】をクリックして、そのインスタンスを使用するか、終了してから"
+"darktableを再起動してみてください\n"
+"      （プロセスID<i><b>%d</b></i> がデータベースロックを作成しました）\n"
 "\n"
-"   2 - darktableを終了してから数分しか経っていない場合、\n"
-"       画像のエクスポートやサイドカーファイルの更新、データベースのメンテナン"
-"スをバックグラウンドで実行している可能性があります\n"
-"       この処理が完了した後で再度試してください\n"
+"  2 - darktableを終了してから数分しか経っていない場合、\n"
+"      画像のエクスポートやサイドカーファイルの更新、データベースのメンテナンス"
+"をバックグラウンドで実行している可能性があります\n"
+"      この処理が完了した後で再度試してください\n"
 "\n"
 "  3 - OSのプロセスに対して適切な処置をする自信が無い場合、\n"
 "      数分経ってからセッションまたはコンピューターを再起動するほうが安全かもし"
 "れません\n"
 "      これにより、実行中のプログラムが全て終了し、おそらく適切にデータベースを"
-"閉じることができるでしょう\n"
+"閉じることが出来るでしょう\n"
 "\n"
-"   4 - 上記をすでに行っていて、darktableの他のインスタンスが実行されていないこ"
+"  4 - 上記をすでに行っていて、darktableの他のインスタンスが実行されていないこ"
 "とが確かな場合、\n"
-"        おそらく、最後のインスタンスが異常終了しています\n"
-"        【データベースロックファイルを削除】ボタンをクリックして、ファイル"
+"      おそらく、最後のインスタンスが異常終了しています\n"
+"      【データベースロックファイルを削除】ボタンをクリックして、ファイル"
 "<i>data.db.lock</i>と<i>%s</i>を削除してください\n"
 "\n"
 "\n"
-"       <i> <u>注意！</u> 上記のチェックを行わずにこれらのファイルを削除しない"
-"でください\n"
-"       データベースに重大な不整合が生まれる可能性があります</i> \n"
+"      <i><u>注意！</u> 上記のチェックを行わずにこれらのファイルを削除しないで"
+"ください\n"
+"      データベースに重大な不整合が生まれる可能性があります</i>\n"
 
 #: ../src/common/database.c:3883
 msgid "error starting darktable"
@@ -9251,7 +9249,7 @@ msgstr ""
 "  - パワーマネジメントの問題\n"
 "  - ドライバのバグ\n"
 "  - OpenCLドライバがインストールされていない\n"
-"  - プラットフォーム毎に複数のドライバがインストールされている\n"
+"  - プラットフォームごとに複数のドライバがインストールされている\n"
 
 #: ../src/common/opencl.c:1367
 msgid ""
@@ -9747,7 +9745,7 @@ msgstr "更新されたサイドカーファイルを確認しています"
 #: ../src/control/crawler.c:1195
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
-msgstr "エラー：%s XMP → DB 同期していません"
+msgstr "エラー：%s XMP → DB同期していません"
 
 #: ../src/control/crawler.c:1196 ../src/control/crawler.c:1262
 #: ../src/control/crawler.c:1331
@@ -9761,12 +9759,12 @@ msgstr ""
 #: ../src/control/crawler.c:1203
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
-msgstr "成功： %s XMP → DB 同期しました"
+msgstr "成功：%s XMP → DB同期しました"
 
 #: ../src/control/crawler.c:1225
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
-msgstr "エラー：%s DB → XMP 同期していません"
+msgstr "エラー：%s DB → XMP同期していません"
 
 #: ../src/control/crawler.c:1227 ../src/control/crawler.c:1286
 #: ../src/control/crawler.c:1352
@@ -9782,27 +9780,27 @@ msgstr ""
 #: ../src/control/crawler.c:1233
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr "成功： %s DB → XMP 同期しました"
+msgstr "成功：%s DB → XMP同期しました"
 
 #: ../src/control/crawler.c:1259
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
-msgstr "エラー：%s 新 (XMP) → 旧 (DB) 同期していません"
+msgstr "エラー：%s 新（XMP）→旧（DB）同期していません"
 
 #: ../src/control/crawler.c:1269
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr "成功： %s 新 (XMP) → 旧 (DB) 同期しました"
+msgstr "成功：%s 新（XMP）→旧（DB）同期しました"
 
 #: ../src/control/crawler.c:1283
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
-msgstr "エラー：%s 新 (DB) → 旧 (XMP) 同期していません"
+msgstr "エラー：%s 新（DB）→旧（XMP）同期していません"
 
 #: ../src/control/crawler.c:1291
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr "成功： %s 新 (DB) → 旧 (XMP) 同期しました"
+msgstr "成功：%s 新（DB）→旧（XMP）同期しました"
 
 #: ../src/control/crawler.c:1300 ../src/control/crawler.c:1368
 #, c-format
@@ -9812,22 +9810,22 @@ msgstr "例外：%sのタイムスタンプが不整合です"
 #: ../src/control/crawler.c:1328
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
-msgstr "エラー：%s 旧 (XMP) → 新 (DB) 同期していません"
+msgstr "エラー：%s 旧（XMP）→新（DB）同期していません"
 
 #: ../src/control/crawler.c:1337
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr "成功： %s 旧 (XMP) → 新 (DB) 同期しました"
+msgstr "成功：%s 旧（XMP）→新（DB）同期しました"
 
 #: ../src/control/crawler.c:1349
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
-msgstr "エラー：%s 旧 (DB) → 新 (XMP) 同期していません"
+msgstr "エラー：%s 旧（DB）→新（XMP）同期していません"
 
 #: ../src/control/crawler.c:1358
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr "成功： %s 旧 (DB) → 新 (XMP) 同期しました"
+msgstr "成功：%s 旧（DB）→新（XMP）同期しました"
 
 #: ../src/control/crawler.c:1440
 #, c-format
@@ -10057,7 +10055,7 @@ msgid ""
 "\n"
 " do you want to delete the file from disk without using trash?"
 msgstr ""
-"%sをゴミ箱%sに送ることが出来ませんでした\n"
+"%sをゴミ箱に送ることが出来ませんでした%s\n"
 "%s\n"
 "\n"
 "ゴミ箱を使わずにディスクから削除しますか？"
@@ -10068,7 +10066,7 @@ msgid ""
 "could not delete from disk %s%s\n"
 "%s"
 msgstr ""
-"ディスク%s%sから削除することが出来ませんでした\n"
+"ディスクから%sを削除することが出来ませんでした%s\n"
 "%s"
 
 #: ../src/control/jobs/control_jobs.c:1240
@@ -10389,8 +10387,8 @@ msgstr[1] "画像をコピーしますか？"
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
-msgstr[0] "%d枚の画像を 本当に%s に物理的にコピーしますか？"
-msgstr[1] "%d枚の画像を本当に%s に物理的にコピーしますか？"
+msgstr[0] "%d枚の画像を 本当に%sに物理的にコピーしますか？"
+msgstr[1] "%d枚の画像を本当に%sに物理的にコピーしますか？"
 
 #: ../src/control/jobs/control_jobs.c:2486
 #: ../src/control/jobs/control_jobs.c:2495
@@ -11080,8 +11078,8 @@ msgid ""
 "when enabled (default), an icon is shown in the header of\n"
 "any processing module that has a mask applied."
 msgstr ""
-"有効（デフォルト）の場合、マスクが適用されている処理モジュールのヘッダーにアイ"
-"コンが表示されます"
+"有効（デフォルト）の場合、マスクが適用されている処理モジュールのヘッダにアイコ"
+"ンが表示されます"
 
 #: ../src/develop/blend_gui.c:3034
 msgid "auto-fold runs"
@@ -11135,7 +11133,7 @@ msgstr ""
 "有効（デフォルト）の場合、新規シェイプは直前にいずれかのシェイプで使用された不"
 "透明度で作成されるため、\n"
 "一度不透明度を調整すればそれ以降に追加する全てのシェイプに引き継がれます\n"
-"無効の場合、新規シェイプは常に不透明度 100% で作成されます"
+"無効の場合、新規シェイプは常に不透明度100%で作成されます"
 
 #: ../src/develop/blend_gui.c:3067
 msgid "parametric element options"
@@ -11183,8 +11181,8 @@ msgid ""
 "the preview only starts after a short pause, so passing over\n"
 "the buttons on the way elsewhere costs nothing."
 msgstr ""
-"有効（デフォルト）の場合、「パラメトリック要素を追加」ボタンの上にポインターを"
-"置くと、\n"
+"有効（デフォルト）の場合、パラメトリック要素を追加ボタンの上にポインターを置く"
+"と、\n"
 "中央ビューにそのチャンネルが表示され、要素を追加する前にチャンネルの状態を確認"
 "できます。\n"
 "わずかな静止時間の後にプレビューが開始されるため、ボタン上を通過するだけなら処"
@@ -11380,8 +11378,8 @@ msgid ""
 "press 'm' to toggle mask view"
 msgstr ""
 "このモジュールに入力された画像に基づく調整：\n"
-"- 上部マーカー：完全な不透明度（マスク 100%）\n"
-"- 下部マーカー：透明（マスク 0%）\n"
+"- 上部マーカー：完全な不透明度（マスク100%）\n"
+"- 下部マーカー：透明（マスク0%）\n"
 "- 上下マーカーの間：不透明度のグラデーション境界\n"
 "\n"
 "ドラッグ：マーカー調整\n"
@@ -11402,8 +11400,8 @@ msgid ""
 "press 'm' to toggle mask view"
 msgstr ""
 "このモジュールのブレンド前出力に基づく調整：\n"
-"- 上部マーカー：完全な不透明度（マスク 100%）\n"
-"- 下部マーカー：透明（マスク 0%）\n"
+"- 上部マーカー：完全な不透明度（マスク100%）\n"
+"- 下部マーカー：透明（マスク0%）\n"
 "- 上下マーカーの間：不透明度のグラデーション境界\n"
 "\n"
 "ドラッグ：マーカー調整\n"
@@ -11440,24 +11438,24 @@ msgid ""
 "the element hovered on the canvas, or else the selected one: the sections "
 "below show and change its controls and refinements"
 msgstr ""
-"キャンバス上でホバーされた要素、または選択中の要素：下のセクションでコントロー"
-"ルと微調整を表示・変更します"
+"キャンバス上でカーソルを乗せた要素、または選択中の要素：下のセクションでコント"
+"ロールと微調整を表示・変更します"
 
 #: ../src/develop/blend_gui.c:5528
 msgid ""
 "the element hovered on the canvas, or else the selected group: the sections "
 "below show and change its controls and refinements"
 msgstr ""
-"キャンバス上でホバーされた要素、または選択中のグループ：下のセクションでコント"
-"ロールと微調整を表示・変更します"
+"キャンバス上でカーソルを乗せた要素、または選択中のグループ：下のセクションでコ"
+"ントロールと微調整を表示・変更します"
 
 #: ../src/develop/blend_gui.c:5530
 msgid ""
 "the element hovered on the canvas, or else the whole mask while no member is "
 "selected: the sections below show and change its controls and refinements"
 msgstr ""
-"キャンバス上でホバーされた要素、またはメンバー非選択時のマスク全体：下のセク"
-"ションでコントロールと微調整を表示・変更します"
+"キャンバス上でカーソルを乗せた要素、またはメンバー非選択時のマスク全体：下のセ"
+"クションでコントロールと微調整を表示・変更します"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:5633 ../src/develop/blend_gui.c:12660
@@ -11504,7 +11502,7 @@ msgstr "シェイプの回転"
 
 #: ../src/develop/blend_gui.c:5646
 msgid "how much the gradient's line bends: 0 is straight"
-msgstr "グラデーションラインの湾曲度：0 で直線"
+msgstr "グラデーションラインの湾曲度：0で直線"
 
 #. compression
 #. Compression method combo box
@@ -11613,7 +11611,7 @@ msgid ""
 "slower.\n"
 "a small path is never traced finer than the image it is on."
 msgstr ""
-"パスをトレースするラスタのサイズ（最長辺のピクセル数）\n"
+"パスをトレースするラスターのサイズ（最長辺のピクセル数）\n"
 "値を大きくすると、大きなパスの輪郭をより正確に追従しますが、処理が遅くなりま"
 "す\n"
 "小さなパスが元画像より細かくトレースされることはありません"
@@ -11672,10 +11670,10 @@ msgid ""
 "double-click to reset to 0"
 msgstr ""
 "パスの輪郭を拡大（正の値）または縮小（負の値）します\n"
-"0 にすると拡大縮小前の輪郭に戻ります。これは移動操作を行っても維持されます\n"
+"0にすると拡大縮小前の輪郭に戻ります。これは移動操作を行っても維持されます\n"
 "サイズ変更、ぼかし、回転、ノード編集を行うと現在の輪郭が新しい基準（0）になり"
 "ます\n"
-"ダブルクリックで 0 にリセットします"
+"ダブルクリックで0にリセットします"
 
 #: ../src/develop/blend_gui.c:6745 ../src/develop/masks/masks.c:3002
 #: ../src/develop/masks/masks.c:3695
@@ -11834,7 +11832,7 @@ msgstr "最小"
 
 #: ../src/develop/blend_gui.c:8498
 msgid "only the area every member covers: the weaker one wins"
-msgstr "すべてのメンバーがカバーする重複領域のみ：効果の弱い方が適用されます"
+msgstr "全てのメンバーがカバーする重複領域のみ：効果の弱い方が適用されます"
 
 #: ../src/develop/blend_gui.c:8501
 msgid "product (smooth intersection)"
@@ -11858,7 +11856,7 @@ msgstr "差"
 
 #: ../src/develop/blend_gui.c:8507
 msgid "the bottom member, minus every member above it"
-msgstr "最下層のメンバーから、その上にあるすべてのメンバーを除外したもの"
+msgstr "最下層のメンバーから、その上にある全てのメンバーを除外したもの"
 
 #: ../src/develop/blend_gui.c:8510
 msgid "exclusion"
@@ -11889,8 +11887,8 @@ msgstr "a: 下位のメンバー群、b: 直上の次のメンバー"
 #, c-format
 msgid "a group cannot go inside itself, and groups nest at most %d deep"
 msgstr ""
-"グループを自分自身の中に含めることはできません。また、グループのネストは最"
-"大%d 階層までです"
+"グループを自分自身の中に含めることはできません。また、グループのネストは最大%d"
+"階層までです"
 
 #: ../src/develop/blend_gui.c:9626
 #, c-format
@@ -11902,7 +11900,7 @@ msgid ""
 "click to select it"
 msgstr ""
 "このマスク内で%d回使用しています\n"
-"このシェイプは共有されています：編集すると、使用されているすべての行を変更しま"
+"このシェイプは共有されています：編集すると、使用されている全ての行を変更しま"
 "す\n"
 "不透明度・反転・微調整は各行ごとに個別に保持されます\n"
 "クリックすると、選択します"
@@ -11917,8 +11915,8 @@ msgid ""
 "shift+click to give this module its own copy"
 msgstr ""
 "%sとリンクしています\n"
-"このAIオブジェクトは共有されています：編集すると、リンク先のすべてのモジュール"
-"で変更されます\n"
+"このAIオブジェクトは共有されています：編集すると、リンク先の全てのモジュールで"
+"変更されます\n"
 "不透明度・反転・微調整は個別です\n"
 "Shift+クリックすると、このモジュール専用の独立コピーを作成します"
 
@@ -11932,8 +11930,8 @@ msgid ""
 "shift+click to give this module its own copy"
 msgstr ""
 "%sとリンクしています\n"
-"このシェイプは共有されています：編集すると、リンク先のすべてのモジュールで変更"
-"されます\n"
+"このシェイプは共有されています：編集すると、リンク先の全てのモジュールで変更さ"
+"れます\n"
 "不透明度・反転・微調整は個別です\n"
 "Shift+クリックすると、このモジュール専用の独立コピーを作成します"
 
@@ -11983,7 +11981,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:10530
 msgid "the selection has nowhere else to go"
-msgstr "選択項目には他に移動できる場所がありません"
+msgstr "選択項目には他に移動することが出来る場所がありません"
 
 #: ../src/develop/blend_gui.c:10534
 msgid "move into"
@@ -12491,7 +12489,7 @@ msgid ""
 "the whole mask: every member is inside it\n"
 "click to select it: the refinements then act on the whole mask"
 msgstr ""
-"マスク全体：すべてのメンバーが内部に含まれます\n"
+"マスク全体：全てのメンバーが内部に含まれます\n"
 "クリックすると選択します：精緻化はマスク全体に適用されます"
 
 #: ../src/develop/blend_gui.c:16920
@@ -12523,7 +12521,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:16937
 #, c-format
 msgid "%s to delete it and every member in it, once selected"
-msgstr "選択後、%sでこのグループと内部のすべてのメンバーを削除します"
+msgstr "選択後、%sでこのグループと内部の全てのメンバーを削除します"
 
 #: ../src/develop/blend_gui.c:16950
 #, c-format
@@ -12612,8 +12610,8 @@ msgid ""
 "this removes every member from this module's mask, starting over from the "
 "default group layout. continue?"
 msgstr ""
-"このモジュールのマスクからすべてのメンバーを削除し、デフォルトのグループレイア"
-"ウトからやり直します。続行しますか？"
+"このモジュールのマスクから全てのメンバーを削除し、デフォルトのグループレイアウ"
+"トからやり直します。続行しますか？"
 
 #: ../src/develop/blend_gui.c:18556
 msgid "wrap in group"
@@ -12661,7 +12659,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:18570
 msgid "only a group can be simplified"
-msgstr "単純化できるのはグループのみです"
+msgstr "単純化することが出来るのはグループのみです"
 
 #: ../src/develop/blend_gui.c:18574
 msgid "restructure"
@@ -12695,14 +12693,14 @@ msgid ""
 "starting over from the default group layout"
 msgstr ""
 "マスクをリセットします：\n"
-"すべてのメンバーを削除し、デフォルトのグループレイアウトからやり直します"
+"全てのメンバーを削除し、デフォルトのグループレイアウトからやり直します"
 
 #: ../src/develop/blend_gui.c:18729
 msgid ""
 "delete this group and every member in it\n"
 "shift+click: empty it, keeping the group with its settings and name"
 msgstr ""
-"このグループと内部のすべてのメンバーを削除します\n"
+"このグループと内部の全てのメンバーを削除します\n"
 "Shift+クリックすると、設定と名前を維持したままグループを空にします"
 
 #: ../src/develop/blend_gui.c:18733
@@ -13749,7 +13747,7 @@ msgid ""
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>曲率</b>：スクロール　　<b>圧縮</b>：Shift+スクロール\n"
-"<b>回転</b>：クリック+ドラッグ　　 <b>不透明度</b>：Ctrl+スクロール (%d%%)"
+"<b>回転</b>：クリック+ドラッグ　　<b>不透明度</b>：Ctrl+スクロール (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1430
 #, c-format
@@ -13776,7 +13774,7 @@ msgstr "%sのコピー"
 #: ../src/develop/masks/masks.c:2483
 #, c-format
 msgid "Image ID=%d has insane circle mask: radius=%.3f border=%.3f"
-msgstr "画像ID=%dに無効な円マスクがあります：半径=%.3f 境界=%.3f"
+msgstr "画像ID=%dに無効な円マスクがあります：半径=%.3f境界=%.3f"
 
 #: ../src/develop/masks/masks.c:2500
 #, c-format
@@ -13931,8 +13929,7 @@ msgstr ""
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>選択</b>: オブジェクトをクリック　　<b>不透明度</b>：Ctrl +スクロール "
-"(%d%%)"
+"<b>選択</b>: オブジェクトをクリック　　<b>不透明度</b>：Ctrl+スクロール (%d%%)"
 
 #: ../src/develop/masks/object.c:2365
 msgid ""
@@ -14079,12 +14076,12 @@ msgstr "'%s'のマスクが見つかりません。アイコンをクリック�
 #: ../src/develop/masks/pixel_mask.c:1114
 #, c-format
 msgid "<b>edit</b>: click, <b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr "<b>編集</b>: クリック　　<b>不透明度</b>：Ctrl +スクロール（%d%%）"
+msgstr "<b>編集</b>: クリック　　<b>不透明度</b>：Ctrl+スクロール（%d%%）"
 
 #: ../src/develop/masks/pixel_mask.c:1121
 #, c-format
 msgid "<b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr "<b>不透明度</b>：Ctrl +スクロール（%d%%）"
+msgstr "<b>不透明度</b>：Ctrl+スクロール（%d%%）"
 
 #: ../src/develop/masks_gui_panel_host.c:94
 msgid "no mask"
@@ -14099,7 +14096,7 @@ msgstr ""
 "利用不可：ブレンドマスクパネルはフォーカス中のモジュールのマスクを表示します"
 "が、\n"
 "現在フォーカスされているモジュールがありません\n"
-"モジュールのヘッダーをクリックするとフォーカスします"
+"モジュールのヘッダをクリックするとフォーカスします"
 
 #. the panel always belongs to one module, so with no module focused there is
 #. nothing for it to show: say that, rather than leaving a button that looks
@@ -14158,7 +14155,7 @@ msgid ""
 "click a module's header to focus it"
 msgstr ""
 "フォーカス中のモジュールがありません：\n"
-"モジュールのヘッダーをクリックするとフォーカスします"
+"モジュールのヘッダをクリックするとフォーカスします"
 
 #: ../src/develop/masks_gui_panel_host.c:1573
 msgid "embedded within each module"
@@ -14197,7 +14194,7 @@ msgid ""
 "and takes its room from the canvas instead of floating over it.\n"
 "hiding the left or right panel it is docked next to hides it too"
 msgstr ""
-"有効にすると、マスクパネルはすべてのモジュールで、\n"
+"有効にすると、マスクパネルは全てのモジュールで、\n"
 "マスクの有無にかかわらず、ユーザーが折りたたむまで開いたままになります\n"
 "また、キャンバスの上に重なって浮かぶのではなく、キャンバスの領域を使って表示さ"
 "れます\n"
@@ -14223,7 +14220,7 @@ msgstr ""
 
 #: ../src/develop/masks_gui_panel_host.c:1621
 msgid "show focused module under header"
-msgstr "ヘッダーの下にフォーカス中のモジュールを表示"
+msgstr "ヘッダの下にフォーカス中のモジュールを表示"
 
 #: ../src/develop/masks_gui_panel_host.c:1622
 msgid ""
@@ -14231,7 +14228,7 @@ msgid ""
 "names the module whose mask the panel shows, and its\n"
 "instance name, if it has one"
 msgstr ""
-"有効（デフォルト）の場合、パネルヘッダーの下の行に、\n"
+"有効（デフォルト）の場合、パネルヘッダの下の行に、\n"
 "パネルが表示しているマスクのモジュール名とインスタンス名（存在する場合）を表示"
 "します"
 
@@ -14270,13 +14267,12 @@ msgstr[1] "プリセットの%d個のグループはネストが深すぎるた�
 msgid ""
 "the group drops every member it holds and becomes the preset, keeping its name"
 msgstr ""
-"グループは名前を維持したまま、保持しているすべてのメンバーを破棄してプリセット"
-"の内容になります"
+"グループは名前を維持したまま、保持している全てのメンバーを破棄してプリセットの"
+"内容になります"
 
 #: ../src/develop/masks_gui_presets.c:433
 msgid "the mask starts over as the preset, every member in it removed"
-msgstr ""
-"すべてのメンバーが削除され、マスクはプリセットとして最初からやり直します"
+msgstr "全てのメンバーが削除され、マスクはプリセットとして最初からやり直します"
 
 #: ../src/develop/masks_gui_presets.c:436
 msgid ""
@@ -14473,8 +14469,8 @@ msgstr ""
 "  - 何らかのデバイスのドライバのバグ。特定するためにコマンド`-d opencl'を加え"
 "てdarktableを起動してください\n"
 "  - 何らかのドライバが必要なイベント数をサポートしていない\n"
-"  - '全てのデバイスメモリを使用する'を選択した場合、ヘッドルームの設定が小さす"
-"ぎる"
+"  - 【全てのデバイスメモリを使用する】を選択した場合、ヘッドルームの設定が小さ"
+"すぎる"
 
 #: ../src/develop/pixelpipe_hb.c:4267
 #, c-format
@@ -14774,7 +14770,7 @@ msgstr "「クリック無し」ワークフローを試してみてください
 
 #: ../src/dtgtk/thumbtable.c:1415
 msgid "set module-specific preferences through module's menu"
-msgstr "モジュールのメニューでモジュール毎の設定をする"
+msgstr "モジュールのメニューでモジュールごとの設定をする"
 
 #: ../src/dtgtk/thumbtable.c:1416
 msgid "hover over an image and use keyboard shortcuts"
@@ -15298,12 +15294,12 @@ msgstr "$(MONTH) - 月"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:958
 #: ../src/gui/gtkentry.c:61
 msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr "$(MONTH.LONG) - 現在のロケールにもとづく月"
+msgstr "$(MONTH.LONG) - 現在のロケールにもとづく月名（フル表記）"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:959
 #: ../src/gui/gtkentry.c:60
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr "$(MONTH.SHORT) - 現在のロケールにもとづく月（略記）"
+msgstr "$(MONTH.SHORT) - 現在のロケールにもとづく月名（略記）"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:960
 #: ../src/gui/gtkentry.c:62
@@ -15799,7 +15795,7 @@ msgstr "自動傾き補正"
 #. visible name of script
 #: ../src/external/lua-scripts/official/auto_straighten.lua:109
 msgid "straighten an image in darkroom using image metadata"
-msgstr "画像メタデータを使用してdarkroomで画像の傾きを自動的に補正します"
+msgstr "画像メタデータを使用してダークルームで画像の傾きを自動的に補正します"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -16156,7 +16152,7 @@ msgstr "露出合成画像"
 #. set up some widgets, initialized from config
 #: ../src/external/lua-scripts/official/enfuse.lua:138
 msgid "exposure mu"
-msgstr "露出 mu"
+msgstr "露出mu"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:139
 msgid ""
@@ -16472,11 +16468,11 @@ msgstr "選択したタグリーダ%sは利用することが出来ません"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:488
 msgid "select burst roll images"
-msgstr "連射ロール画像を選択"
+msgstr "連写ロール画像を選択"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
 msgid "select burst roll image containers"
-msgstr "連射ロール画像コンテナを選択"
+msgstr "連写ロール画像コンテナを選択"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
 msgid "extract and group burst roll images with container"
@@ -16557,7 +16553,7 @@ msgid ""
 "the image file"
 msgstr ""
 "このコマンドの出力はtxtファイルに書き込まれます\n"
-"画像ファイルの$(FILE_NAME)を使用します"
+"画像ファイルには$(FILE_NAME)を使用します"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:82
 msgid "the command for txt sidecars looks bad. better check the preferences"
@@ -17440,7 +17436,7 @@ msgstr "選択からコレクションを作成する"
 
 #: ../src/external/lua-scripts/official/select_duplicates.lua:132
 msgid "create collection of selected duplicates"
-msgstr "選択した重複画像のコレクションを作成する"
+msgstr "選択した複製画像のコレクションを作成する"
 
 #: ../src/external/lua-scripts/official/select_duplicates.lua:239
 msgid "select duplicated images"
@@ -17876,7 +17872,7 @@ msgid ""
 "can be an absolute pathname or the tool may be in the PATH\n"
 "if not specified the system default will be used to open the PDF"
 msgstr ""
-"絶対パスを指定することも、PATH 内のツール名を指定することもできます\n"
+"絶対パスを指定することも、PATH内のツール名を指定することもできます\n"
 "指定されていない場合は、システムの既定のアプリでPDFを開きます"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:78
@@ -18568,7 +18564,7 @@ msgstr "ページ"
 #. configure options
 #: ../src/external/lua-scripts/tools/script_manager.lua:1593
 msgid "scripts per page"
-msgstr "ページ毎のスクリプト"
+msgstr "ページごとのスクリプト"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1594
 msgid "select number of start/stop buttons to display"
@@ -19084,11 +19080,11 @@ msgstr "クリックすると、ショートカットの設定を開きます"
 
 #: ../src/gui/accelerators.c:1340
 msgid "ctrl+click to add to quick access panel\n"
-msgstr "Ctrl +クリックすると、クイックアクセスパネルに追加します\n"
+msgstr "Ctrl+クリックすると、クイックアクセスパネルに追加します\n"
 
 #: ../src/gui/accelerators.c:1341
 msgid "ctrl+click to remove from quick access panel\n"
-msgstr "Ctrl +クリックすると、クイックアクセスパネルから削除します\n"
+msgstr "Ctrl+クリックすると、クイックアクセスパネルから削除します\n"
 
 #: ../src/gui/accelerators.c:1342
 msgid "scroll to change default speed"
@@ -19197,8 +19193,8 @@ msgstr ""
 "キーを押し、修飾キー（Ctrl／Shift／Alt）と任意で組み合わせてショートカットを定"
 "義します\n"
 "キーは2度または3度押すことが出来ます。その際は最後に長押ししてください\n"
-"キーが押されているあいだ、マウスのボタンの組み合わせて（2度／3度／長押し）ク"
-"リックすることが出来ます\n"
+"キーが押されているあいだ、マウスボタンを組み合わせて（2度／3度／長押し）クリッ"
+"クすることが出来ます\n"
 "更にキー（および修飾キーと／またはボタン）を押し続けるあいだに、スクロールとマ"
 "ウスの移動を加えることが出来ます\n"
 "接続されているデバイスは物理的コントローラーを用いてキーまたは移動を送信するこ"
@@ -20283,7 +20279,7 @@ msgstr ""
 "GUI全般の解像度を調整し、コントロールやボタン、ラベルなどのスケールを変更しま"
 "す\n"
 "値を上げるとGUIが大きく見えるようになり、値を下げるとウィンドウ内により多くの"
-"コンテントが表示されます\n"
+"コンテンツが表示されます\n"
 "-1に設定すると、システムによって定義された解像度を使用します\n"
 "ほとんどのシステムにおいてデフォルト値は96DPIです\n"
 "（要再起動）"
@@ -20304,7 +20300,8 @@ msgstr "選択したテーマを以下のCSS調整にしたがって修正する
 
 #: ../src/gui/preferences.c:667
 msgid "modify theme with CSS keyed below (saved to user.css)"
-msgstr "以下で調整されたCSSにしたがってテーマを修正します"
+msgstr ""
+"以下で調整されたCSSにしたがってテーマを修正します（user.cssに保存されます）"
 
 #: ../src/gui/preferences.c:690
 msgctxt "usercss"
@@ -20873,7 +20870,7 @@ msgstr "選択したモデルをダウンロードまたは更新します"
 #. import from file button
 #: ../src/gui/preferences_ai.c:2847
 msgid "import from file…"
-msgstr "ファイルからインポート..."
+msgstr "ファイルからインポート…"
 
 #: ../src/gui/preferences_ai.c:2849
 msgid "install a model from a local .dtmodel file"
@@ -21541,7 +21538,7 @@ msgstr ""
 "画像をタイル化してセグメントにします\n"
 "\n"
 "エンコードの速度が上がりますが、ファイルサイズが大きくなります。クオリティの低"
-"下は無視できる程度です"
+"下は無視出来る程度です"
 
 #: ../src/imageio/format/avif.c:1016
 msgid "the compression for the image"
@@ -21839,7 +21836,7 @@ msgid ""
 msgstr ""
 "PDFの用紙のサイズ\n"
 "リストから選択、または\"<幅> [単位] x <高さ> <単位>\"\n"
-"例：210 mm x 2.97 cm"
+"例：210 mm x 29.7 cm"
 
 #. orientation
 #: ../src/imageio/format/pdf.c:617
@@ -22131,7 +22128,7 @@ msgstr "スキップ"
 #: ../src/imageio/storage/disk.c:435
 #, c-format
 msgid "filename pattern `%s' expands to too many files"
-msgstr "ファイル名パターン`%s' の展開先ファイルが多すぎます"
+msgstr "ファイル名ひな型`%s'の展開先ファイルが多すぎます"
 
 #: ../src/imageio/storage/disk.c:468
 #, c-format
@@ -22259,7 +22256,7 @@ msgid ""
 msgstr ""
 "サーバー名\n"
 "デフォルトのプロトコルはhttps\n"
-"必要な場合安全でないプロトコルhttp：//を明示的に指定します"
+"必要な場合安全でないプロトコルhttp://を明示的に指定します"
 
 #: ../src/imageio/storage/piwigo.c:1084 ../src/imageio/storage/piwigo.c:1187
 msgid "user"
@@ -22352,7 +22349,7 @@ msgstr "メタデータを更新"
 
 #: ../src/imageio/storage/piwigo.c:1292
 msgid "not logged in to Piwigo server!"
-msgstr "Piwigo にログインしていません！"
+msgstr "Piwigoにログインしていません！"
 
 #: ../src/imageio/storage/piwigo.c:1387
 msgid "cannot create a new Piwigo album!"
@@ -22360,11 +22357,11 @@ msgstr "新しいPiwigoアルバムを作成することが出来ません！"
 
 #: ../src/imageio/storage/piwigo.c:1406
 msgid "could not update to Piwigo!"
-msgstr "Piwigo に更新することが出来ませんでした！"
+msgstr "Piwigoに更新することが出来ませんでした！"
 
 #: ../src/imageio/storage/piwigo.c:1422
 msgid "could not upload to Piwigo!"
-msgstr "Piwigo にアップロードすることが出来ませんでした！"
+msgstr "Piwigoにアップロードすることが出来ませんでした！"
 
 #: ../src/imageio/storage/piwigo.c:1451
 #, c-format
@@ -22487,7 +22484,7 @@ msgid ""
 "mid-gray to mid-gray mapping"
 msgstr ""
 "選択した領域の輝度の平均値を用いて、ミドルグレーに対するピボットを設定します\n"
-"出力はデフォルトの中間グレー対中間グレーマッピングに基づいて調整されます"
+"出力はデフォルトのミドルグレー対ミドルグレーマッピングに基づいて調整されます"
 
 #: ../src/iop/agx.c:2010
 msgid "slope of the linear section around the pivot"
@@ -22524,7 +22521,7 @@ msgstr ""
 " - ホワイトの相対露出値を上げる\n"
 " - カーブYガンマ（詳細カーブパラメータ内）を上げる\n"
 "\n"
-"上記の設定の効果を確認するには、'カーブを表示'セクションを開いてください"
+"上記の設定の効果を確認するには、【カーブを表示】セクションを開いてください"
 
 #: ../src/iop/agx.c:2034
 msgid ""
@@ -22556,7 +22553,7 @@ msgstr ""
 " - ブラックの相対露出値を下げる（より負の値にする）\n"
 " - カーブYガンマ（詳細カーブパラメータ内）を下げる\n"
 "\n"
-"上記の設定の効果を確認するには、'カーブを表示'セクションを開いてください"
+"上記の設定の効果を確認するには、【カーブを表示】セクションを開いてください"
 
 #: ../src/iop/agx.c:2058
 msgid "decrease or increase contrast and brightness"
@@ -22785,7 +22782,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2512
 msgid "shift the red primary towards yellow (+) or magenta (-)"
-msgstr "赤プライマリを黄（＋）またはマゼンタ（−）へずらす"
+msgstr "赤プライマリを黄（+）またはマゼンタ（−）へずらす"
 
 #: ../src/iop/agx.c:2518
 msgid "increase to desaturate greens in highlights faster"
@@ -22795,7 +22792,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2525
 msgid "shift the green primary towards cyan (+) or yellow (-)"
-msgstr "緑プライマリをシアン（＋）または黄色（−）へずらす"
+msgstr "緑プライマリをシアン（+）または黄色（−）へずらす"
 
 #: ../src/iop/agx.c:2531
 msgid "increase to desaturate blues in highlights faster"
@@ -22805,7 +22802,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2538
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
-msgstr "青プライマリをマゼンタ（＋）またはシアン（−）へずらす"
+msgstr "青プライマリをマゼンタ（+）またはシアン（−）へずらす"
 
 #: ../src/iop/agx.c:2544
 msgctxt "section"
@@ -23036,7 +23033,7 @@ msgstr "パースペクティブ補正をするレンズのモデル：汎用ま
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "レンズの焦点距離\n"
-"exifデータに記録されている値をデフォルトで設定します"
+"EXIFデータに記録されている値をデフォルトで設定します"
 
 #: ../src/iop/ashift.c:6175
 msgid ""
@@ -23044,7 +23041,7 @@ msgid ""
 "available, manual setting is often required"
 msgstr ""
 "カメラセンサーのクロップファクター\n"
-"exifデータに記録されている値をデフォルトで設定します\n"
+"EXIFデータに記録されている値をデフォルトで設定します\n"
 "多くの場合、手動で設定する必要があります"
 
 #: ../src/iop/ashift.c:6179
@@ -24075,9 +24072,9 @@ msgid ""
 "try changing guide channel if you\n"
 "have artifacts."
 msgstr ""
-"他のチャネルを補正するための基準として使用されるチャンネル\n"
+"他のチャンネルを補正するための基準として使用されるチャンネル\n"
 "ぼやけているチャンネルがある場合、最もシャープなチャンネルを使用してください\n"
-"アーティファクトがある場合、ガイドチャネルを変更してみてください"
+"アーティファクトがある場合、ガイドチャンネルを変更してみてください"
 
 #: ../src/iop/cacorrectrgb.c:923
 msgid "increase for stronger correction"
@@ -24452,7 +24449,7 @@ msgid ""
 "in color calibration"
 msgstr ""
 "カラーキャリブレーションの「ホワイトバランスモジュールから」イルミナントは、\n"
-"「カラーキャリブレーション用にデータを準備」にチェックが入っている場合にの"
+"【カラーキャリブレーション用にデータを準備】にチェックが入っている場合にの"
 "み、\n"
 "このモジュールに追従します。チェックがない場合は、\n"
 "「撮影時の設定」イルミナントと同じ結果になります\n"
@@ -24474,7 +24471,7 @@ msgid ""
 "illuminant here"
 msgstr ""
 "このイルミナントは、ホワイトバランス側で\n"
-"「カラーキャリブレーション用にデータを準備」にチェックが入っている場合にの"
+"【カラーキャリブレーション用にデータを準備】にチェックが入っている場合にの"
 "み、\n"
 "ホワイトバランスに追従します\n"
 "チェックがない場合は、「撮影時の設定」イルミナントと同じ結果になります\n"
@@ -24514,7 +24511,7 @@ msgid ""
 msgstr ""
 "カラーキャリブレーションモジュールが有効になっていて、すでに色順応を提供してい"
 "ます\n"
-"ここで「カラーキャリブレーション用にデータを準備」にチェックを入れるか、\n"
+"ここで【カラーキャリブレーション用にデータを準備】にチェックを入れるか、\n"
 "ホワイトバランスをカメラのリファレンス（D65）に設定するか、\n"
 "カラーキャリブレーションの色順応を無効にしてください\n"
 "係数をD65のスクリーンで測定してカメラのリファレンスの代わりにしている場合は無"
@@ -24536,7 +24533,7 @@ msgid ""
 msgstr ""
 "ホワイトバランスモジュールがカメラのリファレンスイルミナントを使用していないた"
 "め、ここでの色順応で問題が起こります\n"
-"そちらで「カラーキャリブレーション用にデータを準備」にチェックを入れるか、\n"
+"そちらで【カラーキャリブレーション用にデータを準備】にチェックを入れるか、\n"
 "リファレンスに設定するか、\n"
 "ここで色順応を無効にしてください\n"
 "係数をD65のスクリーンで測定してカメラのリファレンスの代わりにしている場合は無"
@@ -24707,7 +24704,7 @@ msgstr ""
 "・ノンリニアブラッドフォード（1985年）はブラッドフォード方式の原型であり、リニ"
 "ア方式より良い結果を生み出すことがありますが、信頼性に欠けます\n"
 "・XYZはXYZ空間の単純なスケーリングです。概して推奨されません\n"
-"・無効を選ぶと順応を無効にし、パイプラインの作業するRGB空間を使用します"
+"・無効を選ぶと順応を無効にし、パイプラインが作業しているRGB空間を使用します"
 
 #: ../src/iop/channelmixerrgb.c:4875
 msgid ""
@@ -24766,7 +24763,7 @@ msgstr ""
 "補正：入力の色がターゲットへとマッピングされるように\n"
 "　　　自動的にイルミナントを調整します\n"
 "計測：入力の色がCATによってどのようにマッピングされるかを表示します\n"
-"　　　ターゲットをサンプルを抽出するために使用することが出来ます"
+"　　　ターゲットをサンプリングするために使用することが出来ます"
 
 #: ../src/iop/channelmixerrgb.c:4945 ../src/iop/exposure.c:1330
 msgid "correction"
@@ -24961,8 +24958,8 @@ msgid ""
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
 "パッチの半径を小さくすると、より中心に近い部分を選択します\n"
-"パースペクティブ補正がうまく機能していない時に有用です\n"
-"パッチの枠の影がパッチの縁にあります"
+"パースペクティブ補正がうまく機能していない時や、\n"
+"パッチの枠がパッチの縁に影を落としている場合に有用です"
 
 #: ../src/iop/channelmixerrgb.c:5112
 msgid "the delta E is using the CIE 2000 formula"
@@ -25178,7 +25175,7 @@ msgstr ""
 "アスペクト比を設定してください\n"
 "正方形から離れていくようにリストに並べられています\n"
 "カスタム設定のアスペクト比を入力するには、コンボボックスを開いて比をx:yまたは"
-"少数でタイプしてください"
+"小数で入力してください"
 
 #: ../src/iop/clipping.c:2241 ../src/iop/crop.c:1478
 msgid "margins"
@@ -25210,7 +25207,7 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>サイズを変更する</b>：ドラッグ　　 <b>アスペクト比を維持する</b>：Shift+ド"
+"<b>サイズを変更する</b>：ドラッグ　　<b>アスペクト比を維持する</b>：Shift+ド"
 "ラッグ\n"
 "<b>真っ直ぐにする</b>：右ドラッグ"
 
@@ -25228,7 +25225,7 @@ msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>適用する</b>：クリック <tt>ok</tt>　 <b>シンメトリーを切り替える</b>：ク"
+"<b>適用する</b>：クリック <tt>ok</tt>　　<b>シンメトリーを切り替える</b>：ク"
 "リック ꝏ\n"
 "<b>線／コントロールポイントを移動する</b>：ドラッグ"
 
@@ -25771,11 +25768,11 @@ msgstr "しきい値"
 
 #: ../src/iop/colorbalancergb.c:2063
 msgid "peak white luminance value used to normalize the power function"
-msgstr "べき（パワー）関数を正規化するために用いるピークとなる白の輝度値"
+msgstr "冪（パワー）関数を正規化するために用いるピークとなる白の輝度値"
 
 #: ../src/iop/colorbalancergb.c:2069
 msgid "peak gray luminance value used to normalize the power function"
-msgstr "べき（パワー）関数を正規化するために用いるピークとなるグレーの輝度値"
+msgstr "冪（パワー）関数を正規化するために用いるピークとなるグレーの輝度値"
 
 #: ../src/iop/colorbalancergb.c:2071
 msgctxt "section"
@@ -25825,7 +25822,7 @@ msgstr "プロファイルにより定義、Lab"
 
 #: ../src/iop/colorchecker.c:308
 msgid "it8 skin tones"
-msgstr "IT8 スキントーン"
+msgstr "IT8スキントーン"
 
 #: ../src/iop/colorchecker.c:474
 msgid "expanded color checker"
@@ -26009,9 +26006,9 @@ msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"ドラッグで線を描いてください\n"
-"白点はハイライト、黒点はシャドウを意味します\n"
-"彩度を変更するにはマウスホイールを使用します"
+"分割トーニングのため、線の両端の点をドラッグします\n"
+"明るい点はハイライト、暗い点はシャドウを表します\n"
+"マウスホイールで彩度を変更します"
 
 #: ../src/iop/colorcorrection.c:271
 msgid "set the global saturation"
@@ -26125,9 +26122,9 @@ msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
-"ガイデッドフィルタクロマ分析（色相）の範囲を設定します\n"
-"広範囲にわたる色相の局所的な不一致や強いクロマノイズが存在するばあい、値を上げ"
-"てください"
+"ガイデッドフィルタクロマ分析（色相）の半径を設定します\n"
+"広範囲にわたる色相の局所的な不一致や強いクロマノイズが存在する場合、値を上げて"
+"ください"
 
 #: ../src/iop/colorequal.c:3943
 msgid ""
@@ -26147,7 +26144,7 @@ msgid ""
 msgstr ""
 "ガイデッドフィルタの彩度（サチュレーション）のしきい値を設定します\n"
 " - 値を下げると、低色度の領域における変化が生じます\n"
-" - 値を上げると、高色度の領域における変化を抑制します\n"
+" - 値を上げると、変化を高色度の領域に限定します\n"
 "    また、低彩度の領域におけるコントラストを強め、明るさ（ブライトネス）の変化"
 "は防ぎます"
 
@@ -26164,7 +26161,7 @@ msgstr ""
 
 #: ../src/iop/colorequal.c:3962
 msgid "set radius of applied parameters for the guided filter"
-msgstr "ガイデッドフィルタに適用するパラメータの範囲を設定します"
+msgstr "ガイデッドフィルタに適用するパラメータの半径を設定します"
 
 #: ../src/iop/colorequal.c:3965
 msgid ""
@@ -26471,7 +26468,7 @@ msgid ""
 "the effect is weighted by the pixel's proximity to this node\n"
 "and respects the 'neutral hue protection' setting."
 msgstr ""
-"この調和ノード付近の色の彩度定数\n"
+"この調和ノード付近の色の彩度の倍率\n"
 "100%：変更なし\n"
 "100%未満：彩度を下げます\n"
 "100%より上：彩度を上げます\n"
@@ -26507,7 +26504,7 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 RGB!"
 msgstr ""
 "カラースペース`%s'からマトリクスを抽出することが出来ません\n"
-"Rec2020 RGB に置き換えられます！"
+"Rec2020 RGBに置き換えられます！"
 
 #: ../src/iop/colorin.c:1829
 #, c-format
@@ -26521,8 +26518,8 @@ msgstr "入力プロファイルを生成することが出来ませんでした
 #: ../src/iop/colorin.c:1977
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
-"入力プロファイルがサポートされていません。リニアRec709 RGB に置き換えられてい"
-"ます！"
+"入力プロファイルがサポートされていません。リニアRec709 RGBに置き換えられていま"
+"す！"
 
 #: ../src/iop/colorin.c:2297
 msgid "external ICC profiles"
@@ -26676,7 +26673,7 @@ msgstr "ノンリニア、RGBあるいはLab、ディスプレイ参照"
 #: ../src/iop/colorout.c:1212
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr ""
-"ソフトプルーフのプロファイルが見つかりません。 sRGB に置き換えられています！"
+"ソフトプルーフのプロファイルが見つかりません。 sRGBに置き換えられています！"
 
 #: ../src/iop/colorout.c:1218
 msgid "missing output profile has been replaced by sRGB!"
@@ -26684,8 +26681,7 @@ msgstr "出力カラープロファイルが見つかりません。 sRGBに置�
 
 #: ../src/iop/colorout.c:1248
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr ""
-"出力プロファイルがサポートされていません。 sRGB に置き換えられています！"
+msgstr "出力プロファイルがサポートされていません。 sRGBに置き換えられています！"
 
 #: ../src/iop/colorout.c:1493
 msgid "output intent"
@@ -26770,11 +26766,11 @@ msgstr "置き換える色を探す範囲（輝度）"
 
 #: ../src/iop/colorreconstruction.c:1243
 msgid "if and how to give precedence to specific replacement colors"
-msgstr "置き換える色を特定するうえでの優先事項"
+msgstr "置き換えに使う色を優先するかどうか、およびその方法"
 
 #: ../src/iop/colorreconstruction.c:1244
 msgid "the hue tone which should be given precedence over other hue tones"
-msgstr "優先される色相トーン"
+msgstr "他の色相トーンより優先する色相トーン"
 
 #: ../src/iop/colorreconstruction.c:1246 ../src/iop/demosaic.c:2228
 #: ../src/iop/highlights.c:1435
@@ -26933,7 +26929,7 @@ msgid ""
 msgstr ""
 "ディテールサイズごとに適用される合計ゲイン\n"
 "実線の縦線：ベースディテールレベル\n"
-"破線の縦線：使用中のフィルターインスタンス（ピラミッドレベル）"
+"破線の縦線：使用中のフィルタインスタンス（ピラミッドレベル）"
 
 #: ../src/iop/contrastntexture.c:1156
 msgid ""
@@ -26945,15 +26941,15 @@ msgid ""
 msgstr ""
 "ハイライト、シャドウ、粗いディテールに使用される詳細レベルを調整します\n"
 "高い値 = より細かいディテールのコントラストを強調します\n"
-"低い値 = より粗いですますものコントラストを強調します\n"
-"マスクボタンを押すと、シャドウ／ハイライトに使用されるローパスフィルター結果を"
-"プレビューします"
+"低い値 = より粗いディテールのコントラストを強調します\n"
+"マスクボタンを押すと、シャドウ／ハイライトに使用されるローパスフィルタ結果をプ"
+"レビューします"
 
 #: ../src/iop/contrastntexture.c:1161
 msgid ""
 "preview the low pass filter result used for shadows(blue)/highlights(yellow)."
 msgstr ""
-"シャドウ（青）／ハイライト（黄）に使用されるローパスフィルターの結果をプレ"
+"シャドウ（青）／ハイライト（黄）に使用されるローパスフフィルタの結果をプレ"
 "ビューします"
 
 #. Details boost sliders
@@ -27017,7 +27013,7 @@ msgid ""
 "higher = suppress halos at the expense of details around edges.\n"
 "lower = allow more halos to get more local contrast and details."
 msgstr ""
-"フィルターのハロ制御を調整します\n"
+"フィルタのハロ制御を調整します\n"
 "高い値 = エッジ周辺のディテールを犠牲にしてハロを抑えます\n"
 "低い値 = ハロを許容することで、ローカルコントラストとディテールをより多く得る"
 "ことが出来ます"
@@ -27065,7 +27061,8 @@ msgstr "トリミングの向きを縦／横で反転します"
 #: ../src/iop/crop.c:1906
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>サイズ変更</b>：ドラッグ　　 <b>アスペクト比を維持する</b>：Shift+ドラッグ"
+"<b>サイズを変更する</b>：ドラッグ　　<b>アスペクト比を維持する</b>：Shift+ド"
+"ラッグ"
 
 #: ../src/iop/crop.c:1913
 msgid ""
@@ -27245,8 +27242,8 @@ msgid ""
 "ringing especially when used with a large 'iterations' setting.\n"
 "set it to zero for presets that should enforce auto calculation"
 msgstr ""
-"キャプチャシャープ化の半径は、カメラセンサー、場合によってはローパスフィルター"
-"およびレンズの全体的なガウス型ぼかしを反映するように設定してください\n"
+"キャプチャシャープ化の半径は、カメラセンサー、場合によってはローパスフィルタお"
+"よびレンズの全体的なガウス型ぼかしを反映するように設定してください\n"
 "値を大きくしすぎると、特に'反復'を大きくした場合に、ハロやリンギングのような"
 "アーティファクトが発生します\n"
 "自動計算を強制するプリセットでは0に設定してください"
@@ -27274,7 +27271,7 @@ msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
 msgstr ""
-"画像の隅のシャープ化の範囲をさらに増加させます\n"
+"画像の隅のシャープ化の半径をさらに増加させます\n"
 "画像のシャープな中央部は影響されません"
 
 #: ../src/iop/demosaic.c:2217
@@ -27457,7 +27454,7 @@ msgid ""
 msgstr ""
 "アルゴリズム内で使用される色の表現方法\n"
 "RGBはRGBチャンネルを分離したままにします\n"
-"Y0U0V0はRGBチャネルを結合し、クロマノイズと輝度ノイズを別々に除去します"
+"Y0U0V0はRGBチャンネルを結合し、クロマノイズと輝度ノイズを別々に除去します"
 
 #: ../src/iop/denoiseprofile.c:3803
 msgid ""
@@ -27880,7 +27877,7 @@ msgid ""
 msgstr ""
 "エッジの増幅とペナルティの間の分散のしきい値を設定します\n"
 "滑らかな面のピクセルをブーストさせたい場合、値を下げます\n"
-"滑らかな面にノイズが見られる場合、あるいは明度と比べて暗部が過剰にシャープ化さ"
+"滑らかな面にノイズが見られる場合、あるいは明部と比べて暗部が過剰にシャープ化さ"
 "れているように見える場合、値を上げます"
 
 #: ../src/iop/diffuse.c:1944
@@ -28056,7 +28053,7 @@ msgstr "選択した領域を利用して露出調整を設定します"
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "ヒストグラム内のどの箇所でフリッカー除去のための測定をするか\n"
-"例えば、50% は中央"
+"例えば、50%は中央"
 
 # 処理された画像でのターゲットとなる露光レベルを露出オーバーを基準としたEV値で設定する。
 #: ../src/iop/exposure.c:1277
@@ -28325,7 +28322,7 @@ msgid ""
 "may reinforce chromatic aberrations.\n"
 "you need to manually tune the saturation when using this mode."
 msgstr ""
-"元の色が保持されていることを確認してください\n"
+"元の色が確実に保持されるようにします\n"
 "色収差を強める可能性があります\n"
 "このモードを使用する場合、手動で彩度を調整する必要があります"
 
@@ -28716,7 +28713,7 @@ msgstr ""
 "有効にすると、ミドルグレーのカスタム設定値を入力出来るようにします\n"
 "たいていの場合非推奨です\n"
 "これを利用せずに、露出モジュールで画像全体の露出を修正してください\n"
-"無効にすると、標準の18.45%ミドルグレーの使用します"
+"無効にすると、標準の18.45%ミドルグレーを使用します"
 
 #: ../src/iop/filmicrgb.c:4607
 msgid ""
@@ -28865,7 +28862,7 @@ msgstr ""
 
 #: ../src/iop/globaltonemap.c:648
 msgid "the target light for tonemapper specified as cd/m2"
-msgstr "トーンマップのターゲット明度を cd/m2 で指定します"
+msgstr "トーンマップのターゲット明度を cd/m2で指定します"
 
 #: ../src/iop/graduatednd.c:64
 msgid "neutral gray | ND2 (soft)"
@@ -29516,7 +29513,7 @@ msgstr "どの補正が実際に行われたか"
 
 #: ../src/iop/lens.cc:5075
 msgid "manual vignette correction"
-msgstr "手動ビネット補正"
+msgstr "手動周辺減光補正"
 
 #: ../src/iop/lens.cc:5079
 msgid "additional manually controlled optical vignetting correction"
@@ -29524,7 +29521,7 @@ msgstr "手動の光学的周辺減光補正の追加"
 
 #: ../src/iop/lens.cc:5082
 msgid "vignette"
-msgstr "ビネット"
+msgstr "周辺減光"
 
 #: ../src/iop/lens.cc:5086
 msgid "amount of the applied optical vignetting correction"
@@ -29536,11 +29533,11 @@ msgstr "適用した光学的周辺減光補正のマスクを表示"
 
 #: ../src/iop/lens.cc:5094
 msgid "radius of uncorrected center"
-msgstr "無補正の中央部の範囲"
+msgstr "無補正の中央部の半径"
 
 #: ../src/iop/lens.cc:5100
 msgid "steepness of the correction effect outside of radius"
-msgstr "範囲外における補正の効果の傾き"
+msgstr "半径の外側における補正効果の傾き"
 
 #: ../src/iop/levels.c:112
 msgid "this module is deprecated. please use the RGB levels module instead."
@@ -29595,7 +29592,7 @@ msgstr "白 パーセント値"
 
 #: ../src/iop/liquify.c:290
 msgid "liquify"
-msgstr "液化"
+msgstr "歪み（リキファイ）"
 
 #: ../src/iop/liquify.c:295
 msgid "distort parts of the image"
@@ -29691,8 +29688,8 @@ msgid ""
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
 "right-click"
 msgstr ""
-"<b>移動</b>：クリックしてドラッグ　　 <b>境界ぼかしのコントロールの表示／非表"
-"示</b>：クリック\n"
+"<b>移動</b>：クリックしてドラッグ　　<b>境界ぼかしのコントロールの表示／非表示"
+"</b>：クリック\n"
 "<b>自動スムーズ、尖点、平滑、シンメトリー</b>：Ctrl+クリック　　<b>削除</b>："
 "右クリック"
 
@@ -29868,7 +29865,7 @@ msgstr "png LUTにバッファを割り当てる際にエラーが発生しま�
 #: ../src/iop/lut3d.c:781
 #, c-format
 msgid "error - invalid cube file: %s"
-msgstr "エラー：cube ファイル%sは無効です"
+msgstr "エラー：cubeファイル%sは無効です"
 
 #: ../src/iop/lut3d.c:795
 msgid "DOMAIN MIN other than 0 is not supported"
@@ -29903,7 +29900,7 @@ msgstr "エラー：cube LUTの行数%dは正しくありません。%dである
 #: ../src/iop/lut3d.c:889
 #, c-format
 msgid "warning - cube LUT has %d values out of range [0,1]"
-msgstr "警告：cube LUTは範囲[0,1]を%d出ています"
+msgstr "警告：cube LUTの%d個の値が範囲[0,1]の外にあります"
 
 #: ../src/iop/lut3d.c:915
 #, c-format
@@ -30126,11 +30123,11 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:909
 msgid "select color of shadows from a swatch"
-msgstr "色見本からシャドーの色を選択してください"
+msgstr "色見本からシャドウの色を選択してください"
 
 #: ../src/iop/negadoctor.c:913
 msgid "pick shadows color from image"
-msgstr "画像からシャドーの色を抽出"
+msgstr "画像からシャドウの色を抽出"
 
 #: ../src/iop/negadoctor.c:916
 msgctxt "section"
@@ -30149,7 +30146,7 @@ msgid ""
 "the highlights illuminant white balance will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
-"黒が本当に無彩色になるように、シャドーの色かぶりを補正します\n"
+"黒が本当に無彩色になるように、シャドウの色かぶりを補正します\n"
 "ハイライトのイルミナントのホワイトバランスより前にこの値を設定すると、\n"
 "困難なケースにおいて、画像全体のホワイトバランスを回復しやすくなります"
 
@@ -30890,7 +30887,7 @@ msgid ""
 "bottom line indicates that the scale has shapes on it"
 msgstr ""
 "上のスライダーは、スケールの統合を始める位置を調整します\n"
-"下のスライダはスケールの数を調整します\n"
+"下のスライダーはスケールの数を調整します\n"
 "点は現在選択中のスケールを示します\n"
 "上の線は現在のズームレベルで見ることの出来るスケールを示します\n"
 "下の線は、スケールにシェイプがあることを示します"
@@ -31001,7 +30998,7 @@ msgstr "シェイプ"
 #: ../src/iop/retouch.c:3972 ../src/iop/retouch.c:4803
 #, c-format
 msgid "max scale is %i for this image size"
-msgstr "この画像サイズで使用できる最大のスケールは%iです"
+msgstr "この画像サイズで使用することが出来る最大のスケールは%iです"
 
 #: ../src/iop/rgbcurve.c:119
 msgid "rgb curve"
@@ -31114,7 +31111,7 @@ msgstr "彩度カーブ"
 
 #: ../src/iop/satcurvergb.c:185
 msgid "sat vs sat|saturation versus saturation|brilliance curve|satcurve"
-msgstr "彩度 vs 彩度|彩度対彩度|ブリリアンスカーブ|彩度カーブ"
+msgstr "彩度vs彩度|彩度対彩度|ブリリアンスカーブ|彩度カーブ"
 
 #: ../src/iop/satcurvergb.c:190
 msgid "remap saturation and brilliance with curves"
@@ -31366,7 +31363,7 @@ msgstr ""
 msgid ""
 "optional correction of the hue twist introduced by\n"
 "the per-channel processing method."
-msgstr "チャンネル毎の処理によって引き起こされる色相のねじれの補正"
+msgstr "チャンネルごとの処理によって引き起こされる色相のねじれの補正"
 
 #: ../src/iop/sigmoid.c:970
 msgid "set custom primaries"
@@ -31407,7 +31404,7 @@ msgstr "青のプライマリを回転する"
 
 #: ../src/iop/sigmoid.c:1008
 msgid "recover some of the original purity after the inset"
-msgstr "差し込み後に元の純度を幾らか回復する"
+msgstr "インセット後に元の純度をいくらか回復します"
 
 #: ../src/iop/sigmoid.c:1012
 msgid "display luminance"
@@ -31617,14 +31614,16 @@ msgid ""
 "print paper. \"auto\" follows the film stock's own target print,\n"
 "currently %s. picking a paper pins it until you select auto again."
 msgstr ""
-"印画紙。\"自動\"を選ぶとフィルムストック自体が想定する印画紙に従います（現在："
+"印画紙。「自動」を選ぶとフィルムストック自体が想定する印画紙に従います（現在："
 "%s）\n"
-"特定の印画紙を選ぶと、再度\"自動\"を選ぶまでその設定に固定されます"
+"特定の印画紙を選ぶと、再度「自動」を選ぶまでその設定に固定されます"
 
 #. no print stock in the pack at all -- the list below reads "(none)"
 #: ../src/iop/spektrafilm.c:4334
 msgid "print paper. \"auto\" follows the film stock's own target print."
-msgstr "印画紙。\"自動\"を選ぶとフィルムストック自体が想定する印画紙に従います"
+msgstr ""
+"印画紙\n"
+"「自動」を選ぶとフィルムストック自体が想定する印画紙に従います"
 
 #: ../src/iop/spektrafilm.c:4440
 #, c-format
@@ -31693,7 +31692,7 @@ msgstr "データパックがインストールされました"
 
 #: ../src/iop/spektrafilm.c:4906
 msgid "the installed data packs are up to date"
-msgstr "インストール済みのデータパックはすべて最新です"
+msgstr "インストール済みのデータパックは全て最新です"
 
 #: ../src/iop/spektrafilm.c:4910 ../src/iop/spektrafilm.c:6381
 msgid "check for data pack updates"
@@ -31846,8 +31845,8 @@ msgid ""
 "\"auto\" uses the paper named in the film stock's profile."
 msgstr ""
 "印画紙\n"
-"\"なし\"は現像済みフィルムを直接表示します\n"
-"\"自動\"はフィルムストックのプロファイルで指定された印画紙を使用します"
+"「なし」は現像済みフィルムを直接表示します\n"
+"「自動」はフィルムストックのプロファイルで指定された印画紙を使用します"
 
 #: ../src/iop/spektrafilm.c:6157
 msgid "print paper"
@@ -31941,7 +31940,7 @@ msgid ""
 "shoulder without shifting mid-gray (0 = off)."
 msgstr ""
 "高濃度領域での現像液の消耗：\n"
-"中間グレーをずらすことなく、ハイライトのショルダーをロールオフします（0＝オ"
+"ミドルグレーをずらすことなく、ハイライトのショルダーをロールオフします（0＝オ"
 "フ）"
 
 #. One mechanism, six controls, and the two spread values read as sharpening
@@ -32029,9 +32028,8 @@ msgid ""
 "light diverted into the diffusion halo, in filter stops (1/8 = 0.125;\n"
 "0 = off). glows the highlights, lifts shadows and lowers contrast."
 msgstr ""
-"拡散ハロに振り向けられる光の量（フィルターのストップ単位、1/8＝0.125、0＝オ"
-"フ）\n"
-"ハイライトがグローし、シャドウが持ち上がってコントラストが下がります。"
+"拡散ハロに振り向けられる光の量（フィルタの段単位、1/8＝0.125、0＝オフ）\n"
+"ハイライトがグローし、シャドウが持ち上がってコントラストが下がります"
 
 #: ../src/iop/spektrafilm.c:6328
 msgid "radius of the diffusion halo. the amount of light is unchanged."
@@ -32204,8 +32202,8 @@ msgid ""
 "light diverted into the print diffusion halo, in filter stops\n"
 "(1/8 = 0.125; 0 = off). spreads the print's dark areas into lighter ones."
 msgstr ""
-"プリントの拡散ハロに振り向けられる光の量（フィルターのストップ単位、1/8＝"
-"0.125、0＝オフ）\n"
+"プリントの拡散ハロに振り向けられる光の量（フィルタのストップ単位、1/8＝0.125、"
+"0＝オフ）\n"
 "プリントの暗部を明るい部分に広げます"
 
 #: ../src/iop/spektrafilm.c:6524
@@ -32217,7 +32215,7 @@ msgid ""
 "print diffusion halo warmth: >0 adds red to the halo, which prints\n"
 "as cyan, <0 adds blue, which prints as yellow."
 msgstr ""
-"プリント拡散ハロの暖かさ：\n"
+"プリント拡散ハロの色味：\n"
 "0より大きいとハロに赤が加わり、シアンとしてプリントされます\n"
 "0より小さいと青が加わり、イエローとしてプリントされます"
 
@@ -32498,7 +32496,7 @@ msgid ""
 "set the lightest tone of the image with white level below.\n"
 "off, the highlights stay where the film puts them."
 msgstr ""
-"以下の白レベルで画像の最も明るいトーンを設定します\n"
+"下の白レベルで画像の最も明るいトーンを設定します\n"
 "オフにすると、ハイライトはフィルム本来の位置にとどまります"
 
 #: ../src/iop/spektrafilm.c:6761
@@ -32507,7 +32505,7 @@ msgid ""
 "darkens the shadows a little, since mid-gray is held."
 msgstr ""
 "最も明るいトーンの輝度（1＝完全な白）\n"
-"中間グレーが固定されているため、下げるとシャドウもわずかに暗くなります"
+"ミドルグレーが固定されているため、下げるとシャドウもわずかに暗くなります"
 
 #: ../src/iop/splittoning.c:79
 msgid "split-toning"
@@ -32620,7 +32618,7 @@ msgstr "ホワイトバランス"
 
 #: ../src/iop/temperature.c:278
 msgid "scale raw RGB channels to balance white and help demosaicing"
-msgstr "RAWのRGBチャネルを調整して、白のバランスを取り、デモザイクを助けます"
+msgstr "RAWのRGBチャンネルを調整して、白のバランスを取り、デモザイクを助けます"
 
 #: ../src/iop/temperature.c:1545
 #, c-format
@@ -33151,7 +33149,7 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
-"0 に設定すると、量子化を無効にします\n"
+"0に設定すると、量子化を無効にします\n"
 "値を上げると、輝度マスクをポスタライズして、\n"
 "高い境界ぼかしの値を用いた時に、ガイドが区分的平滑領域を生み出しやすくなります"
 
@@ -33232,11 +33230,11 @@ msgstr "ディザリング"
 
 #: ../src/iop/vignette.c:1074
 msgid "the radii scale of vignette for start of fall-off"
-msgstr "ビネットの半径のスケール（減光のはじまり）"
+msgstr "周辺減光の半径のスケール（減光のはじまり）"
 
 #: ../src/iop/vignette.c:1076
 msgid "the radii scale of vignette for end of fall-off"
-msgstr "ビネットの半径のスケール（減光の終わり）"
+msgstr "周辺減光の半径のスケール（減光の終わり）"
 
 #: ../src/iop/vignette.c:1077
 msgid "strength of effect on brightness"
@@ -33281,19 +33279,19 @@ msgstr "バンディングを防ぐために不規則なノイズを追加しま
 #: ../src/iop/vignette.c:1098
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr "【ノード上で%s】ビネット／境界ぼかしのサイズを変更します"
+msgstr "【ノード上で%s】周辺減光／境界ぼかしのサイズを変更します"
 
 #: ../src/iop/vignette.c:1101
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
-"【ノード上で%s】ビネット／境界ぼかしのサイズを、幅対高さの比を保ちながら変更し"
+"【ノード上で%s】周辺減光／境界ぼかしのサイズを、幅対高さの比を保ちながら変更し"
 "ます"
 
 #: ../src/iop/vignette.c:1104
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr "【中心で%s】ビネットを移動します"
+msgstr "【中心で%s】周辺減光を移動します"
 
 #: ../src/iop/watermark.c:460
 msgid "watermark"
@@ -33746,7 +33744,7 @@ msgstr "コレクション設定"
 #: ../src/libs/recentcollect.c:315 ../src/libs/styles.c:1056
 #: ../src/libs/tagging.c:4086
 msgid "preferences..."
-msgstr "設定"
+msgstr "設定..."
 
 #: ../src/libs/collect.c:4129 ../src/libs/filtering.c:1543
 msgid "AND"
@@ -34004,7 +34002,7 @@ msgstr[1] "%d枚の選択画像の履歴を本当に削除しますか？"
 
 #: ../src/libs/copy_history.c:299
 msgid "selective copy..."
-msgstr "モジュール選択コピー"
+msgstr "モジュール選択コピー..."
 
 #: ../src/libs/copy_history.c:300
 msgid "choose which modules to copy from the source image"
@@ -34018,7 +34016,7 @@ msgstr "最初に選択した画像の履歴スタックをコピーします"
 
 #: ../src/libs/copy_history.c:311
 msgid "selective paste..."
-msgstr "モジュール選択貼り付け"
+msgstr "モジュール選択貼り付け..."
 
 #: ../src/libs/copy_history.c:312
 msgid "choose which modules to paste to the target image(s)"
@@ -34312,14 +34310,15 @@ msgstr ""
 "し、処理において色域内の色を歪めます。このオプションは出力画像の色空間に依存す"
 "るプロプライエタリなLUTである場合がしばしばあります\n"
 "\n"
-"・相対的な色彩測定：輝度を保持しつつ、色が色域内に合うまで可能な限り控えめに彩"
-"度を下げます\n"
+"・相対的カラーメトリック：輝度を保持しつつ、色が色域内に合うまで可能な限り控え"
+"めに彩度を下げます\n"
 "\n"
 "・彩度：ビジネス用の人目を引くグラフィックのためにデザインされたもので、彩度を"
 "保持します（写真には適していません）\n"
 "\n"
-"・絶対的な色彩測定：画像のホワイトポイントを出力先媒体のホワイトポイントに合わ"
-"せる以外のことをしません。主に色校正のために用います（写真には適していません）"
+"・絶対的カラーメトリック：画像のホワイトポイントを出力先媒体のホワイトポイント"
+"に合わせる以外のことをしません。主に色校正のために用います（写真には適していま"
+"せん）"
 
 #: ../src/libs/export.c:1685 ../src/libs/print_settings.c:3497
 msgid ""
@@ -34411,8 +34410,8 @@ msgid ""
 "if remote storage doesn't understand darktable XMP metadata, you can use "
 "calculated metadata instead"
 msgstr ""
-"デフォルト設定では、インターフェースは画像の横にある一部の（限られた）メタデー"
-"タをリモートストレージに送ります\n"
+"デフォルト設定では、インターフェースは画像に加えて一部の（限られた）メタデータ"
+"をリモートストレージに送ります\n"
 "これを回避し、画像に埋め込まれたdarktable XMPメタデータのみを許可するには、こ"
 "のフラグをチェックします\n"
 "リモートストレージがdarktable XMPメタデータを理解しない場合、代わりに、算出さ"
@@ -34501,7 +34500,7 @@ msgid ""
 msgstr ""
 "算出されたメタデータのリスト\n"
 "+ボタン上でクリックすると、新しいメタデータを選択し、追加します\n"
-"式が空欄の場合、対応するメタデータがエクスポートファイルから削除されています\n"
+"式が空欄の場合、対応するメタデータがエクスポートファイルから削除されます\n"
 "式が=の場合、EXIFデータが無効であっても、EXIFメタデータがエクスポートされてい"
 "ます\n"
 "それ以外の場合、対応するメタデータが算出され、エクスポートファイルに追加されて"
@@ -34759,7 +34758,7 @@ msgid ""
 msgstr ""
 "画像の色ラベルにもとづいて絞り込みます\n"
 "クリックすると、色ラベルの選択のオン／オフを切り替えます\n"
-"ctrl+クリックすると、色ラベルを除外します \n"
+"Ctrl+クリックすると、色ラベルを除外します \n"
 "灰色のボタンは全ての色ラベルに作用します"
 
 #. create the filter combobox
@@ -34778,7 +34777,7 @@ msgid ""
 "union: images with at least one of the selected color labels"
 msgstr ""
 "画像の色ラベルにもとづいて絞り込みます\n"
-"共通部分：選択した色ラベル全てを有する画像\n"
+"積集合：選択した色ラベル全てを有する画像\n"
 "和集合：選択した色ラベルのうち少なくとも一つを有する画像"
 
 #: ../src/libs/filters/date.c:198
@@ -34810,7 +34809,7 @@ msgid ""
 "right-click to get existing filenames"
 msgstr ""
 "検索するファイル名を入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存のファイル名を表示します"
 
@@ -34827,7 +34826,7 @@ msgid ""
 "right-click to get existing extensions"
 msgstr ""
 "検索する拡張子を入力してください。最初にドットを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "キーワード 'RAW'、'NOT RAW'、'LDR'、'HDR' を使用することが出来ます\n"
 "\n"
 "右クリックすると、既存の拡張子を表示します"
@@ -34901,7 +34900,7 @@ msgid ""
 "right-click to get existing cameras"
 msgstr ""
 "検索するカメラを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存のカメラを表示します"
 
@@ -34913,7 +34912,7 @@ msgid ""
 "right-click to get existing lenses"
 msgstr ""
 "検索するレンズを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存のレンズを表示します"
 
@@ -34925,7 +34924,7 @@ msgid ""
 "right-click to get existing white balances"
 msgstr ""
 "検索するホワイトバランスを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存のホワイトバランスを表示します"
 
@@ -34937,7 +34936,7 @@ msgid ""
 "right-click to get existing flashes"
 msgstr ""
 "検索するフラッシュを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存のフラッシュを表示します"
 
@@ -34949,7 +34948,7 @@ msgid ""
 "right-click to get existing exposure programs"
 msgstr ""
 "検索する露出プログラムを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存の露出プログラムを表示します"
 
@@ -34961,7 +34960,7 @@ msgid ""
 "right-click to get existing metering modes"
 msgstr ""
 "検索する測光モードを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存の測光モードを表示します"
 
@@ -34977,7 +34976,7 @@ msgid ""
 "right-click to get existing group ids"
 msgstr ""
 "検索するグループidを入力してください\n"
-"複数の値は,で区切ってください\n"
+"複数の値は','で区切ってください\n"
 "\n"
 "右クリックすると、既存のグループidを表示します"
 
@@ -35560,7 +35559,7 @@ msgstr "グループ化"
 
 #: ../src/libs/image.c:578
 msgid "add selected images to expanded group or create a new one"
-msgstr "選択した画像を展開したグループに追加する、新しいグループを作成します"
+msgstr "選択した画像を展開したグループに追加するか、新しいグループを作成します"
 
 #: ../src/libs/image.c:582
 msgid "ungroup"
@@ -35789,7 +35788,7 @@ msgstr "_了解して実行"
 #. add import buttons
 #: ../src/libs/import.c:2401
 msgid "add to library..."
-msgstr "ライブラリに追加"
+msgstr "ライブラリに追加..."
 
 #: ../src/libs/import.c:2403
 msgid "add existing images to the library"
@@ -36132,7 +36131,7 @@ msgstr "表示"
 
 #: ../src/libs/metadata.c:938
 msgid "drag and drop one row at a time until you get the desired order"
-msgstr "希望の順序になるまで、一度に１行ずつドラッグ＆ドロップします"
+msgstr "希望の順序になるまで、一度に1行ずつドラッグ＆ドロップします"
 
 #: ../src/libs/metadata.c:946
 msgid ""
@@ -36284,7 +36283,7 @@ msgstr "経度"
 
 #: ../src/libs/metadata_view.c:175
 msgid "elevation"
-msgstr "標高"
+msgstr "高度"
 
 #: ../src/libs/metadata_view.c:179
 msgid "categories"
@@ -36893,7 +36892,7 @@ msgstr "モデル%sを読み込んでいます..."
 #: ../src/libs/neural_restore.c:1590
 #, c-format
 msgid "failed to load AI %s model"
-msgstr "AI %s モデルの読み込みに失敗しました"
+msgstr "AI %sモデルの読み込みに失敗しました"
 
 #: ../src/libs/neural_restore.c:1644
 msgid "neural restore: the output pattern expands to nothing"
@@ -37255,8 +37254,8 @@ msgid ""
 " a too large value may result in poor print quality"
 msgstr ""
 "ネイティブのプリンターの画像のスケールファクター DPI:\n"
-" < 1 は画像をダウンスケールします（最高クオリティ） \n"
-" > 1 は画像をアップスケールします\n"
+" < 1は画像をダウンスケールします（最高クオリティ） \n"
+" > 1は画像をアップスケールします\n"
 "大き過ぎる値は低クオリティな印刷結果をもたらす可能性があります"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
@@ -37908,7 +37907,7 @@ msgstr "タグを作成..."
 
 #: ../src/libs/tagging.c:2630
 msgid "delete tag"
-msgstr "タグを削除..."
+msgstr "タグを削除"
 
 #: ../src/libs/tagging.c:2633
 msgid "delete node"
@@ -38092,7 +38091,7 @@ msgstr "最後のタグのやり直し"
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
-"タグツリービューではタグのショートカットがアクティブでありません。 リスト"
+"タグツリービューではタグのショートカットがアクティブではありません。 リスト"
 "ビューに切り替えてください"
 
 #: ../src/libs/tagging.c:4057
@@ -38654,7 +38653,7 @@ msgstr "ダブルクリックすると、`%f'にリセットします"
 
 #: ../src/lua/preferences.c:851
 msgid "Lua options"
-msgstr "Lua オプション"
+msgstr "Luaオプション"
 
 #: ../src/lua/preferences.c:902
 msgid "per-script configuration options"
@@ -38754,7 +38753,7 @@ msgstr ""
 "\n"
 "この画像を作成したカメラの機種がdarktableでサポートされているか確認してくださ"
 "い\n"
-"サポートされているカメラのリストは https://www.darktable.org/resources/camera-"
+"サポートされているカメラのリストはhttps://www.darktable.org/resources/camera-"
 "support/\n"
 "カメラがサポートされていることが確かな場合、以下で報告してください\n"
 "https://github.com/darktable-org/darktable"
@@ -38929,7 +38928,7 @@ msgstr "スタイルに素早くアクセス"
 
 #: ../src/views/darkroom.c:3252
 msgid "display a second darkroom image window"
-msgstr "2つ目のdarkroom画像ウィンドウを表示します"
+msgstr "2つ目のダークルーム画像ウィンドウを表示します"
 
 #: ../src/views/darkroom.c:3254
 msgid "second window"
@@ -39079,11 +39078,11 @@ msgid ""
 "full gamut is the combination of all other modes"
 msgstr ""
 "プレビューの測定基準を選択してください\n"
-"'全て'は他のモード全ての組み合わせです"
+"'全色域'は他のモード全ての組み合わせです"
 
 #: ../src/views/darkroom.c:3459
 msgid "full gamut"
-msgstr "全て"
+msgstr "全色域"
 
 #: ../src/views/darkroom.c:3460
 msgid "any RGB channel"
@@ -39394,7 +39393,7 @@ msgstr "画像を無制限にズーム"
 
 #: ../src/views/darkroom.c:5061
 msgid "zoom to 100% 200% and back"
-msgstr "100%、200% にズームして戻る"
+msgstr "100%、200%にズームして戻る"
 
 #: ../src/views/darkroom.c:5063 ../src/views/lighttable.c:1167
 msgid "pan a zoomed image"
@@ -39604,7 +39603,7 @@ msgstr "スライドショーが一時停止しました"
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "スライドショーの遅延を%d秒に設定しました"
-msgstr[1] "スライドショーの遅延を%d 秒に設定しました"
+msgstr[1] "スライドショーの遅延を%d秒に設定しました"
 
 #: ../src/views/slideshow.c:749
 msgid "start and stop"
@@ -39674,7 +39673,7 @@ msgstr "右 ダブルクリック"
 
 #: ../src/views/view.c:1589
 msgid "drag and drop"
-msgstr "ドラッグアンドドロップ"
+msgstr "ドラッグ＆ドロップ"
 
 #: ../src/views/view.c:1592
 msgid "left-click+drag"
