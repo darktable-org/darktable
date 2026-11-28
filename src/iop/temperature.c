@@ -1446,7 +1446,7 @@ void gui_update(dt_iop_module_t *self)
   if(!found)
     p->preset = DT_IOP_TEMP_USER;
 
-  if(!found || g->mod_temp != -FLT_MAX) // reset or initialize user-defined
+  if(!found || g->mod_temp == -FLT_MAX) // reset or initialize user-defined
   {
     g->mod_temp = tempK;
     g->mod_tint = tint;
@@ -1756,9 +1756,6 @@ void reload_defaults(dt_iop_module_t *self)
     dt_bauhaus_slider_set_default(g->scale_y, dcoeffs[3]);
 
     dt_bauhaus_toggle_set_default(g->check_late_correction, d->late_correction);
-
-    for_four_channels(k)
-      g->mod_coeff[k] = dcoeffs[k];
 
     float TempK, tint;
     _mul2temp(self, d, &TempK, &tint);
@@ -2185,6 +2182,16 @@ static void _preview_pipe_finished(gpointer instance, dt_iop_module_t *self)
   _update_controls_lock(self);
 }
 
+// gui_update() refills mod_temp, mod_tint and mod_coeff from the params
+// while mod_temp holds this marker. It returns before that on a true
+// monochrome image, where "user modified" then copies the unity mod_coeff
+static void _forget_user_modified_wb(dt_iop_temperature_gui_data_t *g)
+{
+  g->mod_temp = -FLT_MAX;
+  for_four_channels(k)
+    g->mod_coeff[k] = 1.0;
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = IOP_GUI_ALLOC(temperature);
@@ -2250,9 +2257,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->finetune, " mired");
   gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
 
-  g->mod_temp = -FLT_MAX;
-  for_four_channels(k)
-    g->mod_coeff[k] = 1.0;
+  _forget_user_modified_wb(g);
 
   GtkWidget *temp_label_box = gtk_event_box_new();
   g->temp_label = dt_ui_section_label_new(C_("section", "scene illuminant temp"));
@@ -2360,6 +2365,15 @@ void gui_cleanup(dt_iop_module_t *self)
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 }
 
+// the darkroom keeps this instance, gui_data included, when it changes
+// images: forget the previous image's "user modified" values, so that
+// gui_update() starts them from this image's params. Undo and other history
+// reloads of the same image do not call this, and keep them
+void change_image(dt_iop_module_t *self)
+{
+  _forget_user_modified_wb(self->gui_data);
+}
+
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
@@ -2367,6 +2381,8 @@ void gui_reset(dt_iop_module_t *self)
 
   const int preset = p->preset;
   dt_iop_color_picker_reset(self, TRUE);
+
+  _forget_user_modified_wb(g);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot),
                                preset == DT_IOP_TEMP_AS_SHOT);
