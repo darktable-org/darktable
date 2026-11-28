@@ -159,6 +159,15 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
 
+  if(USE_SDL2)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #MSYS2 replaced SDL2 with sdl2-compat, whose SDL2.dll loads SDL3.dll
+      #at runtime, so its not detected as a link dependency, so we include here
+      ${MINGW_PATH}/SDL3.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
   if(GraphicsMagick_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #GRAPHICKSMAGICK
