@@ -1280,6 +1280,13 @@ changes (where available).
   editor (Xmp.darktable.version_name, Xmp.xmpMM.PreservedFileName) could
   not be restored.
 
+- Fixed white balance's "user modified" setting showing the minimum
+  temperature and tint when chosen before any white balance edit. The
+  next temperature or tint change then gave a strong color cast.
+  After an undo in any module, or a click on any history item, "user
+  modified" also forgot its earlier values and gave the as-shot white
+  balance.
+
 ## Lua
 
 ### API Version
