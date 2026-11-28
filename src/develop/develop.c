@@ -925,7 +925,7 @@ restart:
   {
     // In some cases we don't restart the pipe but exit with DT_DEV_PIXELPIPE_INVALID status, see _dev_pixelpipe_early_exit()
     const gboolean img_changed = dev->image_force_reload || pipe->loading || pipe->input_changed;
-    if(img_changed)
+    if(img_changed || shutdown == DT_DEV_PIXELPIPE_STOP_NODES)
     {
       if(dev->image_force_reload)
       {

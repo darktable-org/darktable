@@ -378,6 +378,12 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- Switching images in the darkroom is much more responsive while heavy
+  edits are still rendering: in-flight pipeline runs for the previous
+  image are aborted instead of running to completion, rapid stepping
+  coalesces into a single load, and waiting for the pipeline no longer
+  busy-spins the UI thread.
+
 ## Documentation updates
 
 - The stable documentation for 5.8 can be found [here](https://docs.darktable.org/usermanual/5.8/en/)
